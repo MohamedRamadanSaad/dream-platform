@@ -19,8 +19,8 @@ export default {
         info: '#3B6EA8',
       },
       fontFamily: {
-        display: ['"Aref Ruqaa"', 'serif'],
-        body: ['Tajawal', 'system-ui', 'sans-serif'],
+        display: ['"IBM Plex Sans Arabic"', '"IBM Plex Sans"', 'system-ui', 'sans-serif'],
+        body: ['"IBM Plex Sans Arabic"', '"IBM Plex Sans"', 'system-ui', 'sans-serif'],
         quran: ['Amiri', 'serif'],
       },
       borderRadius: { xl2: '1.75rem' },

@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Aref+Ruqaa:wght@400;700&family=Amiri:wght@400;700&family=Tajawal:wght@300;400;500;700&family=Readex+Pro:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@300;400;500;600;700&family=Amiri:wght@400;700&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -35,9 +35,9 @@ body {
   @apply bg-[color:var(--bg)] text-fg font-body antialiased;
   transition: background-color .5s ease, color .5s ease;
 }
-[dir='rtl'] { font-family: Tajawal, system-ui, sans-serif; }
-[dir='ltr'] body { font-family: 'Readex Pro', system-ui, sans-serif; }
-[dir='ltr'] .font-display { font-family: 'Readex Pro', serif; font-weight: 600; }
+[dir='rtl'] body { font-family: 'IBM Plex Sans Arabic', 'IBM Plex Sans', system-ui, sans-serif; }
+[dir='ltr'] body { font-family: 'IBM Plex Sans', 'IBM Plex Sans Arabic', system-ui, sans-serif; }
+.font-display { font-weight: 600; letter-spacing: -0.01em; }
 
 ::selection { background: var(--gold); color: var(--night); }
 :focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
