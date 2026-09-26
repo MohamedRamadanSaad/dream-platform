@@ -1,0 +1,66 @@
+@import url('https://fonts.googleapis.com/css2?family=Aref+Ruqaa:wght@400;700&family=Amiri:wght@400;700&family=Tajawal:wght@300;400;500;700&family=Readex+Pro:wght@400;500;600&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --night: #0a1128;
+  --navy: #16244a;
+  --ink: #1e3a5f;
+  --gold: #d4af37;
+  --gold-soft: #eadbaa;
+  --gold-deep: #a8872a;
+  --pearl: #f4efe6;
+
+  --bg: #f4efe6;
+  --surface: #fbf8f2;
+  --surface-2: #ede5d4;
+  --line: #e6dcc8;
+  --fg: #1e3a5f;
+  --fg-muted: #5a6b88;
+  --fg-dim: #8a94ab;
+}
+.dark {
+  --bg: #070c1f;
+  --surface: #0f1833;
+  --surface-2: #16244a;
+  --line: #24325c;
+  --fg: #f4efe6;
+  --fg-muted: #b7bfd6;
+  --fg-dim: #7d879f;
+}
+
+html { scroll-behavior: smooth; }
+body {
+  @apply bg-[color:var(--bg)] text-fg font-body antialiased;
+  transition: background-color .5s ease, color .5s ease;
+}
+[dir='rtl'] { font-family: Tajawal, system-ui, sans-serif; }
+[dir='ltr'] body { font-family: 'Readex Pro', system-ui, sans-serif; }
+[dir='ltr'] .font-display { font-family: 'Readex Pro', serif; font-weight: 600; }
+
+::selection { background: var(--gold); color: var(--night); }
+:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+
+@layer components {
+.card { @apply bg-surface border border-line rounded-xl2 transition-[transform,box-shadow,border-color] duration-500; }
+.card-hover:hover { @apply -translate-y-1 shadow-calm border-gold; }
+.btn { @apply inline-flex items-center justify-center gap-2 rounded-full font-medium transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed; }
+.btn-gold { @apply bg-gold text-night hover:-translate-y-0.5 hover:shadow-[0_12px_28px_-12px_rgba(212,175,55,.75)]; }
+.btn-night { @apply bg-night text-pearl hover:-translate-y-0.5; }
+.btn-ghost { @apply border border-line text-fg hover:border-gold; }
+.btn-md { @apply px-6 py-3 text-sm; }
+.btn-lg { @apply px-8 py-4 text-base; }
+.btn-sm { @apply px-4 py-2 text-xs; }
+.input { @apply w-full rounded-xl border border-line bg-surface px-4 py-3 text-sm text-fg placeholder:text-fg-dim focus:border-gold; }
+.label { @apply block text-xs tracking-wider text-gold-deep mb-2; }
+.chip { @apply inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs; }
+}
+
+@keyframes twinkle { 0%,100%{opacity:.25} 50%{opacity:1} }
+@keyframes pulse-ring { 0%,100%{box-shadow:0 0 0 0 rgba(212,175,55,.55)} 50%{box-shadow:0 0 0 7px rgba(212,175,55,0)} }
+.pulse-ring { animation: pulse-ring 3.2s ease-in-out infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+}
