@@ -1,0 +1,29 @@
+{
+  email {$ACME_EMAIL}
+}
+
+{$DOMAIN} {
+  encode zstd gzip
+
+  header {
+    Strict-Transport-Security "max-age=31536000; includeSubDomains"
+    X-Content-Type-Options "nosniff"
+    Referrer-Policy "strict-origin-when-cross-origin"
+    -Server
+  }
+
+  # API — the real backend. Until it exists, the frontend runs with mocks and never calls /api.
+  handle /api/* {
+    # reverse_proxy backend:8080
+    respond "backend not deployed yet" 503
+  }
+
+  handle {
+    reverse_proxy frontend:80
+  }
+}
+
+# Redirect www -> apex (only matters if DOMAIN is the apex)
+www.{$DOMAIN} {
+  redir https://{$DOMAIN}{uri} permanent
+}
