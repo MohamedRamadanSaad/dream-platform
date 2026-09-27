@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { checkoutApi, publicApi } from '@/api/endpoints'
+import { checkoutApi, checkoutMockApi, publicApi } from '@/api/endpoints'
 import { useAuthStore } from '@/app/auth-store'
 import { Button, ErrorBox, Input, Label, Skeleton } from '@/components/ui'
 import { Icon } from '@/components/icons/Icon'
@@ -79,6 +79,7 @@ export function MockCheckoutPage() {
   useEffect(() => { if (order.data?.status !== 'SUCCESS') setTries((x) => x + 1) }, [order.dataUpdatedAt, order.data?.status])
   useEffect(() => { if (order.data?.status === 'SUCCESS') { qc.invalidateQueries(); const id = setTimeout(() => navigate('/me'), 1800); return () => clearTimeout(id) } }, [order.data?.status, navigate, qc])
   const ok = order.data?.status === 'SUCCESS'
+  const trigger = useMutation({ mutationFn: (success: boolean) => checkoutMockApi.trigger(orderId!, success), onSuccess: () => qc.invalidateQueries({ queryKey: ['order', orderId] }) })
   return (
     <div className="flex min-h-screen items-center justify-center bg-night p-5 text-pearl">
       <div className="card w-full max-w-md bg-surface p-8 text-center text-fg">
@@ -86,7 +87,12 @@ export function MockCheckoutPage() {
         {ok ? (
           <><div className="mx-auto mb-3 text-success"><Icon name="check" size={40} active /></div><div className="text-lg text-success">{t('me.checkout.success')}</div></>
         ) : (
-          <><div className="mx-auto mb-3 h-8 w-8 animate-spin rounded-full border-2 border-gold border-t-transparent" /><div className="text-sm text-fg-muted">{t('me.checkout.waiting')} ({tries})</div><p className="mt-4 text-xs text-fg-dim">في الإنتاج تظهر هنا نافذة المزوّد؛ الرصيد يُضاف فقط عند وصول Webhook موقّع.</p></>
+          <><div className="mx-auto mb-3 h-8 w-8 animate-spin rounded-full border-2 border-gold border-t-transparent" /><div className="text-sm text-fg-muted">{t('me.checkout.waiting')} ({tries})</div><p className="mt-4 text-xs text-fg-dim">في الإنتاج تظهر هنا نافذة المزوّد؛ الرصيد يُضاف فقط عند وصول Webhook موقّع.</p>
+            <div className="mt-6 flex flex-col gap-2">
+              <Button onClick={() => trigger.mutate(true)} loading={trigger.isPending}>{t('me.checkout.mockPay')}</Button>
+              <Button variant="ghost" onClick={() => trigger.mutate(false)} disabled={trigger.isPending}>{t('me.checkout.mockFail')}</Button>
+              {trigger.isError && <ErrorBox message={(trigger.error as Error).message} />}
+            </div></>
         )}
       </div>
     </div>

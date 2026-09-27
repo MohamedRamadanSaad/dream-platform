@@ -5,16 +5,24 @@ import { applyLocale } from '@/i18n'
 import { Icon } from '@/components/icons/Icon'
 import { cn } from '@/lib/utils'
 import { useQuery } from '@tanstack/react-query'
-import { meApi, notificationsApi } from '@/api/endpoints'
+import { meApi, notificationsApi, youtubeApi } from '@/api/endpoints'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 
 const YT = (import.meta.env.VITE_YOUTUBE_URL as string) || 'https://youtube.com/@almoaberafatema'
 
 export function YoutubeButton({ dark }: { dark?: boolean }) {
   const { t } = useTranslation()
+  const user = useAuthStore((s) => s.user)
+  const qc = useQueryClient()
+  const { data } = useQuery({ queryKey: ['youtube', 'unseen'], queryFn: youtubeApi.unseen, enabled: !!user, refetchInterval: 120_000, staleTime: 60_000 })
+  const seen = useMutation({ mutationFn: youtubeApi.seen, onSuccess: () => qc.setQueryData(['youtube', 'unseen'], (old: { count: number; latest: unknown[] } | undefined) => (old ? { ...old, count: 0 } : old)) })
+  const count = data?.count ?? 0
+  const href = data?.latest?.[0]?.url && count > 0 ? data.latest[0].url : YT
   return (
-    <a href={YT} target="_blank" rel="noreferrer" className={cn('btn btn-sm gap-2 border', dark ? 'border-navy text-gold-soft hover:border-gold' : 'border-line text-fg hover:border-gold')} aria-label={t('nav.youtube')}>
+    <a href={href} target="_blank" rel="noreferrer" onClick={() => { if (count > 0) seen.mutate() }} className={cn('btn btn-sm relative gap-2 border', dark ? 'border-navy text-gold-soft hover:border-gold' : 'border-line text-fg hover:border-gold')} aria-label={t('nav.youtube')} title={count > 0 ? t('nav.youtubeNew', { count }) : undefined}>
       <span className="text-[#FF0000]"><Icon name="youtube" size={18} /></span>
       <span className="hidden sm:inline">{t('nav.youtube')}</span>
+      {count > 0 && <span className="pulse-ring absolute -top-1 -end-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#FF0000] px-1 text-[10px] font-bold text-white">{count > 9 ? '9+' : count}</span>}
     </a>
   )
 }

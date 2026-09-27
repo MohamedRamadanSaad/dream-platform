@@ -28,7 +28,8 @@ async function refreshToken(): Promise<boolean> {
   if (!refreshing) {
     refreshing = (async () => {
       try {
-        const res = await fetch(`${API_URL}/auth/refresh`, { method: 'POST', credentials: 'include' })
+        const base = API_URL.startsWith('http') ? API_URL : window.location.origin + API_URL
+        const res = await fetch(`${base.replace(/\/$/, '')}/auth/refresh`, { method: 'POST', credentials: 'include' })
         if (!res.ok) return false
         const data = await res.json()
         useAuthStore.getState().setSession(data.accessToken, data.user)
@@ -44,7 +45,8 @@ async function refreshToken(): Promise<boolean> {
 }
 
 export async function request<T>(method: Method, path: string, opts: RequestOptions = {}): Promise<T> {
-  const url = new URL(path, API_URL || window.location.origin)
+  const base = API_URL.startsWith('http') ? API_URL : window.location.origin + API_URL
+  const url = new URL(base.replace(/\/$/, '') + path)
   if (opts.query) {
     for (const [k, v] of Object.entries(opts.query)) {
       if (v !== undefined && v !== '') url.searchParams.set(k, String(v))

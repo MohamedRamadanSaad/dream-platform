@@ -52,6 +52,16 @@ export const notificationsApi = {
   unsubscribePush: (endpoint: string) => http.delete<void>(`/push/subscriptions?endpoint=${encodeURIComponent(endpoint)}`),
 }
 
+export const youtubeApi = {
+  unseen: () => http.get<T.YoutubeUnseen>('/youtube/unseen'),
+  seen: () => http.post<void>('/youtube/seen'),
+}
+
+export const checkoutMockApi = {
+  /** Dev/mock only: simulates the provider webhook (backend rejects it unless PAYMENTS_MOCK=true). */
+  trigger: (orderId: string, success: boolean) => http.post<void>(`/webhooks/mock/${orderId}?success=${success}`),
+}
+
 export const adminApi = {
   summary: () => http.get<T.AdminSummary>('/admin/analytics/summary'),
   countries: (period: T.AdminCountryDashboard['period']) =>

@@ -381,3 +381,6 @@ export interface AdminTestimonialRow {
   approved: boolean
   createdAt: string
 }
+
+export interface YoutubeVideoDto { id: string; title: string; url: string; publishedAt: string; thumbnailUrl: string | null }
+export interface YoutubeUnseen { count: number; latest: YoutubeVideoDto[] }

@@ -1,6 +1,6 @@
 import { http, HttpResponse, delay } from 'msw'
 import type * as T from '@/api/types'
-import { db, resolvePrice, applyPromotion, balanceOf, toSummary, toDetail, uid, helpers } from './data'
+import { db, resolvePrice, applyPromotion, balanceOf, toSummary, toDetail, uid, helpers, ytVideos, ytSeen } from './data'
 
 const BASE = (import.meta.env.VITE_API_URL as string) || ''
 const u = (p: string) => `${BASE}${p}`
@@ -257,6 +257,20 @@ export const handlers = [
     return new HttpResponse(null, { status: 204 })
   })),
   http.post(u('/push/subscriptions'), wrap(async () => new HttpResponse(null, { status: 204 }))),
+
+  // ---------- youtube as notification ----------
+  http.get(u('/youtube/unseen'), wrap(async ({ request }) => {
+    const me = requireUser(request)
+    const seenAt = ytSeen[me.id] ?? 0
+    const unseen = ytVideos.filter((v) => new Date(v.publishedAt).getTime() > seenAt)
+    return HttpResponse.json({ count: unseen.length, latest: ytVideos.slice(0, 5) } satisfies T.YoutubeUnseen)
+  })),
+  http.post(u('/youtube/seen'), wrap(async ({ request }) => {
+    const me = requireUser(request)
+    ytSeen[me.id] = Date.now()
+    return new HttpResponse(null, { status: 204 })
+  })),
+  http.post(u('/webhooks/mock/:orderId'), wrap(async () => new HttpResponse(null, { status: 200 }))),
 
   // ---------- admin ----------
   http.get(u('/admin/analytics/summary'), wrap(async ({ request }) => {
