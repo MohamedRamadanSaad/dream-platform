@@ -34,7 +34,6 @@ const NEAR = makeStars(26, 29, 3.8, 6.5, 4)
 const DOTS = makeStars(90, 41, 0.5, 1.1) // dust: plain dots so the sky is not all pointy shapes
 
 const MOON_R = 34
-const ARC = { x0: 1360, x1: -80, yBase: 430, yTop: 95 }
 
 export function NightSky({ className, withMoon = true }: { className?: string; withMoon?: boolean }) {
   const root = useRef<HTMLDivElement>(null)
@@ -86,28 +85,30 @@ export function NightSky({ className, withMoon = true }: { className?: string; w
         gsap.delayedCall(1.5 + idx * 2.2, fire)
       })
 
-      // moon: arc + phases. Lit disc under a dark disc clipped to the moon; the dark disc slides across so the
-      // lit part grows from a right-hand crescent to full, then shrinks to a left-hand crescent.
-      const moon = el.querySelector<SVGGElement>('.sky-moon')
+      // moon: arc + phases, in PIXEL space of the container so it always crosses the visible width
+      // (the star SVG is "slice"-cropped on tall screens, so an SVG-space arc would be mostly off-screen on phones).
+      const moon = el.querySelector<SVGSVGElement>('.sky-moon')
       const shadow = el.querySelector<SVGCircleElement>('.sky-moon-shadow')
       const glow = el.querySelector<SVGCircleElement>('.sky-moon-glow')
       if (moon && shadow && glow) {
         const state = { p: 0 }
+        const size = MOON_R * 2 * 3 // svg box incl. glow
         const render = () => {
           const p = state.p
-          const x = ARC.x0 + (ARC.x1 - ARC.x0) * p
-          const y = ARC.yBase - (ARC.yBase - ARC.yTop) * Math.sin(Math.PI * p)
-          // phase: 0 → thin waxing crescent (dark disc shifted left), .5 → full, 1 → thin waning crescent
+          const W = el.clientWidth || 1280, H = el.clientHeight || 700
+          const yBase = Math.min(H * 0.62, 560), yTop = Math.min(H * 0.1, 90)
+          const pad = MOON_R * 2
+          const x = (W + pad) - (W + 2 * pad) * p - size / 2 // centre: just past the right edge → just past the left edge
+          const y = yBase - (yBase - yTop) * Math.sin(Math.PI * p) - size / 2
           const thin = 0.28 * MOON_R, gone = 2.15 * MOON_R
           const dx = p < 0.5 ? -(thin + (gone - thin) * (p / 0.5)) : thin + (gone - thin) * ((1 - p) / 0.5)
-          // fade in/out near the horizons
-          const edge = Math.min(1, Math.min(p, 1 - p) / 0.1)
-          gsap.set(moon, { attr: { transform: `translate(${x.toFixed(1)} ${y.toFixed(1)})` }, opacity: edge })
+          const edge = Math.min(1, Math.min(p, 1 - p) / 0.08)
+          gsap.set(moon, { x, y, opacity: edge })
           gsap.set(shadow, { attr: { cx: dx.toFixed(2) } })
-          gsap.set(glow, { opacity: 0.05 + 0.2 * Math.sin(Math.PI * p) })
+          gsap.set(glow, { opacity: 0.05 + 0.22 * Math.sin(Math.PI * p) })
         }
         render()
-        gsap.to(state, { p: 1, duration: 48, ease: 'none', repeat: -1, repeatDelay: 3, onUpdate: render })
+        gsap.to(state, { p: 1, duration: 34, ease: 'none', repeat: -1, repeatDelay: 2, onUpdate: render })
       }
     }, el)
     return () => ctx.revert()
@@ -118,10 +119,8 @@ export function NightSky({ className, withMoon = true }: { className?: string; w
       <svg className="absolute inset-0 h-full w-full" viewBox="0 0 1280 700" preserveAspectRatio="xMidYMid slice">
         <defs>
           <radialGradient id="halo" cx="50%" cy="50%" r="50%"><stop offset="0%" stopColor="#D4AF37" stopOpacity=".32" /><stop offset="100%" stopColor="#D4AF37" stopOpacity="0" /></radialGradient>
-          <radialGradient id="moonglow" cx="50%" cy="50%" r="50%"><stop offset="0%" stopColor="#EADBAA" stopOpacity=".9" /><stop offset="55%" stopColor="#EADBAA" stopOpacity=".25" /><stop offset="100%" stopColor="#EADBAA" stopOpacity="0" /></radialGradient>
           <linearGradient id="shoot" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stopColor="#EADBAA" stopOpacity="0" /><stop offset="100%" stopColor="#FFFFFF" /></linearGradient>
           <filter id="starglow" x="-100%" y="-100%" width="300%" height="300%"><feGaussianBlur stdDeviation="1.6" result="b" /><feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge></filter>
-          <clipPath id="moonclip"><circle cx="0" cy="0" r={MOON_R} /></clipPath>
         </defs>
         <circle className="sky-halo" cx="640" cy="380" r="340" fill="url(#halo)" />
         <path className="sky-blob" fill="#16244A" opacity=".85" d="M640 180 C790 180 880 270 880 380 C880 500 770 570 640 570 C500 570 400 490 400 380 C400 260 500 180 640 180 Z" />
@@ -141,17 +140,21 @@ export function NightSky({ className, withMoon = true }: { className?: string; w
         <line className="sky-shoot" x1="0" y1="0" x2="0" y2="0" stroke="url(#shoot)" strokeWidth="1.2" strokeLinecap="round" opacity="0" />
         <line className="sky-shoot" x1="0" y1="0" x2="0" y2="0" stroke="url(#shoot)" strokeWidth="2" strokeLinecap="round" opacity="0" />
 
-        {withMoon && (
-          <g className="sky-moon" transform={`translate(${ARC.x0} ${ARC.yBase})`} opacity="0">
-            <circle className="sky-moon-glow" cx="0" cy="0" r={MOON_R * 2.6} fill="url(#moonglow)" opacity=".1" />
-            <g clipPath="url(#moonclip)">
-              <circle cx="0" cy="0" r={MOON_R} fill="#EADBAA" />
-              <circle cx="-12" cy="-9" r="5" fill="#D9C98F" opacity=".55" /><circle cx="9" cy="10" r="3.5" fill="#D9C98F" opacity=".5" /><circle cx="6" cy="-14" r="2.5" fill="#D9C98F" opacity=".4" />
-              <circle className="sky-moon-shadow" cx={-0.28 * MOON_R} cy="0" r={MOON_R} fill="#0a1128" opacity=".97" />
-            </g>
-          </g>
-        )}
       </svg>
+      {withMoon && (
+        <svg className="sky-moon absolute left-0 top-0 will-change-transform" width={MOON_R * 6} height={MOON_R * 6} viewBox={`${-MOON_R * 3} ${-MOON_R * 3} ${MOON_R * 6} ${MOON_R * 6}`} style={{ opacity: 0 }}>
+          <defs>
+            <radialGradient id="moonglow" cx="50%" cy="50%" r="50%"><stop offset="0%" stopColor="#EADBAA" stopOpacity=".9" /><stop offset="55%" stopColor="#EADBAA" stopOpacity=".25" /><stop offset="100%" stopColor="#EADBAA" stopOpacity="0" /></radialGradient>
+            <clipPath id="moonclip"><circle cx="0" cy="0" r={MOON_R} /></clipPath>
+          </defs>
+          <circle className="sky-moon-glow" cx="0" cy="0" r={MOON_R * 2.6} fill="url(#moonglow)" opacity=".1" />
+          <g clipPath="url(#moonclip)">
+            <circle cx="0" cy="0" r={MOON_R} fill="#EADBAA" />
+            <circle cx="-12" cy="-9" r="5" fill="#D9C98F" opacity=".55" /><circle cx="9" cy="10" r="3.5" fill="#D9C98F" opacity=".5" /><circle cx="6" cy="-14" r="2.5" fill="#D9C98F" opacity=".4" />
+            <circle className="sky-moon-shadow" cx={-0.28 * MOON_R} cy="0" r={MOON_R} fill="#0a1128" opacity=".97" />
+          </g>
+        </svg>
+      )}
     </div>
   )
 }
