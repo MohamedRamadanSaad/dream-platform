@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.saadat.users.MeControllerIntegrationTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2026-09-27T04:59:22.370Z" hostname="runnervmtr4k5" time="0.094">
+  <properties/>
+  <testcase name="dashboardCountsAndWaitTime()" classname="com.saadat.users.MeControllerIntegrationTest" time="0.02"/>
+  <testcase name="preferencesUpdateLocaleAndName()" classname="com.saadat.users.MeControllerIntegrationTest" time="0.031"/>
+  <testcase name="deleteAnonymisesAndLocksTheAccount()" classname="com.saadat.users.MeControllerIntegrationTest" time="0.024"/>
+  <testcase name="meRequiresAuthentication()" classname="com.saadat.users.MeControllerIntegrationTest" time="0.004"/>
+  <testcase name="meReturnsTheCallerWithBearer()" classname="com.saadat.users.MeControllerIntegrationTest" time="0.011"/>
+  <system-out><![CDATA[04:59:22.359 INFO  [Test worker] [] o.s.t.c.s.AnnotationConfigContextLoaderUtils - Could not detect default configuration classes for test class [com.saadat.users.MeControllerIntegrationTest]: MeControllerIntegrationTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+04:59:22.368 INFO  [Test worker] [] o.s.b.t.c.SpringBootTestContextBootstrapper - Found @SpringBootConfiguration com.saadat.SaadatApplication for test class com.saadat.users.MeControllerIntegrationTest
+04:59:22.437 INFO  [Test worker] [0ff26088-6aec-475d-9c9a-965c97d9427b] c.s.users.service.AccountService - Account aa1bfa14-3dad-482d-b3ba-4d530559c8b1 deleted
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

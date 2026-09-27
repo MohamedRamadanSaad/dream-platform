@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<meta http-equiv="x-ua-compatible" content="IE=edge"/>
+<title>Test results - AuthFlowIntegrationTest</title>
+<link href="../css/base-style.css" rel="stylesheet" type="text/css"/>
+<link href="../css/style.css" rel="stylesheet" type="text/css"/>
+<script src="../js/report.js" type="text/javascript"></script>
+</head>
+<body>
+<div id="content">
+<h1>AuthFlowIntegrationTest</h1>
+<div class="breadcrumbs">
+<a href="../index.html">all</a> &gt; 
+<a href="../packages/com.saadat.auth.html">com.saadat.auth</a> &gt; AuthFlowIntegrationTest</div>
+<div id="summary">
+<table>
+<tr>
+<td>
+<div class="summaryGroup">
+<table>
+<tr>
+<td>
+<div class="infoBox" id="tests">
+<div class="counter">12</div>
+<p>tests</p>
+</div>
+</td>
+<td>
+<div class="infoBox" id="failures">
+<div class="counter">0</div>
+<p>failures</p>
+</div>
+</td>
+<td>
+<div class="infoBox" id="ignored">
+<div class="counter">0</div>
+<p>ignored</p>
+</div>
+</td>
+<td>
+<div class="infoBox" id="duration">
+<div class="counter">0.541s</div>
+<p>duration</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+</td>
+<td>
+<div class="infoBox success" id="successRate">
+<div class="percent">100%</div>
+<p>successful</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="tab-container">
+<ul class="tabLinks">
+<li>
+<a href="#">Tests</a>
+</li>
+<li>
+<a href="#">Standard output</a>
+</li>
+</ul>
+<div class="tab">
+<h2>Tests</h2>
+<table>
+<thead>
+<tr>
+<th>Test</th>
+<th>Duration</th>
+<th>Result</th>
+</tr>
+</thead>
+<tr>
+<td class="success">expiredMagicLinkIsRejected()</td>
+<td class="success">0.017s</td>
+<td class="success">passed</td>
+</tr>
+<tr>
+<td class="success">interpreterEmailGetsInterpreterRoleOnLogin()</td>
+<td class="success">0.046s</td>
+<td class="success">passed</td>
+</tr>
+<tr>
+<td class="success">logoutRevokesTheFamily()</td>
+<td class="success">0.029s</td>
+<td class="success">passed</td>
+</tr>
+<tr>
+<td class="success">magicCodeWorksOnceAndIsCaseInsensitiveOnEmail()</td>
+<td class="success">0.012s</td>
+<td class="success">passed</td>
+</tr>
+<tr>
+<td class="success">magicRequestAlwaysAnswers204()</td>
+<td class="success">0.090s</td>
+<td class="success">passed</td>
+</tr>
+<tr>
+<td class="success">magicTokenIsSingleUse()</td>
+<td class="success">0.045s</td>
+<td class="success">passed</td>
+</tr>
+<tr>
+<td class="success">magicVerifyOverHttpThenRefreshRotatesCookieAndReuseIs401()</td>
+<td class="success">0.068s</td>
+<td class="success">passed</td>
+</tr>
+<tr>
+<td class="success">mockGoogleLoginCreatesTheMockUserWithGoogleIdentity()</td>
+<td class="success">0.093s</td>
+<td class="success">passed</td>
+</tr>
+<tr>
+<td class="success">onboardingRequiresTokenAndSetsProfile()</td>
+<td class="success">0.049s</td>
+<td class="success">passed</td>
+</tr>
+<tr>
+<td class="success">refreshRotationAndReuseDetectionRevokesFamily()</td>
+<td class="success">0.032s</td>
+<td class="success">passed</td>
+</tr>
+<tr>
+<td class="success">unknownRefreshTokenIsRejected()</td>
+<td class="success">0.009s</td>
+<td class="success">passed</td>
+</tr>
+<tr>
+<td class="success">wrongCodesBurnTheLinkAfterMaxAttempts()</td>
+<td class="success">0.051s</td>
+<td class="success">passed</td>
+</tr>
+</table>
+</div>
+<div class="tab">
+<h2>Standard output</h2>
+<span class="code">
+<pre>04:59:20.112 INFO  [Test worker] [] o.s.t.c.s.AnnotationConfigContextLoaderUtils - Could not detect default configuration classes for test class [com.saadat.auth.AuthFlowIntegrationTest]: AuthFlowIntegrationTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+04:59:20.127 INFO  [Test worker] [] o.s.b.t.c.SpringBootTestContextBootstrapper - Found @SpringBootConfiguration com.saadat.SaadatApplication for test class com.saadat.auth.AuthFlowIntegrationTest
+04:59:20.240 INFO  [Test worker] [31af1f63-6e88-4400-a25e-c6dd86a3a5d3] com.saadat.auth.service.AuthService - Creating user m***@example.com
+04:59:20.448 INFO  [Test worker] [ce74b941-1e4f-4990-89e8-ae52b598749c] com.saadat.auth.service.AuthService - Creating user f***@saadatu-aldarein.com
+04:59:20.451 INFO  [Test worker] [ce74b941-1e4f-4990-89e8-ae52b598749c] com.saadat.auth.service.AuthService - Granting INTERPRETER role to f***@saadatu-aldarein.com
+04:59:20.502 WARN  [Test worker] [] c.s.auth.service.RefreshTokenService - Refresh token reuse detected (token ZljOi_***), family d0e1ae6c-02ae-4af8-a3fd-bd62afa5b4e9 revoked (0 active tokens)
+04:59:20.596 INFO  [async-1] [68136eeb-0db4-4b4b-8941-8ea8cf7b5831] com.saadat.mail.MailService - SMTP not configured — e-mail 'magic-link' to r***@example.com (subject: رابط الدخول إلى إلى سعادة الدارين):
+&lt;!DOCTYPE html&gt;
+
+&lt;html lang=&quot;ar&quot; dir=&quot;rtl&quot;&gt;
+&lt;head&gt;
+  &lt;meta charset=&quot;UTF-8&quot;&gt;
+  &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot;&gt;
+  &lt;meta http-equiv=&quot;X-UA-Compatible&quot; content=&quot;IE=edge&quot;&gt;
+  &lt;meta name=&quot;x-apple-disable-message-reformatting&quot;&gt;
+  &lt;meta name=&quot;color-scheme&quot; content=&quot;light&quot;&gt;
+  &lt;meta name=&quot;supported-color-schemes&quot; content=&quot;light&quot;&gt;
+  &lt;title&gt;رابط الدخول إلى إلى سعادة الدارين&lt;/title&gt;
+  &lt;link href=&quot;https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;600&amp;amp;display=swap&quot; rel=&quot;stylesheet&quot;&gt;
+  &lt;style&gt;
+    body, table, td, p, a, div, span, strong { font-family: 'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif; }
+    a { color: #0A1128; }
+    @media only screen and (max-width: 620px) {
+      .container { width: 100% !important; }
+      .px { padding-left: 20px !important; padding-right: 20px !important; }
+    }
+  &lt;/style&gt;
+&lt;/head&gt;
+&lt;body style=&quot;margin:0;padding:0;background-color:#F4EFE6;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;&quot; dir=&quot;rtl&quot;&gt;
+&lt;div style=&quot;display:none;max-height:0;max-width:0;overflow:hidden;mso-hide:all;font-size:1px;line-height:1px;color:#F4EFE6;opacity:0;&quot;&gt;رمز الدخول صالح لمدة 15 دقيقة ولمرة واحدة.&lt;/div&gt;
+&lt;table role=&quot;presentation&quot; width=&quot;100%&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; border=&quot;0&quot; style=&quot;background-color:#F4EFE6;border-collapse:collapse;&quot; dir=&quot;rtl&quot;&gt;
+  &lt;tr&gt;
+    &lt;td align=&quot;center&quot; style=&quot;padding:24px 12px;&quot;&gt;
+      &lt;table role=&quot;presentation&quot; class=&quot;container&quot; width=&quot;600&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; border=&quot;0&quot;
+             style=&quot;width:600px;max-width:600px;border-collapse:separate;border:1px solid #E6DCC8;border-radius:16px;overflow:hidden;background-color:#F4EFE6;&quot;&gt;
+        &lt;!-- header band --&gt;
+        &lt;tr&gt;
+          &lt;td align=&quot;center&quot; class=&quot;px&quot; style=&quot;background-color:#0A1128;padding:28px 32px 22px 32px;&quot;&gt;
+            &lt;div style=&quot;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:22px;line-height:1.4;font-weight:600;color:#D4AF37;&quot;&gt;إلى سعادة الدارين&lt;/div&gt;
+            &lt;table role=&quot;presentation&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; border=&quot;0&quot; align=&quot;center&quot; style=&quot;margin:12px auto 10px auto;&quot;&gt;
+              &lt;tr&gt;&lt;td width=&quot;72&quot; height=&quot;2&quot; style=&quot;width:72px;height:2px;line-height:2px;font-size:0;background-color:#D4AF37;&quot;&gt;&amp;nbsp;&lt;/td&gt;&lt;/tr&gt;
+            &lt;/table&gt;
+            &lt;div style=&quot;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:13px;line-height:1.6;color:#F4EFE6;&quot;&gt;تفسير الرؤى بوضوح وعمق نحو سعادة الدارين&lt;/div&gt;
+          &lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;!-- content --&gt;
+        &lt;tr&gt;
+          &lt;td class=&quot;px&quot; style=&quot;padding:32px 36px 28px 36px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:16px;line-height:1.9;color:#0A1128;background-color:#F4EFE6;&quot; dir=&quot;rtl&quot; align=&quot;right&quot;&gt;
+            &lt;div&gt;
+  &lt;p style=&quot;margin:0 0 18px 0;font-size:18px;line-height:1.7;font-weight:600;color:#0A1128;&quot;&gt;السلام عليكم،&lt;/p&gt;
+  &lt;p style=&quot;margin:0 0 16px 0;&quot;&gt;طلبتَ الدخول إلى حسابك. اضغط الزر أدناه للدخول مباشرة، أو اكتب هذا الرمز في صفحة الدخول:&lt;/p&gt;
+  &lt;div dir=&quot;ltr&quot; style=&quot;margin:8px 0 12px 0;padding:16px;text-align:center;font-size:30px;line-height:1.2;letter-spacing:8px;font-weight:600;color:#0A1128;background-color:#FFFFFF;border:1px solid #E6DCC8;border-radius:12px;&quot;&gt;194470&lt;/div&gt;
+  &lt;p style=&quot;margin:0 0 16px 0;font-size:14px;line-height:1.8;color:#5B6478;&quot;&gt;الرابط والرمز صالحان لمدة &lt;span&gt;15&lt;/span&gt; دقيقة، ولمرة واحدة فقط.&lt;/p&gt;
+  &lt;table role=&quot;presentation&quot; width=&quot;100%&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; border=&quot;0&quot;
+       style=&quot;margin:28px 0 8px 0;border-collapse:collapse;&quot;&gt;
+  &lt;tr&gt;
+    &lt;td align=&quot;center&quot;&gt;
+      &lt;table role=&quot;presentation&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; border=&quot;0&quot; align=&quot;center&quot;&gt;
+        &lt;tr&gt;
+          &lt;td align=&quot;center&quot; bgcolor=&quot;#D4AF37&quot; style=&quot;border-radius:999px;background-color:#D4AF37;&quot;&gt;
+            &lt;a href=&quot;http://localhost:5173/auth/callback?token=c0lS-CxV4wFjaBckFcuGk1sadJao1EvVIuFckMQJF3k&quot; target=&quot;_blank&quot;
+               style=&quot;display:inline-block;padding:14px 38px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:16px;line-height:1.2;font-weight:600;color:#0A1128;text-decoration:none;border-radius:999px;&quot;&gt;الدخول إلى حسابي&lt;/a&gt;
+          &lt;/td&gt;
+        &lt;/tr&gt;
+      &lt;/table&gt;
+    &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+    &lt;td align=&quot;center&quot; style=&quot;padding-top:14px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:12px;line-height:1.6;color:#5B6478;&quot;&gt;
+      &lt;span&gt;إذا لم يعمل الزر، انسخ هذا الرابط في المتصفح:&lt;/span&gt;&lt;br&gt;
+      &lt;a href=&quot;http://localhost:5173/auth/callback?token=c0lS-CxV4wFjaBckFcuGk1sadJao1EvVIuFckMQJF3k&quot; dir=&quot;ltr&quot; style=&quot;color:#5B6478;word-break:break-all;&quot;&gt;http://localhost:5173/auth/callback?token=c0lS-CxV4wFjaBckFcuGk1sadJao1EvVIuFckMQJF3k&lt;/a&gt;
+    &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/table&gt;
+  &lt;p style=&quot;margin:18px 0 0 0;font-size:13px;line-height:1.8;color:#5B6478;&quot;&gt;إن لم تطلب هذا، يمكنك تجاهل الرسالة بأمان؛ لن يتغير شيء في حسابك.&lt;/p&gt;
+&lt;/div&gt;
+          &lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;!-- footer --&gt;
+        &lt;tr&gt;
+          &lt;td align=&quot;center&quot; class=&quot;px&quot; style=&quot;background-color:#0A1128;padding:24px 32px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:13px;line-height:1.8;color:#F4EFE6;&quot;&gt;
+            &lt;a href=&quot;https://youtube.com/@almoaberafatema&quot; style=&quot;color:#D4AF37;text-decoration:none;font-weight:600;&quot;&gt;شاهد القناة على يوتيوب&lt;/a&gt;
+            &lt;div style=&quot;margin-top:6px;&quot;&gt;
+              &lt;span&gt;للتواصل معنا:&lt;/span&gt;
+              &lt;a href=&quot;mailto:support@saadatu-aldarein.com&quot; style=&quot;color:#D4AF37;text-decoration:none;&quot;&gt;support@saadatu-aldarein.com&lt;/a&gt;
+            &lt;/div&gt;
+            &lt;div style=&quot;margin-top:12px;font-size:12px;line-height:1.7;color:#AEB4C2;&quot;&gt;وصلتك هذه الرسالة لأنها تخص حسابك لدينا.&lt;/div&gt;
+            &lt;div style=&quot;margin-top:6px;font-size:12px;color:#AEB4C2;&quot;&gt;&amp;copy; &lt;span&gt;2026&lt;/span&gt; &lt;span&gt;إلى سعادة الدارين&lt;/span&gt;&lt;/div&gt;
+          &lt;/td&gt;
+        &lt;/tr&gt;
+      &lt;/table&gt;
+    &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/table&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+
+04:59:20.610 WARN  [Test worker] [] c.s.auth.service.RefreshTokenService - Refresh token reuse detected (token _WoT7F***), family 2a7a35ee-a89a-468b-a302-456662803089 revoked (1 active tokens)
+04:59:20.616 WARN  [Test worker] [] c.s.auth.service.RefreshTokenService - Refresh token reuse detected (token _m7ThA***), family 2a7a35ee-a89a-468b-a302-456662803089 revoked (0 active tokens)
+04:59:20.632 INFO  [Test worker] [df87518c-b463-476d-9a02-06d0299e26c1] com.saadat.auth.service.AuthService - Creating user h***@example.com
+04:59:20.674 WARN  [Test worker] [82f7fab7-af28-42b8-95b5-c4da8854fdbe] c.s.auth.service.RefreshTokenService - Refresh token reuse detected (token OGI-Wk***), family 8ab19527-4e29-4280-8832-b191e9e538c3 revoked (1 active tokens)
+04:59:20.681 WARN  [Test worker] [e0e478db-3187-4ace-b5c1-ce7cec056fea] c.s.auth.service.RefreshTokenService - Refresh token reuse detected (token X7ZBLL***), family 8ab19527-4e29-4280-8832-b191e9e538c3 revoked (0 active tokens)
+</pre>
+</span>
+</div>
+</div>
+<div id="footer">
+<p>
+<div>
+<label class="hidden" id="label-for-line-wrapping-toggle" for="line-wrapping-toggle">Wrap lines
+<input id="line-wrapping-toggle" type="checkbox" autocomplete="off"/>
+</label>
+</div>Generated by 
+<a href="https://www.gradle.org">Gradle 8.14.3</a> at Sep 27, 2026, 4:59:23 AM</p>
+</div>
+</div>
+</body>
+</html>
