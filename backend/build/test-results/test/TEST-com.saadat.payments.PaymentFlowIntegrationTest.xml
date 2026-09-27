@@ -1,0 +1,2202 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.saadat.payments.PaymentFlowIntegrationTest" tests="8" skipped="0" failures="0" errors="0" timestamp="2026-09-27T20:24:01.145Z" hostname="runnervmtr4k5" time="0.377">
+  <properties/>
+  <testcase name="duplicateProviderTransactionIsANoOp()" classname="com.saadat.payments.PaymentFlowIntegrationTest" time="0.068"/>
+  <testcase name="paymobWebhookWithBadHmacIsRejected()" classname="com.saadat.payments.PaymentFlowIntegrationTest" time="0.01"/>
+  <testcase name="cardCountryMismatchMarksSuspicious()" classname="com.saadat.payments.PaymentFlowIntegrationTest" time="0.059"/>
+  <testcase name="catalogIsPricedForTheUsersCountry()" classname="com.saadat.payments.PaymentFlowIntegrationTest" time="0.025"/>
+  <testcase name="userCannotListAdminOrders()" classname="com.saadat.payments.PaymentFlowIntegrationTest" time="0.006"/>
+  <testcase name="amountMismatchMarksSuspiciousWithoutCredits()" classname="com.saadat.payments.PaymentFlowIntegrationTest" time="0.06"/>
+  <testcase name="failedPaymentGivesNoCredits()" classname="com.saadat.payments.PaymentFlowIntegrationTest" time="0.029"/>
+  <testcase name="mockCheckoutThenWebhookCreditsAndAutoSubmitsDraft()" classname="com.saadat.payments.PaymentFlowIntegrationTest" time="0.113"/>
+  <system-out><![CDATA[20:24:01.135 INFO  [Test worker] [] o.s.t.c.s.AnnotationConfigContextLoaderUtils - Could not detect default configuration classes for test class [com.saadat.payments.PaymentFlowIntegrationTest]: PaymentFlowIntegrationTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+20:24:01.142 INFO  [Test worker] [] o.s.b.t.c.SpringBootTestContextBootstrapper - Found @SpringBootConfiguration com.saadat.SaadatApplication for test class com.saadat.payments.PaymentFlowIntegrationTest
+20:24:01.202 INFO  [Test worker] [] com.saadat.mail.MailService - SMTP not configured — e-mail 'payment-receipt' to d***@example.com (subject: إيصال الدفع — تفسير رؤيا واحدة):
+<!DOCTYPE html>
+
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="x-apple-disable-message-reformatting">
+  <meta name="color-scheme" content="light">
+  <meta name="supported-color-schemes" content="light">
+  <title>إيصال الدفع — تفسير رؤيا واحدة</title>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;600&amp;display=swap" rel="stylesheet">
+  <style>
+    body, table, td, p, a, div, span, strong { font-family: 'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif; }
+    a { color: #0A1128; }
+    @media only screen and (max-width: 620px) {
+      .container { width: 100% !important; }
+      .px { padding-left: 20px !important; padding-right: 20px !important; }
+    }
+  </style>
+</head>
+<body style="margin:0;padding:0;background-color:#F4EFE6;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;" dir="rtl">
+<div style="display:none;max-height:0;max-width:0;overflow:hidden;mso-hide:all;font-size:1px;line-height:1px;color:#F4EFE6;opacity:0;">شكراً لك، تمت إضافة الرصيد إلى حسابك.</div>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#F4EFE6;border-collapse:collapse;" dir="rtl">
+  <tr>
+    <td align="center" style="padding:24px 12px;">
+      <table role="presentation" class="container" width="600" cellpadding="0" cellspacing="0" border="0"
+             style="width:600px;max-width:600px;border-collapse:separate;border:1px solid #E6DCC8;border-radius:16px;overflow:hidden;background-color:#F4EFE6;">
+        <!-- header band -->
+        <tr>
+          <td align="center" class="px" style="background-color:#0A1128;padding:28px 32px 22px 32px;">
+            <div style="font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:22px;line-height:1.4;font-weight:600;color:#D4AF37;">إلى سعادة الدارين</div>
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" style="margin:12px auto 10px auto;">
+              <tr><td width="72" height="2" style="width:72px;height:2px;line-height:2px;font-size:0;background-color:#D4AF37;">&nbsp;</td></tr>
+            </table>
+            <div style="font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:13px;line-height:1.6;color:#F4EFE6;">تفسير الرؤى بوضوح وعمق نحو سعادة الدارين</div>
+          </td>
+        </tr>
+        <!-- content -->
+        <tr>
+          <td class="px" style="padding:32px 36px 28px 36px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:16px;line-height:1.9;color:#0A1128;background-color:#F4EFE6;" dir="rtl" align="right">
+            <div>
+  <p style="margin:0 0 18px 0;font-size:18px;line-height:1.7;font-weight:600;color:#0A1128;">السلام عليكم <span>dup</span>،</p>
+  <p style="margin:0 0 16px 0;">شكراً لك، تم الدفع بنجاح وأُضيف الرصيد إلى حسابك.</p>
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:4px 0 8px 0;border-collapse:collapse;background-color:#FFFFFF;border:1px solid #E6DCC8;border-radius:12px;">
+    <tr>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;">الباقة</td>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;">تفسير رؤيا واحدة</td>
+    </tr>
+    <tr>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;">عدد الرؤى</td>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;">1</td>
+    </tr>
+    <tr>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;">المبلغ</td>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;">49.00 SAR</td>
+    </tr>
+    <tr>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;">رقم الطلب</td>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;">TXN-1e553b02-2e23-4f71-807f-efb307948a66</td>
+    </tr>
+    <tr>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;">تاريخ الدفع</td>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;">27 سبتمبر 2026، 11:24 م</td>
+    </tr>
+  </table>
+  <p style="margin:0 0 16px 0;font-size:14px;line-height:1.8;color:#5B6478;">احتفظ بهذه الرسالة إيصالاً للدفع.</p>
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
+       style="margin:28px 0 8px 0;border-collapse:collapse;">
+  <tr>
+    <td align="center">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center">
+        <tr>
+          <td align="center" bgcolor="#D4AF37" style="border-radius:999px;background-color:#D4AF37;">
+            <a href="http://localhost:5173/me/payments" target="_blank"
+               style="display:inline-block;padding:14px 38px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:16px;line-height:1.2;font-weight:600;color:#0A1128;text-decoration:none;border-radius:999px;">عرض المدفوعات</a>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+  <tr>
+    <td align="center" style="padding-top:14px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:12px;line-height:1.6;color:#5B6478;">
+      <span>إذا لم يعمل الزر، انسخ هذا الرابط في المتصفح:</span><br>
+      <a href="http://localhost:5173/me/payments" dir="ltr" style="color:#5B6478;word-break:break-all;">http://localhost:5173/me/payments</a>
+    </td>
+  </tr>
+</table>
+</div>
+          </td>
+        </tr>
+        <!-- footer -->
+        <tr>
+          <td align="center" class="px" style="background-color:#0A1128;padding:24px 32px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:13px;line-height:1.8;color:#F4EFE6;">
+            <a href="https://youtube.com/@almoaberafatema" style="color:#D4AF37;text-decoration:none;font-weight:600;">شاهد القناة على يوتيوب</a>
+            <div style="margin-top:6px;">
+              <span>للتواصل معنا:</span>
+              <a href="mailto:support@saadatu-aldarein.com" style="color:#D4AF37;text-decoration:none;">support@saadatu-aldarein.com</a>
+            </div>
+            <div style="margin-top:12px;font-size:12px;line-height:1.7;color:#AEB4C2;">وصلتك هذه الرسالة لأنها تخص حسابك لدينا.</div>
+            <div style="margin-top:6px;font-size:12px;color:#AEB4C2;">&copy; <span>2026</span> <span>إلى سعادة الدارين</span></div>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
+</body>
+</html>
+
+20:24:01.209 INFO  [Test worker] [] c.s.payments.service.PaymentService - Duplicate payment webhook txn=TXN-1e553b02-2e23-4f71-807f-efb307948a66 ignored
+20:24:01.210 DEBUG [async-2] [] c.saadat.push.service.WebPushSender - Web push not configured — skipping push to user 4cb2d490-9594-4031-bef2-0bcd7bbcd87b
+20:24:01.221 WARN  [Test worker] [5a85a8c7-3000-4d46-8692-f9d260a07bc3] c.s.payments.api.WebhookController - Paymob webhook with invalid HMAC rejected
+20:24:01.251 WARN  [Test worker] [] c.s.payments.service.PaymentService - Order 064eab95-f031-4d52-a386-4f72467de6ad marked SUSPICIOUS: CARD_COUNTRY_MISMATCH
+20:24:01.265 INFO  [Test worker] [] com.saadat.mail.MailService - SMTP not configured — e-mail 'payment-suspicious' to i***@example.com (subject: طلب دفع يحتاج إلى مراجعة 064eab95-f031-4d52-a386-4f72467de6ad):
+<!DOCTYPE html>
+
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="x-apple-disable-message-reformatting">
+  <meta name="color-scheme" content="light">
+  <meta name="supported-color-schemes" content="light">
+  <title>طلب دفع يحتاج إلى مراجعة 064eab95-f031-4d52-a386-4f72467de6ad</title>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;600&amp;display=swap" rel="stylesheet">
+  <style>
+    body, table, td, p, a, div, span, strong { font-family: 'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif; }
+    a { color: #0A1128; }
+    @media only screen and (max-width: 620px) {
+      .container { width: 100% !important; }
+      .px { padding-left: 20px !important; padding-right: 20px !important; }
+    }
+  </style>
+</head>
+<body style="margin:0;padding:0;background-color:#F4EFE6;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;" dir="rtl">
+<div style="display:none;max-height:0;max-width:0;overflow:hidden;mso-hide:all;font-size:1px;line-height:1px;color:#F4EFE6;opacity:0;">لم يُضف أي رصيد لهذا الطلب حتى تتم مراجعته.</div>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#F4EFE6;border-collapse:collapse;" dir="rtl">
+  <tr>
+    <td align="center" style="padding:24px 12px;">
+      <table role="presentation" class="container" width="600" cellpadding="0" cellspacing="0" border="0"
+             style="width:600px;max-width:600px;border-collapse:separate;border:1px solid #E6DCC8;border-radius:16px;overflow:hidden;background-color:#F4EFE6;">
+        <!-- header band -->
+        <tr>
+          <td align="center" class="px" style="background-color:#0A1128;padding:28px 32px 22px 32px;">
+            <div style="font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:22px;line-height:1.4;font-weight:600;color:#D4AF37;">إلى سعادة الدارين</div>
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" style="margin:12px auto 10px auto;">
+              <tr><td width="72" height="2" style="width:72px;height:2px;line-height:2px;font-size:0;background-color:#D4AF37;">&nbsp;</td></tr>
+            </table>
+            <div style="font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:13px;line-height:1.6;color:#F4EFE6;">تفسير الرؤى بوضوح وعمق نحو سعادة الدارين</div>
+          </td>
+        </tr>
+        <!-- content -->
+        <tr>
+          <td class="px" style="padding:32px 36px 28px 36px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:16px;line-height:1.9;color:#0A1128;background-color:#F4EFE6;" dir="rtl" align="right">
+            <div>
+  <p style="margin:0 0 18px 0;font-size:18px;line-height:1.7;font-weight:600;color:#0A1128;">السلام عليكم <span>interpreter</span>،</p>
+  <p style="margin:0 0 16px 0;">طلب دفع يحتاج إلى مراجعتك قبل إضافة الرصيد. لم يُضف أي رصيد لهذا الطلب.</p>
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:4px 0 8px 0;border-collapse:collapse;background-color:#FFFFFF;border:1px solid #E6DCC8;border-radius:12px;">
+    <tr>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;">رقم الطلب</td>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;">064eab95-f031-4d52-a386-4f72467de6ad</td>
+    </tr>
+    <tr>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;">المستخدم</td>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;">country</td>
+    </tr>
+    <tr>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;">البريد</td>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;">country-8d5d59a2-09af-498e-8523-5a2ee8d513e4@example.com</td>
+    </tr>
+    <tr>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;">المبلغ</td>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;">49.00 SAR</td>
+    </tr>
+    <tr>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;">السبب</td>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;">CARD_COUNTRY_MISMATCH</td>
+    </tr>
+  </table>
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
+       style="margin:28px 0 8px 0;border-collapse:collapse;">
+  <tr>
+    <td align="center">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center">
+        <tr>
+          <td align="center" bgcolor="#D4AF37" style="border-radius:999px;background-color:#D4AF37;">
+            <a href="http://localhost:5173/admin/orders" target="_blank"
+               style="display:inline-block;padding:14px 38px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:16px;line-height:1.2;font-weight:600;color:#0A1128;text-decoration:none;border-radius:999px;">مراجعة الطلب</a>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+  <tr>
+    <td align="center" style="padding-top:14px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:12px;line-height:1.6;color:#5B6478;">
+      <span>إذا لم يعمل الزر، انسخ هذا الرابط في المتصفح:</span><br>
+      <a href="http://localhost:5173/admin/orders" dir="ltr" style="color:#5B6478;word-break:break-all;">http://localhost:5173/admin/orders</a>
+    </td>
+  </tr>
+</table>
+</div>
+          </td>
+        </tr>
+        <!-- footer -->
+        <tr>
+          <td align="center" class="px" style="background-color:#0A1128;padding:24px 32px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:13px;line-height:1.8;color:#F4EFE6;">
+            <a href="https://youtube.com/@almoaberafatema" style="color:#D4AF37;text-decoration:none;font-weight:600;">شاهد القناة على يوتيوب</a>
+            <div style="margin-top:6px;">
+              <span>للتواصل معنا:</span>
+              <a href="mailto:support@saadatu-aldarein.com" style="color:#D4AF37;text-decoration:none;">support@saadatu-aldarein.com</a>
+            </div>
+            <div style="margin-top:12px;font-size:12px;line-height:1.7;color:#AEB4C2;">وصلتك هذه الرسالة لأنها تخص حسابك لدينا.</div>
+            <div style="margin-top:6px;font-size:12px;color:#AEB4C2;">&copy; <span>2026</span> <span>إلى سعادة الدارين</span></div>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
+</body>
+</html>
+
+20:24:01.266 INFO  [Test worker] [] com.saadat.mail.MailService - SMTP not configured — e-mail 'payment-suspicious' to i***@example.com (subject: طلب دفع يحتاج إلى مراجعة 064eab95-f031-4d52-a386-4f72467de6ad):
+<!DOCTYPE html>
+
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="x-apple-disable-message-reformatting">
+  <meta name="color-scheme" content="light">
+  <meta name="supported-color-schemes" content="light">
+  <title>طلب دفع يحتاج إلى مراجعة 064eab95-f031-4d52-a386-4f72467de6ad</title>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;600&amp;display=swap" rel="stylesheet">
+  <style>
+    body, table, td, p, a, div, span, strong { font-family: 'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif; }
+    a { color: #0A1128; }
+    @media only screen and (max-width: 620px) {
+      .container { width: 100% !important; }
+      .px { padding-left: 20px !important; padding-right: 20px !important; }
+    }
+  </style>
+</head>
+<body style="margin:0;padding:0;background-color:#F4EFE6;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;" dir="rtl">
+<div style="display:none;max-height:0;max-width:0;overflow:hidden;mso-hide:all;font-size:1px;line-height:1px;color:#F4EFE6;opacity:0;">لم يُضف أي رصيد لهذا الطلب حتى تتم مراجعته.</div>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#F4EFE6;border-collapse:collapse;" dir="rtl">
+  <tr>
+    <td align="center" style="padding:24px 12px;">
+      <table role="presentation" class="container" width="600" cellpadding="0" cellspacing="0" border="0"
+             style="width:600px;max-width:600px;border-collapse:separate;border:1px solid #E6DCC8;border-radius:16px;overflow:hidden;background-color:#F4EFE6;">
+        <!-- header band -->
+        <tr>
+          <td align="center" class="px" style="background-color:#0A1128;padding:28px 32px 22px 32px;">
+            <div style="font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:22px;line-height:1.4;font-weight:600;color:#D4AF37;">إلى سعادة الدارين</div>
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" style="margin:12px auto 10px auto;">
+              <tr><td width="72" height="2" style="width:72px;height:2px;line-height:2px;font-size:0;background-color:#D4AF37;">&nbsp;</td></tr>
+            </table>
+            <div style="font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:13px;line-height:1.6;color:#F4EFE6;">تفسير الرؤى بوضوح وعمق نحو سعادة الدارين</div>
+          </td>
+        </tr>
+        <!-- content -->
+        <tr>
+          <td class="px" style="padding:32px 36px 28px 36px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:16px;line-height:1.9;color:#0A1128;background-color:#F4EFE6;" dir="rtl" align="right">
+            <div>
+  <p style="margin:0 0 18px 0;font-size:18px;line-height:1.7;font-weight:600;color:#0A1128;">السلام عليكم <span>interpreter</span>،</p>
+  <p style="margin:0 0 16px 0;">طلب دفع يحتاج إلى مراجعتك قبل إضافة الرصيد. لم يُضف أي رصيد لهذا الطلب.</p>
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:4px 0 8px 0;border-collapse:collapse;background-color:#FFFFFF;border:1px solid #E6DCC8;border-radius:12px;">
+    <tr>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;">رقم الطلب</td>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;">064eab95-f031-4d52-a386-4f72467de6ad</td>
+    </tr>
+    <tr>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;">المستخدم</td>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;">country</td>
+    </tr>
+    <tr>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;">البريد</td>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;">country-8d5d59a2-09af-498e-8523-5a2ee8d513e4@example.com</td>
+    </tr>
+    <tr>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;">المبلغ</td>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;">49.00 SAR</td>
+    </tr>
+    <tr>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;">السبب</td>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;">CARD_COUNTRY_MISMATCH</td>
+    </tr>
+  </table>
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
+       style="margin:28px 0 8px 0;border-collapse:collapse;">
+  <tr>
+    <td align="center">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center">
+        <tr>
+          <td align="center" bgcolor="#D4AF37" style="border-radius:999px;background-color:#D4AF37;">
+            <a href="http://localhost:5173/admin/orders" target="_blank"
+               style="display:inline-block;padding:14px 38px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:16px;line-height:1.2;font-weight:600;color:#0A1128;text-decoration:none;border-radius:999px;">مراجعة الطلب</a>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+  <tr>
+    <td align="center" style="padding-top:14px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:12px;line-height:1.6;color:#5B6478;">
+      <span>إذا لم يعمل الزر، انسخ هذا الرابط في المتصفح:</span><br>
+      <a href="http://localhost:5173/admin/orders" dir="ltr" style="color:#5B6478;word-break:break-all;">http://localhost:5173/admin/orders</a>
+    </td>
+  </tr>
+</table>
+</div>
+          </td>
+        </tr>
+        <!-- footer -->
+        <tr>
+          <td align="center" class="px" style="background-color:#0A1128;padding:24px 32px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:13px;line-height:1.8;color:#F4EFE6;">
+            <a href="https://youtube.com/@almoaberafatema" style="color:#D4AF37;text-decoration:none;font-weight:600;">شاهد القناة على يوتيوب</a>
+            <div style="margin-top:6px;">
+              <span>للتواصل معنا:</span>
+              <a href="mailto:support@saadatu-aldarein.com" style="color:#D4AF37;text-decoration:none;">support@saadatu-aldarein.com</a>
+            </div>
+            <div style="margin-top:12px;font-size:12px;line-height:1.7;color:#AEB4C2;">وصلتك هذه الرسالة لأنها تخص حسابك لدينا.</div>
+            <div style="margin-top:6px;font-size:12px;color:#AEB4C2;">&copy; <span>2026</span> <span>إلى سعادة الدارين</span></div>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
+</body>
+</html>
+
+20:24:01.268 INFO  [Test worker] [] com.saadat.mail.MailService - SMTP not configured — e-mail 'payment-suspicious' to f***@saadatu-aldarein.com (subject: طلب دفع يحتاج إلى مراجعة 064eab95-f031-4d52-a386-4f72467de6ad):
+<!DOCTYPE html>
+
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="x-apple-disable-message-reformatting">
+  <meta name="color-scheme" content="light">
+  <meta name="supported-color-schemes" content="light">
+  <title>طلب دفع يحتاج إلى مراجعة 064eab95-f031-4d52-a386-4f72467de6ad</title>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;600&amp;display=swap" rel="stylesheet">
+  <style>
+    body, table, td, p, a, div, span, strong { font-family: 'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif; }
+    a { color: #0A1128; }
+    @media only screen and (max-width: 620px) {
+      .container { width: 100% !important; }
+      .px { padding-left: 20px !important; padding-right: 20px !important; }
+    }
+  </style>
+</head>
+<body style="margin:0;padding:0;background-color:#F4EFE6;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;" dir="rtl">
+<div style="display:none;max-height:0;max-width:0;overflow:hidden;mso-hide:all;font-size:1px;line-height:1px;color:#F4EFE6;opacity:0;">لم يُضف أي رصيد لهذا الطلب حتى تتم مراجعته.</div>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#F4EFE6;border-collapse:collapse;" dir="rtl">
+  <tr>
+    <td align="center" style="padding:24px 12px;">
+      <table role="presentation" class="container" width="600" cellpadding="0" cellspacing="0" border="0"
+             style="width:600px;max-width:600px;border-collapse:separate;border:1px solid #E6DCC8;border-radius:16px;overflow:hidden;background-color:#F4EFE6;">
+        <!-- header band -->
+        <tr>
+          <td align="center" class="px" style="background-color:#0A1128;padding:28px 32px 22px 32px;">
+            <div style="font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:22px;line-height:1.4;font-weight:600;color:#D4AF37;">إلى سعادة الدارين</div>
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" style="margin:12px auto 10px auto;">
+              <tr><td width="72" height="2" style="width:72px;height:2px;line-height:2px;font-size:0;background-color:#D4AF37;">&nbsp;</td></tr>
+            </table>
+            <div style="font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:13px;line-height:1.6;color:#F4EFE6;">تفسير الرؤى بوضوح وعمق نحو سعادة الدارين</div>
+          </td>
+        </tr>
+        <!-- content -->
+        <tr>
+          <td class="px" style="padding:32px 36px 28px 36px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:16px;line-height:1.9;color:#0A1128;background-color:#F4EFE6;" dir="rtl" align="right">
+            <div>
+  <p style="margin:0 0 18px 0;font-size:18px;line-height:1.7;font-weight:600;color:#0A1128;">السلام عليكم،</p>
+  <p style="margin:0 0 16px 0;">طلب دفع يحتاج إلى مراجعتك قبل إضافة الرصيد. لم يُضف أي رصيد لهذا الطلب.</p>
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:4px 0 8px 0;border-collapse:collapse;background-color:#FFFFFF;border:1px solid #E6DCC8;border-radius:12px;">
+    <tr>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;">رقم الطلب</td>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;">064eab95-f031-4d52-a386-4f72467de6ad</td>
+    </tr>
+    <tr>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;">المستخدم</td>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;">country</td>
+    </tr>
+    <tr>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;">البريد</td>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;">country-8d5d59a2-09af-498e-8523-5a2ee8d513e4@example.com</td>
+    </tr>
+    <tr>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;">المبلغ</td>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;">49.00 SAR</td>
+    </tr>
+    <tr>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;">السبب</td>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;">CARD_COUNTRY_MISMATCH</td>
+    </tr>
+  </table>
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
+       style="margin:28px 0 8px 0;border-collapse:collapse;">
+  <tr>
+    <td align="center">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center">
+        <tr>
+          <td align="center" bgcolor="#D4AF37" style="border-radius:999px;background-color:#D4AF37;">
+            <a href="http://localhost:5173/admin/orders" target="_blank"
+               style="display:inline-block;padding:14px 38px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:16px;line-height:1.2;font-weight:600;color:#0A1128;text-decoration:none;border-radius:999px;">مراجعة الطلب</a>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+  <tr>
+    <td align="center" style="padding-top:14px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:12px;line-height:1.6;color:#5B6478;">
+      <span>إذا لم يعمل الزر، انسخ هذا الرابط في المتصفح:</span><br>
+      <a href="http://localhost:5173/admin/orders" dir="ltr" style="color:#5B6478;word-break:break-all;">http://localhost:5173/admin/orders</a>
+    </td>
+  </tr>
+</table>
+</div>
+          </td>
+        </tr>
+        <!-- footer -->
+        <tr>
+          <td align="center" class="px" style="background-color:#0A1128;padding:24px 32px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:13px;line-height:1.8;color:#F4EFE6;">
+            <a href="https://youtube.com/@almoaberafatema" style="color:#D4AF37;text-decoration:none;font-weight:600;">شاهد القناة على يوتيوب</a>
+            <div style="margin-top:6px;">
+              <span>للتواصل معنا:</span>
+              <a href="mailto:support@saadatu-aldarein.com" style="color:#D4AF37;text-decoration:none;">support@saadatu-aldarein.com</a>
+            </div>
+            <div style="margin-top:12px;font-size:12px;line-height:1.7;color:#AEB4C2;">وصلتك هذه الرسالة لأنها تخص حسابك لدينا.</div>
+            <div style="margin-top:6px;font-size:12px;color:#AEB4C2;">&copy; <span>2026</span> <span>إلى سعادة الدارين</span></div>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
+</body>
+</html>
+
+20:24:01.270 INFO  [Test worker] [] com.saadat.mail.MailService - SMTP not configured — e-mail 'payment-suspicious' to i***@example.com (subject: طلب دفع يحتاج إلى مراجعة 064eab95-f031-4d52-a386-4f72467de6ad):
+<!DOCTYPE html>
+
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="x-apple-disable-message-reformatting">
+  <meta name="color-scheme" content="light">
+  <meta name="supported-color-schemes" content="light">
+  <title>طلب دفع يحتاج إلى مراجعة 064eab95-f031-4d52-a386-4f72467de6ad</title>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;600&amp;display=swap" rel="stylesheet">
+  <style>
+    body, table, td, p, a, div, span, strong { font-family: 'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif; }
+    a { color: #0A1128; }
+    @media only screen and (max-width: 620px) {
+      .container { width: 100% !important; }
+      .px { padding-left: 20px !important; padding-right: 20px !important; }
+    }
+  </style>
+</head>
+<body style="margin:0;padding:0;background-color:#F4EFE6;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;" dir="rtl">
+<div style="display:none;max-height:0;max-width:0;overflow:hidden;mso-hide:all;font-size:1px;line-height:1px;color:#F4EFE6;opacity:0;">لم يُضف أي رصيد لهذا الطلب حتى تتم مراجعته.</div>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#F4EFE6;border-collapse:collapse;" dir="rtl">
+  <tr>
+    <td align="center" style="padding:24px 12px;">
+      <table role="presentation" class="container" width="600" cellpadding="0" cellspacing="0" border="0"
+             style="width:600px;max-width:600px;border-collapse:separate;border:1px solid #E6DCC8;border-radius:16px;overflow:hidden;background-color:#F4EFE6;">
+        <!-- header band -->
+        <tr>
+          <td align="center" class="px" style="background-color:#0A1128;padding:28px 32px 22px 32px;">
+            <div style="font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:22px;line-height:1.4;font-weight:600;color:#D4AF37;">إلى سعادة الدارين</div>
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" style="margin:12px auto 10px auto;">
+              <tr><td width="72" height="2" style="width:72px;height:2px;line-height:2px;font-size:0;background-color:#D4AF37;">&nbsp;</td></tr>
+            </table>
+            <div style="font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:13px;line-height:1.6;color:#F4EFE6;">تفسير الرؤى بوضوح وعمق نحو سعادة الدارين</div>
+          </td>
+        </tr>
+        <!-- content -->
+        <tr>
+          <td class="px" style="padding:32px 36px 28px 36px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:16px;line-height:1.9;color:#0A1128;background-color:#F4EFE6;" dir="rtl" align="right">
+            <div>
+  <p style="margin:0 0 18px 0;font-size:18px;line-height:1.7;font-weight:600;color:#0A1128;">السلام عليكم <span>interp</span>،</p>
+  <p style="margin:0 0 16px 0;">طلب دفع يحتاج إلى مراجعتك قبل إضافة الرصيد. لم يُضف أي رصيد لهذا الطلب.</p>
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:4px 0 8px 0;border-collapse:collapse;background-color:#FFFFFF;border:1px solid #E6DCC8;border-radius:12px;">
+    <tr>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;">رقم الطلب</td>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;">064eab95-f031-4d52-a386-4f72467de6ad</td>
+    </tr>
+    <tr>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;">المستخدم</td>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;">country</td>
+    </tr>
+    <tr>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;">البريد</td>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;">country-8d5d59a2-09af-498e-8523-5a2ee8d513e4@example.com</td>
+    </tr>
+    <tr>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;">المبلغ</td>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;">49.00 SAR</td>
+    </tr>
+    <tr>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;">السبب</td>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;">CARD_COUNTRY_MISMATCH</td>
+    </tr>
+  </table>
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
+       style="margin:28px 0 8px 0;border-collapse:collapse;">
+  <tr>
+    <td align="center">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center">
+        <tr>
+          <td align="center" bgcolor="#D4AF37" style="border-radius:999px;background-color:#D4AF37;">
+            <a href="http://localhost:5173/admin/orders" target="_blank"
+               style="display:inline-block;padding:14px 38px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:16px;line-height:1.2;font-weight:600;color:#0A1128;text-decoration:none;border-radius:999px;">مراجعة الطلب</a>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+  <tr>
+    <td align="center" style="padding-top:14px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:12px;line-height:1.6;color:#5B6478;">
+      <span>إذا لم يعمل الزر، انسخ هذا الرابط في المتصفح:</span><br>
+      <a href="http://localhost:5173/admin/orders" dir="ltr" style="color:#5B6478;word-break:break-all;">http://localhost:5173/admin/orders</a>
+    </td>
+  </tr>
+</table>
+</div>
+          </td>
+        </tr>
+        <!-- footer -->
+        <tr>
+          <td align="center" class="px" style="background-color:#0A1128;padding:24px 32px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:13px;line-height:1.8;color:#F4EFE6;">
+            <a href="https://youtube.com/@almoaberafatema" style="color:#D4AF37;text-decoration:none;font-weight:600;">شاهد القناة على يوتيوب</a>
+            <div style="margin-top:6px;">
+              <span>للتواصل معنا:</span>
+              <a href="mailto:support@saadatu-aldarein.com" style="color:#D4AF37;text-decoration:none;">support@saadatu-aldarein.com</a>
+            </div>
+            <div style="margin-top:12px;font-size:12px;line-height:1.7;color:#AEB4C2;">وصلتك هذه الرسالة لأنها تخص حسابك لدينا.</div>
+            <div style="margin-top:6px;font-size:12px;color:#AEB4C2;">&copy; <span>2026</span> <span>إلى سعادة الدارين</span></div>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
+</body>
+</html>
+
+20:24:01.271 INFO  [Test worker] [] com.saadat.mail.MailService - SMTP not configured — e-mail 'payment-suspicious' to i***@example.com (subject: طلب دفع يحتاج إلى مراجعة 064eab95-f031-4d52-a386-4f72467de6ad):
+<!DOCTYPE html>
+
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="x-apple-disable-message-reformatting">
+  <meta name="color-scheme" content="light">
+  <meta name="supported-color-schemes" content="light">
+  <title>طلب دفع يحتاج إلى مراجعة 064eab95-f031-4d52-a386-4f72467de6ad</title>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;600&amp;display=swap" rel="stylesheet">
+  <style>
+    body, table, td, p, a, div, span, strong { font-family: 'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif; }
+    a { color: #0A1128; }
+    @media only screen and (max-width: 620px) {
+      .container { width: 100% !important; }
+      .px { padding-left: 20px !important; padding-right: 20px !important; }
+    }
+  </style>
+</head>
+<body style="margin:0;padding:0;background-color:#F4EFE6;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;" dir="rtl">
+<div style="display:none;max-height:0;max-width:0;overflow:hidden;mso-hide:all;font-size:1px;line-height:1px;color:#F4EFE6;opacity:0;">لم يُضف أي رصيد لهذا الطلب حتى تتم مراجعته.</div>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#F4EFE6;border-collapse:collapse;" dir="rtl">
+  <tr>
+    <td align="center" style="padding:24px 12px;">
+      <table role="presentation" class="container" width="600" cellpadding="0" cellspacing="0" border="0"
+             style="width:600px;max-width:600px;border-collapse:separate;border:1px solid #E6DCC8;border-radius:16px;overflow:hidden;background-color:#F4EFE6;">
+        <!-- header band -->
+        <tr>
+          <td align="center" class="px" style="background-color:#0A1128;padding:28px 32px 22px 32px;">
+            <div style="font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:22px;line-height:1.4;font-weight:600;color:#D4AF37;">إلى سعادة الدارين</div>
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" style="margin:12px auto 10px auto;">
+              <tr><td width="72" height="2" style="width:72px;height:2px;line-height:2px;font-size:0;background-color:#D4AF37;">&nbsp;</td></tr>
+            </table>
+            <div style="font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:13px;line-height:1.6;color:#F4EFE6;">تفسير الرؤى بوضوح وعمق نحو سعادة الدارين</div>
+          </td>
+        </tr>
+        <!-- content -->
+        <tr>
+          <td class="px" style="padding:32px 36px 28px 36px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:16px;line-height:1.9;color:#0A1128;background-color:#F4EFE6;" dir="rtl" align="right">
+            <div>
+  <p style="margin:0 0 18px 0;font-size:18px;line-height:1.7;font-weight:600;color:#0A1128;">السلام عليكم <span>interp</span>،</p>
+  <p style="margin:0 0 16px 0;">طلب دفع يحتاج إلى مراجعتك قبل إضافة الرصيد. لم يُضف أي رصيد لهذا الطلب.</p>
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:4px 0 8px 0;border-collapse:collapse;background-color:#FFFFFF;border:1px solid #E6DCC8;border-radius:12px;">
+    <tr>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;">رقم الطلب</td>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;">064eab95-f031-4d52-a386-4f72467de6ad</td>
+    </tr>
+    <tr>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;">المستخدم</td>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;">country</td>
+    </tr>
+    <tr>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;">البريد</td>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;">country-8d5d59a2-09af-498e-8523-5a2ee8d513e4@example.com</td>
+    </tr>
+    <tr>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;">المبلغ</td>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;">49.00 SAR</td>
+    </tr>
+    <tr>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;">السبب</td>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;">CARD_COUNTRY_MISMATCH</td>
+    </tr>
+  </table>
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
+       style="margin:28px 0 8px 0;border-collapse:collapse;">
+  <tr>
+    <td align="center">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center">
+        <tr>
+          <td align="center" bgcolor="#D4AF37" style="border-radius:999px;background-color:#D4AF37;">
+            <a href="http://localhost:5173/admin/orders" target="_blank"
+               style="display:inline-block;padding:14px 38px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:16px;line-height:1.2;font-weight:600;color:#0A1128;text-decoration:none;border-radius:999px;">مراجعة الطلب</a>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+  <tr>
+    <td align="center" style="padding-top:14px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:12px;line-height:1.6;color:#5B6478;">
+      <span>إذا لم يعمل الزر، انسخ هذا الرابط في المتصفح:</span><br>
+      <a href="http://localhost:5173/admin/orders" dir="ltr" style="color:#5B6478;word-break:break-all;">http://localhost:5173/admin/orders</a>
+    </td>
+  </tr>
+</table>
+</div>
+          </td>
+        </tr>
+        <!-- footer -->
+        <tr>
+          <td align="center" class="px" style="background-color:#0A1128;padding:24px 32px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:13px;line-height:1.8;color:#F4EFE6;">
+            <a href="https://youtube.com/@almoaberafatema" style="color:#D4AF37;text-decoration:none;font-weight:600;">شاهد القناة على يوتيوب</a>
+            <div style="margin-top:6px;">
+              <span>للتواصل معنا:</span>
+              <a href="mailto:support@saadatu-aldarein.com" style="color:#D4AF37;text-decoration:none;">support@saadatu-aldarein.com</a>
+            </div>
+            <div style="margin-top:12px;font-size:12px;line-height:1.7;color:#AEB4C2;">وصلتك هذه الرسالة لأنها تخص حسابك لدينا.</div>
+            <div style="margin-top:6px;font-size:12px;color:#AEB4C2;">&copy; <span>2026</span> <span>إلى سعادة الدارين</span></div>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
+</body>
+</html>
+
+20:24:01.273 INFO  [Test worker] [] com.saadat.mail.MailService - SMTP not configured — e-mail 'payment-suspicious' to i***@example.com (subject: طلب دفع يحتاج إلى مراجعة 064eab95-f031-4d52-a386-4f72467de6ad):
+<!DOCTYPE html>
+
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="x-apple-disable-message-reformatting">
+  <meta name="color-scheme" content="light">
+  <meta name="supported-color-schemes" content="light">
+  <title>طلب دفع يحتاج إلى مراجعة 064eab95-f031-4d52-a386-4f72467de6ad</title>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;600&amp;display=swap" rel="stylesheet">
+  <style>
+    body, table, td, p, a, div, span, strong { font-family: 'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif; }
+    a { color: #0A1128; }
+    @media only screen and (max-width: 620px) {
+      .container { width: 100% !important; }
+      .px { padding-left: 20px !important; padding-right: 20px !important; }
+    }
+  </style>
+</head>
+<body style="margin:0;padding:0;background-color:#F4EFE6;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;" dir="rtl">
+<div style="display:none;max-height:0;max-width:0;overflow:hidden;mso-hide:all;font-size:1px;line-height:1px;color:#F4EFE6;opacity:0;">لم يُضف أي رصيد لهذا الطلب حتى تتم مراجعته.</div>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#F4EFE6;border-collapse:collapse;" dir="rtl">
+  <tr>
+    <td align="center" style="padding:24px 12px;">
+      <table role="presentation" class="container" width="600" cellpadding="0" cellspacing="0" border="0"
+             style="width:600px;max-width:600px;border-collapse:separate;border:1px solid #E6DCC8;border-radius:16px;overflow:hidden;background-color:#F4EFE6;">
+        <!-- header band -->
+        <tr>
+          <td align="center" class="px" style="background-color:#0A1128;padding:28px 32px 22px 32px;">
+            <div style="font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:22px;line-height:1.4;font-weight:600;color:#D4AF37;">إلى سعادة الدارين</div>
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" style="margin:12px auto 10px auto;">
+              <tr><td width="72" height="2" style="width:72px;height:2px;line-height:2px;font-size:0;background-color:#D4AF37;">&nbsp;</td></tr>
+            </table>
+            <div style="font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:13px;line-height:1.6;color:#F4EFE6;">تفسير الرؤى بوضوح وعمق نحو سعادة الدارين</div>
+          </td>
+        </tr>
+        <!-- content -->
+        <tr>
+          <td class="px" style="padding:32px 36px 28px 36px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:16px;line-height:1.9;color:#0A1128;background-color:#F4EFE6;" dir="rtl" align="right">
+            <div>
+  <p style="margin:0 0 18px 0;font-size:18px;line-height:1.7;font-weight:600;color:#0A1128;">السلام عليكم <span>interp</span>،</p>
+  <p style="margin:0 0 16px 0;">طلب دفع يحتاج إلى مراجعتك قبل إضافة الرصيد. لم يُضف أي رصيد لهذا الطلب.</p>
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:4px 0 8px 0;border-collapse:collapse;background-color:#FFFFFF;border:1px solid #E6DCC8;border-radius:12px;">
+    <tr>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;">رقم الطلب</td>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;">064eab95-f031-4d52-a386-4f72467de6ad</td>
+    </tr>
+    <tr>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;">المستخدم</td>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;">country</td>
+    </tr>
+    <tr>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;">البريد</td>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;">country-8d5d59a2-09af-498e-8523-5a2ee8d513e4@example.com</td>
+    </tr>
+    <tr>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;">المبلغ</td>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;">49.00 SAR</td>
+    </tr>
+    <tr>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;">السبب</td>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;">CARD_COUNTRY_MISMATCH</td>
+    </tr>
+  </table>
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
+       style="margin:28px 0 8px 0;border-collapse:collapse;">
+  <tr>
+    <td align="center">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center">
+        <tr>
+          <td align="center" bgcolor="#D4AF37" style="border-radius:999px;background-color:#D4AF37;">
+            <a href="http://localhost:5173/admin/orders" target="_blank"
+               style="display:inline-block;padding:14px 38px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:16px;line-height:1.2;font-weight:600;color:#0A1128;text-decoration:none;border-radius:999px;">مراجعة الطلب</a>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+  <tr>
+    <td align="center" style="padding-top:14px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:12px;line-height:1.6;color:#5B6478;">
+      <span>إذا لم يعمل الزر، انسخ هذا الرابط في المتصفح:</span><br>
+      <a href="http://localhost:5173/admin/orders" dir="ltr" style="color:#5B6478;word-break:break-all;">http://localhost:5173/admin/orders</a>
+    </td>
+  </tr>
+</table>
+</div>
+          </td>
+        </tr>
+        <!-- footer -->
+        <tr>
+          <td align="center" class="px" style="background-color:#0A1128;padding:24px 32px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:13px;line-height:1.8;color:#F4EFE6;">
+            <a href="https://youtube.com/@almoaberafatema" style="color:#D4AF37;text-decoration:none;font-weight:600;">شاهد القناة على يوتيوب</a>
+            <div style="margin-top:6px;">
+              <span>للتواصل معنا:</span>
+              <a href="mailto:support@saadatu-aldarein.com" style="color:#D4AF37;text-decoration:none;">support@saadatu-aldarein.com</a>
+            </div>
+            <div style="margin-top:12px;font-size:12px;line-height:1.7;color:#AEB4C2;">وصلتك هذه الرسالة لأنها تخص حسابك لدينا.</div>
+            <div style="margin-top:6px;font-size:12px;color:#AEB4C2;">&copy; <span>2026</span> <span>إلى سعادة الدارين</span></div>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
+</body>
+</html>
+
+20:24:01.342 WARN  [Test worker] [] c.s.payments.service.PaymentService - Order 01459bd9-823e-4798-bae7-bf0a3a32968e marked SUSPICIOUS: AMOUNT_OR_CURRENCY_MISMATCH
+20:24:01.354 INFO  [Test worker] [] com.saadat.mail.MailService - SMTP not configured — e-mail 'payment-suspicious' to i***@example.com (subject: طلب دفع يحتاج إلى مراجعة 01459bd9-823e-4798-bae7-bf0a3a32968e):
+<!DOCTYPE html>
+
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="x-apple-disable-message-reformatting">
+  <meta name="color-scheme" content="light">
+  <meta name="supported-color-schemes" content="light">
+  <title>طلب دفع يحتاج إلى مراجعة 01459bd9-823e-4798-bae7-bf0a3a32968e</title>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;600&amp;display=swap" rel="stylesheet">
+  <style>
+    body, table, td, p, a, div, span, strong { font-family: 'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif; }
+    a { color: #0A1128; }
+    @media only screen and (max-width: 620px) {
+      .container { width: 100% !important; }
+      .px { padding-left: 20px !important; padding-right: 20px !important; }
+    }
+  </style>
+</head>
+<body style="margin:0;padding:0;background-color:#F4EFE6;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;" dir="rtl">
+<div style="display:none;max-height:0;max-width:0;overflow:hidden;mso-hide:all;font-size:1px;line-height:1px;color:#F4EFE6;opacity:0;">لم يُضف أي رصيد لهذا الطلب حتى تتم مراجعته.</div>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#F4EFE6;border-collapse:collapse;" dir="rtl">
+  <tr>
+    <td align="center" style="padding:24px 12px;">
+      <table role="presentation" class="container" width="600" cellpadding="0" cellspacing="0" border="0"
+             style="width:600px;max-width:600px;border-collapse:separate;border:1px solid #E6DCC8;border-radius:16px;overflow:hidden;background-color:#F4EFE6;">
+        <!-- header band -->
+        <tr>
+          <td align="center" class="px" style="background-color:#0A1128;padding:28px 32px 22px 32px;">
+            <div style="font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:22px;line-height:1.4;font-weight:600;color:#D4AF37;">إلى سعادة الدارين</div>
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" style="margin:12px auto 10px auto;">
+              <tr><td width="72" height="2" style="width:72px;height:2px;line-height:2px;font-size:0;background-color:#D4AF37;">&nbsp;</td></tr>
+            </table>
+            <div style="font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:13px;line-height:1.6;color:#F4EFE6;">تفسير الرؤى بوضوح وعمق نحو سعادة الدارين</div>
+          </td>
+        </tr>
+        <!-- content -->
+        <tr>
+          <td class="px" style="padding:32px 36px 28px 36px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:16px;line-height:1.9;color:#0A1128;background-color:#F4EFE6;" dir="rtl" align="right">
+            <div>
+  <p style="margin:0 0 18px 0;font-size:18px;line-height:1.7;font-weight:600;color:#0A1128;">السلام عليكم <span>interpreter</span>،</p>
+  <p style="margin:0 0 16px 0;">طلب دفع يحتاج إلى مراجعتك قبل إضافة الرصيد. لم يُضف أي رصيد لهذا الطلب.</p>
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:4px 0 8px 0;border-collapse:collapse;background-color:#FFFFFF;border:1px solid #E6DCC8;border-radius:12px;">
+    <tr>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;">رقم الطلب</td>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;">01459bd9-823e-4798-bae7-bf0a3a32968e</td>
+    </tr>
+    <tr>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;">المستخدم</td>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;">suspicious</td>
+    </tr>
+    <tr>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;">البريد</td>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;">suspicious-76421f5b-2ff1-4f3a-8e1d-bb75ed4295a0@example.com</td>
+    </tr>
+    <tr>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;">المبلغ</td>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;">48.00 SAR</td>
+    </tr>
+    <tr>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;">السبب</td>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;">AMOUNT_OR_CURRENCY_MISMATCH</td>
+    </tr>
+  </table>
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
+       style="margin:28px 0 8px 0;border-collapse:collapse;">
+  <tr>
+    <td align="center">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center">
+        <tr>
+          <td align="center" bgcolor="#D4AF37" style="border-radius:999px;background-color:#D4AF37;">
+            <a href="http://localhost:5173/admin/orders" target="_blank"
+               style="display:inline-block;padding:14px 38px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:16px;line-height:1.2;font-weight:600;color:#0A1128;text-decoration:none;border-radius:999px;">مراجعة الطلب</a>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+  <tr>
+    <td align="center" style="padding-top:14px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:12px;line-height:1.6;color:#5B6478;">
+      <span>إذا لم يعمل الزر، انسخ هذا الرابط في المتصفح:</span><br>
+      <a href="http://localhost:5173/admin/orders" dir="ltr" style="color:#5B6478;word-break:break-all;">http://localhost:5173/admin/orders</a>
+    </td>
+  </tr>
+</table>
+</div>
+          </td>
+        </tr>
+        <!-- footer -->
+        <tr>
+          <td align="center" class="px" style="background-color:#0A1128;padding:24px 32px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:13px;line-height:1.8;color:#F4EFE6;">
+            <a href="https://youtube.com/@almoaberafatema" style="color:#D4AF37;text-decoration:none;font-weight:600;">شاهد القناة على يوتيوب</a>
+            <div style="margin-top:6px;">
+              <span>للتواصل معنا:</span>
+              <a href="mailto:support@saadatu-aldarein.com" style="color:#D4AF37;text-decoration:none;">support@saadatu-aldarein.com</a>
+            </div>
+            <div style="margin-top:12px;font-size:12px;line-height:1.7;color:#AEB4C2;">وصلتك هذه الرسالة لأنها تخص حسابك لدينا.</div>
+            <div style="margin-top:6px;font-size:12px;color:#AEB4C2;">&copy; <span>2026</span> <span>إلى سعادة الدارين</span></div>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
+</body>
+</html>
+
+20:24:01.355 INFO  [Test worker] [] com.saadat.mail.MailService - SMTP not configured — e-mail 'payment-suspicious' to i***@example.com (subject: طلب دفع يحتاج إلى مراجعة 01459bd9-823e-4798-bae7-bf0a3a32968e):
+<!DOCTYPE html>
+
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="x-apple-disable-message-reformatting">
+  <meta name="color-scheme" content="light">
+  <meta name="supported-color-schemes" content="light">
+  <title>طلب دفع يحتاج إلى مراجعة 01459bd9-823e-4798-bae7-bf0a3a32968e</title>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;600&amp;display=swap" rel="stylesheet">
+  <style>
+    body, table, td, p, a, div, span, strong { font-family: 'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif; }
+    a { color: #0A1128; }
+    @media only screen and (max-width: 620px) {
+      .container { width: 100% !important; }
+      .px { padding-left: 20px !important; padding-right: 20px !important; }
+    }
+  </style>
+</head>
+<body style="margin:0;padding:0;background-color:#F4EFE6;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;" dir="rtl">
+<div style="display:none;max-height:0;max-width:0;overflow:hidden;mso-hide:all;font-size:1px;line-height:1px;color:#F4EFE6;opacity:0;">لم يُضف أي رصيد لهذا الطلب حتى تتم مراجعته.</div>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#F4EFE6;border-collapse:collapse;" dir="rtl">
+  <tr>
+    <td align="center" style="padding:24px 12px;">
+      <table role="presentation" class="container" width="600" cellpadding="0" cellspacing="0" border="0"
+             style="width:600px;max-width:600px;border-collapse:separate;border:1px solid #E6DCC8;border-radius:16px;overflow:hidden;background-color:#F4EFE6;">
+        <!-- header band -->
+        <tr>
+          <td align="center" class="px" style="background-color:#0A1128;padding:28px 32px 22px 32px;">
+            <div style="font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:22px;line-height:1.4;font-weight:600;color:#D4AF37;">إلى سعادة الدارين</div>
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" style="margin:12px auto 10px auto;">
+              <tr><td width="72" height="2" style="width:72px;height:2px;line-height:2px;font-size:0;background-color:#D4AF37;">&nbsp;</td></tr>
+            </table>
+            <div style="font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:13px;line-height:1.6;color:#F4EFE6;">تفسير الرؤى بوضوح وعمق نحو سعادة الدارين</div>
+          </td>
+        </tr>
+        <!-- content -->
+        <tr>
+          <td class="px" style="padding:32px 36px 28px 36px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:16px;line-height:1.9;color:#0A1128;background-color:#F4EFE6;" dir="rtl" align="right">
+            <div>
+  <p style="margin:0 0 18px 0;font-size:18px;line-height:1.7;font-weight:600;color:#0A1128;">السلام عليكم <span>interpreter</span>،</p>
+  <p style="margin:0 0 16px 0;">طلب دفع يحتاج إلى مراجعتك قبل إضافة الرصيد. لم يُضف أي رصيد لهذا الطلب.</p>
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:4px 0 8px 0;border-collapse:collapse;background-color:#FFFFFF;border:1px solid #E6DCC8;border-radius:12px;">
+    <tr>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;">رقم الطلب</td>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;">01459bd9-823e-4798-bae7-bf0a3a32968e</td>
+    </tr>
+    <tr>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;">المستخدم</td>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;">suspicious</td>
+    </tr>
+    <tr>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;">البريد</td>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;">suspicious-76421f5b-2ff1-4f3a-8e1d-bb75ed4295a0@example.com</td>
+    </tr>
+    <tr>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;">المبلغ</td>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;">48.00 SAR</td>
+    </tr>
+    <tr>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;">السبب</td>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;">AMOUNT_OR_CURRENCY_MISMATCH</td>
+    </tr>
+  </table>
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
+       style="margin:28px 0 8px 0;border-collapse:collapse;">
+  <tr>
+    <td align="center">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center">
+        <tr>
+          <td align="center" bgcolor="#D4AF37" style="border-radius:999px;background-color:#D4AF37;">
+            <a href="http://localhost:5173/admin/orders" target="_blank"
+               style="display:inline-block;padding:14px 38px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:16px;line-height:1.2;font-weight:600;color:#0A1128;text-decoration:none;border-radius:999px;">مراجعة الطلب</a>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+  <tr>
+    <td align="center" style="padding-top:14px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:12px;line-height:1.6;color:#5B6478;">
+      <span>إذا لم يعمل الزر، انسخ هذا الرابط في المتصفح:</span><br>
+      <a href="http://localhost:5173/admin/orders" dir="ltr" style="color:#5B6478;word-break:break-all;">http://localhost:5173/admin/orders</a>
+    </td>
+  </tr>
+</table>
+</div>
+          </td>
+        </tr>
+        <!-- footer -->
+        <tr>
+          <td align="center" class="px" style="background-color:#0A1128;padding:24px 32px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:13px;line-height:1.8;color:#F4EFE6;">
+            <a href="https://youtube.com/@almoaberafatema" style="color:#D4AF37;text-decoration:none;font-weight:600;">شاهد القناة على يوتيوب</a>
+            <div style="margin-top:6px;">
+              <span>للتواصل معنا:</span>
+              <a href="mailto:support@saadatu-aldarein.com" style="color:#D4AF37;text-decoration:none;">support@saadatu-aldarein.com</a>
+            </div>
+            <div style="margin-top:12px;font-size:12px;line-height:1.7;color:#AEB4C2;">وصلتك هذه الرسالة لأنها تخص حسابك لدينا.</div>
+            <div style="margin-top:6px;font-size:12px;color:#AEB4C2;">&copy; <span>2026</span> <span>إلى سعادة الدارين</span></div>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
+</body>
+</html>
+
+20:24:01.357 INFO  [Test worker] [] com.saadat.mail.MailService - SMTP not configured — e-mail 'payment-suspicious' to f***@saadatu-aldarein.com (subject: طلب دفع يحتاج إلى مراجعة 01459bd9-823e-4798-bae7-bf0a3a32968e):
+<!DOCTYPE html>
+
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="x-apple-disable-message-reformatting">
+  <meta name="color-scheme" content="light">
+  <meta name="supported-color-schemes" content="light">
+  <title>طلب دفع يحتاج إلى مراجعة 01459bd9-823e-4798-bae7-bf0a3a32968e</title>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;600&amp;display=swap" rel="stylesheet">
+  <style>
+    body, table, td, p, a, div, span, strong { font-family: 'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif; }
+    a { color: #0A1128; }
+    @media only screen and (max-width: 620px) {
+      .container { width: 100% !important; }
+      .px { padding-left: 20px !important; padding-right: 20px !important; }
+    }
+  </style>
+</head>
+<body style="margin:0;padding:0;background-color:#F4EFE6;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;" dir="rtl">
+<div style="display:none;max-height:0;max-width:0;overflow:hidden;mso-hide:all;font-size:1px;line-height:1px;color:#F4EFE6;opacity:0;">لم يُضف أي رصيد لهذا الطلب حتى تتم مراجعته.</div>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#F4EFE6;border-collapse:collapse;" dir="rtl">
+  <tr>
+    <td align="center" style="padding:24px 12px;">
+      <table role="presentation" class="container" width="600" cellpadding="0" cellspacing="0" border="0"
+             style="width:600px;max-width:600px;border-collapse:separate;border:1px solid #E6DCC8;border-radius:16px;overflow:hidden;background-color:#F4EFE6;">
+        <!-- header band -->
+        <tr>
+          <td align="center" class="px" style="background-color:#0A1128;padding:28px 32px 22px 32px;">
+            <div style="font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:22px;line-height:1.4;font-weight:600;color:#D4AF37;">إلى سعادة الدارين</div>
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" style="margin:12px auto 10px auto;">
+              <tr><td width="72" height="2" style="width:72px;height:2px;line-height:2px;font-size:0;background-color:#D4AF37;">&nbsp;</td></tr>
+            </table>
+            <div style="font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:13px;line-height:1.6;color:#F4EFE6;">تفسير الرؤى بوضوح وعمق نحو سعادة الدارين</div>
+          </td>
+        </tr>
+        <!-- content -->
+        <tr>
+          <td class="px" style="padding:32px 36px 28px 36px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:16px;line-height:1.9;color:#0A1128;background-color:#F4EFE6;" dir="rtl" align="right">
+            <div>
+  <p style="margin:0 0 18px 0;font-size:18px;line-height:1.7;font-weight:600;color:#0A1128;">السلام عليكم،</p>
+  <p style="margin:0 0 16px 0;">طلب دفع يحتاج إلى مراجعتك قبل إضافة الرصيد. لم يُضف أي رصيد لهذا الطلب.</p>
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:4px 0 8px 0;border-collapse:collapse;background-color:#FFFFFF;border:1px solid #E6DCC8;border-radius:12px;">
+    <tr>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;">رقم الطلب</td>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;">01459bd9-823e-4798-bae7-bf0a3a32968e</td>
+    </tr>
+    <tr>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;">المستخدم</td>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;">suspicious</td>
+    </tr>
+    <tr>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;">البريد</td>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;">suspicious-76421f5b-2ff1-4f3a-8e1d-bb75ed4295a0@example.com</td>
+    </tr>
+    <tr>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;">المبلغ</td>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;">48.00 SAR</td>
+    </tr>
+    <tr>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;">السبب</td>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;">AMOUNT_OR_CURRENCY_MISMATCH</td>
+    </tr>
+  </table>
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
+       style="margin:28px 0 8px 0;border-collapse:collapse;">
+  <tr>
+    <td align="center">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center">
+        <tr>
+          <td align="center" bgcolor="#D4AF37" style="border-radius:999px;background-color:#D4AF37;">
+            <a href="http://localhost:5173/admin/orders" target="_blank"
+               style="display:inline-block;padding:14px 38px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:16px;line-height:1.2;font-weight:600;color:#0A1128;text-decoration:none;border-radius:999px;">مراجعة الطلب</a>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+  <tr>
+    <td align="center" style="padding-top:14px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:12px;line-height:1.6;color:#5B6478;">
+      <span>إذا لم يعمل الزر، انسخ هذا الرابط في المتصفح:</span><br>
+      <a href="http://localhost:5173/admin/orders" dir="ltr" style="color:#5B6478;word-break:break-all;">http://localhost:5173/admin/orders</a>
+    </td>
+  </tr>
+</table>
+</div>
+          </td>
+        </tr>
+        <!-- footer -->
+        <tr>
+          <td align="center" class="px" style="background-color:#0A1128;padding:24px 32px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:13px;line-height:1.8;color:#F4EFE6;">
+            <a href="https://youtube.com/@almoaberafatema" style="color:#D4AF37;text-decoration:none;font-weight:600;">شاهد القناة على يوتيوب</a>
+            <div style="margin-top:6px;">
+              <span>للتواصل معنا:</span>
+              <a href="mailto:support@saadatu-aldarein.com" style="color:#D4AF37;text-decoration:none;">support@saadatu-aldarein.com</a>
+            </div>
+            <div style="margin-top:12px;font-size:12px;line-height:1.7;color:#AEB4C2;">وصلتك هذه الرسالة لأنها تخص حسابك لدينا.</div>
+            <div style="margin-top:6px;font-size:12px;color:#AEB4C2;">&copy; <span>2026</span> <span>إلى سعادة الدارين</span></div>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
+</body>
+</html>
+
+20:24:01.359 INFO  [Test worker] [] com.saadat.mail.MailService - SMTP not configured — e-mail 'payment-suspicious' to i***@example.com (subject: طلب دفع يحتاج إلى مراجعة 01459bd9-823e-4798-bae7-bf0a3a32968e):
+<!DOCTYPE html>
+
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="x-apple-disable-message-reformatting">
+  <meta name="color-scheme" content="light">
+  <meta name="supported-color-schemes" content="light">
+  <title>طلب دفع يحتاج إلى مراجعة 01459bd9-823e-4798-bae7-bf0a3a32968e</title>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;600&amp;display=swap" rel="stylesheet">
+  <style>
+    body, table, td, p, a, div, span, strong { font-family: 'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif; }
+    a { color: #0A1128; }
+    @media only screen and (max-width: 620px) {
+      .container { width: 100% !important; }
+      .px { padding-left: 20px !important; padding-right: 20px !important; }
+    }
+  </style>
+</head>
+<body style="margin:0;padding:0;background-color:#F4EFE6;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;" dir="rtl">
+<div style="display:none;max-height:0;max-width:0;overflow:hidden;mso-hide:all;font-size:1px;line-height:1px;color:#F4EFE6;opacity:0;">لم يُضف أي رصيد لهذا الطلب حتى تتم مراجعته.</div>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#F4EFE6;border-collapse:collapse;" dir="rtl">
+  <tr>
+    <td align="center" style="padding:24px 12px;">
+      <table role="presentation" class="container" width="600" cellpadding="0" cellspacing="0" border="0"
+             style="width:600px;max-width:600px;border-collapse:separate;border:1px solid #E6DCC8;border-radius:16px;overflow:hidden;background-color:#F4EFE6;">
+        <!-- header band -->
+        <tr>
+          <td align="center" class="px" style="background-color:#0A1128;padding:28px 32px 22px 32px;">
+            <div style="font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:22px;line-height:1.4;font-weight:600;color:#D4AF37;">إلى سعادة الدارين</div>
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" style="margin:12px auto 10px auto;">
+              <tr><td width="72" height="2" style="width:72px;height:2px;line-height:2px;font-size:0;background-color:#D4AF37;">&nbsp;</td></tr>
+            </table>
+            <div style="font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:13px;line-height:1.6;color:#F4EFE6;">تفسير الرؤى بوضوح وعمق نحو سعادة الدارين</div>
+          </td>
+        </tr>
+        <!-- content -->
+        <tr>
+          <td class="px" style="padding:32px 36px 28px 36px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:16px;line-height:1.9;color:#0A1128;background-color:#F4EFE6;" dir="rtl" align="right">
+            <div>
+  <p style="margin:0 0 18px 0;font-size:18px;line-height:1.7;font-weight:600;color:#0A1128;">السلام عليكم <span>interp</span>،</p>
+  <p style="margin:0 0 16px 0;">طلب دفع يحتاج إلى مراجعتك قبل إضافة الرصيد. لم يُضف أي رصيد لهذا الطلب.</p>
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:4px 0 8px 0;border-collapse:collapse;background-color:#FFFFFF;border:1px solid #E6DCC8;border-radius:12px;">
+    <tr>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;">رقم الطلب</td>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;">01459bd9-823e-4798-bae7-bf0a3a32968e</td>
+    </tr>
+    <tr>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;">المستخدم</td>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;">suspicious</td>
+    </tr>
+    <tr>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;">البريد</td>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;">suspicious-76421f5b-2ff1-4f3a-8e1d-bb75ed4295a0@example.com</td>
+    </tr>
+    <tr>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;">المبلغ</td>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;">48.00 SAR</td>
+    </tr>
+    <tr>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;">السبب</td>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;">AMOUNT_OR_CURRENCY_MISMATCH</td>
+    </tr>
+  </table>
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
+       style="margin:28px 0 8px 0;border-collapse:collapse;">
+  <tr>
+    <td align="center">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center">
+        <tr>
+          <td align="center" bgcolor="#D4AF37" style="border-radius:999px;background-color:#D4AF37;">
+            <a href="http://localhost:5173/admin/orders" target="_blank"
+               style="display:inline-block;padding:14px 38px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:16px;line-height:1.2;font-weight:600;color:#0A1128;text-decoration:none;border-radius:999px;">مراجعة الطلب</a>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+  <tr>
+    <td align="center" style="padding-top:14px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:12px;line-height:1.6;color:#5B6478;">
+      <span>إذا لم يعمل الزر، انسخ هذا الرابط في المتصفح:</span><br>
+      <a href="http://localhost:5173/admin/orders" dir="ltr" style="color:#5B6478;word-break:break-all;">http://localhost:5173/admin/orders</a>
+    </td>
+  </tr>
+</table>
+</div>
+          </td>
+        </tr>
+        <!-- footer -->
+        <tr>
+          <td align="center" class="px" style="background-color:#0A1128;padding:24px 32px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:13px;line-height:1.8;color:#F4EFE6;">
+            <a href="https://youtube.com/@almoaberafatema" style="color:#D4AF37;text-decoration:none;font-weight:600;">شاهد القناة على يوتيوب</a>
+            <div style="margin-top:6px;">
+              <span>للتواصل معنا:</span>
+              <a href="mailto:support@saadatu-aldarein.com" style="color:#D4AF37;text-decoration:none;">support@saadatu-aldarein.com</a>
+            </div>
+            <div style="margin-top:12px;font-size:12px;line-height:1.7;color:#AEB4C2;">وصلتك هذه الرسالة لأنها تخص حسابك لدينا.</div>
+            <div style="margin-top:6px;font-size:12px;color:#AEB4C2;">&copy; <span>2026</span> <span>إلى سعادة الدارين</span></div>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
+</body>
+</html>
+
+20:24:01.361 INFO  [Test worker] [] com.saadat.mail.MailService - SMTP not configured — e-mail 'payment-suspicious' to i***@example.com (subject: طلب دفع يحتاج إلى مراجعة 01459bd9-823e-4798-bae7-bf0a3a32968e):
+<!DOCTYPE html>
+
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="x-apple-disable-message-reformatting">
+  <meta name="color-scheme" content="light">
+  <meta name="supported-color-schemes" content="light">
+  <title>طلب دفع يحتاج إلى مراجعة 01459bd9-823e-4798-bae7-bf0a3a32968e</title>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;600&amp;display=swap" rel="stylesheet">
+  <style>
+    body, table, td, p, a, div, span, strong { font-family: 'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif; }
+    a { color: #0A1128; }
+    @media only screen and (max-width: 620px) {
+      .container { width: 100% !important; }
+      .px { padding-left: 20px !important; padding-right: 20px !important; }
+    }
+  </style>
+</head>
+<body style="margin:0;padding:0;background-color:#F4EFE6;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;" dir="rtl">
+<div style="display:none;max-height:0;max-width:0;overflow:hidden;mso-hide:all;font-size:1px;line-height:1px;color:#F4EFE6;opacity:0;">لم يُضف أي رصيد لهذا الطلب حتى تتم مراجعته.</div>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#F4EFE6;border-collapse:collapse;" dir="rtl">
+  <tr>
+    <td align="center" style="padding:24px 12px;">
+      <table role="presentation" class="container" width="600" cellpadding="0" cellspacing="0" border="0"
+             style="width:600px;max-width:600px;border-collapse:separate;border:1px solid #E6DCC8;border-radius:16px;overflow:hidden;background-color:#F4EFE6;">
+        <!-- header band -->
+        <tr>
+          <td align="center" class="px" style="background-color:#0A1128;padding:28px 32px 22px 32px;">
+            <div style="font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:22px;line-height:1.4;font-weight:600;color:#D4AF37;">إلى سعادة الدارين</div>
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" style="margin:12px auto 10px auto;">
+              <tr><td width="72" height="2" style="width:72px;height:2px;line-height:2px;font-size:0;background-color:#D4AF37;">&nbsp;</td></tr>
+            </table>
+            <div style="font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:13px;line-height:1.6;color:#F4EFE6;">تفسير الرؤى بوضوح وعمق نحو سعادة الدارين</div>
+          </td>
+        </tr>
+        <!-- content -->
+        <tr>
+          <td class="px" style="padding:32px 36px 28px 36px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:16px;line-height:1.9;color:#0A1128;background-color:#F4EFE6;" dir="rtl" align="right">
+            <div>
+  <p style="margin:0 0 18px 0;font-size:18px;line-height:1.7;font-weight:600;color:#0A1128;">السلام عليكم <span>interp</span>،</p>
+  <p style="margin:0 0 16px 0;">طلب دفع يحتاج إلى مراجعتك قبل إضافة الرصيد. لم يُضف أي رصيد لهذا الطلب.</p>
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:4px 0 8px 0;border-collapse:collapse;background-color:#FFFFFF;border:1px solid #E6DCC8;border-radius:12px;">
+    <tr>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;">رقم الطلب</td>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;">01459bd9-823e-4798-bae7-bf0a3a32968e</td>
+    </tr>
+    <tr>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;">المستخدم</td>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;">suspicious</td>
+    </tr>
+    <tr>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;">البريد</td>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;">suspicious-76421f5b-2ff1-4f3a-8e1d-bb75ed4295a0@example.com</td>
+    </tr>
+    <tr>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;">المبلغ</td>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;">48.00 SAR</td>
+    </tr>
+    <tr>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;">السبب</td>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;">AMOUNT_OR_CURRENCY_MISMATCH</td>
+    </tr>
+  </table>
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
+       style="margin:28px 0 8px 0;border-collapse:collapse;">
+  <tr>
+    <td align="center">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center">
+        <tr>
+          <td align="center" bgcolor="#D4AF37" style="border-radius:999px;background-color:#D4AF37;">
+            <a href="http://localhost:5173/admin/orders" target="_blank"
+               style="display:inline-block;padding:14px 38px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:16px;line-height:1.2;font-weight:600;color:#0A1128;text-decoration:none;border-radius:999px;">مراجعة الطلب</a>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+  <tr>
+    <td align="center" style="padding-top:14px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:12px;line-height:1.6;color:#5B6478;">
+      <span>إذا لم يعمل الزر، انسخ هذا الرابط في المتصفح:</span><br>
+      <a href="http://localhost:5173/admin/orders" dir="ltr" style="color:#5B6478;word-break:break-all;">http://localhost:5173/admin/orders</a>
+    </td>
+  </tr>
+</table>
+</div>
+          </td>
+        </tr>
+        <!-- footer -->
+        <tr>
+          <td align="center" class="px" style="background-color:#0A1128;padding:24px 32px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:13px;line-height:1.8;color:#F4EFE6;">
+            <a href="https://youtube.com/@almoaberafatema" style="color:#D4AF37;text-decoration:none;font-weight:600;">شاهد القناة على يوتيوب</a>
+            <div style="margin-top:6px;">
+              <span>للتواصل معنا:</span>
+              <a href="mailto:support@saadatu-aldarein.com" style="color:#D4AF37;text-decoration:none;">support@saadatu-aldarein.com</a>
+            </div>
+            <div style="margin-top:12px;font-size:12px;line-height:1.7;color:#AEB4C2;">وصلتك هذه الرسالة لأنها تخص حسابك لدينا.</div>
+            <div style="margin-top:6px;font-size:12px;color:#AEB4C2;">&copy; <span>2026</span> <span>إلى سعادة الدارين</span></div>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
+</body>
+</html>
+
+20:24:01.363 INFO  [Test worker] [] com.saadat.mail.MailService - SMTP not configured — e-mail 'payment-suspicious' to i***@example.com (subject: طلب دفع يحتاج إلى مراجعة 01459bd9-823e-4798-bae7-bf0a3a32968e):
+<!DOCTYPE html>
+
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="x-apple-disable-message-reformatting">
+  <meta name="color-scheme" content="light">
+  <meta name="supported-color-schemes" content="light">
+  <title>طلب دفع يحتاج إلى مراجعة 01459bd9-823e-4798-bae7-bf0a3a32968e</title>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;600&amp;display=swap" rel="stylesheet">
+  <style>
+    body, table, td, p, a, div, span, strong { font-family: 'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif; }
+    a { color: #0A1128; }
+    @media only screen and (max-width: 620px) {
+      .container { width: 100% !important; }
+      .px { padding-left: 20px !important; padding-right: 20px !important; }
+    }
+  </style>
+</head>
+<body style="margin:0;padding:0;background-color:#F4EFE6;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;" dir="rtl">
+<div style="display:none;max-height:0;max-width:0;overflow:hidden;mso-hide:all;font-size:1px;line-height:1px;color:#F4EFE6;opacity:0;">لم يُضف أي رصيد لهذا الطلب حتى تتم مراجعته.</div>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#F4EFE6;border-collapse:collapse;" dir="rtl">
+  <tr>
+    <td align="center" style="padding:24px 12px;">
+      <table role="presentation" class="container" width="600" cellpadding="0" cellspacing="0" border="0"
+             style="width:600px;max-width:600px;border-collapse:separate;border:1px solid #E6DCC8;border-radius:16px;overflow:hidden;background-color:#F4EFE6;">
+        <!-- header band -->
+        <tr>
+          <td align="center" class="px" style="background-color:#0A1128;padding:28px 32px 22px 32px;">
+            <div style="font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:22px;line-height:1.4;font-weight:600;color:#D4AF37;">إلى سعادة الدارين</div>
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" style="margin:12px auto 10px auto;">
+              <tr><td width="72" height="2" style="width:72px;height:2px;line-height:2px;font-size:0;background-color:#D4AF37;">&nbsp;</td></tr>
+            </table>
+            <div style="font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:13px;line-height:1.6;color:#F4EFE6;">تفسير الرؤى بوضوح وعمق نحو سعادة الدارين</div>
+          </td>
+        </tr>
+        <!-- content -->
+        <tr>
+          <td class="px" style="padding:32px 36px 28px 36px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:16px;line-height:1.9;color:#0A1128;background-color:#F4EFE6;" dir="rtl" align="right">
+            <div>
+  <p style="margin:0 0 18px 0;font-size:18px;line-height:1.7;font-weight:600;color:#0A1128;">السلام عليكم <span>interp</span>،</p>
+  <p style="margin:0 0 16px 0;">طلب دفع يحتاج إلى مراجعتك قبل إضافة الرصيد. لم يُضف أي رصيد لهذا الطلب.</p>
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:4px 0 8px 0;border-collapse:collapse;background-color:#FFFFFF;border:1px solid #E6DCC8;border-radius:12px;">
+    <tr>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;">رقم الطلب</td>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;">01459bd9-823e-4798-bae7-bf0a3a32968e</td>
+    </tr>
+    <tr>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;">المستخدم</td>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;">suspicious</td>
+    </tr>
+    <tr>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;">البريد</td>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;">suspicious-76421f5b-2ff1-4f3a-8e1d-bb75ed4295a0@example.com</td>
+    </tr>
+    <tr>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;">المبلغ</td>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;">48.00 SAR</td>
+    </tr>
+    <tr>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;">السبب</td>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;">AMOUNT_OR_CURRENCY_MISMATCH</td>
+    </tr>
+  </table>
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
+       style="margin:28px 0 8px 0;border-collapse:collapse;">
+  <tr>
+    <td align="center">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center">
+        <tr>
+          <td align="center" bgcolor="#D4AF37" style="border-radius:999px;background-color:#D4AF37;">
+            <a href="http://localhost:5173/admin/orders" target="_blank"
+               style="display:inline-block;padding:14px 38px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:16px;line-height:1.2;font-weight:600;color:#0A1128;text-decoration:none;border-radius:999px;">مراجعة الطلب</a>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+  <tr>
+    <td align="center" style="padding-top:14px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:12px;line-height:1.6;color:#5B6478;">
+      <span>إذا لم يعمل الزر، انسخ هذا الرابط في المتصفح:</span><br>
+      <a href="http://localhost:5173/admin/orders" dir="ltr" style="color:#5B6478;word-break:break-all;">http://localhost:5173/admin/orders</a>
+    </td>
+  </tr>
+</table>
+</div>
+          </td>
+        </tr>
+        <!-- footer -->
+        <tr>
+          <td align="center" class="px" style="background-color:#0A1128;padding:24px 32px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:13px;line-height:1.8;color:#F4EFE6;">
+            <a href="https://youtube.com/@almoaberafatema" style="color:#D4AF37;text-decoration:none;font-weight:600;">شاهد القناة على يوتيوب</a>
+            <div style="margin-top:6px;">
+              <span>للتواصل معنا:</span>
+              <a href="mailto:support@saadatu-aldarein.com" style="color:#D4AF37;text-decoration:none;">support@saadatu-aldarein.com</a>
+            </div>
+            <div style="margin-top:12px;font-size:12px;line-height:1.7;color:#AEB4C2;">وصلتك هذه الرسالة لأنها تخص حسابك لدينا.</div>
+            <div style="margin-top:6px;font-size:12px;color:#AEB4C2;">&copy; <span>2026</span> <span>إلى سعادة الدارين</span></div>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
+</body>
+</html>
+
+20:24:01.376 INFO  [Test worker] [] c.s.payments.service.PaymentService - Webhook txn=TXN-df54dac5-62ac-4f8b-ad6a-0b2257667b06 for order 01459bd9-823e-4798-bae7-bf0a3a32968e already in final state SUSPICIOUS
+20:24:01.403 INFO  [Test worker] [80eccc93-e5e3-4962-b4c4-74c2e58dcf0c] c.s.payments.api.WebhookController - Mock webhook order=edb5fb35-5544-4507-8cea-d6dbc21382e9 success=false → FAILED
+20:24:01.457 INFO  [Test worker] [b0946669-7bc6-4420-9120-b5fc52d40be2] c.s.payments.service.PaymentService - Order c04ecd48-24a2-4890-8c99-c919462fdda3 auto-submitted 1 of 1 intended drafts
+20:24:01.471 DEBUG [async-2] [b0946669-7bc6-4420-9120-b5fc52d40be2] c.saadat.push.service.WebPushSender - Web push not configured — skipping push to user c031a060-9dae-401c-a309-b6658ebefba2
+20:24:01.474 DEBUG [async-3] [b0946669-7bc6-4420-9120-b5fc52d40be2] c.saadat.push.service.WebPushSender - Web push not configured — skipping push to user 9ba03b73-b199-4064-82a4-a84319aab8fd
+20:24:01.474 DEBUG [async-1] [b0946669-7bc6-4420-9120-b5fc52d40be2] c.saadat.push.service.WebPushSender - Web push not configured — skipping push to user 21428d6b-b2ab-4b36-abe1-ace7704ad874
+20:24:01.475 INFO  [async-2] [b0946669-7bc6-4420-9120-b5fc52d40be2] com.saadat.mail.MailService - SMTP not configured — e-mail 'dream-submitted' to f***@saadatu-aldarein.com (subject: رؤيا جديدة من buyer):
+<!DOCTYPE html>
+
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="x-apple-disable-message-reformatting">
+  <meta name="color-scheme" content="light">
+  <meta name="supported-color-schemes" content="light">
+  <title>رؤيا جديدة من buyer</title>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;600&amp;display=swap" rel="stylesheet">
+  <style>
+    body, table, td, p, a, div, span, strong { font-family: 'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif; }
+    a { color: #0A1128; }
+    @media only screen and (max-width: 620px) {
+      .container { width: 100% !important; }
+      .px { padding-left: 20px !important; padding-right: 20px !important; }
+    }
+  </style>
+</head>
+<body style="margin:0;padding:0;background-color:#F4EFE6;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;" dir="rtl">
+<div style="display:none;max-height:0;max-width:0;overflow:hidden;mso-hide:all;font-size:1px;line-height:1px;color:#F4EFE6;opacity:0;">أُضيفت رؤيا جديدة إلى قائمة المراجعة.</div>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#F4EFE6;border-collapse:collapse;" dir="rtl">
+  <tr>
+    <td align="center" style="padding:24px 12px;">
+      <table role="presentation" class="container" width="600" cellpadding="0" cellspacing="0" border="0"
+             style="width:600px;max-width:600px;border-collapse:separate;border:1px solid #E6DCC8;border-radius:16px;overflow:hidden;background-color:#F4EFE6;">
+        <!-- header band -->
+        <tr>
+          <td align="center" class="px" style="background-color:#0A1128;padding:28px 32px 22px 32px;">
+            <div style="font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:22px;line-height:1.4;font-weight:600;color:#D4AF37;">إلى سعادة الدارين</div>
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" style="margin:12px auto 10px auto;">
+              <tr><td width="72" height="2" style="width:72px;height:2px;line-height:2px;font-size:0;background-color:#D4AF37;">&nbsp;</td></tr>
+            </table>
+            <div style="font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:13px;line-height:1.6;color:#F4EFE6;">تفسير الرؤى بوضوح وعمق نحو سعادة الدارين</div>
+          </td>
+        </tr>
+        <!-- content -->
+        <tr>
+          <td class="px" style="padding:32px 36px 28px 36px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:16px;line-height:1.9;color:#0A1128;background-color:#F4EFE6;" dir="rtl" align="right">
+            <div>
+  <p style="margin:0 0 18px 0;font-size:18px;line-height:1.7;font-weight:600;color:#0A1128;">السلام عليكم،</p>
+  <p style="margin:0 0 16px 0;">وصلت رؤيا جديدة من <strong>buyer</strong> وأُضيفت إلى قائمة المراجعة.</p>
+  <p style="margin:0 0 16px 0;font-size:14px;line-height:1.8;color:#5B6478;">الموعد المتوقع للتفسير: <strong>29 سبتمبر 2026، 11:24 م</strong></p>
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
+       style="margin:28px 0 8px 0;border-collapse:collapse;">
+  <tr>
+    <td align="center">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center">
+        <tr>
+          <td align="center" bgcolor="#D4AF37" style="border-radius:999px;background-color:#D4AF37;">
+            <a href="http://localhost:5173/admin/dreams/6ae3fd60-fbaf-4967-a782-ea82e7e71c1f" target="_blank"
+               style="display:inline-block;padding:14px 38px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:16px;line-height:1.2;font-weight:600;color:#0A1128;text-decoration:none;border-radius:999px;">فتح الرؤيا</a>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+  <tr>
+    <td align="center" style="padding-top:14px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:12px;line-height:1.6;color:#5B6478;">
+      <span>إذا لم يعمل الزر، انسخ هذا الرابط في المتصفح:</span><br>
+      <a href="http://localhost:5173/admin/dreams/6ae3fd60-fbaf-4967-a782-ea82e7e71c1f" dir="ltr" style="color:#5B6478;word-break:break-all;">http://localhost:5173/admin/dreams/6ae3fd60-fbaf-4967-a782-ea82e7e71c1f</a>
+    </td>
+  </tr>
+</table>
+</div>
+          </td>
+        </tr>
+        <!-- footer -->
+        <tr>
+          <td align="center" class="px" style="background-color:#0A1128;padding:24px 32px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:13px;line-height:1.8;color:#F4EFE6;">
+            <a href="https://youtube.com/@almoaberafatema" style="color:#D4AF37;text-decoration:none;font-weight:600;">شاهد القناة على يوتيوب</a>
+            <div style="margin-top:6px;">
+              <span>للتواصل معنا:</span>
+              <a href="mailto:support@saadatu-aldarein.com" style="color:#D4AF37;text-decoration:none;">support@saadatu-aldarein.com</a>
+            </div>
+            <div style="margin-top:12px;font-size:12px;line-height:1.7;color:#AEB4C2;">وصلتك هذه الرسالة لأنها تخص حسابك لدينا.</div>
+            <div style="margin-top:6px;font-size:12px;color:#AEB4C2;">&copy; <span>2026</span> <span>إلى سعادة الدارين</span></div>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
+</body>
+</html>
+
+20:24:01.476 DEBUG [async-4] [b0946669-7bc6-4420-9120-b5fc52d40be2] c.saadat.push.service.WebPushSender - Web push not configured — skipping push to user 5c2b9cca-74ba-4a1f-adee-3a56789d166b
+20:24:01.475 INFO  [async-1] [b0946669-7bc6-4420-9120-b5fc52d40be2] com.saadat.mail.MailService - SMTP not configured — e-mail 'dream-submitted' to i***@example.com (subject: رؤيا جديدة من buyer):
+<!DOCTYPE html>
+
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="x-apple-disable-message-reformatting">
+  <meta name="color-scheme" content="light">
+  <meta name="supported-color-schemes" content="light">
+  <title>رؤيا جديدة من buyer</title>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;600&amp;display=swap" rel="stylesheet">
+  <style>
+    body, table, td, p, a, div, span, strong { font-family: 'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif; }
+    a { color: #0A1128; }
+    @media only screen and (max-width: 620px) {
+      .container { width: 100% !important; }
+      .px { padding-left: 20px !important; padding-right: 20px !important; }
+    }
+  </style>
+</head>
+<body style="margin:0;padding:0;background-color:#F4EFE6;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;" dir="rtl">
+<div style="display:none;max-height:0;max-width:0;overflow:hidden;mso-hide:all;font-size:1px;line-height:1px;color:#F4EFE6;opacity:0;">أُضيفت رؤيا جديدة إلى قائمة المراجعة.</div>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#F4EFE6;border-collapse:collapse;" dir="rtl">
+  <tr>
+    <td align="center" style="padding:24px 12px;">
+      <table role="presentation" class="container" width="600" cellpadding="0" cellspacing="0" border="0"
+             style="width:600px;max-width:600px;border-collapse:separate;border:1px solid #E6DCC8;border-radius:16px;overflow:hidden;background-color:#F4EFE6;">
+        <!-- header band -->
+        <tr>
+          <td align="center" class="px" style="background-color:#0A1128;padding:28px 32px 22px 32px;">
+            <div style="font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:22px;line-height:1.4;font-weight:600;color:#D4AF37;">إلى سعادة الدارين</div>
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" style="margin:12px auto 10px auto;">
+              <tr><td width="72" height="2" style="width:72px;height:2px;line-height:2px;font-size:0;background-color:#D4AF37;">&nbsp;</td></tr>
+            </table>
+            <div style="font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:13px;line-height:1.6;color:#F4EFE6;">تفسير الرؤى بوضوح وعمق نحو سعادة الدارين</div>
+          </td>
+        </tr>
+        <!-- content -->
+        <tr>
+          <td class="px" style="padding:32px 36px 28px 36px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:16px;line-height:1.9;color:#0A1128;background-color:#F4EFE6;" dir="rtl" align="right">
+            <div>
+  <p style="margin:0 0 18px 0;font-size:18px;line-height:1.7;font-weight:600;color:#0A1128;">السلام عليكم <span>interpreter</span>،</p>
+  <p style="margin:0 0 16px 0;">وصلت رؤيا جديدة من <strong>buyer</strong> وأُضيفت إلى قائمة المراجعة.</p>
+  <p style="margin:0 0 16px 0;font-size:14px;line-height:1.8;color:#5B6478;">الموعد المتوقع للتفسير: <strong>29 سبتمبر 2026، 11:24 م</strong></p>
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
+       style="margin:28px 0 8px 0;border-collapse:collapse;">
+  <tr>
+    <td align="center">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center">
+        <tr>
+          <td align="center" bgcolor="#D4AF37" style="border-radius:999px;background-color:#D4AF37;">
+            <a href="http://localhost:5173/admin/dreams/6ae3fd60-fbaf-4967-a782-ea82e7e71c1f" target="_blank"
+               style="display:inline-block;padding:14px 38px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:16px;line-height:1.2;font-weight:600;color:#0A1128;text-decoration:none;border-radius:999px;">فتح الرؤيا</a>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+  <tr>
+    <td align="center" style="padding-top:14px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:12px;line-height:1.6;color:#5B6478;">
+      <span>إذا لم يعمل الزر، انسخ هذا الرابط في المتصفح:</span><br>
+      <a href="http://localhost:5173/admin/dreams/6ae3fd60-fbaf-4967-a782-ea82e7e71c1f" dir="ltr" style="color:#5B6478;word-break:break-all;">http://localhost:5173/admin/dreams/6ae3fd60-fbaf-4967-a782-ea82e7e71c1f</a>
+    </td>
+  </tr>
+</table>
+</div>
+          </td>
+        </tr>
+        <!-- footer -->
+        <tr>
+          <td align="center" class="px" style="background-color:#0A1128;padding:24px 32px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:13px;line-height:1.8;color:#F4EFE6;">
+            <a href="https://youtube.com/@almoaberafatema" style="color:#D4AF37;text-decoration:none;font-weight:600;">شاهد القناة على يوتيوب</a>
+            <div style="margin-top:6px;">
+              <span>للتواصل معنا:</span>
+              <a href="mailto:support@saadatu-aldarein.com" style="color:#D4AF37;text-decoration:none;">support@saadatu-aldarein.com</a>
+            </div>
+            <div style="margin-top:12px;font-size:12px;line-height:1.7;color:#AEB4C2;">وصلتك هذه الرسالة لأنها تخص حسابك لدينا.</div>
+            <div style="margin-top:6px;font-size:12px;color:#AEB4C2;">&copy; <span>2026</span> <span>إلى سعادة الدارين</span></div>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
+</body>
+</html>
+
+20:24:01.477 INFO  [async-3] [b0946669-7bc6-4420-9120-b5fc52d40be2] com.saadat.mail.MailService - SMTP not configured — e-mail 'dream-received' to b***@example.com (subject: وصلت رؤياك):
+<!DOCTYPE html>
+
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="x-apple-disable-message-reformatting">
+  <meta name="color-scheme" content="light">
+  <meta name="supported-color-schemes" content="light">
+  <title>وصلت رؤياك</title>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;600&amp;display=swap" rel="stylesheet">
+  <style>
+    body, table, td, p, a, div, span, strong { font-family: 'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif; }
+    a { color: #0A1128; }
+    @media only screen and (max-width: 620px) {
+      .container { width: 100% !important; }
+      .px { padding-left: 20px !important; padding-right: 20px !important; }
+    }
+  </style>
+</head>
+<body style="margin:0;padding:0;background-color:#F4EFE6;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;" dir="rtl">
+<div style="display:none;max-height:0;max-width:0;overflow:hidden;mso-hide:all;font-size:1px;line-height:1px;color:#F4EFE6;opacity:0;">سنبدأ دراستها بعناية، وسيصلك إشعار حين يجهز التفسير.</div>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#F4EFE6;border-collapse:collapse;" dir="rtl">
+  <tr>
+    <td align="center" style="padding:24px 12px;">
+      <table role="presentation" class="container" width="600" cellpadding="0" cellspacing="0" border="0"
+             style="width:600px;max-width:600px;border-collapse:separate;border:1px solid #E6DCC8;border-radius:16px;overflow:hidden;background-color:#F4EFE6;">
+        <!-- header band -->
+        <tr>
+          <td align="center" class="px" style="background-color:#0A1128;padding:28px 32px 22px 32px;">
+            <div style="font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:22px;line-height:1.4;font-weight:600;color:#D4AF37;">إلى سعادة الدارين</div>
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" style="margin:12px auto 10px auto;">
+              <tr><td width="72" height="2" style="width:72px;height:2px;line-height:2px;font-size:0;background-color:#D4AF37;">&nbsp;</td></tr>
+            </table>
+            <div style="font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:13px;line-height:1.6;color:#F4EFE6;">تفسير الرؤى بوضوح وعمق نحو سعادة الدارين</div>
+          </td>
+        </tr>
+        <!-- content -->
+        <tr>
+          <td class="px" style="padding:32px 36px 28px 36px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:16px;line-height:1.9;color:#0A1128;background-color:#F4EFE6;" dir="rtl" align="right">
+            <div>
+  <p style="margin:0 0 18px 0;font-size:18px;line-height:1.7;font-weight:600;color:#0A1128;">السلام عليكم <span>buyer</span>،</p>
+  <p style="margin:0 0 16px 0;">وصلت رؤياك، وستُدرس بعناية وهدوء قبل كتابة التفسير.</p>
+  <p style="margin:0 0 16px 0;">الموعد المتوقع للتفسير: <strong>29 سبتمبر 2026، 11:24 م</strong></p>
+  <p style="margin:0 0 16px 0;font-size:14px;line-height:1.8;color:#5B6478;">نظراً لكثرة الرؤى، يستغرق التعبير حالياً من يومين إلى ثلاثة أيام، لنمنح كل رؤيا حقها من الدراسة المتعمقة وتحليل الرموز.</p>
+  <p style="margin:0 0 16px 0;">سيصلك إشعار حين يكون التفسير جاهزاً في حسابك.</p>
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
+       style="margin:28px 0 8px 0;border-collapse:collapse;">
+  <tr>
+    <td align="center">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center">
+        <tr>
+          <td align="center" bgcolor="#D4AF37" style="border-radius:999px;background-color:#D4AF37;">
+            <a href="http://localhost:5173/me/dreams/6ae3fd60-fbaf-4967-a782-ea82e7e71c1f" target="_blank"
+               style="display:inline-block;padding:14px 38px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:16px;line-height:1.2;font-weight:600;color:#0A1128;text-decoration:none;border-radius:999px;">متابعة رؤياك</a>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+  <tr>
+    <td align="center" style="padding-top:14px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:12px;line-height:1.6;color:#5B6478;">
+      <span>إذا لم يعمل الزر، انسخ هذا الرابط في المتصفح:</span><br>
+      <a href="http://localhost:5173/me/dreams/6ae3fd60-fbaf-4967-a782-ea82e7e71c1f" dir="ltr" style="color:#5B6478;word-break:break-all;">http://localhost:5173/me/dreams/6ae3fd60-fbaf-4967-a782-ea82e7e71c1f</a>
+    </td>
+  </tr>
+</table>
+</div>
+          </td>
+        </tr>
+        <!-- footer -->
+        <tr>
+          <td align="center" class="px" style="background-color:#0A1128;padding:24px 32px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:13px;line-height:1.8;color:#F4EFE6;">
+            <a href="https://youtube.com/@almoaberafatema" style="color:#D4AF37;text-decoration:none;font-weight:600;">شاهد القناة على يوتيوب</a>
+            <div style="margin-top:6px;">
+              <span>للتواصل معنا:</span>
+              <a href="mailto:support@saadatu-aldarein.com" style="color:#D4AF37;text-decoration:none;">support@saadatu-aldarein.com</a>
+            </div>
+            <div style="margin-top:12px;font-size:12px;line-height:1.7;color:#AEB4C2;">وصلتك هذه الرسالة لأنها تخص حسابك لدينا.</div>
+            <div style="margin-top:6px;font-size:12px;color:#AEB4C2;">&copy; <span>2026</span> <span>إلى سعادة الدارين</span></div>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
+</body>
+</html>
+
+20:24:01.478 INFO  [async-4] [b0946669-7bc6-4420-9120-b5fc52d40be2] com.saadat.mail.MailService - SMTP not configured — e-mail 'dream-submitted' to i***@example.com (subject: رؤيا جديدة من buyer):
+<!DOCTYPE html>
+
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="x-apple-disable-message-reformatting">
+  <meta name="color-scheme" content="light">
+  <meta name="supported-color-schemes" content="light">
+  <title>رؤيا جديدة من buyer</title>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;600&amp;display=swap" rel="stylesheet">
+  <style>
+    body, table, td, p, a, div, span, strong { font-family: 'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif; }
+    a { color: #0A1128; }
+    @media only screen and (max-width: 620px) {
+      .container { width: 100% !important; }
+      .px { padding-left: 20px !important; padding-right: 20px !important; }
+    }
+  </style>
+</head>
+<body style="margin:0;padding:0;background-color:#F4EFE6;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;" dir="rtl">
+<div style="display:none;max-height:0;max-width:0;overflow:hidden;mso-hide:all;font-size:1px;line-height:1px;color:#F4EFE6;opacity:0;">أُضيفت رؤيا جديدة إلى قائمة المراجعة.</div>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#F4EFE6;border-collapse:collapse;" dir="rtl">
+  <tr>
+    <td align="center" style="padding:24px 12px;">
+      <table role="presentation" class="container" width="600" cellpadding="0" cellspacing="0" border="0"
+             style="width:600px;max-width:600px;border-collapse:separate;border:1px solid #E6DCC8;border-radius:16px;overflow:hidden;background-color:#F4EFE6;">
+        <!-- header band -->
+        <tr>
+          <td align="center" class="px" style="background-color:#0A1128;padding:28px 32px 22px 32px;">
+            <div style="font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:22px;line-height:1.4;font-weight:600;color:#D4AF37;">إلى سعادة الدارين</div>
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" style="margin:12px auto 10px auto;">
+              <tr><td width="72" height="2" style="width:72px;height:2px;line-height:2px;font-size:0;background-color:#D4AF37;">&nbsp;</td></tr>
+            </table>
+            <div style="font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:13px;line-height:1.6;color:#F4EFE6;">تفسير الرؤى بوضوح وعمق نحو سعادة الدارين</div>
+          </td>
+        </tr>
+        <!-- content -->
+        <tr>
+          <td class="px" style="padding:32px 36px 28px 36px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:16px;line-height:1.9;color:#0A1128;background-color:#F4EFE6;" dir="rtl" align="right">
+            <div>
+  <p style="margin:0 0 18px 0;font-size:18px;line-height:1.7;font-weight:600;color:#0A1128;">السلام عليكم <span>interpreter</span>،</p>
+  <p style="margin:0 0 16px 0;">وصلت رؤيا جديدة من <strong>buyer</strong> وأُضيفت إلى قائمة المراجعة.</p>
+  <p style="margin:0 0 16px 0;font-size:14px;line-height:1.8;color:#5B6478;">الموعد المتوقع للتفسير: <strong>29 سبتمبر 2026، 11:24 م</strong></p>
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
+       style="margin:28px 0 8px 0;border-collapse:collapse;">
+  <tr>
+    <td align="center">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center">
+        <tr>
+          <td align="center" bgcolor="#D4AF37" style="border-radius:999px;background-color:#D4AF37;">
+            <a href="http://localhost:5173/admin/dreams/6ae3fd60-fbaf-4967-a782-ea82e7e71c1f" target="_blank"
+               style="display:inline-block;padding:14px 38px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:16px;line-height:1.2;font-weight:600;color:#0A1128;text-decoration:none;border-radius:999px;">فتح الرؤيا</a>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+  <tr>
+    <td align="center" style="padding-top:14px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:12px;line-height:1.6;color:#5B6478;">
+      <span>إذا لم يعمل الزر، انسخ هذا الرابط في المتصفح:</span><br>
+      <a href="http://localhost:5173/admin/dreams/6ae3fd60-fbaf-4967-a782-ea82e7e71c1f" dir="ltr" style="color:#5B6478;word-break:break-all;">http://localhost:5173/admin/dreams/6ae3fd60-fbaf-4967-a782-ea82e7e71c1f</a>
+    </td>
+  </tr>
+</table>
+</div>
+          </td>
+        </tr>
+        <!-- footer -->
+        <tr>
+          <td align="center" class="px" style="background-color:#0A1128;padding:24px 32px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:13px;line-height:1.8;color:#F4EFE6;">
+            <a href="https://youtube.com/@almoaberafatema" style="color:#D4AF37;text-decoration:none;font-weight:600;">شاهد القناة على يوتيوب</a>
+            <div style="margin-top:6px;">
+              <span>للتواصل معنا:</span>
+              <a href="mailto:support@saadatu-aldarein.com" style="color:#D4AF37;text-decoration:none;">support@saadatu-aldarein.com</a>
+            </div>
+            <div style="margin-top:12px;font-size:12px;line-height:1.7;color:#AEB4C2;">وصلتك هذه الرسالة لأنها تخص حسابك لدينا.</div>
+            <div style="margin-top:6px;font-size:12px;color:#AEB4C2;">&copy; <span>2026</span> <span>إلى سعادة الدارين</span></div>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
+</body>
+</html>
+
+20:24:01.478 INFO  [Test worker] [b0946669-7bc6-4420-9120-b5fc52d40be2] com.saadat.mail.MailService - SMTP not configured — e-mail 'payment-receipt' to b***@example.com (subject: إيصال الدفع — تفسير رؤيا واحدة):
+<!DOCTYPE html>
+
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="x-apple-disable-message-reformatting">
+  <meta name="color-scheme" content="light">
+  <meta name="supported-color-schemes" content="light">
+  <title>إيصال الدفع — تفسير رؤيا واحدة</title>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;600&amp;display=swap" rel="stylesheet">
+  <style>
+    body, table, td, p, a, div, span, strong { font-family: 'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif; }
+    a { color: #0A1128; }
+    @media only screen and (max-width: 620px) {
+      .container { width: 100% !important; }
+      .px { padding-left: 20px !important; padding-right: 20px !important; }
+    }
+  </style>
+</head>
+<body style="margin:0;padding:0;background-color:#F4EFE6;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;" dir="rtl">
+<div style="display:none;max-height:0;max-width:0;overflow:hidden;mso-hide:all;font-size:1px;line-height:1px;color:#F4EFE6;opacity:0;">شكراً لك، تمت إضافة الرصيد إلى حسابك.</div>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#F4EFE6;border-collapse:collapse;" dir="rtl">
+  <tr>
+    <td align="center" style="padding:24px 12px;">
+      <table role="presentation" class="container" width="600" cellpadding="0" cellspacing="0" border="0"
+             style="width:600px;max-width:600px;border-collapse:separate;border:1px solid #E6DCC8;border-radius:16px;overflow:hidden;background-color:#F4EFE6;">
+        <!-- header band -->
+        <tr>
+          <td align="center" class="px" style="background-color:#0A1128;padding:28px 32px 22px 32px;">
+            <div style="font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:22px;line-height:1.4;font-weight:600;color:#D4AF37;">إلى سعادة الدارين</div>
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" style="margin:12px auto 10px auto;">
+              <tr><td width="72" height="2" style="width:72px;height:2px;line-height:2px;font-size:0;background-color:#D4AF37;">&nbsp;</td></tr>
+            </table>
+            <div style="font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:13px;line-height:1.6;color:#F4EFE6;">تفسير الرؤى بوضوح وعمق نحو سعادة الدارين</div>
+          </td>
+        </tr>
+        <!-- content -->
+        <tr>
+          <td class="px" style="padding:32px 36px 28px 36px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:16px;line-height:1.9;color:#0A1128;background-color:#F4EFE6;" dir="rtl" align="right">
+            <div>
+  <p style="margin:0 0 18px 0;font-size:18px;line-height:1.7;font-weight:600;color:#0A1128;">السلام عليكم <span>buyer</span>،</p>
+  <p style="margin:0 0 16px 0;">شكراً لك، تم الدفع بنجاح وأُضيف الرصيد إلى حسابك.</p>
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:4px 0 8px 0;border-collapse:collapse;background-color:#FFFFFF;border:1px solid #E6DCC8;border-radius:12px;">
+    <tr>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;">الباقة</td>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;">تفسير رؤيا واحدة</td>
+    </tr>
+    <tr>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;">عدد الرؤى</td>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;">1</td>
+    </tr>
+    <tr>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;">المبلغ</td>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;">49.00 SAR</td>
+    </tr>
+    <tr>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;">رقم الطلب</td>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;">MOCK-c04ecd48-24a2-4890-8c99-c919462fdda3-OK</td>
+    </tr>
+    <tr>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;">تاريخ الدفع</td>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;">27 سبتمبر 2026، 11:24 م</td>
+    </tr>
+  </table>
+  <p style="margin:0 0 16px 0;font-size:14px;line-height:1.8;color:#5B6478;">احتفظ بهذه الرسالة إيصالاً للدفع.</p>
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
+       style="margin:28px 0 8px 0;border-collapse:collapse;">
+  <tr>
+    <td align="center">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center">
+        <tr>
+          <td align="center" bgcolor="#D4AF37" style="border-radius:999px;background-color:#D4AF37;">
+            <a href="http://localhost:5173/me/payments" target="_blank"
+               style="display:inline-block;padding:14px 38px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:16px;line-height:1.2;font-weight:600;color:#0A1128;text-decoration:none;border-radius:999px;">عرض المدفوعات</a>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+  <tr>
+    <td align="center" style="padding-top:14px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:12px;line-height:1.6;color:#5B6478;">
+      <span>إذا لم يعمل الزر، انسخ هذا الرابط في المتصفح:</span><br>
+      <a href="http://localhost:5173/me/payments" dir="ltr" style="color:#5B6478;word-break:break-all;">http://localhost:5173/me/payments</a>
+    </td>
+  </tr>
+</table>
+</div>
+          </td>
+        </tr>
+        <!-- footer -->
+        <tr>
+          <td align="center" class="px" style="background-color:#0A1128;padding:24px 32px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:13px;line-height:1.8;color:#F4EFE6;">
+            <a href="https://youtube.com/@almoaberafatema" style="color:#D4AF37;text-decoration:none;font-weight:600;">شاهد القناة على يوتيوب</a>
+            <div style="margin-top:6px;">
+              <span>للتواصل معنا:</span>
+              <a href="mailto:support@saadatu-aldarein.com" style="color:#D4AF37;text-decoration:none;">support@saadatu-aldarein.com</a>
+            </div>
+            <div style="margin-top:12px;font-size:12px;line-height:1.7;color:#AEB4C2;">وصلتك هذه الرسالة لأنها تخص حسابك لدينا.</div>
+            <div style="margin-top:6px;font-size:12px;color:#AEB4C2;">&copy; <span>2026</span> <span>إلى سعادة الدارين</span></div>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
+</body>
+</html>
+
+20:24:01.482 DEBUG [async-2] [b0946669-7bc6-4420-9120-b5fc52d40be2] c.saadat.push.service.WebPushSender - Web push not configured — skipping push to user 83f21d33-69b4-4de0-aeaf-5ba6183043d5
+20:24:01.484 INFO  [async-2] [b0946669-7bc6-4420-9120-b5fc52d40be2] com.saadat.mail.MailService - SMTP not configured — e-mail 'dream-submitted' to i***@example.com (subject: رؤيا جديدة من buyer):
+<!DOCTYPE html>
+
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="x-apple-disable-message-reformatting">
+  <meta name="color-scheme" content="light">
+  <meta name="supported-color-schemes" content="light">
+  <title>رؤيا جديدة من buyer</title>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;600&amp;display=swap" rel="stylesheet">
+  <style>
+    body, table, td, p, a, div, span, strong { font-family: 'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif; }
+    a { color: #0A1128; }
+    @media only screen and (max-width: 620px) {
+      .container { width: 100% !important; }
+      .px { padding-left: 20px !important; padding-right: 20px !important; }
+    }
+  </style>
+</head>
+<body style="margin:0;padding:0;background-color:#F4EFE6;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;" dir="rtl">
+<div style="display:none;max-height:0;max-width:0;overflow:hidden;mso-hide:all;font-size:1px;line-height:1px;color:#F4EFE6;opacity:0;">أُضيفت رؤيا جديدة إلى قائمة المراجعة.</div>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#F4EFE6;border-collapse:collapse;" dir="rtl">
+  <tr>
+    <td align="center" style="padding:24px 12px;">
+      <table role="presentation" class="container" width="600" cellpadding="0" cellspacing="0" border="0"
+             style="width:600px;max-width:600px;border-collapse:separate;border:1px solid #E6DCC8;border-radius:16px;overflow:hidden;background-color:#F4EFE6;">
+        <!-- header band -->
+        <tr>
+          <td align="center" class="px" style="background-color:#0A1128;padding:28px 32px 22px 32px;">
+            <div style="font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:22px;line-height:1.4;font-weight:600;color:#D4AF37;">إلى سعادة الدارين</div>
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" style="margin:12px auto 10px auto;">
+              <tr><td width="72" height="2" style="width:72px;height:2px;line-height:2px;font-size:0;background-color:#D4AF37;">&nbsp;</td></tr>
+            </table>
+            <div style="font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:13px;line-height:1.6;color:#F4EFE6;">تفسير الرؤى بوضوح وعمق نحو سعادة الدارين</div>
+          </td>
+        </tr>
+        <!-- content -->
+        <tr>
+          <td class="px" style="padding:32px 36px 28px 36px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:16px;line-height:1.9;color:#0A1128;background-color:#F4EFE6;" dir="rtl" align="right">
+            <div>
+  <p style="margin:0 0 18px 0;font-size:18px;line-height:1.7;font-weight:600;color:#0A1128;">السلام عليكم <span>interp</span>،</p>
+  <p style="margin:0 0 16px 0;">وصلت رؤيا جديدة من <strong>buyer</strong> وأُضيفت إلى قائمة المراجعة.</p>
+  <p style="margin:0 0 16px 0;font-size:14px;line-height:1.8;color:#5B6478;">الموعد المتوقع للتفسير: <strong>29 سبتمبر 2026، 11:24 م</strong></p>
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
+       style="margin:28px 0 8px 0;border-collapse:collapse;">
+  <tr>
+    <td align="center">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center">
+        <tr>
+          <td align="center" bgcolor="#D4AF37" style="border-radius:999px;background-color:#D4AF37;">
+            <a href="http://localhost:5173/admin/dreams/6ae3fd60-fbaf-4967-a782-ea82e7e71c1f" target="_blank"
+               style="display:inline-block;padding:14px 38px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:16px;line-height:1.2;font-weight:600;color:#0A1128;text-decoration:none;border-radius:999px;">فتح الرؤيا</a>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+  <tr>
+    <td align="center" style="padding-top:14px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:12px;line-height:1.6;color:#5B6478;">
+      <span>إذا لم يعمل الزر، انسخ هذا الرابط في المتصفح:</span><br>
+      <a href="http://localhost:5173/admin/dreams/6ae3fd60-fbaf-4967-a782-ea82e7e71c1f" dir="ltr" style="color:#5B6478;word-break:break-all;">http://localhost:5173/admin/dreams/6ae3fd60-fbaf-4967-a782-ea82e7e71c1f</a>
+    </td>
+  </tr>
+</table>
+</div>
+          </td>
+        </tr>
+        <!-- footer -->
+        <tr>
+          <td align="center" class="px" style="background-color:#0A1128;padding:24px 32px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:13px;line-height:1.8;color:#F4EFE6;">
+            <a href="https://youtube.com/@almoaberafatema" style="color:#D4AF37;text-decoration:none;font-weight:600;">شاهد القناة على يوتيوب</a>
+            <div style="margin-top:6px;">
+              <span>للتواصل معنا:</span>
+              <a href="mailto:support@saadatu-aldarein.com" style="color:#D4AF37;text-decoration:none;">support@saadatu-aldarein.com</a>
+            </div>
+            <div style="margin-top:12px;font-size:12px;line-height:1.7;color:#AEB4C2;">وصلتك هذه الرسالة لأنها تخص حسابك لدينا.</div>
+            <div style="margin-top:6px;font-size:12px;color:#AEB4C2;">&copy; <span>2026</span> <span>إلى سعادة الدارين</span></div>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
+</body>
+</html>
+
+20:24:01.484 DEBUG [async-1] [b0946669-7bc6-4420-9120-b5fc52d40be2] c.saadat.push.service.WebPushSender - Web push not configured — skipping push to user d0b5877d-930f-4bbe-b689-3bdacb6d0206
+20:24:01.485 INFO  [Test worker] [b0946669-7bc6-4420-9120-b5fc52d40be2] c.s.payments.api.WebhookController - Mock webhook order=c04ecd48-24a2-4890-8c99-c919462fdda3 success=true → SUCCESS
+20:24:01.488 DEBUG [async-3] [b0946669-7bc6-4420-9120-b5fc52d40be2] c.saadat.push.service.WebPushSender - Web push not configured — skipping push to user f65201a4-5284-4095-a08e-6220216f1565
+20:24:01.489 INFO  [async-3] [b0946669-7bc6-4420-9120-b5fc52d40be2] com.saadat.mail.MailService - SMTP not configured — e-mail 'dream-submitted' to i***@example.com (subject: رؤيا جديدة من buyer):
+<!DOCTYPE html>
+
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="x-apple-disable-message-reformatting">
+  <meta name="color-scheme" content="light">
+  <meta name="supported-color-schemes" content="light">
+  <title>رؤيا جديدة من buyer</title>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;600&amp;display=swap" rel="stylesheet">
+  <style>
+    body, table, td, p, a, div, span, strong { font-family: 'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif; }
+    a { color: #0A1128; }
+    @media only screen and (max-width: 620px) {
+      .container { width: 100% !important; }
+      .px { padding-left: 20px !important; padding-right: 20px !important; }
+    }
+  </style>
+</head>
+<body style="margin:0;padding:0;background-color:#F4EFE6;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;" dir="rtl">
+<div style="display:none;max-height:0;max-width:0;overflow:hidden;mso-hide:all;font-size:1px;line-height:1px;color:#F4EFE6;opacity:0;">أُضيفت رؤيا جديدة إلى قائمة المراجعة.</div>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#F4EFE6;border-collapse:collapse;" dir="rtl">
+  <tr>
+    <td align="center" style="padding:24px 12px;">
+      <table role="presentation" class="container" width="600" cellpadding="0" cellspacing="0" border="0"
+             style="width:600px;max-width:600px;border-collapse:separate;border:1px solid #E6DCC8;border-radius:16px;overflow:hidden;background-color:#F4EFE6;">
+        <!-- header band -->
+        <tr>
+          <td align="center" class="px" style="background-color:#0A1128;padding:28px 32px 22px 32px;">
+            <div style="font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:22px;line-height:1.4;font-weight:600;color:#D4AF37;">إلى سعادة الدارين</div>
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" style="margin:12px auto 10px auto;">
+              <tr><td width="72" height="2" style="width:72px;height:2px;line-height:2px;font-size:0;background-color:#D4AF37;">&nbsp;</td></tr>
+            </table>
+            <div style="font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:13px;line-height:1.6;color:#F4EFE6;">تفسير الرؤى بوضوح وعمق نحو سعادة الدارين</div>
+          </td>
+        </tr>
+        <!-- content -->
+        <tr>
+          <td class="px" style="padding:32px 36px 28px 36px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:16px;line-height:1.9;color:#0A1128;background-color:#F4EFE6;" dir="rtl" align="right">
+            <div>
+  <p style="margin:0 0 18px 0;font-size:18px;line-height:1.7;font-weight:600;color:#0A1128;">السلام عليكم <span>interp</span>،</p>
+  <p style="margin:0 0 16px 0;">وصلت رؤيا جديدة من <strong>buyer</strong> وأُضيفت إلى قائمة المراجعة.</p>
+  <p style="margin:0 0 16px 0;font-size:14px;line-height:1.8;color:#5B6478;">الموعد المتوقع للتفسير: <strong>29 سبتمبر 2026، 11:24 م</strong></p>
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
+       style="margin:28px 0 8px 0;border-collapse:collapse;">
+  <tr>
+    <td align="center">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center">
+        <tr>
+          <td align="center" bgcolor="#D4AF37" style="border-radius:999px;background-color:#D4AF37;">
+            <a href="http://localhost:5173/admin/dreams/6ae3fd60-fbaf-4967-a782-ea82e7e71c1f" target="_blank"
+               style="display:inline-block;padding:14px 38px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:16px;line-height:1.2;font-weight:600;color:#0A1128;text-decoration:none;border-radius:999px;">فتح الرؤيا</a>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+  <tr>
+    <td align="center" style="padding-top:14px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:12px;line-height:1.6;color:#5B6478;">
+      <span>إذا لم يعمل الزر، انسخ هذا الرابط في المتصفح:</span><br>
+      <a href="http://localhost:5173/admin/dreams/6ae3fd60-fbaf-4967-a782-ea82e7e71c1f" dir="ltr" style="color:#5B6478;word-break:break-all;">http://localhost:5173/admin/dreams/6ae3fd60-fbaf-4967-a782-ea82e7e71c1f</a>
+    </td>
+  </tr>
+</table>
+</div>
+          </td>
+        </tr>
+        <!-- footer -->
+        <tr>
+          <td align="center" class="px" style="background-color:#0A1128;padding:24px 32px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:13px;line-height:1.8;color:#F4EFE6;">
+            <a href="https://youtube.com/@almoaberafatema" style="color:#D4AF37;text-decoration:none;font-weight:600;">شاهد القناة على يوتيوب</a>
+            <div style="margin-top:6px;">
+              <span>للتواصل معنا:</span>
+              <a href="mailto:support@saadatu-aldarein.com" style="color:#D4AF37;text-decoration:none;">support@saadatu-aldarein.com</a>
+            </div>
+            <div style="margin-top:12px;font-size:12px;line-height:1.7;color:#AEB4C2;">وصلتك هذه الرسالة لأنها تخص حسابك لدينا.</div>
+            <div style="margin-top:6px;font-size:12px;color:#AEB4C2;">&copy; <span>2026</span> <span>إلى سعادة الدارين</span></div>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
+</body>
+</html>
+
+20:24:01.490 DEBUG [async-4] [b0946669-7bc6-4420-9120-b5fc52d40be2] c.saadat.push.service.WebPushSender - Web push not configured — skipping push to user 9ba03b73-b199-4064-82a4-a84319aab8fd
+20:24:01.491 INFO  [async-1] [b0946669-7bc6-4420-9120-b5fc52d40be2] com.saadat.mail.MailService - SMTP not configured — e-mail 'dream-submitted' to i***@example.com (subject: رؤيا جديدة من buyer):
+<!DOCTYPE html>
+
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="x-apple-disable-message-reformatting">
+  <meta name="color-scheme" content="light">
+  <meta name="supported-color-schemes" content="light">
+  <title>رؤيا جديدة من buyer</title>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;600&amp;display=swap" rel="stylesheet">
+  <style>
+    body, table, td, p, a, div, span, strong { font-family: 'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif; }
+    a { color: #0A1128; }
+    @media only screen and (max-width: 620px) {
+      .container { width: 100% !important; }
+      .px { padding-left: 20px !important; padding-right: 20px !important; }
+    }
+  </style>
+</head>
+<body style="margin:0;padding:0;background-color:#F4EFE6;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;" dir="rtl">
+<div style="display:none;max-height:0;max-width:0;overflow:hidden;mso-hide:all;font-size:1px;line-height:1px;color:#F4EFE6;opacity:0;">أُضيفت رؤيا جديدة إلى قائمة المراجعة.</div>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#F4EFE6;border-collapse:collapse;" dir="rtl">
+  <tr>
+    <td align="center" style="padding:24px 12px;">
+      <table role="presentation" class="container" width="600" cellpadding="0" cellspacing="0" border="0"
+             style="width:600px;max-width:600px;border-collapse:separate;border:1px solid #E6DCC8;border-radius:16px;overflow:hidden;background-color:#F4EFE6;">
+        <!-- header band -->
+        <tr>
+          <td align="center" class="px" style="background-color:#0A1128;padding:28px 32px 22px 32px;">
+            <div style="font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:22px;line-height:1.4;font-weight:600;color:#D4AF37;">إلى سعادة الدارين</div>
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" style="margin:12px auto 10px auto;">
+              <tr><td width="72" height="2" style="width:72px;height:2px;line-height:2px;font-size:0;background-color:#D4AF37;">&nbsp;</td></tr>
+            </table>
+            <div style="font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:13px;line-height:1.6;color:#F4EFE6;">تفسير الرؤى بوضوح وعمق نحو سعادة الدارين</div>
+          </td>
+        </tr>
+        <!-- content -->
+        <tr>
+          <td class="px" style="padding:32px 36px 28px 36px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:16px;line-height:1.9;color:#0A1128;background-color:#F4EFE6;" dir="rtl" align="right">
+            <div>
+  <p style="margin:0 0 18px 0;font-size:18px;line-height:1.7;font-weight:600;color:#0A1128;">السلام عليكم <span>interp</span>،</p>
+  <p style="margin:0 0 16px 0;">وصلت رؤيا جديدة من <strong>buyer</strong> وأُضيفت إلى قائمة المراجعة.</p>
+  <p style="margin:0 0 16px 0;font-size:14px;line-height:1.8;color:#5B6478;">الموعد المتوقع للتفسير: <strong>29 سبتمبر 2026، 11:24 م</strong></p>
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
+       style="margin:28px 0 8px 0;border-collapse:collapse;">
+  <tr>
+    <td align="center">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center">
+        <tr>
+          <td align="center" bgcolor="#D4AF37" style="border-radius:999px;background-color:#D4AF37;">
+            <a href="http://localhost:5173/admin/dreams/6ae3fd60-fbaf-4967-a782-ea82e7e71c1f" target="_blank"
+               style="display:inline-block;padding:14px 38px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:16px;line-height:1.2;font-weight:600;color:#0A1128;text-decoration:none;border-radius:999px;">فتح الرؤيا</a>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+  <tr>
+    <td align="center" style="padding-top:14px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:12px;line-height:1.6;color:#5B6478;">
+      <span>إذا لم يعمل الزر، انسخ هذا الرابط في المتصفح:</span><br>
+      <a href="http://localhost:5173/admin/dreams/6ae3fd60-fbaf-4967-a782-ea82e7e71c1f" dir="ltr" style="color:#5B6478;word-break:break-all;">http://localhost:5173/admin/dreams/6ae3fd60-fbaf-4967-a782-ea82e7e71c1f</a>
+    </td>
+  </tr>
+</table>
+</div>
+          </td>
+        </tr>
+        <!-- footer -->
+        <tr>
+          <td align="center" class="px" style="background-color:#0A1128;padding:24px 32px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:13px;line-height:1.8;color:#F4EFE6;">
+            <a href="https://youtube.com/@almoaberafatema" style="color:#D4AF37;text-decoration:none;font-weight:600;">شاهد القناة على يوتيوب</a>
+            <div style="margin-top:6px;">
+              <span>للتواصل معنا:</span>
+              <a href="mailto:support@saadatu-aldarein.com" style="color:#D4AF37;text-decoration:none;">support@saadatu-aldarein.com</a>
+            </div>
+            <div style="margin-top:12px;font-size:12px;line-height:1.7;color:#AEB4C2;">وصلتك هذه الرسالة لأنها تخص حسابك لدينا.</div>
+            <div style="margin-top:6px;font-size:12px;color:#AEB4C2;">&copy; <span>2026</span> <span>إلى سعادة الدارين</span></div>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
+</body>
+</html>
+
+20:24:01.513 INFO  [Test worker] [4c653d78-1b1f-42ee-a4fa-59e00a138366] c.s.payments.service.PaymentService - Duplicate payment webhook txn=MOCK-c04ecd48-24a2-4890-8c99-c919462fdda3-OK ignored
+20:24:01.513 INFO  [Test worker] [4c653d78-1b1f-42ee-a4fa-59e00a138366] c.s.payments.api.WebhookController - Mock webhook order=c04ecd48-24a2-4890-8c99-c919462fdda3 success=true → DUPLICATE
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

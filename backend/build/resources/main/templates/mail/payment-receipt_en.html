@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<!--/* payment-receipt (en) — copy is literal here (per-locale file); subject + preheader: messages mail.payment-receipt.* */-->
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{mail/_layout :: layout('ltr', 'en', ~{::content})}">
+<head><title>payment-receipt</title></head>
+<body>
+<div th:fragment="content">
+  <p style="margin:0 0 18px 0;font-size:18px;line-height:1.7;font-weight:600;color:#0A1128;">Assalamu alaikum<th:block th:if="${!#strings.isEmpty(name)}"> <span th:text="${name}">…</span></th:block>,</p>
+  <p style="margin:0 0 16px 0;">Thank you. Your payment was successful and the credits were added to your account.</p>
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:4px 0 8px 0;border-collapse:collapse;background-color:#FFFFFF;border:1px solid #E6DCC8;border-radius:12px;">
+    <tr th:if="${!#strings.isEmpty(packageName)}">
+      <td align="left" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;">Package</td>
+      <td align="left" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;" th:text="${packageName}">—</td>
+    </tr>
+    <tr th:if="${credits != null}">
+      <td align="left" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;">Dreams</td>
+      <td align="left" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;" th:text="${credits}">—</td>
+    </tr>
+    <tr th:if="${amount != null}">
+      <td align="left" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;">Amount</td>
+      <td align="left" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;" th:text="|${amount} ${currency}|">—</td>
+    </tr>
+    <tr th:if="${!#strings.isEmpty(orderRef)}">
+      <td align="left" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;">Order</td>
+      <td align="left" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;" th:text="${orderRef}">—</td>
+    </tr>
+    <tr th:if="${!#strings.isEmpty(paidAt)}">
+      <td align="left" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;">Paid on</td>
+      <td align="left" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;" th:text="${paidAt}">—</td>
+    </tr>
+  </table>
+  <p style="margin:0 0 16px 0;font-size:14px;line-height:1.8;color:#5B6478;">Please keep this message as your payment receipt.</p>
+  <table th:replace="~{mail/_layout :: cta(${ctaUrl}, 'View payments')}"></table>
+</div>
+</body>
+</html>

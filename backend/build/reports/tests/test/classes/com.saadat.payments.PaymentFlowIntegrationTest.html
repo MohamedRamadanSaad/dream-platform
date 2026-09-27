@@ -1,0 +1,2328 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<meta http-equiv="x-ua-compatible" content="IE=edge"/>
+<title>Test results - PaymentFlowIntegrationTest</title>
+<link href="../css/base-style.css" rel="stylesheet" type="text/css"/>
+<link href="../css/style.css" rel="stylesheet" type="text/css"/>
+<script src="../js/report.js" type="text/javascript"></script>
+</head>
+<body>
+<div id="content">
+<h1>PaymentFlowIntegrationTest</h1>
+<div class="breadcrumbs">
+<a href="../index.html">all</a> &gt; 
+<a href="../packages/com.saadat.payments.html">com.saadat.payments</a> &gt; PaymentFlowIntegrationTest</div>
+<div id="summary">
+<table>
+<tr>
+<td>
+<div class="summaryGroup">
+<table>
+<tr>
+<td>
+<div class="infoBox" id="tests">
+<div class="counter">8</div>
+<p>tests</p>
+</div>
+</td>
+<td>
+<div class="infoBox" id="failures">
+<div class="counter">0</div>
+<p>failures</p>
+</div>
+</td>
+<td>
+<div class="infoBox" id="ignored">
+<div class="counter">0</div>
+<p>ignored</p>
+</div>
+</td>
+<td>
+<div class="infoBox" id="duration">
+<div class="counter">0.370s</div>
+<p>duration</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+</td>
+<td>
+<div class="infoBox success" id="successRate">
+<div class="percent">100%</div>
+<p>successful</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="tab-container">
+<ul class="tabLinks">
+<li>
+<a href="#">Tests</a>
+</li>
+<li>
+<a href="#">Standard output</a>
+</li>
+</ul>
+<div class="tab">
+<h2>Tests</h2>
+<table>
+<thead>
+<tr>
+<th>Test</th>
+<th>Duration</th>
+<th>Result</th>
+</tr>
+</thead>
+<tr>
+<td class="success">amountMismatchMarksSuspiciousWithoutCredits()</td>
+<td class="success">0.060s</td>
+<td class="success">passed</td>
+</tr>
+<tr>
+<td class="success">cardCountryMismatchMarksSuspicious()</td>
+<td class="success">0.059s</td>
+<td class="success">passed</td>
+</tr>
+<tr>
+<td class="success">catalogIsPricedForTheUsersCountry()</td>
+<td class="success">0.025s</td>
+<td class="success">passed</td>
+</tr>
+<tr>
+<td class="success">duplicateProviderTransactionIsANoOp()</td>
+<td class="success">0.068s</td>
+<td class="success">passed</td>
+</tr>
+<tr>
+<td class="success">failedPaymentGivesNoCredits()</td>
+<td class="success">0.029s</td>
+<td class="success">passed</td>
+</tr>
+<tr>
+<td class="success">mockCheckoutThenWebhookCreditsAndAutoSubmitsDraft()</td>
+<td class="success">0.113s</td>
+<td class="success">passed</td>
+</tr>
+<tr>
+<td class="success">paymobWebhookWithBadHmacIsRejected()</td>
+<td class="success">0.010s</td>
+<td class="success">passed</td>
+</tr>
+<tr>
+<td class="success">userCannotListAdminOrders()</td>
+<td class="success">0.006s</td>
+<td class="success">passed</td>
+</tr>
+</table>
+</div>
+<div class="tab">
+<h2>Standard output</h2>
+<span class="code">
+<pre>20:24:01.135 INFO  [Test worker] [] o.s.t.c.s.AnnotationConfigContextLoaderUtils - Could not detect default configuration classes for test class [com.saadat.payments.PaymentFlowIntegrationTest]: PaymentFlowIntegrationTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+20:24:01.142 INFO  [Test worker] [] o.s.b.t.c.SpringBootTestContextBootstrapper - Found @SpringBootConfiguration com.saadat.SaadatApplication for test class com.saadat.payments.PaymentFlowIntegrationTest
+20:24:01.202 INFO  [Test worker] [] com.saadat.mail.MailService - SMTP not configured — e-mail 'payment-receipt' to d***@example.com (subject: إيصال الدفع — تفسير رؤيا واحدة):
+&lt;!DOCTYPE html&gt;
+
+&lt;html lang=&quot;ar&quot; dir=&quot;rtl&quot;&gt;
+&lt;head&gt;
+  &lt;meta charset=&quot;UTF-8&quot;&gt;
+  &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot;&gt;
+  &lt;meta http-equiv=&quot;X-UA-Compatible&quot; content=&quot;IE=edge&quot;&gt;
+  &lt;meta name=&quot;x-apple-disable-message-reformatting&quot;&gt;
+  &lt;meta name=&quot;color-scheme&quot; content=&quot;light&quot;&gt;
+  &lt;meta name=&quot;supported-color-schemes&quot; content=&quot;light&quot;&gt;
+  &lt;title&gt;إيصال الدفع — تفسير رؤيا واحدة&lt;/title&gt;
+  &lt;link href=&quot;https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;600&amp;amp;display=swap&quot; rel=&quot;stylesheet&quot;&gt;
+  &lt;style&gt;
+    body, table, td, p, a, div, span, strong { font-family: 'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif; }
+    a { color: #0A1128; }
+    @media only screen and (max-width: 620px) {
+      .container { width: 100% !important; }
+      .px { padding-left: 20px !important; padding-right: 20px !important; }
+    }
+  &lt;/style&gt;
+&lt;/head&gt;
+&lt;body style=&quot;margin:0;padding:0;background-color:#F4EFE6;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;&quot; dir=&quot;rtl&quot;&gt;
+&lt;div style=&quot;display:none;max-height:0;max-width:0;overflow:hidden;mso-hide:all;font-size:1px;line-height:1px;color:#F4EFE6;opacity:0;&quot;&gt;شكراً لك، تمت إضافة الرصيد إلى حسابك.&lt;/div&gt;
+&lt;table role=&quot;presentation&quot; width=&quot;100%&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; border=&quot;0&quot; style=&quot;background-color:#F4EFE6;border-collapse:collapse;&quot; dir=&quot;rtl&quot;&gt;
+  &lt;tr&gt;
+    &lt;td align=&quot;center&quot; style=&quot;padding:24px 12px;&quot;&gt;
+      &lt;table role=&quot;presentation&quot; class=&quot;container&quot; width=&quot;600&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; border=&quot;0&quot;
+             style=&quot;width:600px;max-width:600px;border-collapse:separate;border:1px solid #E6DCC8;border-radius:16px;overflow:hidden;background-color:#F4EFE6;&quot;&gt;
+        &lt;!-- header band --&gt;
+        &lt;tr&gt;
+          &lt;td align=&quot;center&quot; class=&quot;px&quot; style=&quot;background-color:#0A1128;padding:28px 32px 22px 32px;&quot;&gt;
+            &lt;div style=&quot;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:22px;line-height:1.4;font-weight:600;color:#D4AF37;&quot;&gt;إلى سعادة الدارين&lt;/div&gt;
+            &lt;table role=&quot;presentation&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; border=&quot;0&quot; align=&quot;center&quot; style=&quot;margin:12px auto 10px auto;&quot;&gt;
+              &lt;tr&gt;&lt;td width=&quot;72&quot; height=&quot;2&quot; style=&quot;width:72px;height:2px;line-height:2px;font-size:0;background-color:#D4AF37;&quot;&gt;&amp;nbsp;&lt;/td&gt;&lt;/tr&gt;
+            &lt;/table&gt;
+            &lt;div style=&quot;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:13px;line-height:1.6;color:#F4EFE6;&quot;&gt;تفسير الرؤى بوضوح وعمق نحو سعادة الدارين&lt;/div&gt;
+          &lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;!-- content --&gt;
+        &lt;tr&gt;
+          &lt;td class=&quot;px&quot; style=&quot;padding:32px 36px 28px 36px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:16px;line-height:1.9;color:#0A1128;background-color:#F4EFE6;&quot; dir=&quot;rtl&quot; align=&quot;right&quot;&gt;
+            &lt;div&gt;
+  &lt;p style=&quot;margin:0 0 18px 0;font-size:18px;line-height:1.7;font-weight:600;color:#0A1128;&quot;&gt;السلام عليكم &lt;span&gt;dup&lt;/span&gt;،&lt;/p&gt;
+  &lt;p style=&quot;margin:0 0 16px 0;&quot;&gt;شكراً لك، تم الدفع بنجاح وأُضيف الرصيد إلى حسابك.&lt;/p&gt;
+  &lt;table role=&quot;presentation&quot; width=&quot;100%&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; border=&quot;0&quot; style=&quot;margin:4px 0 8px 0;border-collapse:collapse;background-color:#FFFFFF;border:1px solid #E6DCC8;border-radius:12px;&quot;&gt;
+    &lt;tr&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;&quot;&gt;الباقة&lt;/td&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;&quot;&gt;تفسير رؤيا واحدة&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;&quot;&gt;عدد الرؤى&lt;/td&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;&quot;&gt;1&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;&quot;&gt;المبلغ&lt;/td&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;&quot;&gt;49.00 SAR&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;&quot;&gt;رقم الطلب&lt;/td&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;&quot;&gt;TXN-1e553b02-2e23-4f71-807f-efb307948a66&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;&quot;&gt;تاريخ الدفع&lt;/td&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;&quot;&gt;27 سبتمبر 2026، 11:24 م&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/table&gt;
+  &lt;p style=&quot;margin:0 0 16px 0;font-size:14px;line-height:1.8;color:#5B6478;&quot;&gt;احتفظ بهذه الرسالة إيصالاً للدفع.&lt;/p&gt;
+  &lt;table role=&quot;presentation&quot; width=&quot;100%&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; border=&quot;0&quot;
+       style=&quot;margin:28px 0 8px 0;border-collapse:collapse;&quot;&gt;
+  &lt;tr&gt;
+    &lt;td align=&quot;center&quot;&gt;
+      &lt;table role=&quot;presentation&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; border=&quot;0&quot; align=&quot;center&quot;&gt;
+        &lt;tr&gt;
+          &lt;td align=&quot;center&quot; bgcolor=&quot;#D4AF37&quot; style=&quot;border-radius:999px;background-color:#D4AF37;&quot;&gt;
+            &lt;a href=&quot;http://localhost:5173/me/payments&quot; target=&quot;_blank&quot;
+               style=&quot;display:inline-block;padding:14px 38px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:16px;line-height:1.2;font-weight:600;color:#0A1128;text-decoration:none;border-radius:999px;&quot;&gt;عرض المدفوعات&lt;/a&gt;
+          &lt;/td&gt;
+        &lt;/tr&gt;
+      &lt;/table&gt;
+    &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+    &lt;td align=&quot;center&quot; style=&quot;padding-top:14px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:12px;line-height:1.6;color:#5B6478;&quot;&gt;
+      &lt;span&gt;إذا لم يعمل الزر، انسخ هذا الرابط في المتصفح:&lt;/span&gt;&lt;br&gt;
+      &lt;a href=&quot;http://localhost:5173/me/payments&quot; dir=&quot;ltr&quot; style=&quot;color:#5B6478;word-break:break-all;&quot;&gt;http://localhost:5173/me/payments&lt;/a&gt;
+    &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+          &lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;!-- footer --&gt;
+        &lt;tr&gt;
+          &lt;td align=&quot;center&quot; class=&quot;px&quot; style=&quot;background-color:#0A1128;padding:24px 32px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:13px;line-height:1.8;color:#F4EFE6;&quot;&gt;
+            &lt;a href=&quot;https://youtube.com/@almoaberafatema&quot; style=&quot;color:#D4AF37;text-decoration:none;font-weight:600;&quot;&gt;شاهد القناة على يوتيوب&lt;/a&gt;
+            &lt;div style=&quot;margin-top:6px;&quot;&gt;
+              &lt;span&gt;للتواصل معنا:&lt;/span&gt;
+              &lt;a href=&quot;mailto:support@saadatu-aldarein.com&quot; style=&quot;color:#D4AF37;text-decoration:none;&quot;&gt;support@saadatu-aldarein.com&lt;/a&gt;
+            &lt;/div&gt;
+            &lt;div style=&quot;margin-top:12px;font-size:12px;line-height:1.7;color:#AEB4C2;&quot;&gt;وصلتك هذه الرسالة لأنها تخص حسابك لدينا.&lt;/div&gt;
+            &lt;div style=&quot;margin-top:6px;font-size:12px;color:#AEB4C2;&quot;&gt;&amp;copy; &lt;span&gt;2026&lt;/span&gt; &lt;span&gt;إلى سعادة الدارين&lt;/span&gt;&lt;/div&gt;
+          &lt;/td&gt;
+        &lt;/tr&gt;
+      &lt;/table&gt;
+    &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/table&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+
+20:24:01.209 INFO  [Test worker] [] c.s.payments.service.PaymentService - Duplicate payment webhook txn=TXN-1e553b02-2e23-4f71-807f-efb307948a66 ignored
+20:24:01.210 DEBUG [async-2] [] c.saadat.push.service.WebPushSender - Web push not configured — skipping push to user 4cb2d490-9594-4031-bef2-0bcd7bbcd87b
+20:24:01.221 WARN  [Test worker] [5a85a8c7-3000-4d46-8692-f9d260a07bc3] c.s.payments.api.WebhookController - Paymob webhook with invalid HMAC rejected
+20:24:01.251 WARN  [Test worker] [] c.s.payments.service.PaymentService - Order 064eab95-f031-4d52-a386-4f72467de6ad marked SUSPICIOUS: CARD_COUNTRY_MISMATCH
+20:24:01.265 INFO  [Test worker] [] com.saadat.mail.MailService - SMTP not configured — e-mail 'payment-suspicious' to i***@example.com (subject: طلب دفع يحتاج إلى مراجعة 064eab95-f031-4d52-a386-4f72467de6ad):
+&lt;!DOCTYPE html&gt;
+
+&lt;html lang=&quot;ar&quot; dir=&quot;rtl&quot;&gt;
+&lt;head&gt;
+  &lt;meta charset=&quot;UTF-8&quot;&gt;
+  &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot;&gt;
+  &lt;meta http-equiv=&quot;X-UA-Compatible&quot; content=&quot;IE=edge&quot;&gt;
+  &lt;meta name=&quot;x-apple-disable-message-reformatting&quot;&gt;
+  &lt;meta name=&quot;color-scheme&quot; content=&quot;light&quot;&gt;
+  &lt;meta name=&quot;supported-color-schemes&quot; content=&quot;light&quot;&gt;
+  &lt;title&gt;طلب دفع يحتاج إلى مراجعة 064eab95-f031-4d52-a386-4f72467de6ad&lt;/title&gt;
+  &lt;link href=&quot;https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;600&amp;amp;display=swap&quot; rel=&quot;stylesheet&quot;&gt;
+  &lt;style&gt;
+    body, table, td, p, a, div, span, strong { font-family: 'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif; }
+    a { color: #0A1128; }
+    @media only screen and (max-width: 620px) {
+      .container { width: 100% !important; }
+      .px { padding-left: 20px !important; padding-right: 20px !important; }
+    }
+  &lt;/style&gt;
+&lt;/head&gt;
+&lt;body style=&quot;margin:0;padding:0;background-color:#F4EFE6;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;&quot; dir=&quot;rtl&quot;&gt;
+&lt;div style=&quot;display:none;max-height:0;max-width:0;overflow:hidden;mso-hide:all;font-size:1px;line-height:1px;color:#F4EFE6;opacity:0;&quot;&gt;لم يُضف أي رصيد لهذا الطلب حتى تتم مراجعته.&lt;/div&gt;
+&lt;table role=&quot;presentation&quot; width=&quot;100%&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; border=&quot;0&quot; style=&quot;background-color:#F4EFE6;border-collapse:collapse;&quot; dir=&quot;rtl&quot;&gt;
+  &lt;tr&gt;
+    &lt;td align=&quot;center&quot; style=&quot;padding:24px 12px;&quot;&gt;
+      &lt;table role=&quot;presentation&quot; class=&quot;container&quot; width=&quot;600&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; border=&quot;0&quot;
+             style=&quot;width:600px;max-width:600px;border-collapse:separate;border:1px solid #E6DCC8;border-radius:16px;overflow:hidden;background-color:#F4EFE6;&quot;&gt;
+        &lt;!-- header band --&gt;
+        &lt;tr&gt;
+          &lt;td align=&quot;center&quot; class=&quot;px&quot; style=&quot;background-color:#0A1128;padding:28px 32px 22px 32px;&quot;&gt;
+            &lt;div style=&quot;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:22px;line-height:1.4;font-weight:600;color:#D4AF37;&quot;&gt;إلى سعادة الدارين&lt;/div&gt;
+            &lt;table role=&quot;presentation&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; border=&quot;0&quot; align=&quot;center&quot; style=&quot;margin:12px auto 10px auto;&quot;&gt;
+              &lt;tr&gt;&lt;td width=&quot;72&quot; height=&quot;2&quot; style=&quot;width:72px;height:2px;line-height:2px;font-size:0;background-color:#D4AF37;&quot;&gt;&amp;nbsp;&lt;/td&gt;&lt;/tr&gt;
+            &lt;/table&gt;
+            &lt;div style=&quot;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:13px;line-height:1.6;color:#F4EFE6;&quot;&gt;تفسير الرؤى بوضوح وعمق نحو سعادة الدارين&lt;/div&gt;
+          &lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;!-- content --&gt;
+        &lt;tr&gt;
+          &lt;td class=&quot;px&quot; style=&quot;padding:32px 36px 28px 36px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:16px;line-height:1.9;color:#0A1128;background-color:#F4EFE6;&quot; dir=&quot;rtl&quot; align=&quot;right&quot;&gt;
+            &lt;div&gt;
+  &lt;p style=&quot;margin:0 0 18px 0;font-size:18px;line-height:1.7;font-weight:600;color:#0A1128;&quot;&gt;السلام عليكم &lt;span&gt;interpreter&lt;/span&gt;،&lt;/p&gt;
+  &lt;p style=&quot;margin:0 0 16px 0;&quot;&gt;طلب دفع يحتاج إلى مراجعتك قبل إضافة الرصيد. لم يُضف أي رصيد لهذا الطلب.&lt;/p&gt;
+  &lt;table role=&quot;presentation&quot; width=&quot;100%&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; border=&quot;0&quot; style=&quot;margin:4px 0 8px 0;border-collapse:collapse;background-color:#FFFFFF;border:1px solid #E6DCC8;border-radius:12px;&quot;&gt;
+    &lt;tr&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;&quot;&gt;رقم الطلب&lt;/td&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;&quot;&gt;064eab95-f031-4d52-a386-4f72467de6ad&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;&quot;&gt;المستخدم&lt;/td&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;&quot;&gt;country&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;&quot;&gt;البريد&lt;/td&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;&quot;&gt;country-8d5d59a2-09af-498e-8523-5a2ee8d513e4@example.com&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;&quot;&gt;المبلغ&lt;/td&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;&quot;&gt;49.00 SAR&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;&quot;&gt;السبب&lt;/td&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;&quot;&gt;CARD_COUNTRY_MISMATCH&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/table&gt;
+  &lt;table role=&quot;presentation&quot; width=&quot;100%&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; border=&quot;0&quot;
+       style=&quot;margin:28px 0 8px 0;border-collapse:collapse;&quot;&gt;
+  &lt;tr&gt;
+    &lt;td align=&quot;center&quot;&gt;
+      &lt;table role=&quot;presentation&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; border=&quot;0&quot; align=&quot;center&quot;&gt;
+        &lt;tr&gt;
+          &lt;td align=&quot;center&quot; bgcolor=&quot;#D4AF37&quot; style=&quot;border-radius:999px;background-color:#D4AF37;&quot;&gt;
+            &lt;a href=&quot;http://localhost:5173/admin/orders&quot; target=&quot;_blank&quot;
+               style=&quot;display:inline-block;padding:14px 38px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:16px;line-height:1.2;font-weight:600;color:#0A1128;text-decoration:none;border-radius:999px;&quot;&gt;مراجعة الطلب&lt;/a&gt;
+          &lt;/td&gt;
+        &lt;/tr&gt;
+      &lt;/table&gt;
+    &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+    &lt;td align=&quot;center&quot; style=&quot;padding-top:14px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:12px;line-height:1.6;color:#5B6478;&quot;&gt;
+      &lt;span&gt;إذا لم يعمل الزر، انسخ هذا الرابط في المتصفح:&lt;/span&gt;&lt;br&gt;
+      &lt;a href=&quot;http://localhost:5173/admin/orders&quot; dir=&quot;ltr&quot; style=&quot;color:#5B6478;word-break:break-all;&quot;&gt;http://localhost:5173/admin/orders&lt;/a&gt;
+    &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+          &lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;!-- footer --&gt;
+        &lt;tr&gt;
+          &lt;td align=&quot;center&quot; class=&quot;px&quot; style=&quot;background-color:#0A1128;padding:24px 32px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:13px;line-height:1.8;color:#F4EFE6;&quot;&gt;
+            &lt;a href=&quot;https://youtube.com/@almoaberafatema&quot; style=&quot;color:#D4AF37;text-decoration:none;font-weight:600;&quot;&gt;شاهد القناة على يوتيوب&lt;/a&gt;
+            &lt;div style=&quot;margin-top:6px;&quot;&gt;
+              &lt;span&gt;للتواصل معنا:&lt;/span&gt;
+              &lt;a href=&quot;mailto:support@saadatu-aldarein.com&quot; style=&quot;color:#D4AF37;text-decoration:none;&quot;&gt;support@saadatu-aldarein.com&lt;/a&gt;
+            &lt;/div&gt;
+            &lt;div style=&quot;margin-top:12px;font-size:12px;line-height:1.7;color:#AEB4C2;&quot;&gt;وصلتك هذه الرسالة لأنها تخص حسابك لدينا.&lt;/div&gt;
+            &lt;div style=&quot;margin-top:6px;font-size:12px;color:#AEB4C2;&quot;&gt;&amp;copy; &lt;span&gt;2026&lt;/span&gt; &lt;span&gt;إلى سعادة الدارين&lt;/span&gt;&lt;/div&gt;
+          &lt;/td&gt;
+        &lt;/tr&gt;
+      &lt;/table&gt;
+    &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/table&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+
+20:24:01.266 INFO  [Test worker] [] com.saadat.mail.MailService - SMTP not configured — e-mail 'payment-suspicious' to i***@example.com (subject: طلب دفع يحتاج إلى مراجعة 064eab95-f031-4d52-a386-4f72467de6ad):
+&lt;!DOCTYPE html&gt;
+
+&lt;html lang=&quot;ar&quot; dir=&quot;rtl&quot;&gt;
+&lt;head&gt;
+  &lt;meta charset=&quot;UTF-8&quot;&gt;
+  &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot;&gt;
+  &lt;meta http-equiv=&quot;X-UA-Compatible&quot; content=&quot;IE=edge&quot;&gt;
+  &lt;meta name=&quot;x-apple-disable-message-reformatting&quot;&gt;
+  &lt;meta name=&quot;color-scheme&quot; content=&quot;light&quot;&gt;
+  &lt;meta name=&quot;supported-color-schemes&quot; content=&quot;light&quot;&gt;
+  &lt;title&gt;طلب دفع يحتاج إلى مراجعة 064eab95-f031-4d52-a386-4f72467de6ad&lt;/title&gt;
+  &lt;link href=&quot;https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;600&amp;amp;display=swap&quot; rel=&quot;stylesheet&quot;&gt;
+  &lt;style&gt;
+    body, table, td, p, a, div, span, strong { font-family: 'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif; }
+    a { color: #0A1128; }
+    @media only screen and (max-width: 620px) {
+      .container { width: 100% !important; }
+      .px { padding-left: 20px !important; padding-right: 20px !important; }
+    }
+  &lt;/style&gt;
+&lt;/head&gt;
+&lt;body style=&quot;margin:0;padding:0;background-color:#F4EFE6;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;&quot; dir=&quot;rtl&quot;&gt;
+&lt;div style=&quot;display:none;max-height:0;max-width:0;overflow:hidden;mso-hide:all;font-size:1px;line-height:1px;color:#F4EFE6;opacity:0;&quot;&gt;لم يُضف أي رصيد لهذا الطلب حتى تتم مراجعته.&lt;/div&gt;
+&lt;table role=&quot;presentation&quot; width=&quot;100%&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; border=&quot;0&quot; style=&quot;background-color:#F4EFE6;border-collapse:collapse;&quot; dir=&quot;rtl&quot;&gt;
+  &lt;tr&gt;
+    &lt;td align=&quot;center&quot; style=&quot;padding:24px 12px;&quot;&gt;
+      &lt;table role=&quot;presentation&quot; class=&quot;container&quot; width=&quot;600&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; border=&quot;0&quot;
+             style=&quot;width:600px;max-width:600px;border-collapse:separate;border:1px solid #E6DCC8;border-radius:16px;overflow:hidden;background-color:#F4EFE6;&quot;&gt;
+        &lt;!-- header band --&gt;
+        &lt;tr&gt;
+          &lt;td align=&quot;center&quot; class=&quot;px&quot; style=&quot;background-color:#0A1128;padding:28px 32px 22px 32px;&quot;&gt;
+            &lt;div style=&quot;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:22px;line-height:1.4;font-weight:600;color:#D4AF37;&quot;&gt;إلى سعادة الدارين&lt;/div&gt;
+            &lt;table role=&quot;presentation&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; border=&quot;0&quot; align=&quot;center&quot; style=&quot;margin:12px auto 10px auto;&quot;&gt;
+              &lt;tr&gt;&lt;td width=&quot;72&quot; height=&quot;2&quot; style=&quot;width:72px;height:2px;line-height:2px;font-size:0;background-color:#D4AF37;&quot;&gt;&amp;nbsp;&lt;/td&gt;&lt;/tr&gt;
+            &lt;/table&gt;
+            &lt;div style=&quot;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:13px;line-height:1.6;color:#F4EFE6;&quot;&gt;تفسير الرؤى بوضوح وعمق نحو سعادة الدارين&lt;/div&gt;
+          &lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;!-- content --&gt;
+        &lt;tr&gt;
+          &lt;td class=&quot;px&quot; style=&quot;padding:32px 36px 28px 36px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:16px;line-height:1.9;color:#0A1128;background-color:#F4EFE6;&quot; dir=&quot;rtl&quot; align=&quot;right&quot;&gt;
+            &lt;div&gt;
+  &lt;p style=&quot;margin:0 0 18px 0;font-size:18px;line-height:1.7;font-weight:600;color:#0A1128;&quot;&gt;السلام عليكم &lt;span&gt;interpreter&lt;/span&gt;،&lt;/p&gt;
+  &lt;p style=&quot;margin:0 0 16px 0;&quot;&gt;طلب دفع يحتاج إلى مراجعتك قبل إضافة الرصيد. لم يُضف أي رصيد لهذا الطلب.&lt;/p&gt;
+  &lt;table role=&quot;presentation&quot; width=&quot;100%&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; border=&quot;0&quot; style=&quot;margin:4px 0 8px 0;border-collapse:collapse;background-color:#FFFFFF;border:1px solid #E6DCC8;border-radius:12px;&quot;&gt;
+    &lt;tr&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;&quot;&gt;رقم الطلب&lt;/td&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;&quot;&gt;064eab95-f031-4d52-a386-4f72467de6ad&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;&quot;&gt;المستخدم&lt;/td&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;&quot;&gt;country&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;&quot;&gt;البريد&lt;/td&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;&quot;&gt;country-8d5d59a2-09af-498e-8523-5a2ee8d513e4@example.com&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;&quot;&gt;المبلغ&lt;/td&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;&quot;&gt;49.00 SAR&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;&quot;&gt;السبب&lt;/td&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;&quot;&gt;CARD_COUNTRY_MISMATCH&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/table&gt;
+  &lt;table role=&quot;presentation&quot; width=&quot;100%&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; border=&quot;0&quot;
+       style=&quot;margin:28px 0 8px 0;border-collapse:collapse;&quot;&gt;
+  &lt;tr&gt;
+    &lt;td align=&quot;center&quot;&gt;
+      &lt;table role=&quot;presentation&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; border=&quot;0&quot; align=&quot;center&quot;&gt;
+        &lt;tr&gt;
+          &lt;td align=&quot;center&quot; bgcolor=&quot;#D4AF37&quot; style=&quot;border-radius:999px;background-color:#D4AF37;&quot;&gt;
+            &lt;a href=&quot;http://localhost:5173/admin/orders&quot; target=&quot;_blank&quot;
+               style=&quot;display:inline-block;padding:14px 38px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:16px;line-height:1.2;font-weight:600;color:#0A1128;text-decoration:none;border-radius:999px;&quot;&gt;مراجعة الطلب&lt;/a&gt;
+          &lt;/td&gt;
+        &lt;/tr&gt;
+      &lt;/table&gt;
+    &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+    &lt;td align=&quot;center&quot; style=&quot;padding-top:14px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:12px;line-height:1.6;color:#5B6478;&quot;&gt;
+      &lt;span&gt;إذا لم يعمل الزر، انسخ هذا الرابط في المتصفح:&lt;/span&gt;&lt;br&gt;
+      &lt;a href=&quot;http://localhost:5173/admin/orders&quot; dir=&quot;ltr&quot; style=&quot;color:#5B6478;word-break:break-all;&quot;&gt;http://localhost:5173/admin/orders&lt;/a&gt;
+    &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+          &lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;!-- footer --&gt;
+        &lt;tr&gt;
+          &lt;td align=&quot;center&quot; class=&quot;px&quot; style=&quot;background-color:#0A1128;padding:24px 32px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:13px;line-height:1.8;color:#F4EFE6;&quot;&gt;
+            &lt;a href=&quot;https://youtube.com/@almoaberafatema&quot; style=&quot;color:#D4AF37;text-decoration:none;font-weight:600;&quot;&gt;شاهد القناة على يوتيوب&lt;/a&gt;
+            &lt;div style=&quot;margin-top:6px;&quot;&gt;
+              &lt;span&gt;للتواصل معنا:&lt;/span&gt;
+              &lt;a href=&quot;mailto:support@saadatu-aldarein.com&quot; style=&quot;color:#D4AF37;text-decoration:none;&quot;&gt;support@saadatu-aldarein.com&lt;/a&gt;
+            &lt;/div&gt;
+            &lt;div style=&quot;margin-top:12px;font-size:12px;line-height:1.7;color:#AEB4C2;&quot;&gt;وصلتك هذه الرسالة لأنها تخص حسابك لدينا.&lt;/div&gt;
+            &lt;div style=&quot;margin-top:6px;font-size:12px;color:#AEB4C2;&quot;&gt;&amp;copy; &lt;span&gt;2026&lt;/span&gt; &lt;span&gt;إلى سعادة الدارين&lt;/span&gt;&lt;/div&gt;
+          &lt;/td&gt;
+        &lt;/tr&gt;
+      &lt;/table&gt;
+    &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/table&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+
+20:24:01.268 INFO  [Test worker] [] com.saadat.mail.MailService - SMTP not configured — e-mail 'payment-suspicious' to f***@saadatu-aldarein.com (subject: طلب دفع يحتاج إلى مراجعة 064eab95-f031-4d52-a386-4f72467de6ad):
+&lt;!DOCTYPE html&gt;
+
+&lt;html lang=&quot;ar&quot; dir=&quot;rtl&quot;&gt;
+&lt;head&gt;
+  &lt;meta charset=&quot;UTF-8&quot;&gt;
+  &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot;&gt;
+  &lt;meta http-equiv=&quot;X-UA-Compatible&quot; content=&quot;IE=edge&quot;&gt;
+  &lt;meta name=&quot;x-apple-disable-message-reformatting&quot;&gt;
+  &lt;meta name=&quot;color-scheme&quot; content=&quot;light&quot;&gt;
+  &lt;meta name=&quot;supported-color-schemes&quot; content=&quot;light&quot;&gt;
+  &lt;title&gt;طلب دفع يحتاج إلى مراجعة 064eab95-f031-4d52-a386-4f72467de6ad&lt;/title&gt;
+  &lt;link href=&quot;https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;600&amp;amp;display=swap&quot; rel=&quot;stylesheet&quot;&gt;
+  &lt;style&gt;
+    body, table, td, p, a, div, span, strong { font-family: 'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif; }
+    a { color: #0A1128; }
+    @media only screen and (max-width: 620px) {
+      .container { width: 100% !important; }
+      .px { padding-left: 20px !important; padding-right: 20px !important; }
+    }
+  &lt;/style&gt;
+&lt;/head&gt;
+&lt;body style=&quot;margin:0;padding:0;background-color:#F4EFE6;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;&quot; dir=&quot;rtl&quot;&gt;
+&lt;div style=&quot;display:none;max-height:0;max-width:0;overflow:hidden;mso-hide:all;font-size:1px;line-height:1px;color:#F4EFE6;opacity:0;&quot;&gt;لم يُضف أي رصيد لهذا الطلب حتى تتم مراجعته.&lt;/div&gt;
+&lt;table role=&quot;presentation&quot; width=&quot;100%&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; border=&quot;0&quot; style=&quot;background-color:#F4EFE6;border-collapse:collapse;&quot; dir=&quot;rtl&quot;&gt;
+  &lt;tr&gt;
+    &lt;td align=&quot;center&quot; style=&quot;padding:24px 12px;&quot;&gt;
+      &lt;table role=&quot;presentation&quot; class=&quot;container&quot; width=&quot;600&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; border=&quot;0&quot;
+             style=&quot;width:600px;max-width:600px;border-collapse:separate;border:1px solid #E6DCC8;border-radius:16px;overflow:hidden;background-color:#F4EFE6;&quot;&gt;
+        &lt;!-- header band --&gt;
+        &lt;tr&gt;
+          &lt;td align=&quot;center&quot; class=&quot;px&quot; style=&quot;background-color:#0A1128;padding:28px 32px 22px 32px;&quot;&gt;
+            &lt;div style=&quot;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:22px;line-height:1.4;font-weight:600;color:#D4AF37;&quot;&gt;إلى سعادة الدارين&lt;/div&gt;
+            &lt;table role=&quot;presentation&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; border=&quot;0&quot; align=&quot;center&quot; style=&quot;margin:12px auto 10px auto;&quot;&gt;
+              &lt;tr&gt;&lt;td width=&quot;72&quot; height=&quot;2&quot; style=&quot;width:72px;height:2px;line-height:2px;font-size:0;background-color:#D4AF37;&quot;&gt;&amp;nbsp;&lt;/td&gt;&lt;/tr&gt;
+            &lt;/table&gt;
+            &lt;div style=&quot;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:13px;line-height:1.6;color:#F4EFE6;&quot;&gt;تفسير الرؤى بوضوح وعمق نحو سعادة الدارين&lt;/div&gt;
+          &lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;!-- content --&gt;
+        &lt;tr&gt;
+          &lt;td class=&quot;px&quot; style=&quot;padding:32px 36px 28px 36px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:16px;line-height:1.9;color:#0A1128;background-color:#F4EFE6;&quot; dir=&quot;rtl&quot; align=&quot;right&quot;&gt;
+            &lt;div&gt;
+  &lt;p style=&quot;margin:0 0 18px 0;font-size:18px;line-height:1.7;font-weight:600;color:#0A1128;&quot;&gt;السلام عليكم،&lt;/p&gt;
+  &lt;p style=&quot;margin:0 0 16px 0;&quot;&gt;طلب دفع يحتاج إلى مراجعتك قبل إضافة الرصيد. لم يُضف أي رصيد لهذا الطلب.&lt;/p&gt;
+  &lt;table role=&quot;presentation&quot; width=&quot;100%&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; border=&quot;0&quot; style=&quot;margin:4px 0 8px 0;border-collapse:collapse;background-color:#FFFFFF;border:1px solid #E6DCC8;border-radius:12px;&quot;&gt;
+    &lt;tr&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;&quot;&gt;رقم الطلب&lt;/td&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;&quot;&gt;064eab95-f031-4d52-a386-4f72467de6ad&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;&quot;&gt;المستخدم&lt;/td&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;&quot;&gt;country&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;&quot;&gt;البريد&lt;/td&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;&quot;&gt;country-8d5d59a2-09af-498e-8523-5a2ee8d513e4@example.com&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;&quot;&gt;المبلغ&lt;/td&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;&quot;&gt;49.00 SAR&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;&quot;&gt;السبب&lt;/td&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;&quot;&gt;CARD_COUNTRY_MISMATCH&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/table&gt;
+  &lt;table role=&quot;presentation&quot; width=&quot;100%&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; border=&quot;0&quot;
+       style=&quot;margin:28px 0 8px 0;border-collapse:collapse;&quot;&gt;
+  &lt;tr&gt;
+    &lt;td align=&quot;center&quot;&gt;
+      &lt;table role=&quot;presentation&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; border=&quot;0&quot; align=&quot;center&quot;&gt;
+        &lt;tr&gt;
+          &lt;td align=&quot;center&quot; bgcolor=&quot;#D4AF37&quot; style=&quot;border-radius:999px;background-color:#D4AF37;&quot;&gt;
+            &lt;a href=&quot;http://localhost:5173/admin/orders&quot; target=&quot;_blank&quot;
+               style=&quot;display:inline-block;padding:14px 38px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:16px;line-height:1.2;font-weight:600;color:#0A1128;text-decoration:none;border-radius:999px;&quot;&gt;مراجعة الطلب&lt;/a&gt;
+          &lt;/td&gt;
+        &lt;/tr&gt;
+      &lt;/table&gt;
+    &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+    &lt;td align=&quot;center&quot; style=&quot;padding-top:14px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:12px;line-height:1.6;color:#5B6478;&quot;&gt;
+      &lt;span&gt;إذا لم يعمل الزر، انسخ هذا الرابط في المتصفح:&lt;/span&gt;&lt;br&gt;
+      &lt;a href=&quot;http://localhost:5173/admin/orders&quot; dir=&quot;ltr&quot; style=&quot;color:#5B6478;word-break:break-all;&quot;&gt;http://localhost:5173/admin/orders&lt;/a&gt;
+    &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+          &lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;!-- footer --&gt;
+        &lt;tr&gt;
+          &lt;td align=&quot;center&quot; class=&quot;px&quot; style=&quot;background-color:#0A1128;padding:24px 32px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:13px;line-height:1.8;color:#F4EFE6;&quot;&gt;
+            &lt;a href=&quot;https://youtube.com/@almoaberafatema&quot; style=&quot;color:#D4AF37;text-decoration:none;font-weight:600;&quot;&gt;شاهد القناة على يوتيوب&lt;/a&gt;
+            &lt;div style=&quot;margin-top:6px;&quot;&gt;
+              &lt;span&gt;للتواصل معنا:&lt;/span&gt;
+              &lt;a href=&quot;mailto:support@saadatu-aldarein.com&quot; style=&quot;color:#D4AF37;text-decoration:none;&quot;&gt;support@saadatu-aldarein.com&lt;/a&gt;
+            &lt;/div&gt;
+            &lt;div style=&quot;margin-top:12px;font-size:12px;line-height:1.7;color:#AEB4C2;&quot;&gt;وصلتك هذه الرسالة لأنها تخص حسابك لدينا.&lt;/div&gt;
+            &lt;div style=&quot;margin-top:6px;font-size:12px;color:#AEB4C2;&quot;&gt;&amp;copy; &lt;span&gt;2026&lt;/span&gt; &lt;span&gt;إلى سعادة الدارين&lt;/span&gt;&lt;/div&gt;
+          &lt;/td&gt;
+        &lt;/tr&gt;
+      &lt;/table&gt;
+    &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/table&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+
+20:24:01.270 INFO  [Test worker] [] com.saadat.mail.MailService - SMTP not configured — e-mail 'payment-suspicious' to i***@example.com (subject: طلب دفع يحتاج إلى مراجعة 064eab95-f031-4d52-a386-4f72467de6ad):
+&lt;!DOCTYPE html&gt;
+
+&lt;html lang=&quot;ar&quot; dir=&quot;rtl&quot;&gt;
+&lt;head&gt;
+  &lt;meta charset=&quot;UTF-8&quot;&gt;
+  &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot;&gt;
+  &lt;meta http-equiv=&quot;X-UA-Compatible&quot; content=&quot;IE=edge&quot;&gt;
+  &lt;meta name=&quot;x-apple-disable-message-reformatting&quot;&gt;
+  &lt;meta name=&quot;color-scheme&quot; content=&quot;light&quot;&gt;
+  &lt;meta name=&quot;supported-color-schemes&quot; content=&quot;light&quot;&gt;
+  &lt;title&gt;طلب دفع يحتاج إلى مراجعة 064eab95-f031-4d52-a386-4f72467de6ad&lt;/title&gt;
+  &lt;link href=&quot;https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;600&amp;amp;display=swap&quot; rel=&quot;stylesheet&quot;&gt;
+  &lt;style&gt;
+    body, table, td, p, a, div, span, strong { font-family: 'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif; }
+    a { color: #0A1128; }
+    @media only screen and (max-width: 620px) {
+      .container { width: 100% !important; }
+      .px { padding-left: 20px !important; padding-right: 20px !important; }
+    }
+  &lt;/style&gt;
+&lt;/head&gt;
+&lt;body style=&quot;margin:0;padding:0;background-color:#F4EFE6;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;&quot; dir=&quot;rtl&quot;&gt;
+&lt;div style=&quot;display:none;max-height:0;max-width:0;overflow:hidden;mso-hide:all;font-size:1px;line-height:1px;color:#F4EFE6;opacity:0;&quot;&gt;لم يُضف أي رصيد لهذا الطلب حتى تتم مراجعته.&lt;/div&gt;
+&lt;table role=&quot;presentation&quot; width=&quot;100%&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; border=&quot;0&quot; style=&quot;background-color:#F4EFE6;border-collapse:collapse;&quot; dir=&quot;rtl&quot;&gt;
+  &lt;tr&gt;
+    &lt;td align=&quot;center&quot; style=&quot;padding:24px 12px;&quot;&gt;
+      &lt;table role=&quot;presentation&quot; class=&quot;container&quot; width=&quot;600&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; border=&quot;0&quot;
+             style=&quot;width:600px;max-width:600px;border-collapse:separate;border:1px solid #E6DCC8;border-radius:16px;overflow:hidden;background-color:#F4EFE6;&quot;&gt;
+        &lt;!-- header band --&gt;
+        &lt;tr&gt;
+          &lt;td align=&quot;center&quot; class=&quot;px&quot; style=&quot;background-color:#0A1128;padding:28px 32px 22px 32px;&quot;&gt;
+            &lt;div style=&quot;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:22px;line-height:1.4;font-weight:600;color:#D4AF37;&quot;&gt;إلى سعادة الدارين&lt;/div&gt;
+            &lt;table role=&quot;presentation&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; border=&quot;0&quot; align=&quot;center&quot; style=&quot;margin:12px auto 10px auto;&quot;&gt;
+              &lt;tr&gt;&lt;td width=&quot;72&quot; height=&quot;2&quot; style=&quot;width:72px;height:2px;line-height:2px;font-size:0;background-color:#D4AF37;&quot;&gt;&amp;nbsp;&lt;/td&gt;&lt;/tr&gt;
+            &lt;/table&gt;
+            &lt;div style=&quot;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:13px;line-height:1.6;color:#F4EFE6;&quot;&gt;تفسير الرؤى بوضوح وعمق نحو سعادة الدارين&lt;/div&gt;
+          &lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;!-- content --&gt;
+        &lt;tr&gt;
+          &lt;td class=&quot;px&quot; style=&quot;padding:32px 36px 28px 36px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:16px;line-height:1.9;color:#0A1128;background-color:#F4EFE6;&quot; dir=&quot;rtl&quot; align=&quot;right&quot;&gt;
+            &lt;div&gt;
+  &lt;p style=&quot;margin:0 0 18px 0;font-size:18px;line-height:1.7;font-weight:600;color:#0A1128;&quot;&gt;السلام عليكم &lt;span&gt;interp&lt;/span&gt;،&lt;/p&gt;
+  &lt;p style=&quot;margin:0 0 16px 0;&quot;&gt;طلب دفع يحتاج إلى مراجعتك قبل إضافة الرصيد. لم يُضف أي رصيد لهذا الطلب.&lt;/p&gt;
+  &lt;table role=&quot;presentation&quot; width=&quot;100%&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; border=&quot;0&quot; style=&quot;margin:4px 0 8px 0;border-collapse:collapse;background-color:#FFFFFF;border:1px solid #E6DCC8;border-radius:12px;&quot;&gt;
+    &lt;tr&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;&quot;&gt;رقم الطلب&lt;/td&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;&quot;&gt;064eab95-f031-4d52-a386-4f72467de6ad&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;&quot;&gt;المستخدم&lt;/td&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;&quot;&gt;country&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;&quot;&gt;البريد&lt;/td&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;&quot;&gt;country-8d5d59a2-09af-498e-8523-5a2ee8d513e4@example.com&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;&quot;&gt;المبلغ&lt;/td&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;&quot;&gt;49.00 SAR&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;&quot;&gt;السبب&lt;/td&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;&quot;&gt;CARD_COUNTRY_MISMATCH&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/table&gt;
+  &lt;table role=&quot;presentation&quot; width=&quot;100%&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; border=&quot;0&quot;
+       style=&quot;margin:28px 0 8px 0;border-collapse:collapse;&quot;&gt;
+  &lt;tr&gt;
+    &lt;td align=&quot;center&quot;&gt;
+      &lt;table role=&quot;presentation&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; border=&quot;0&quot; align=&quot;center&quot;&gt;
+        &lt;tr&gt;
+          &lt;td align=&quot;center&quot; bgcolor=&quot;#D4AF37&quot; style=&quot;border-radius:999px;background-color:#D4AF37;&quot;&gt;
+            &lt;a href=&quot;http://localhost:5173/admin/orders&quot; target=&quot;_blank&quot;
+               style=&quot;display:inline-block;padding:14px 38px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:16px;line-height:1.2;font-weight:600;color:#0A1128;text-decoration:none;border-radius:999px;&quot;&gt;مراجعة الطلب&lt;/a&gt;
+          &lt;/td&gt;
+        &lt;/tr&gt;
+      &lt;/table&gt;
+    &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+    &lt;td align=&quot;center&quot; style=&quot;padding-top:14px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:12px;line-height:1.6;color:#5B6478;&quot;&gt;
+      &lt;span&gt;إذا لم يعمل الزر، انسخ هذا الرابط في المتصفح:&lt;/span&gt;&lt;br&gt;
+      &lt;a href=&quot;http://localhost:5173/admin/orders&quot; dir=&quot;ltr&quot; style=&quot;color:#5B6478;word-break:break-all;&quot;&gt;http://localhost:5173/admin/orders&lt;/a&gt;
+    &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+          &lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;!-- footer --&gt;
+        &lt;tr&gt;
+          &lt;td align=&quot;center&quot; class=&quot;px&quot; style=&quot;background-color:#0A1128;padding:24px 32px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:13px;line-height:1.8;color:#F4EFE6;&quot;&gt;
+            &lt;a href=&quot;https://youtube.com/@almoaberafatema&quot; style=&quot;color:#D4AF37;text-decoration:none;font-weight:600;&quot;&gt;شاهد القناة على يوتيوب&lt;/a&gt;
+            &lt;div style=&quot;margin-top:6px;&quot;&gt;
+              &lt;span&gt;للتواصل معنا:&lt;/span&gt;
+              &lt;a href=&quot;mailto:support@saadatu-aldarein.com&quot; style=&quot;color:#D4AF37;text-decoration:none;&quot;&gt;support@saadatu-aldarein.com&lt;/a&gt;
+            &lt;/div&gt;
+            &lt;div style=&quot;margin-top:12px;font-size:12px;line-height:1.7;color:#AEB4C2;&quot;&gt;وصلتك هذه الرسالة لأنها تخص حسابك لدينا.&lt;/div&gt;
+            &lt;div style=&quot;margin-top:6px;font-size:12px;color:#AEB4C2;&quot;&gt;&amp;copy; &lt;span&gt;2026&lt;/span&gt; &lt;span&gt;إلى سعادة الدارين&lt;/span&gt;&lt;/div&gt;
+          &lt;/td&gt;
+        &lt;/tr&gt;
+      &lt;/table&gt;
+    &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/table&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+
+20:24:01.271 INFO  [Test worker] [] com.saadat.mail.MailService - SMTP not configured — e-mail 'payment-suspicious' to i***@example.com (subject: طلب دفع يحتاج إلى مراجعة 064eab95-f031-4d52-a386-4f72467de6ad):
+&lt;!DOCTYPE html&gt;
+
+&lt;html lang=&quot;ar&quot; dir=&quot;rtl&quot;&gt;
+&lt;head&gt;
+  &lt;meta charset=&quot;UTF-8&quot;&gt;
+  &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot;&gt;
+  &lt;meta http-equiv=&quot;X-UA-Compatible&quot; content=&quot;IE=edge&quot;&gt;
+  &lt;meta name=&quot;x-apple-disable-message-reformatting&quot;&gt;
+  &lt;meta name=&quot;color-scheme&quot; content=&quot;light&quot;&gt;
+  &lt;meta name=&quot;supported-color-schemes&quot; content=&quot;light&quot;&gt;
+  &lt;title&gt;طلب دفع يحتاج إلى مراجعة 064eab95-f031-4d52-a386-4f72467de6ad&lt;/title&gt;
+  &lt;link href=&quot;https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;600&amp;amp;display=swap&quot; rel=&quot;stylesheet&quot;&gt;
+  &lt;style&gt;
+    body, table, td, p, a, div, span, strong { font-family: 'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif; }
+    a { color: #0A1128; }
+    @media only screen and (max-width: 620px) {
+      .container { width: 100% !important; }
+      .px { padding-left: 20px !important; padding-right: 20px !important; }
+    }
+  &lt;/style&gt;
+&lt;/head&gt;
+&lt;body style=&quot;margin:0;padding:0;background-color:#F4EFE6;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;&quot; dir=&quot;rtl&quot;&gt;
+&lt;div style=&quot;display:none;max-height:0;max-width:0;overflow:hidden;mso-hide:all;font-size:1px;line-height:1px;color:#F4EFE6;opacity:0;&quot;&gt;لم يُضف أي رصيد لهذا الطلب حتى تتم مراجعته.&lt;/div&gt;
+&lt;table role=&quot;presentation&quot; width=&quot;100%&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; border=&quot;0&quot; style=&quot;background-color:#F4EFE6;border-collapse:collapse;&quot; dir=&quot;rtl&quot;&gt;
+  &lt;tr&gt;
+    &lt;td align=&quot;center&quot; style=&quot;padding:24px 12px;&quot;&gt;
+      &lt;table role=&quot;presentation&quot; class=&quot;container&quot; width=&quot;600&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; border=&quot;0&quot;
+             style=&quot;width:600px;max-width:600px;border-collapse:separate;border:1px solid #E6DCC8;border-radius:16px;overflow:hidden;background-color:#F4EFE6;&quot;&gt;
+        &lt;!-- header band --&gt;
+        &lt;tr&gt;
+          &lt;td align=&quot;center&quot; class=&quot;px&quot; style=&quot;background-color:#0A1128;padding:28px 32px 22px 32px;&quot;&gt;
+            &lt;div style=&quot;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:22px;line-height:1.4;font-weight:600;color:#D4AF37;&quot;&gt;إلى سعادة الدارين&lt;/div&gt;
+            &lt;table role=&quot;presentation&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; border=&quot;0&quot; align=&quot;center&quot; style=&quot;margin:12px auto 10px auto;&quot;&gt;
+              &lt;tr&gt;&lt;td width=&quot;72&quot; height=&quot;2&quot; style=&quot;width:72px;height:2px;line-height:2px;font-size:0;background-color:#D4AF37;&quot;&gt;&amp;nbsp;&lt;/td&gt;&lt;/tr&gt;
+            &lt;/table&gt;
+            &lt;div style=&quot;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:13px;line-height:1.6;color:#F4EFE6;&quot;&gt;تفسير الرؤى بوضوح وعمق نحو سعادة الدارين&lt;/div&gt;
+          &lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;!-- content --&gt;
+        &lt;tr&gt;
+          &lt;td class=&quot;px&quot; style=&quot;padding:32px 36px 28px 36px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:16px;line-height:1.9;color:#0A1128;background-color:#F4EFE6;&quot; dir=&quot;rtl&quot; align=&quot;right&quot;&gt;
+            &lt;div&gt;
+  &lt;p style=&quot;margin:0 0 18px 0;font-size:18px;line-height:1.7;font-weight:600;color:#0A1128;&quot;&gt;السلام عليكم &lt;span&gt;interp&lt;/span&gt;،&lt;/p&gt;
+  &lt;p style=&quot;margin:0 0 16px 0;&quot;&gt;طلب دفع يحتاج إلى مراجعتك قبل إضافة الرصيد. لم يُضف أي رصيد لهذا الطلب.&lt;/p&gt;
+  &lt;table role=&quot;presentation&quot; width=&quot;100%&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; border=&quot;0&quot; style=&quot;margin:4px 0 8px 0;border-collapse:collapse;background-color:#FFFFFF;border:1px solid #E6DCC8;border-radius:12px;&quot;&gt;
+    &lt;tr&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;&quot;&gt;رقم الطلب&lt;/td&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;&quot;&gt;064eab95-f031-4d52-a386-4f72467de6ad&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;&quot;&gt;المستخدم&lt;/td&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;&quot;&gt;country&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;&quot;&gt;البريد&lt;/td&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;&quot;&gt;country-8d5d59a2-09af-498e-8523-5a2ee8d513e4@example.com&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;&quot;&gt;المبلغ&lt;/td&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;&quot;&gt;49.00 SAR&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;&quot;&gt;السبب&lt;/td&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;&quot;&gt;CARD_COUNTRY_MISMATCH&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/table&gt;
+  &lt;table role=&quot;presentation&quot; width=&quot;100%&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; border=&quot;0&quot;
+       style=&quot;margin:28px 0 8px 0;border-collapse:collapse;&quot;&gt;
+  &lt;tr&gt;
+    &lt;td align=&quot;center&quot;&gt;
+      &lt;table role=&quot;presentation&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; border=&quot;0&quot; align=&quot;center&quot;&gt;
+        &lt;tr&gt;
+          &lt;td align=&quot;center&quot; bgcolor=&quot;#D4AF37&quot; style=&quot;border-radius:999px;background-color:#D4AF37;&quot;&gt;
+            &lt;a href=&quot;http://localhost:5173/admin/orders&quot; target=&quot;_blank&quot;
+               style=&quot;display:inline-block;padding:14px 38px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:16px;line-height:1.2;font-weight:600;color:#0A1128;text-decoration:none;border-radius:999px;&quot;&gt;مراجعة الطلب&lt;/a&gt;
+          &lt;/td&gt;
+        &lt;/tr&gt;
+      &lt;/table&gt;
+    &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+    &lt;td align=&quot;center&quot; style=&quot;padding-top:14px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:12px;line-height:1.6;color:#5B6478;&quot;&gt;
+      &lt;span&gt;إذا لم يعمل الزر، انسخ هذا الرابط في المتصفح:&lt;/span&gt;&lt;br&gt;
+      &lt;a href=&quot;http://localhost:5173/admin/orders&quot; dir=&quot;ltr&quot; style=&quot;color:#5B6478;word-break:break-all;&quot;&gt;http://localhost:5173/admin/orders&lt;/a&gt;
+    &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+          &lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;!-- footer --&gt;
+        &lt;tr&gt;
+          &lt;td align=&quot;center&quot; class=&quot;px&quot; style=&quot;background-color:#0A1128;padding:24px 32px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:13px;line-height:1.8;color:#F4EFE6;&quot;&gt;
+            &lt;a href=&quot;https://youtube.com/@almoaberafatema&quot; style=&quot;color:#D4AF37;text-decoration:none;font-weight:600;&quot;&gt;شاهد القناة على يوتيوب&lt;/a&gt;
+            &lt;div style=&quot;margin-top:6px;&quot;&gt;
+              &lt;span&gt;للتواصل معنا:&lt;/span&gt;
+              &lt;a href=&quot;mailto:support@saadatu-aldarein.com&quot; style=&quot;color:#D4AF37;text-decoration:none;&quot;&gt;support@saadatu-aldarein.com&lt;/a&gt;
+            &lt;/div&gt;
+            &lt;div style=&quot;margin-top:12px;font-size:12px;line-height:1.7;color:#AEB4C2;&quot;&gt;وصلتك هذه الرسالة لأنها تخص حسابك لدينا.&lt;/div&gt;
+            &lt;div style=&quot;margin-top:6px;font-size:12px;color:#AEB4C2;&quot;&gt;&amp;copy; &lt;span&gt;2026&lt;/span&gt; &lt;span&gt;إلى سعادة الدارين&lt;/span&gt;&lt;/div&gt;
+          &lt;/td&gt;
+        &lt;/tr&gt;
+      &lt;/table&gt;
+    &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/table&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+
+20:24:01.273 INFO  [Test worker] [] com.saadat.mail.MailService - SMTP not configured — e-mail 'payment-suspicious' to i***@example.com (subject: طلب دفع يحتاج إلى مراجعة 064eab95-f031-4d52-a386-4f72467de6ad):
+&lt;!DOCTYPE html&gt;
+
+&lt;html lang=&quot;ar&quot; dir=&quot;rtl&quot;&gt;
+&lt;head&gt;
+  &lt;meta charset=&quot;UTF-8&quot;&gt;
+  &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot;&gt;
+  &lt;meta http-equiv=&quot;X-UA-Compatible&quot; content=&quot;IE=edge&quot;&gt;
+  &lt;meta name=&quot;x-apple-disable-message-reformatting&quot;&gt;
+  &lt;meta name=&quot;color-scheme&quot; content=&quot;light&quot;&gt;
+  &lt;meta name=&quot;supported-color-schemes&quot; content=&quot;light&quot;&gt;
+  &lt;title&gt;طلب دفع يحتاج إلى مراجعة 064eab95-f031-4d52-a386-4f72467de6ad&lt;/title&gt;
+  &lt;link href=&quot;https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;600&amp;amp;display=swap&quot; rel=&quot;stylesheet&quot;&gt;
+  &lt;style&gt;
+    body, table, td, p, a, div, span, strong { font-family: 'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif; }
+    a { color: #0A1128; }
+    @media only screen and (max-width: 620px) {
+      .container { width: 100% !important; }
+      .px { padding-left: 20px !important; padding-right: 20px !important; }
+    }
+  &lt;/style&gt;
+&lt;/head&gt;
+&lt;body style=&quot;margin:0;padding:0;background-color:#F4EFE6;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;&quot; dir=&quot;rtl&quot;&gt;
+&lt;div style=&quot;display:none;max-height:0;max-width:0;overflow:hidden;mso-hide:all;font-size:1px;line-height:1px;color:#F4EFE6;opacity:0;&quot;&gt;لم يُضف أي رصيد لهذا الطلب حتى تتم مراجعته.&lt;/div&gt;
+&lt;table role=&quot;presentation&quot; width=&quot;100%&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; border=&quot;0&quot; style=&quot;background-color:#F4EFE6;border-collapse:collapse;&quot; dir=&quot;rtl&quot;&gt;
+  &lt;tr&gt;
+    &lt;td align=&quot;center&quot; style=&quot;padding:24px 12px;&quot;&gt;
+      &lt;table role=&quot;presentation&quot; class=&quot;container&quot; width=&quot;600&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; border=&quot;0&quot;
+             style=&quot;width:600px;max-width:600px;border-collapse:separate;border:1px solid #E6DCC8;border-radius:16px;overflow:hidden;background-color:#F4EFE6;&quot;&gt;
+        &lt;!-- header band --&gt;
+        &lt;tr&gt;
+          &lt;td align=&quot;center&quot; class=&quot;px&quot; style=&quot;background-color:#0A1128;padding:28px 32px 22px 32px;&quot;&gt;
+            &lt;div style=&quot;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:22px;line-height:1.4;font-weight:600;color:#D4AF37;&quot;&gt;إلى سعادة الدارين&lt;/div&gt;
+            &lt;table role=&quot;presentation&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; border=&quot;0&quot; align=&quot;center&quot; style=&quot;margin:12px auto 10px auto;&quot;&gt;
+              &lt;tr&gt;&lt;td width=&quot;72&quot; height=&quot;2&quot; style=&quot;width:72px;height:2px;line-height:2px;font-size:0;background-color:#D4AF37;&quot;&gt;&amp;nbsp;&lt;/td&gt;&lt;/tr&gt;
+            &lt;/table&gt;
+            &lt;div style=&quot;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:13px;line-height:1.6;color:#F4EFE6;&quot;&gt;تفسير الرؤى بوضوح وعمق نحو سعادة الدارين&lt;/div&gt;
+          &lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;!-- content --&gt;
+        &lt;tr&gt;
+          &lt;td class=&quot;px&quot; style=&quot;padding:32px 36px 28px 36px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:16px;line-height:1.9;color:#0A1128;background-color:#F4EFE6;&quot; dir=&quot;rtl&quot; align=&quot;right&quot;&gt;
+            &lt;div&gt;
+  &lt;p style=&quot;margin:0 0 18px 0;font-size:18px;line-height:1.7;font-weight:600;color:#0A1128;&quot;&gt;السلام عليكم &lt;span&gt;interp&lt;/span&gt;،&lt;/p&gt;
+  &lt;p style=&quot;margin:0 0 16px 0;&quot;&gt;طلب دفع يحتاج إلى مراجعتك قبل إضافة الرصيد. لم يُضف أي رصيد لهذا الطلب.&lt;/p&gt;
+  &lt;table role=&quot;presentation&quot; width=&quot;100%&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; border=&quot;0&quot; style=&quot;margin:4px 0 8px 0;border-collapse:collapse;background-color:#FFFFFF;border:1px solid #E6DCC8;border-radius:12px;&quot;&gt;
+    &lt;tr&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;&quot;&gt;رقم الطلب&lt;/td&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;&quot;&gt;064eab95-f031-4d52-a386-4f72467de6ad&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;&quot;&gt;المستخدم&lt;/td&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;&quot;&gt;country&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;&quot;&gt;البريد&lt;/td&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;&quot;&gt;country-8d5d59a2-09af-498e-8523-5a2ee8d513e4@example.com&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;&quot;&gt;المبلغ&lt;/td&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;&quot;&gt;49.00 SAR&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;&quot;&gt;السبب&lt;/td&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;&quot;&gt;CARD_COUNTRY_MISMATCH&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/table&gt;
+  &lt;table role=&quot;presentation&quot; width=&quot;100%&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; border=&quot;0&quot;
+       style=&quot;margin:28px 0 8px 0;border-collapse:collapse;&quot;&gt;
+  &lt;tr&gt;
+    &lt;td align=&quot;center&quot;&gt;
+      &lt;table role=&quot;presentation&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; border=&quot;0&quot; align=&quot;center&quot;&gt;
+        &lt;tr&gt;
+          &lt;td align=&quot;center&quot; bgcolor=&quot;#D4AF37&quot; style=&quot;border-radius:999px;background-color:#D4AF37;&quot;&gt;
+            &lt;a href=&quot;http://localhost:5173/admin/orders&quot; target=&quot;_blank&quot;
+               style=&quot;display:inline-block;padding:14px 38px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:16px;line-height:1.2;font-weight:600;color:#0A1128;text-decoration:none;border-radius:999px;&quot;&gt;مراجعة الطلب&lt;/a&gt;
+          &lt;/td&gt;
+        &lt;/tr&gt;
+      &lt;/table&gt;
+    &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+    &lt;td align=&quot;center&quot; style=&quot;padding-top:14px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:12px;line-height:1.6;color:#5B6478;&quot;&gt;
+      &lt;span&gt;إذا لم يعمل الزر، انسخ هذا الرابط في المتصفح:&lt;/span&gt;&lt;br&gt;
+      &lt;a href=&quot;http://localhost:5173/admin/orders&quot; dir=&quot;ltr&quot; style=&quot;color:#5B6478;word-break:break-all;&quot;&gt;http://localhost:5173/admin/orders&lt;/a&gt;
+    &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+          &lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;!-- footer --&gt;
+        &lt;tr&gt;
+          &lt;td align=&quot;center&quot; class=&quot;px&quot; style=&quot;background-color:#0A1128;padding:24px 32px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:13px;line-height:1.8;color:#F4EFE6;&quot;&gt;
+            &lt;a href=&quot;https://youtube.com/@almoaberafatema&quot; style=&quot;color:#D4AF37;text-decoration:none;font-weight:600;&quot;&gt;شاهد القناة على يوتيوب&lt;/a&gt;
+            &lt;div style=&quot;margin-top:6px;&quot;&gt;
+              &lt;span&gt;للتواصل معنا:&lt;/span&gt;
+              &lt;a href=&quot;mailto:support@saadatu-aldarein.com&quot; style=&quot;color:#D4AF37;text-decoration:none;&quot;&gt;support@saadatu-aldarein.com&lt;/a&gt;
+            &lt;/div&gt;
+            &lt;div style=&quot;margin-top:12px;font-size:12px;line-height:1.7;color:#AEB4C2;&quot;&gt;وصلتك هذه الرسالة لأنها تخص حسابك لدينا.&lt;/div&gt;
+            &lt;div style=&quot;margin-top:6px;font-size:12px;color:#AEB4C2;&quot;&gt;&amp;copy; &lt;span&gt;2026&lt;/span&gt; &lt;span&gt;إلى سعادة الدارين&lt;/span&gt;&lt;/div&gt;
+          &lt;/td&gt;
+        &lt;/tr&gt;
+      &lt;/table&gt;
+    &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/table&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+
+20:24:01.342 WARN  [Test worker] [] c.s.payments.service.PaymentService - Order 01459bd9-823e-4798-bae7-bf0a3a32968e marked SUSPICIOUS: AMOUNT_OR_CURRENCY_MISMATCH
+20:24:01.354 INFO  [Test worker] [] com.saadat.mail.MailService - SMTP not configured — e-mail 'payment-suspicious' to i***@example.com (subject: طلب دفع يحتاج إلى مراجعة 01459bd9-823e-4798-bae7-bf0a3a32968e):
+&lt;!DOCTYPE html&gt;
+
+&lt;html lang=&quot;ar&quot; dir=&quot;rtl&quot;&gt;
+&lt;head&gt;
+  &lt;meta charset=&quot;UTF-8&quot;&gt;
+  &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot;&gt;
+  &lt;meta http-equiv=&quot;X-UA-Compatible&quot; content=&quot;IE=edge&quot;&gt;
+  &lt;meta name=&quot;x-apple-disable-message-reformatting&quot;&gt;
+  &lt;meta name=&quot;color-scheme&quot; content=&quot;light&quot;&gt;
+  &lt;meta name=&quot;supported-color-schemes&quot; content=&quot;light&quot;&gt;
+  &lt;title&gt;طلب دفع يحتاج إلى مراجعة 01459bd9-823e-4798-bae7-bf0a3a32968e&lt;/title&gt;
+  &lt;link href=&quot;https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;600&amp;amp;display=swap&quot; rel=&quot;stylesheet&quot;&gt;
+  &lt;style&gt;
+    body, table, td, p, a, div, span, strong { font-family: 'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif; }
+    a { color: #0A1128; }
+    @media only screen and (max-width: 620px) {
+      .container { width: 100% !important; }
+      .px { padding-left: 20px !important; padding-right: 20px !important; }
+    }
+  &lt;/style&gt;
+&lt;/head&gt;
+&lt;body style=&quot;margin:0;padding:0;background-color:#F4EFE6;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;&quot; dir=&quot;rtl&quot;&gt;
+&lt;div style=&quot;display:none;max-height:0;max-width:0;overflow:hidden;mso-hide:all;font-size:1px;line-height:1px;color:#F4EFE6;opacity:0;&quot;&gt;لم يُضف أي رصيد لهذا الطلب حتى تتم مراجعته.&lt;/div&gt;
+&lt;table role=&quot;presentation&quot; width=&quot;100%&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; border=&quot;0&quot; style=&quot;background-color:#F4EFE6;border-collapse:collapse;&quot; dir=&quot;rtl&quot;&gt;
+  &lt;tr&gt;
+    &lt;td align=&quot;center&quot; style=&quot;padding:24px 12px;&quot;&gt;
+      &lt;table role=&quot;presentation&quot; class=&quot;container&quot; width=&quot;600&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; border=&quot;0&quot;
+             style=&quot;width:600px;max-width:600px;border-collapse:separate;border:1px solid #E6DCC8;border-radius:16px;overflow:hidden;background-color:#F4EFE6;&quot;&gt;
+        &lt;!-- header band --&gt;
+        &lt;tr&gt;
+          &lt;td align=&quot;center&quot; class=&quot;px&quot; style=&quot;background-color:#0A1128;padding:28px 32px 22px 32px;&quot;&gt;
+            &lt;div style=&quot;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:22px;line-height:1.4;font-weight:600;color:#D4AF37;&quot;&gt;إلى سعادة الدارين&lt;/div&gt;
+            &lt;table role=&quot;presentation&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; border=&quot;0&quot; align=&quot;center&quot; style=&quot;margin:12px auto 10px auto;&quot;&gt;
+              &lt;tr&gt;&lt;td width=&quot;72&quot; height=&quot;2&quot; style=&quot;width:72px;height:2px;line-height:2px;font-size:0;background-color:#D4AF37;&quot;&gt;&amp;nbsp;&lt;/td&gt;&lt;/tr&gt;
+            &lt;/table&gt;
+            &lt;div style=&quot;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:13px;line-height:1.6;color:#F4EFE6;&quot;&gt;تفسير الرؤى بوضوح وعمق نحو سعادة الدارين&lt;/div&gt;
+          &lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;!-- content --&gt;
+        &lt;tr&gt;
+          &lt;td class=&quot;px&quot; style=&quot;padding:32px 36px 28px 36px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:16px;line-height:1.9;color:#0A1128;background-color:#F4EFE6;&quot; dir=&quot;rtl&quot; align=&quot;right&quot;&gt;
+            &lt;div&gt;
+  &lt;p style=&quot;margin:0 0 18px 0;font-size:18px;line-height:1.7;font-weight:600;color:#0A1128;&quot;&gt;السلام عليكم &lt;span&gt;interpreter&lt;/span&gt;،&lt;/p&gt;
+  &lt;p style=&quot;margin:0 0 16px 0;&quot;&gt;طلب دفع يحتاج إلى مراجعتك قبل إضافة الرصيد. لم يُضف أي رصيد لهذا الطلب.&lt;/p&gt;
+  &lt;table role=&quot;presentation&quot; width=&quot;100%&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; border=&quot;0&quot; style=&quot;margin:4px 0 8px 0;border-collapse:collapse;background-color:#FFFFFF;border:1px solid #E6DCC8;border-radius:12px;&quot;&gt;
+    &lt;tr&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;&quot;&gt;رقم الطلب&lt;/td&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;&quot;&gt;01459bd9-823e-4798-bae7-bf0a3a32968e&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;&quot;&gt;المستخدم&lt;/td&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;&quot;&gt;suspicious&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;&quot;&gt;البريد&lt;/td&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;&quot;&gt;suspicious-76421f5b-2ff1-4f3a-8e1d-bb75ed4295a0@example.com&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;&quot;&gt;المبلغ&lt;/td&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;&quot;&gt;48.00 SAR&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;&quot;&gt;السبب&lt;/td&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;&quot;&gt;AMOUNT_OR_CURRENCY_MISMATCH&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/table&gt;
+  &lt;table role=&quot;presentation&quot; width=&quot;100%&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; border=&quot;0&quot;
+       style=&quot;margin:28px 0 8px 0;border-collapse:collapse;&quot;&gt;
+  &lt;tr&gt;
+    &lt;td align=&quot;center&quot;&gt;
+      &lt;table role=&quot;presentation&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; border=&quot;0&quot; align=&quot;center&quot;&gt;
+        &lt;tr&gt;
+          &lt;td align=&quot;center&quot; bgcolor=&quot;#D4AF37&quot; style=&quot;border-radius:999px;background-color:#D4AF37;&quot;&gt;
+            &lt;a href=&quot;http://localhost:5173/admin/orders&quot; target=&quot;_blank&quot;
+               style=&quot;display:inline-block;padding:14px 38px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:16px;line-height:1.2;font-weight:600;color:#0A1128;text-decoration:none;border-radius:999px;&quot;&gt;مراجعة الطلب&lt;/a&gt;
+          &lt;/td&gt;
+        &lt;/tr&gt;
+      &lt;/table&gt;
+    &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+    &lt;td align=&quot;center&quot; style=&quot;padding-top:14px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:12px;line-height:1.6;color:#5B6478;&quot;&gt;
+      &lt;span&gt;إذا لم يعمل الزر، انسخ هذا الرابط في المتصفح:&lt;/span&gt;&lt;br&gt;
+      &lt;a href=&quot;http://localhost:5173/admin/orders&quot; dir=&quot;ltr&quot; style=&quot;color:#5B6478;word-break:break-all;&quot;&gt;http://localhost:5173/admin/orders&lt;/a&gt;
+    &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+          &lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;!-- footer --&gt;
+        &lt;tr&gt;
+          &lt;td align=&quot;center&quot; class=&quot;px&quot; style=&quot;background-color:#0A1128;padding:24px 32px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:13px;line-height:1.8;color:#F4EFE6;&quot;&gt;
+            &lt;a href=&quot;https://youtube.com/@almoaberafatema&quot; style=&quot;color:#D4AF37;text-decoration:none;font-weight:600;&quot;&gt;شاهد القناة على يوتيوب&lt;/a&gt;
+            &lt;div style=&quot;margin-top:6px;&quot;&gt;
+              &lt;span&gt;للتواصل معنا:&lt;/span&gt;
+              &lt;a href=&quot;mailto:support@saadatu-aldarein.com&quot; style=&quot;color:#D4AF37;text-decoration:none;&quot;&gt;support@saadatu-aldarein.com&lt;/a&gt;
+            &lt;/div&gt;
+            &lt;div style=&quot;margin-top:12px;font-size:12px;line-height:1.7;color:#AEB4C2;&quot;&gt;وصلتك هذه الرسالة لأنها تخص حسابك لدينا.&lt;/div&gt;
+            &lt;div style=&quot;margin-top:6px;font-size:12px;color:#AEB4C2;&quot;&gt;&amp;copy; &lt;span&gt;2026&lt;/span&gt; &lt;span&gt;إلى سعادة الدارين&lt;/span&gt;&lt;/div&gt;
+          &lt;/td&gt;
+        &lt;/tr&gt;
+      &lt;/table&gt;
+    &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/table&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+
+20:24:01.355 INFO  [Test worker] [] com.saadat.mail.MailService - SMTP not configured — e-mail 'payment-suspicious' to i***@example.com (subject: طلب دفع يحتاج إلى مراجعة 01459bd9-823e-4798-bae7-bf0a3a32968e):
+&lt;!DOCTYPE html&gt;
+
+&lt;html lang=&quot;ar&quot; dir=&quot;rtl&quot;&gt;
+&lt;head&gt;
+  &lt;meta charset=&quot;UTF-8&quot;&gt;
+  &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot;&gt;
+  &lt;meta http-equiv=&quot;X-UA-Compatible&quot; content=&quot;IE=edge&quot;&gt;
+  &lt;meta name=&quot;x-apple-disable-message-reformatting&quot;&gt;
+  &lt;meta name=&quot;color-scheme&quot; content=&quot;light&quot;&gt;
+  &lt;meta name=&quot;supported-color-schemes&quot; content=&quot;light&quot;&gt;
+  &lt;title&gt;طلب دفع يحتاج إلى مراجعة 01459bd9-823e-4798-bae7-bf0a3a32968e&lt;/title&gt;
+  &lt;link href=&quot;https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;600&amp;amp;display=swap&quot; rel=&quot;stylesheet&quot;&gt;
+  &lt;style&gt;
+    body, table, td, p, a, div, span, strong { font-family: 'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif; }
+    a { color: #0A1128; }
+    @media only screen and (max-width: 620px) {
+      .container { width: 100% !important; }
+      .px { padding-left: 20px !important; padding-right: 20px !important; }
+    }
+  &lt;/style&gt;
+&lt;/head&gt;
+&lt;body style=&quot;margin:0;padding:0;background-color:#F4EFE6;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;&quot; dir=&quot;rtl&quot;&gt;
+&lt;div style=&quot;display:none;max-height:0;max-width:0;overflow:hidden;mso-hide:all;font-size:1px;line-height:1px;color:#F4EFE6;opacity:0;&quot;&gt;لم يُضف أي رصيد لهذا الطلب حتى تتم مراجعته.&lt;/div&gt;
+&lt;table role=&quot;presentation&quot; width=&quot;100%&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; border=&quot;0&quot; style=&quot;background-color:#F4EFE6;border-collapse:collapse;&quot; dir=&quot;rtl&quot;&gt;
+  &lt;tr&gt;
+    &lt;td align=&quot;center&quot; style=&quot;padding:24px 12px;&quot;&gt;
+      &lt;table role=&quot;presentation&quot; class=&quot;container&quot; width=&quot;600&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; border=&quot;0&quot;
+             style=&quot;width:600px;max-width:600px;border-collapse:separate;border:1px solid #E6DCC8;border-radius:16px;overflow:hidden;background-color:#F4EFE6;&quot;&gt;
+        &lt;!-- header band --&gt;
+        &lt;tr&gt;
+          &lt;td align=&quot;center&quot; class=&quot;px&quot; style=&quot;background-color:#0A1128;padding:28px 32px 22px 32px;&quot;&gt;
+            &lt;div style=&quot;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:22px;line-height:1.4;font-weight:600;color:#D4AF37;&quot;&gt;إلى سعادة الدارين&lt;/div&gt;
+            &lt;table role=&quot;presentation&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; border=&quot;0&quot; align=&quot;center&quot; style=&quot;margin:12px auto 10px auto;&quot;&gt;
+              &lt;tr&gt;&lt;td width=&quot;72&quot; height=&quot;2&quot; style=&quot;width:72px;height:2px;line-height:2px;font-size:0;background-color:#D4AF37;&quot;&gt;&amp;nbsp;&lt;/td&gt;&lt;/tr&gt;
+            &lt;/table&gt;
+            &lt;div style=&quot;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:13px;line-height:1.6;color:#F4EFE6;&quot;&gt;تفسير الرؤى بوضوح وعمق نحو سعادة الدارين&lt;/div&gt;
+          &lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;!-- content --&gt;
+        &lt;tr&gt;
+          &lt;td class=&quot;px&quot; style=&quot;padding:32px 36px 28px 36px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:16px;line-height:1.9;color:#0A1128;background-color:#F4EFE6;&quot; dir=&quot;rtl&quot; align=&quot;right&quot;&gt;
+            &lt;div&gt;
+  &lt;p style=&quot;margin:0 0 18px 0;font-size:18px;line-height:1.7;font-weight:600;color:#0A1128;&quot;&gt;السلام عليكم &lt;span&gt;interpreter&lt;/span&gt;،&lt;/p&gt;
+  &lt;p style=&quot;margin:0 0 16px 0;&quot;&gt;طلب دفع يحتاج إلى مراجعتك قبل إضافة الرصيد. لم يُضف أي رصيد لهذا الطلب.&lt;/p&gt;
+  &lt;table role=&quot;presentation&quot; width=&quot;100%&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; border=&quot;0&quot; style=&quot;margin:4px 0 8px 0;border-collapse:collapse;background-color:#FFFFFF;border:1px solid #E6DCC8;border-radius:12px;&quot;&gt;
+    &lt;tr&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;&quot;&gt;رقم الطلب&lt;/td&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;&quot;&gt;01459bd9-823e-4798-bae7-bf0a3a32968e&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;&quot;&gt;المستخدم&lt;/td&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;&quot;&gt;suspicious&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;&quot;&gt;البريد&lt;/td&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;&quot;&gt;suspicious-76421f5b-2ff1-4f3a-8e1d-bb75ed4295a0@example.com&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;&quot;&gt;المبلغ&lt;/td&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;&quot;&gt;48.00 SAR&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;&quot;&gt;السبب&lt;/td&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;&quot;&gt;AMOUNT_OR_CURRENCY_MISMATCH&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/table&gt;
+  &lt;table role=&quot;presentation&quot; width=&quot;100%&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; border=&quot;0&quot;
+       style=&quot;margin:28px 0 8px 0;border-collapse:collapse;&quot;&gt;
+  &lt;tr&gt;
+    &lt;td align=&quot;center&quot;&gt;
+      &lt;table role=&quot;presentation&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; border=&quot;0&quot; align=&quot;center&quot;&gt;
+        &lt;tr&gt;
+          &lt;td align=&quot;center&quot; bgcolor=&quot;#D4AF37&quot; style=&quot;border-radius:999px;background-color:#D4AF37;&quot;&gt;
+            &lt;a href=&quot;http://localhost:5173/admin/orders&quot; target=&quot;_blank&quot;
+               style=&quot;display:inline-block;padding:14px 38px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:16px;line-height:1.2;font-weight:600;color:#0A1128;text-decoration:none;border-radius:999px;&quot;&gt;مراجعة الطلب&lt;/a&gt;
+          &lt;/td&gt;
+        &lt;/tr&gt;
+      &lt;/table&gt;
+    &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+    &lt;td align=&quot;center&quot; style=&quot;padding-top:14px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:12px;line-height:1.6;color:#5B6478;&quot;&gt;
+      &lt;span&gt;إذا لم يعمل الزر، انسخ هذا الرابط في المتصفح:&lt;/span&gt;&lt;br&gt;
+      &lt;a href=&quot;http://localhost:5173/admin/orders&quot; dir=&quot;ltr&quot; style=&quot;color:#5B6478;word-break:break-all;&quot;&gt;http://localhost:5173/admin/orders&lt;/a&gt;
+    &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+          &lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;!-- footer --&gt;
+        &lt;tr&gt;
+          &lt;td align=&quot;center&quot; class=&quot;px&quot; style=&quot;background-color:#0A1128;padding:24px 32px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:13px;line-height:1.8;color:#F4EFE6;&quot;&gt;
+            &lt;a href=&quot;https://youtube.com/@almoaberafatema&quot; style=&quot;color:#D4AF37;text-decoration:none;font-weight:600;&quot;&gt;شاهد القناة على يوتيوب&lt;/a&gt;
+            &lt;div style=&quot;margin-top:6px;&quot;&gt;
+              &lt;span&gt;للتواصل معنا:&lt;/span&gt;
+              &lt;a href=&quot;mailto:support@saadatu-aldarein.com&quot; style=&quot;color:#D4AF37;text-decoration:none;&quot;&gt;support@saadatu-aldarein.com&lt;/a&gt;
+            &lt;/div&gt;
+            &lt;div style=&quot;margin-top:12px;font-size:12px;line-height:1.7;color:#AEB4C2;&quot;&gt;وصلتك هذه الرسالة لأنها تخص حسابك لدينا.&lt;/div&gt;
+            &lt;div style=&quot;margin-top:6px;font-size:12px;color:#AEB4C2;&quot;&gt;&amp;copy; &lt;span&gt;2026&lt;/span&gt; &lt;span&gt;إلى سعادة الدارين&lt;/span&gt;&lt;/div&gt;
+          &lt;/td&gt;
+        &lt;/tr&gt;
+      &lt;/table&gt;
+    &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/table&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+
+20:24:01.357 INFO  [Test worker] [] com.saadat.mail.MailService - SMTP not configured — e-mail 'payment-suspicious' to f***@saadatu-aldarein.com (subject: طلب دفع يحتاج إلى مراجعة 01459bd9-823e-4798-bae7-bf0a3a32968e):
+&lt;!DOCTYPE html&gt;
+
+&lt;html lang=&quot;ar&quot; dir=&quot;rtl&quot;&gt;
+&lt;head&gt;
+  &lt;meta charset=&quot;UTF-8&quot;&gt;
+  &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot;&gt;
+  &lt;meta http-equiv=&quot;X-UA-Compatible&quot; content=&quot;IE=edge&quot;&gt;
+  &lt;meta name=&quot;x-apple-disable-message-reformatting&quot;&gt;
+  &lt;meta name=&quot;color-scheme&quot; content=&quot;light&quot;&gt;
+  &lt;meta name=&quot;supported-color-schemes&quot; content=&quot;light&quot;&gt;
+  &lt;title&gt;طلب دفع يحتاج إلى مراجعة 01459bd9-823e-4798-bae7-bf0a3a32968e&lt;/title&gt;
+  &lt;link href=&quot;https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;600&amp;amp;display=swap&quot; rel=&quot;stylesheet&quot;&gt;
+  &lt;style&gt;
+    body, table, td, p, a, div, span, strong { font-family: 'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif; }
+    a { color: #0A1128; }
+    @media only screen and (max-width: 620px) {
+      .container { width: 100% !important; }
+      .px { padding-left: 20px !important; padding-right: 20px !important; }
+    }
+  &lt;/style&gt;
+&lt;/head&gt;
+&lt;body style=&quot;margin:0;padding:0;background-color:#F4EFE6;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;&quot; dir=&quot;rtl&quot;&gt;
+&lt;div style=&quot;display:none;max-height:0;max-width:0;overflow:hidden;mso-hide:all;font-size:1px;line-height:1px;color:#F4EFE6;opacity:0;&quot;&gt;لم يُضف أي رصيد لهذا الطلب حتى تتم مراجعته.&lt;/div&gt;
+&lt;table role=&quot;presentation&quot; width=&quot;100%&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; border=&quot;0&quot; style=&quot;background-color:#F4EFE6;border-collapse:collapse;&quot; dir=&quot;rtl&quot;&gt;
+  &lt;tr&gt;
+    &lt;td align=&quot;center&quot; style=&quot;padding:24px 12px;&quot;&gt;
+      &lt;table role=&quot;presentation&quot; class=&quot;container&quot; width=&quot;600&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; border=&quot;0&quot;
+             style=&quot;width:600px;max-width:600px;border-collapse:separate;border:1px solid #E6DCC8;border-radius:16px;overflow:hidden;background-color:#F4EFE6;&quot;&gt;
+        &lt;!-- header band --&gt;
+        &lt;tr&gt;
+          &lt;td align=&quot;center&quot; class=&quot;px&quot; style=&quot;background-color:#0A1128;padding:28px 32px 22px 32px;&quot;&gt;
+            &lt;div style=&quot;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:22px;line-height:1.4;font-weight:600;color:#D4AF37;&quot;&gt;إلى سعادة الدارين&lt;/div&gt;
+            &lt;table role=&quot;presentation&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; border=&quot;0&quot; align=&quot;center&quot; style=&quot;margin:12px auto 10px auto;&quot;&gt;
+              &lt;tr&gt;&lt;td width=&quot;72&quot; height=&quot;2&quot; style=&quot;width:72px;height:2px;line-height:2px;font-size:0;background-color:#D4AF37;&quot;&gt;&amp;nbsp;&lt;/td&gt;&lt;/tr&gt;
+            &lt;/table&gt;
+            &lt;div style=&quot;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:13px;line-height:1.6;color:#F4EFE6;&quot;&gt;تفسير الرؤى بوضوح وعمق نحو سعادة الدارين&lt;/div&gt;
+          &lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;!-- content --&gt;
+        &lt;tr&gt;
+          &lt;td class=&quot;px&quot; style=&quot;padding:32px 36px 28px 36px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:16px;line-height:1.9;color:#0A1128;background-color:#F4EFE6;&quot; dir=&quot;rtl&quot; align=&quot;right&quot;&gt;
+            &lt;div&gt;
+  &lt;p style=&quot;margin:0 0 18px 0;font-size:18px;line-height:1.7;font-weight:600;color:#0A1128;&quot;&gt;السلام عليكم،&lt;/p&gt;
+  &lt;p style=&quot;margin:0 0 16px 0;&quot;&gt;طلب دفع يحتاج إلى مراجعتك قبل إضافة الرصيد. لم يُضف أي رصيد لهذا الطلب.&lt;/p&gt;
+  &lt;table role=&quot;presentation&quot; width=&quot;100%&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; border=&quot;0&quot; style=&quot;margin:4px 0 8px 0;border-collapse:collapse;background-color:#FFFFFF;border:1px solid #E6DCC8;border-radius:12px;&quot;&gt;
+    &lt;tr&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;&quot;&gt;رقم الطلب&lt;/td&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;&quot;&gt;01459bd9-823e-4798-bae7-bf0a3a32968e&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;&quot;&gt;المستخدم&lt;/td&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;&quot;&gt;suspicious&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;&quot;&gt;البريد&lt;/td&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;&quot;&gt;suspicious-76421f5b-2ff1-4f3a-8e1d-bb75ed4295a0@example.com&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;&quot;&gt;المبلغ&lt;/td&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;&quot;&gt;48.00 SAR&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;&quot;&gt;السبب&lt;/td&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;&quot;&gt;AMOUNT_OR_CURRENCY_MISMATCH&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/table&gt;
+  &lt;table role=&quot;presentation&quot; width=&quot;100%&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; border=&quot;0&quot;
+       style=&quot;margin:28px 0 8px 0;border-collapse:collapse;&quot;&gt;
+  &lt;tr&gt;
+    &lt;td align=&quot;center&quot;&gt;
+      &lt;table role=&quot;presentation&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; border=&quot;0&quot; align=&quot;center&quot;&gt;
+        &lt;tr&gt;
+          &lt;td align=&quot;center&quot; bgcolor=&quot;#D4AF37&quot; style=&quot;border-radius:999px;background-color:#D4AF37;&quot;&gt;
+            &lt;a href=&quot;http://localhost:5173/admin/orders&quot; target=&quot;_blank&quot;
+               style=&quot;display:inline-block;padding:14px 38px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:16px;line-height:1.2;font-weight:600;color:#0A1128;text-decoration:none;border-radius:999px;&quot;&gt;مراجعة الطلب&lt;/a&gt;
+          &lt;/td&gt;
+        &lt;/tr&gt;
+      &lt;/table&gt;
+    &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+    &lt;td align=&quot;center&quot; style=&quot;padding-top:14px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:12px;line-height:1.6;color:#5B6478;&quot;&gt;
+      &lt;span&gt;إذا لم يعمل الزر، انسخ هذا الرابط في المتصفح:&lt;/span&gt;&lt;br&gt;
+      &lt;a href=&quot;http://localhost:5173/admin/orders&quot; dir=&quot;ltr&quot; style=&quot;color:#5B6478;word-break:break-all;&quot;&gt;http://localhost:5173/admin/orders&lt;/a&gt;
+    &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+          &lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;!-- footer --&gt;
+        &lt;tr&gt;
+          &lt;td align=&quot;center&quot; class=&quot;px&quot; style=&quot;background-color:#0A1128;padding:24px 32px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:13px;line-height:1.8;color:#F4EFE6;&quot;&gt;
+            &lt;a href=&quot;https://youtube.com/@almoaberafatema&quot; style=&quot;color:#D4AF37;text-decoration:none;font-weight:600;&quot;&gt;شاهد القناة على يوتيوب&lt;/a&gt;
+            &lt;div style=&quot;margin-top:6px;&quot;&gt;
+              &lt;span&gt;للتواصل معنا:&lt;/span&gt;
+              &lt;a href=&quot;mailto:support@saadatu-aldarein.com&quot; style=&quot;color:#D4AF37;text-decoration:none;&quot;&gt;support@saadatu-aldarein.com&lt;/a&gt;
+            &lt;/div&gt;
+            &lt;div style=&quot;margin-top:12px;font-size:12px;line-height:1.7;color:#AEB4C2;&quot;&gt;وصلتك هذه الرسالة لأنها تخص حسابك لدينا.&lt;/div&gt;
+            &lt;div style=&quot;margin-top:6px;font-size:12px;color:#AEB4C2;&quot;&gt;&amp;copy; &lt;span&gt;2026&lt;/span&gt; &lt;span&gt;إلى سعادة الدارين&lt;/span&gt;&lt;/div&gt;
+          &lt;/td&gt;
+        &lt;/tr&gt;
+      &lt;/table&gt;
+    &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/table&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+
+20:24:01.359 INFO  [Test worker] [] com.saadat.mail.MailService - SMTP not configured — e-mail 'payment-suspicious' to i***@example.com (subject: طلب دفع يحتاج إلى مراجعة 01459bd9-823e-4798-bae7-bf0a3a32968e):
+&lt;!DOCTYPE html&gt;
+
+&lt;html lang=&quot;ar&quot; dir=&quot;rtl&quot;&gt;
+&lt;head&gt;
+  &lt;meta charset=&quot;UTF-8&quot;&gt;
+  &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot;&gt;
+  &lt;meta http-equiv=&quot;X-UA-Compatible&quot; content=&quot;IE=edge&quot;&gt;
+  &lt;meta name=&quot;x-apple-disable-message-reformatting&quot;&gt;
+  &lt;meta name=&quot;color-scheme&quot; content=&quot;light&quot;&gt;
+  &lt;meta name=&quot;supported-color-schemes&quot; content=&quot;light&quot;&gt;
+  &lt;title&gt;طلب دفع يحتاج إلى مراجعة 01459bd9-823e-4798-bae7-bf0a3a32968e&lt;/title&gt;
+  &lt;link href=&quot;https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;600&amp;amp;display=swap&quot; rel=&quot;stylesheet&quot;&gt;
+  &lt;style&gt;
+    body, table, td, p, a, div, span, strong { font-family: 'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif; }
+    a { color: #0A1128; }
+    @media only screen and (max-width: 620px) {
+      .container { width: 100% !important; }
+      .px { padding-left: 20px !important; padding-right: 20px !important; }
+    }
+  &lt;/style&gt;
+&lt;/head&gt;
+&lt;body style=&quot;margin:0;padding:0;background-color:#F4EFE6;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;&quot; dir=&quot;rtl&quot;&gt;
+&lt;div style=&quot;display:none;max-height:0;max-width:0;overflow:hidden;mso-hide:all;font-size:1px;line-height:1px;color:#F4EFE6;opacity:0;&quot;&gt;لم يُضف أي رصيد لهذا الطلب حتى تتم مراجعته.&lt;/div&gt;
+&lt;table role=&quot;presentation&quot; width=&quot;100%&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; border=&quot;0&quot; style=&quot;background-color:#F4EFE6;border-collapse:collapse;&quot; dir=&quot;rtl&quot;&gt;
+  &lt;tr&gt;
+    &lt;td align=&quot;center&quot; style=&quot;padding:24px 12px;&quot;&gt;
+      &lt;table role=&quot;presentation&quot; class=&quot;container&quot; width=&quot;600&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; border=&quot;0&quot;
+             style=&quot;width:600px;max-width:600px;border-collapse:separate;border:1px solid #E6DCC8;border-radius:16px;overflow:hidden;background-color:#F4EFE6;&quot;&gt;
+        &lt;!-- header band --&gt;
+        &lt;tr&gt;
+          &lt;td align=&quot;center&quot; class=&quot;px&quot; style=&quot;background-color:#0A1128;padding:28px 32px 22px 32px;&quot;&gt;
+            &lt;div style=&quot;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:22px;line-height:1.4;font-weight:600;color:#D4AF37;&quot;&gt;إلى سعادة الدارين&lt;/div&gt;
+            &lt;table role=&quot;presentation&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; border=&quot;0&quot; align=&quot;center&quot; style=&quot;margin:12px auto 10px auto;&quot;&gt;
+              &lt;tr&gt;&lt;td width=&quot;72&quot; height=&quot;2&quot; style=&quot;width:72px;height:2px;line-height:2px;font-size:0;background-color:#D4AF37;&quot;&gt;&amp;nbsp;&lt;/td&gt;&lt;/tr&gt;
+            &lt;/table&gt;
+            &lt;div style=&quot;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:13px;line-height:1.6;color:#F4EFE6;&quot;&gt;تفسير الرؤى بوضوح وعمق نحو سعادة الدارين&lt;/div&gt;
+          &lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;!-- content --&gt;
+        &lt;tr&gt;
+          &lt;td class=&quot;px&quot; style=&quot;padding:32px 36px 28px 36px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:16px;line-height:1.9;color:#0A1128;background-color:#F4EFE6;&quot; dir=&quot;rtl&quot; align=&quot;right&quot;&gt;
+            &lt;div&gt;
+  &lt;p style=&quot;margin:0 0 18px 0;font-size:18px;line-height:1.7;font-weight:600;color:#0A1128;&quot;&gt;السلام عليكم &lt;span&gt;interp&lt;/span&gt;،&lt;/p&gt;
+  &lt;p style=&quot;margin:0 0 16px 0;&quot;&gt;طلب دفع يحتاج إلى مراجعتك قبل إضافة الرصيد. لم يُضف أي رصيد لهذا الطلب.&lt;/p&gt;
+  &lt;table role=&quot;presentation&quot; width=&quot;100%&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; border=&quot;0&quot; style=&quot;margin:4px 0 8px 0;border-collapse:collapse;background-color:#FFFFFF;border:1px solid #E6DCC8;border-radius:12px;&quot;&gt;
+    &lt;tr&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;&quot;&gt;رقم الطلب&lt;/td&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;&quot;&gt;01459bd9-823e-4798-bae7-bf0a3a32968e&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;&quot;&gt;المستخدم&lt;/td&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;&quot;&gt;suspicious&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;&quot;&gt;البريد&lt;/td&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;&quot;&gt;suspicious-76421f5b-2ff1-4f3a-8e1d-bb75ed4295a0@example.com&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;&quot;&gt;المبلغ&lt;/td&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;&quot;&gt;48.00 SAR&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;&quot;&gt;السبب&lt;/td&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;&quot;&gt;AMOUNT_OR_CURRENCY_MISMATCH&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/table&gt;
+  &lt;table role=&quot;presentation&quot; width=&quot;100%&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; border=&quot;0&quot;
+       style=&quot;margin:28px 0 8px 0;border-collapse:collapse;&quot;&gt;
+  &lt;tr&gt;
+    &lt;td align=&quot;center&quot;&gt;
+      &lt;table role=&quot;presentation&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; border=&quot;0&quot; align=&quot;center&quot;&gt;
+        &lt;tr&gt;
+          &lt;td align=&quot;center&quot; bgcolor=&quot;#D4AF37&quot; style=&quot;border-radius:999px;background-color:#D4AF37;&quot;&gt;
+            &lt;a href=&quot;http://localhost:5173/admin/orders&quot; target=&quot;_blank&quot;
+               style=&quot;display:inline-block;padding:14px 38px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:16px;line-height:1.2;font-weight:600;color:#0A1128;text-decoration:none;border-radius:999px;&quot;&gt;مراجعة الطلب&lt;/a&gt;
+          &lt;/td&gt;
+        &lt;/tr&gt;
+      &lt;/table&gt;
+    &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+    &lt;td align=&quot;center&quot; style=&quot;padding-top:14px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:12px;line-height:1.6;color:#5B6478;&quot;&gt;
+      &lt;span&gt;إذا لم يعمل الزر، انسخ هذا الرابط في المتصفح:&lt;/span&gt;&lt;br&gt;
+      &lt;a href=&quot;http://localhost:5173/admin/orders&quot; dir=&quot;ltr&quot; style=&quot;color:#5B6478;word-break:break-all;&quot;&gt;http://localhost:5173/admin/orders&lt;/a&gt;
+    &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+          &lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;!-- footer --&gt;
+        &lt;tr&gt;
+          &lt;td align=&quot;center&quot; class=&quot;px&quot; style=&quot;background-color:#0A1128;padding:24px 32px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:13px;line-height:1.8;color:#F4EFE6;&quot;&gt;
+            &lt;a href=&quot;https://youtube.com/@almoaberafatema&quot; style=&quot;color:#D4AF37;text-decoration:none;font-weight:600;&quot;&gt;شاهد القناة على يوتيوب&lt;/a&gt;
+            &lt;div style=&quot;margin-top:6px;&quot;&gt;
+              &lt;span&gt;للتواصل معنا:&lt;/span&gt;
+              &lt;a href=&quot;mailto:support@saadatu-aldarein.com&quot; style=&quot;color:#D4AF37;text-decoration:none;&quot;&gt;support@saadatu-aldarein.com&lt;/a&gt;
+            &lt;/div&gt;
+            &lt;div style=&quot;margin-top:12px;font-size:12px;line-height:1.7;color:#AEB4C2;&quot;&gt;وصلتك هذه الرسالة لأنها تخص حسابك لدينا.&lt;/div&gt;
+            &lt;div style=&quot;margin-top:6px;font-size:12px;color:#AEB4C2;&quot;&gt;&amp;copy; &lt;span&gt;2026&lt;/span&gt; &lt;span&gt;إلى سعادة الدارين&lt;/span&gt;&lt;/div&gt;
+          &lt;/td&gt;
+        &lt;/tr&gt;
+      &lt;/table&gt;
+    &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/table&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+
+20:24:01.361 INFO  [Test worker] [] com.saadat.mail.MailService - SMTP not configured — e-mail 'payment-suspicious' to i***@example.com (subject: طلب دفع يحتاج إلى مراجعة 01459bd9-823e-4798-bae7-bf0a3a32968e):
+&lt;!DOCTYPE html&gt;
+
+&lt;html lang=&quot;ar&quot; dir=&quot;rtl&quot;&gt;
+&lt;head&gt;
+  &lt;meta charset=&quot;UTF-8&quot;&gt;
+  &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot;&gt;
+  &lt;meta http-equiv=&quot;X-UA-Compatible&quot; content=&quot;IE=edge&quot;&gt;
+  &lt;meta name=&quot;x-apple-disable-message-reformatting&quot;&gt;
+  &lt;meta name=&quot;color-scheme&quot; content=&quot;light&quot;&gt;
+  &lt;meta name=&quot;supported-color-schemes&quot; content=&quot;light&quot;&gt;
+  &lt;title&gt;طلب دفع يحتاج إلى مراجعة 01459bd9-823e-4798-bae7-bf0a3a32968e&lt;/title&gt;
+  &lt;link href=&quot;https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;600&amp;amp;display=swap&quot; rel=&quot;stylesheet&quot;&gt;
+  &lt;style&gt;
+    body, table, td, p, a, div, span, strong { font-family: 'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif; }
+    a { color: #0A1128; }
+    @media only screen and (max-width: 620px) {
+      .container { width: 100% !important; }
+      .px { padding-left: 20px !important; padding-right: 20px !important; }
+    }
+  &lt;/style&gt;
+&lt;/head&gt;
+&lt;body style=&quot;margin:0;padding:0;background-color:#F4EFE6;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;&quot; dir=&quot;rtl&quot;&gt;
+&lt;div style=&quot;display:none;max-height:0;max-width:0;overflow:hidden;mso-hide:all;font-size:1px;line-height:1px;color:#F4EFE6;opacity:0;&quot;&gt;لم يُضف أي رصيد لهذا الطلب حتى تتم مراجعته.&lt;/div&gt;
+&lt;table role=&quot;presentation&quot; width=&quot;100%&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; border=&quot;0&quot; style=&quot;background-color:#F4EFE6;border-collapse:collapse;&quot; dir=&quot;rtl&quot;&gt;
+  &lt;tr&gt;
+    &lt;td align=&quot;center&quot; style=&quot;padding:24px 12px;&quot;&gt;
+      &lt;table role=&quot;presentation&quot; class=&quot;container&quot; width=&quot;600&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; border=&quot;0&quot;
+             style=&quot;width:600px;max-width:600px;border-collapse:separate;border:1px solid #E6DCC8;border-radius:16px;overflow:hidden;background-color:#F4EFE6;&quot;&gt;
+        &lt;!-- header band --&gt;
+        &lt;tr&gt;
+          &lt;td align=&quot;center&quot; class=&quot;px&quot; style=&quot;background-color:#0A1128;padding:28px 32px 22px 32px;&quot;&gt;
+            &lt;div style=&quot;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:22px;line-height:1.4;font-weight:600;color:#D4AF37;&quot;&gt;إلى سعادة الدارين&lt;/div&gt;
+            &lt;table role=&quot;presentation&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; border=&quot;0&quot; align=&quot;center&quot; style=&quot;margin:12px auto 10px auto;&quot;&gt;
+              &lt;tr&gt;&lt;td width=&quot;72&quot; height=&quot;2&quot; style=&quot;width:72px;height:2px;line-height:2px;font-size:0;background-color:#D4AF37;&quot;&gt;&amp;nbsp;&lt;/td&gt;&lt;/tr&gt;
+            &lt;/table&gt;
+            &lt;div style=&quot;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:13px;line-height:1.6;color:#F4EFE6;&quot;&gt;تفسير الرؤى بوضوح وعمق نحو سعادة الدارين&lt;/div&gt;
+          &lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;!-- content --&gt;
+        &lt;tr&gt;
+          &lt;td class=&quot;px&quot; style=&quot;padding:32px 36px 28px 36px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:16px;line-height:1.9;color:#0A1128;background-color:#F4EFE6;&quot; dir=&quot;rtl&quot; align=&quot;right&quot;&gt;
+            &lt;div&gt;
+  &lt;p style=&quot;margin:0 0 18px 0;font-size:18px;line-height:1.7;font-weight:600;color:#0A1128;&quot;&gt;السلام عليكم &lt;span&gt;interp&lt;/span&gt;،&lt;/p&gt;
+  &lt;p style=&quot;margin:0 0 16px 0;&quot;&gt;طلب دفع يحتاج إلى مراجعتك قبل إضافة الرصيد. لم يُضف أي رصيد لهذا الطلب.&lt;/p&gt;
+  &lt;table role=&quot;presentation&quot; width=&quot;100%&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; border=&quot;0&quot; style=&quot;margin:4px 0 8px 0;border-collapse:collapse;background-color:#FFFFFF;border:1px solid #E6DCC8;border-radius:12px;&quot;&gt;
+    &lt;tr&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;&quot;&gt;رقم الطلب&lt;/td&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;&quot;&gt;01459bd9-823e-4798-bae7-bf0a3a32968e&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;&quot;&gt;المستخدم&lt;/td&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;&quot;&gt;suspicious&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;&quot;&gt;البريد&lt;/td&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;&quot;&gt;suspicious-76421f5b-2ff1-4f3a-8e1d-bb75ed4295a0@example.com&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;&quot;&gt;المبلغ&lt;/td&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;&quot;&gt;48.00 SAR&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;&quot;&gt;السبب&lt;/td&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;&quot;&gt;AMOUNT_OR_CURRENCY_MISMATCH&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/table&gt;
+  &lt;table role=&quot;presentation&quot; width=&quot;100%&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; border=&quot;0&quot;
+       style=&quot;margin:28px 0 8px 0;border-collapse:collapse;&quot;&gt;
+  &lt;tr&gt;
+    &lt;td align=&quot;center&quot;&gt;
+      &lt;table role=&quot;presentation&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; border=&quot;0&quot; align=&quot;center&quot;&gt;
+        &lt;tr&gt;
+          &lt;td align=&quot;center&quot; bgcolor=&quot;#D4AF37&quot; style=&quot;border-radius:999px;background-color:#D4AF37;&quot;&gt;
+            &lt;a href=&quot;http://localhost:5173/admin/orders&quot; target=&quot;_blank&quot;
+               style=&quot;display:inline-block;padding:14px 38px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:16px;line-height:1.2;font-weight:600;color:#0A1128;text-decoration:none;border-radius:999px;&quot;&gt;مراجعة الطلب&lt;/a&gt;
+          &lt;/td&gt;
+        &lt;/tr&gt;
+      &lt;/table&gt;
+    &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+    &lt;td align=&quot;center&quot; style=&quot;padding-top:14px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:12px;line-height:1.6;color:#5B6478;&quot;&gt;
+      &lt;span&gt;إذا لم يعمل الزر، انسخ هذا الرابط في المتصفح:&lt;/span&gt;&lt;br&gt;
+      &lt;a href=&quot;http://localhost:5173/admin/orders&quot; dir=&quot;ltr&quot; style=&quot;color:#5B6478;word-break:break-all;&quot;&gt;http://localhost:5173/admin/orders&lt;/a&gt;
+    &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+          &lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;!-- footer --&gt;
+        &lt;tr&gt;
+          &lt;td align=&quot;center&quot; class=&quot;px&quot; style=&quot;background-color:#0A1128;padding:24px 32px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:13px;line-height:1.8;color:#F4EFE6;&quot;&gt;
+            &lt;a href=&quot;https://youtube.com/@almoaberafatema&quot; style=&quot;color:#D4AF37;text-decoration:none;font-weight:600;&quot;&gt;شاهد القناة على يوتيوب&lt;/a&gt;
+            &lt;div style=&quot;margin-top:6px;&quot;&gt;
+              &lt;span&gt;للتواصل معنا:&lt;/span&gt;
+              &lt;a href=&quot;mailto:support@saadatu-aldarein.com&quot; style=&quot;color:#D4AF37;text-decoration:none;&quot;&gt;support@saadatu-aldarein.com&lt;/a&gt;
+            &lt;/div&gt;
+            &lt;div style=&quot;margin-top:12px;font-size:12px;line-height:1.7;color:#AEB4C2;&quot;&gt;وصلتك هذه الرسالة لأنها تخص حسابك لدينا.&lt;/div&gt;
+            &lt;div style=&quot;margin-top:6px;font-size:12px;color:#AEB4C2;&quot;&gt;&amp;copy; &lt;span&gt;2026&lt;/span&gt; &lt;span&gt;إلى سعادة الدارين&lt;/span&gt;&lt;/div&gt;
+          &lt;/td&gt;
+        &lt;/tr&gt;
+      &lt;/table&gt;
+    &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/table&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+
+20:24:01.363 INFO  [Test worker] [] com.saadat.mail.MailService - SMTP not configured — e-mail 'payment-suspicious' to i***@example.com (subject: طلب دفع يحتاج إلى مراجعة 01459bd9-823e-4798-bae7-bf0a3a32968e):
+&lt;!DOCTYPE html&gt;
+
+&lt;html lang=&quot;ar&quot; dir=&quot;rtl&quot;&gt;
+&lt;head&gt;
+  &lt;meta charset=&quot;UTF-8&quot;&gt;
+  &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot;&gt;
+  &lt;meta http-equiv=&quot;X-UA-Compatible&quot; content=&quot;IE=edge&quot;&gt;
+  &lt;meta name=&quot;x-apple-disable-message-reformatting&quot;&gt;
+  &lt;meta name=&quot;color-scheme&quot; content=&quot;light&quot;&gt;
+  &lt;meta name=&quot;supported-color-schemes&quot; content=&quot;light&quot;&gt;
+  &lt;title&gt;طلب دفع يحتاج إلى مراجعة 01459bd9-823e-4798-bae7-bf0a3a32968e&lt;/title&gt;
+  &lt;link href=&quot;https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;600&amp;amp;display=swap&quot; rel=&quot;stylesheet&quot;&gt;
+  &lt;style&gt;
+    body, table, td, p, a, div, span, strong { font-family: 'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif; }
+    a { color: #0A1128; }
+    @media only screen and (max-width: 620px) {
+      .container { width: 100% !important; }
+      .px { padding-left: 20px !important; padding-right: 20px !important; }
+    }
+  &lt;/style&gt;
+&lt;/head&gt;
+&lt;body style=&quot;margin:0;padding:0;background-color:#F4EFE6;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;&quot; dir=&quot;rtl&quot;&gt;
+&lt;div style=&quot;display:none;max-height:0;max-width:0;overflow:hidden;mso-hide:all;font-size:1px;line-height:1px;color:#F4EFE6;opacity:0;&quot;&gt;لم يُضف أي رصيد لهذا الطلب حتى تتم مراجعته.&lt;/div&gt;
+&lt;table role=&quot;presentation&quot; width=&quot;100%&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; border=&quot;0&quot; style=&quot;background-color:#F4EFE6;border-collapse:collapse;&quot; dir=&quot;rtl&quot;&gt;
+  &lt;tr&gt;
+    &lt;td align=&quot;center&quot; style=&quot;padding:24px 12px;&quot;&gt;
+      &lt;table role=&quot;presentation&quot; class=&quot;container&quot; width=&quot;600&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; border=&quot;0&quot;
+             style=&quot;width:600px;max-width:600px;border-collapse:separate;border:1px solid #E6DCC8;border-radius:16px;overflow:hidden;background-color:#F4EFE6;&quot;&gt;
+        &lt;!-- header band --&gt;
+        &lt;tr&gt;
+          &lt;td align=&quot;center&quot; class=&quot;px&quot; style=&quot;background-color:#0A1128;padding:28px 32px 22px 32px;&quot;&gt;
+            &lt;div style=&quot;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:22px;line-height:1.4;font-weight:600;color:#D4AF37;&quot;&gt;إلى سعادة الدارين&lt;/div&gt;
+            &lt;table role=&quot;presentation&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; border=&quot;0&quot; align=&quot;center&quot; style=&quot;margin:12px auto 10px auto;&quot;&gt;
+              &lt;tr&gt;&lt;td width=&quot;72&quot; height=&quot;2&quot; style=&quot;width:72px;height:2px;line-height:2px;font-size:0;background-color:#D4AF37;&quot;&gt;&amp;nbsp;&lt;/td&gt;&lt;/tr&gt;
+            &lt;/table&gt;
+            &lt;div style=&quot;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:13px;line-height:1.6;color:#F4EFE6;&quot;&gt;تفسير الرؤى بوضوح وعمق نحو سعادة الدارين&lt;/div&gt;
+          &lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;!-- content --&gt;
+        &lt;tr&gt;
+          &lt;td class=&quot;px&quot; style=&quot;padding:32px 36px 28px 36px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:16px;line-height:1.9;color:#0A1128;background-color:#F4EFE6;&quot; dir=&quot;rtl&quot; align=&quot;right&quot;&gt;
+            &lt;div&gt;
+  &lt;p style=&quot;margin:0 0 18px 0;font-size:18px;line-height:1.7;font-weight:600;color:#0A1128;&quot;&gt;السلام عليكم &lt;span&gt;interp&lt;/span&gt;،&lt;/p&gt;
+  &lt;p style=&quot;margin:0 0 16px 0;&quot;&gt;طلب دفع يحتاج إلى مراجعتك قبل إضافة الرصيد. لم يُضف أي رصيد لهذا الطلب.&lt;/p&gt;
+  &lt;table role=&quot;presentation&quot; width=&quot;100%&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; border=&quot;0&quot; style=&quot;margin:4px 0 8px 0;border-collapse:collapse;background-color:#FFFFFF;border:1px solid #E6DCC8;border-radius:12px;&quot;&gt;
+    &lt;tr&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;&quot;&gt;رقم الطلب&lt;/td&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;&quot;&gt;01459bd9-823e-4798-bae7-bf0a3a32968e&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;&quot;&gt;المستخدم&lt;/td&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;&quot;&gt;suspicious&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;&quot;&gt;البريد&lt;/td&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;&quot;&gt;suspicious-76421f5b-2ff1-4f3a-8e1d-bb75ed4295a0@example.com&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;&quot;&gt;المبلغ&lt;/td&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;&quot;&gt;48.00 SAR&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;&quot;&gt;السبب&lt;/td&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;&quot;&gt;AMOUNT_OR_CURRENCY_MISMATCH&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/table&gt;
+  &lt;table role=&quot;presentation&quot; width=&quot;100%&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; border=&quot;0&quot;
+       style=&quot;margin:28px 0 8px 0;border-collapse:collapse;&quot;&gt;
+  &lt;tr&gt;
+    &lt;td align=&quot;center&quot;&gt;
+      &lt;table role=&quot;presentation&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; border=&quot;0&quot; align=&quot;center&quot;&gt;
+        &lt;tr&gt;
+          &lt;td align=&quot;center&quot; bgcolor=&quot;#D4AF37&quot; style=&quot;border-radius:999px;background-color:#D4AF37;&quot;&gt;
+            &lt;a href=&quot;http://localhost:5173/admin/orders&quot; target=&quot;_blank&quot;
+               style=&quot;display:inline-block;padding:14px 38px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:16px;line-height:1.2;font-weight:600;color:#0A1128;text-decoration:none;border-radius:999px;&quot;&gt;مراجعة الطلب&lt;/a&gt;
+          &lt;/td&gt;
+        &lt;/tr&gt;
+      &lt;/table&gt;
+    &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+    &lt;td align=&quot;center&quot; style=&quot;padding-top:14px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:12px;line-height:1.6;color:#5B6478;&quot;&gt;
+      &lt;span&gt;إذا لم يعمل الزر، انسخ هذا الرابط في المتصفح:&lt;/span&gt;&lt;br&gt;
+      &lt;a href=&quot;http://localhost:5173/admin/orders&quot; dir=&quot;ltr&quot; style=&quot;color:#5B6478;word-break:break-all;&quot;&gt;http://localhost:5173/admin/orders&lt;/a&gt;
+    &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+          &lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;!-- footer --&gt;
+        &lt;tr&gt;
+          &lt;td align=&quot;center&quot; class=&quot;px&quot; style=&quot;background-color:#0A1128;padding:24px 32px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:13px;line-height:1.8;color:#F4EFE6;&quot;&gt;
+            &lt;a href=&quot;https://youtube.com/@almoaberafatema&quot; style=&quot;color:#D4AF37;text-decoration:none;font-weight:600;&quot;&gt;شاهد القناة على يوتيوب&lt;/a&gt;
+            &lt;div style=&quot;margin-top:6px;&quot;&gt;
+              &lt;span&gt;للتواصل معنا:&lt;/span&gt;
+              &lt;a href=&quot;mailto:support@saadatu-aldarein.com&quot; style=&quot;color:#D4AF37;text-decoration:none;&quot;&gt;support@saadatu-aldarein.com&lt;/a&gt;
+            &lt;/div&gt;
+            &lt;div style=&quot;margin-top:12px;font-size:12px;line-height:1.7;color:#AEB4C2;&quot;&gt;وصلتك هذه الرسالة لأنها تخص حسابك لدينا.&lt;/div&gt;
+            &lt;div style=&quot;margin-top:6px;font-size:12px;color:#AEB4C2;&quot;&gt;&amp;copy; &lt;span&gt;2026&lt;/span&gt; &lt;span&gt;إلى سعادة الدارين&lt;/span&gt;&lt;/div&gt;
+          &lt;/td&gt;
+        &lt;/tr&gt;
+      &lt;/table&gt;
+    &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/table&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+
+20:24:01.376 INFO  [Test worker] [] c.s.payments.service.PaymentService - Webhook txn=TXN-df54dac5-62ac-4f8b-ad6a-0b2257667b06 for order 01459bd9-823e-4798-bae7-bf0a3a32968e already in final state SUSPICIOUS
+20:24:01.403 INFO  [Test worker] [80eccc93-e5e3-4962-b4c4-74c2e58dcf0c] c.s.payments.api.WebhookController - Mock webhook order=edb5fb35-5544-4507-8cea-d6dbc21382e9 success=false → FAILED
+20:24:01.457 INFO  [Test worker] [b0946669-7bc6-4420-9120-b5fc52d40be2] c.s.payments.service.PaymentService - Order c04ecd48-24a2-4890-8c99-c919462fdda3 auto-submitted 1 of 1 intended drafts
+20:24:01.471 DEBUG [async-2] [b0946669-7bc6-4420-9120-b5fc52d40be2] c.saadat.push.service.WebPushSender - Web push not configured — skipping push to user c031a060-9dae-401c-a309-b6658ebefba2
+20:24:01.474 DEBUG [async-3] [b0946669-7bc6-4420-9120-b5fc52d40be2] c.saadat.push.service.WebPushSender - Web push not configured — skipping push to user 9ba03b73-b199-4064-82a4-a84319aab8fd
+20:24:01.474 DEBUG [async-1] [b0946669-7bc6-4420-9120-b5fc52d40be2] c.saadat.push.service.WebPushSender - Web push not configured — skipping push to user 21428d6b-b2ab-4b36-abe1-ace7704ad874
+20:24:01.475 INFO  [async-2] [b0946669-7bc6-4420-9120-b5fc52d40be2] com.saadat.mail.MailService - SMTP not configured — e-mail 'dream-submitted' to f***@saadatu-aldarein.com (subject: رؤيا جديدة من buyer):
+&lt;!DOCTYPE html&gt;
+
+&lt;html lang=&quot;ar&quot; dir=&quot;rtl&quot;&gt;
+&lt;head&gt;
+  &lt;meta charset=&quot;UTF-8&quot;&gt;
+  &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot;&gt;
+  &lt;meta http-equiv=&quot;X-UA-Compatible&quot; content=&quot;IE=edge&quot;&gt;
+  &lt;meta name=&quot;x-apple-disable-message-reformatting&quot;&gt;
+  &lt;meta name=&quot;color-scheme&quot; content=&quot;light&quot;&gt;
+  &lt;meta name=&quot;supported-color-schemes&quot; content=&quot;light&quot;&gt;
+  &lt;title&gt;رؤيا جديدة من buyer&lt;/title&gt;
+  &lt;link href=&quot;https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;600&amp;amp;display=swap&quot; rel=&quot;stylesheet&quot;&gt;
+  &lt;style&gt;
+    body, table, td, p, a, div, span, strong { font-family: 'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif; }
+    a { color: #0A1128; }
+    @media only screen and (max-width: 620px) {
+      .container { width: 100% !important; }
+      .px { padding-left: 20px !important; padding-right: 20px !important; }
+    }
+  &lt;/style&gt;
+&lt;/head&gt;
+&lt;body style=&quot;margin:0;padding:0;background-color:#F4EFE6;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;&quot; dir=&quot;rtl&quot;&gt;
+&lt;div style=&quot;display:none;max-height:0;max-width:0;overflow:hidden;mso-hide:all;font-size:1px;line-height:1px;color:#F4EFE6;opacity:0;&quot;&gt;أُضيفت رؤيا جديدة إلى قائمة المراجعة.&lt;/div&gt;
+&lt;table role=&quot;presentation&quot; width=&quot;100%&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; border=&quot;0&quot; style=&quot;background-color:#F4EFE6;border-collapse:collapse;&quot; dir=&quot;rtl&quot;&gt;
+  &lt;tr&gt;
+    &lt;td align=&quot;center&quot; style=&quot;padding:24px 12px;&quot;&gt;
+      &lt;table role=&quot;presentation&quot; class=&quot;container&quot; width=&quot;600&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; border=&quot;0&quot;
+             style=&quot;width:600px;max-width:600px;border-collapse:separate;border:1px solid #E6DCC8;border-radius:16px;overflow:hidden;background-color:#F4EFE6;&quot;&gt;
+        &lt;!-- header band --&gt;
+        &lt;tr&gt;
+          &lt;td align=&quot;center&quot; class=&quot;px&quot; style=&quot;background-color:#0A1128;padding:28px 32px 22px 32px;&quot;&gt;
+            &lt;div style=&quot;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:22px;line-height:1.4;font-weight:600;color:#D4AF37;&quot;&gt;إلى سعادة الدارين&lt;/div&gt;
+            &lt;table role=&quot;presentation&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; border=&quot;0&quot; align=&quot;center&quot; style=&quot;margin:12px auto 10px auto;&quot;&gt;
+              &lt;tr&gt;&lt;td width=&quot;72&quot; height=&quot;2&quot; style=&quot;width:72px;height:2px;line-height:2px;font-size:0;background-color:#D4AF37;&quot;&gt;&amp;nbsp;&lt;/td&gt;&lt;/tr&gt;
+            &lt;/table&gt;
+            &lt;div style=&quot;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:13px;line-height:1.6;color:#F4EFE6;&quot;&gt;تفسير الرؤى بوضوح وعمق نحو سعادة الدارين&lt;/div&gt;
+          &lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;!-- content --&gt;
+        &lt;tr&gt;
+          &lt;td class=&quot;px&quot; style=&quot;padding:32px 36px 28px 36px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:16px;line-height:1.9;color:#0A1128;background-color:#F4EFE6;&quot; dir=&quot;rtl&quot; align=&quot;right&quot;&gt;
+            &lt;div&gt;
+  &lt;p style=&quot;margin:0 0 18px 0;font-size:18px;line-height:1.7;font-weight:600;color:#0A1128;&quot;&gt;السلام عليكم،&lt;/p&gt;
+  &lt;p style=&quot;margin:0 0 16px 0;&quot;&gt;وصلت رؤيا جديدة من &lt;strong&gt;buyer&lt;/strong&gt; وأُضيفت إلى قائمة المراجعة.&lt;/p&gt;
+  &lt;p style=&quot;margin:0 0 16px 0;font-size:14px;line-height:1.8;color:#5B6478;&quot;&gt;الموعد المتوقع للتفسير: &lt;strong&gt;29 سبتمبر 2026، 11:24 م&lt;/strong&gt;&lt;/p&gt;
+  &lt;table role=&quot;presentation&quot; width=&quot;100%&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; border=&quot;0&quot;
+       style=&quot;margin:28px 0 8px 0;border-collapse:collapse;&quot;&gt;
+  &lt;tr&gt;
+    &lt;td align=&quot;center&quot;&gt;
+      &lt;table role=&quot;presentation&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; border=&quot;0&quot; align=&quot;center&quot;&gt;
+        &lt;tr&gt;
+          &lt;td align=&quot;center&quot; bgcolor=&quot;#D4AF37&quot; style=&quot;border-radius:999px;background-color:#D4AF37;&quot;&gt;
+            &lt;a href=&quot;http://localhost:5173/admin/dreams/6ae3fd60-fbaf-4967-a782-ea82e7e71c1f&quot; target=&quot;_blank&quot;
+               style=&quot;display:inline-block;padding:14px 38px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:16px;line-height:1.2;font-weight:600;color:#0A1128;text-decoration:none;border-radius:999px;&quot;&gt;فتح الرؤيا&lt;/a&gt;
+          &lt;/td&gt;
+        &lt;/tr&gt;
+      &lt;/table&gt;
+    &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+    &lt;td align=&quot;center&quot; style=&quot;padding-top:14px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:12px;line-height:1.6;color:#5B6478;&quot;&gt;
+      &lt;span&gt;إذا لم يعمل الزر، انسخ هذا الرابط في المتصفح:&lt;/span&gt;&lt;br&gt;
+      &lt;a href=&quot;http://localhost:5173/admin/dreams/6ae3fd60-fbaf-4967-a782-ea82e7e71c1f&quot; dir=&quot;ltr&quot; style=&quot;color:#5B6478;word-break:break-all;&quot;&gt;http://localhost:5173/admin/dreams/6ae3fd60-fbaf-4967-a782-ea82e7e71c1f&lt;/a&gt;
+    &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+          &lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;!-- footer --&gt;
+        &lt;tr&gt;
+          &lt;td align=&quot;center&quot; class=&quot;px&quot; style=&quot;background-color:#0A1128;padding:24px 32px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:13px;line-height:1.8;color:#F4EFE6;&quot;&gt;
+            &lt;a href=&quot;https://youtube.com/@almoaberafatema&quot; style=&quot;color:#D4AF37;text-decoration:none;font-weight:600;&quot;&gt;شاهد القناة على يوتيوب&lt;/a&gt;
+            &lt;div style=&quot;margin-top:6px;&quot;&gt;
+              &lt;span&gt;للتواصل معنا:&lt;/span&gt;
+              &lt;a href=&quot;mailto:support@saadatu-aldarein.com&quot; style=&quot;color:#D4AF37;text-decoration:none;&quot;&gt;support@saadatu-aldarein.com&lt;/a&gt;
+            &lt;/div&gt;
+            &lt;div style=&quot;margin-top:12px;font-size:12px;line-height:1.7;color:#AEB4C2;&quot;&gt;وصلتك هذه الرسالة لأنها تخص حسابك لدينا.&lt;/div&gt;
+            &lt;div style=&quot;margin-top:6px;font-size:12px;color:#AEB4C2;&quot;&gt;&amp;copy; &lt;span&gt;2026&lt;/span&gt; &lt;span&gt;إلى سعادة الدارين&lt;/span&gt;&lt;/div&gt;
+          &lt;/td&gt;
+        &lt;/tr&gt;
+      &lt;/table&gt;
+    &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/table&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+
+20:24:01.476 DEBUG [async-4] [b0946669-7bc6-4420-9120-b5fc52d40be2] c.saadat.push.service.WebPushSender - Web push not configured — skipping push to user 5c2b9cca-74ba-4a1f-adee-3a56789d166b
+20:24:01.475 INFO  [async-1] [b0946669-7bc6-4420-9120-b5fc52d40be2] com.saadat.mail.MailService - SMTP not configured — e-mail 'dream-submitted' to i***@example.com (subject: رؤيا جديدة من buyer):
+&lt;!DOCTYPE html&gt;
+
+&lt;html lang=&quot;ar&quot; dir=&quot;rtl&quot;&gt;
+&lt;head&gt;
+  &lt;meta charset=&quot;UTF-8&quot;&gt;
+  &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot;&gt;
+  &lt;meta http-equiv=&quot;X-UA-Compatible&quot; content=&quot;IE=edge&quot;&gt;
+  &lt;meta name=&quot;x-apple-disable-message-reformatting&quot;&gt;
+  &lt;meta name=&quot;color-scheme&quot; content=&quot;light&quot;&gt;
+  &lt;meta name=&quot;supported-color-schemes&quot; content=&quot;light&quot;&gt;
+  &lt;title&gt;رؤيا جديدة من buyer&lt;/title&gt;
+  &lt;link href=&quot;https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;600&amp;amp;display=swap&quot; rel=&quot;stylesheet&quot;&gt;
+  &lt;style&gt;
+    body, table, td, p, a, div, span, strong { font-family: 'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif; }
+    a { color: #0A1128; }
+    @media only screen and (max-width: 620px) {
+      .container { width: 100% !important; }
+      .px { padding-left: 20px !important; padding-right: 20px !important; }
+    }
+  &lt;/style&gt;
+&lt;/head&gt;
+&lt;body style=&quot;margin:0;padding:0;background-color:#F4EFE6;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;&quot; dir=&quot;rtl&quot;&gt;
+&lt;div style=&quot;display:none;max-height:0;max-width:0;overflow:hidden;mso-hide:all;font-size:1px;line-height:1px;color:#F4EFE6;opacity:0;&quot;&gt;أُضيفت رؤيا جديدة إلى قائمة المراجعة.&lt;/div&gt;
+&lt;table role=&quot;presentation&quot; width=&quot;100%&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; border=&quot;0&quot; style=&quot;background-color:#F4EFE6;border-collapse:collapse;&quot; dir=&quot;rtl&quot;&gt;
+  &lt;tr&gt;
+    &lt;td align=&quot;center&quot; style=&quot;padding:24px 12px;&quot;&gt;
+      &lt;table role=&quot;presentation&quot; class=&quot;container&quot; width=&quot;600&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; border=&quot;0&quot;
+             style=&quot;width:600px;max-width:600px;border-collapse:separate;border:1px solid #E6DCC8;border-radius:16px;overflow:hidden;background-color:#F4EFE6;&quot;&gt;
+        &lt;!-- header band --&gt;
+        &lt;tr&gt;
+          &lt;td align=&quot;center&quot; class=&quot;px&quot; style=&quot;background-color:#0A1128;padding:28px 32px 22px 32px;&quot;&gt;
+            &lt;div style=&quot;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:22px;line-height:1.4;font-weight:600;color:#D4AF37;&quot;&gt;إلى سعادة الدارين&lt;/div&gt;
+            &lt;table role=&quot;presentation&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; border=&quot;0&quot; align=&quot;center&quot; style=&quot;margin:12px auto 10px auto;&quot;&gt;
+              &lt;tr&gt;&lt;td width=&quot;72&quot; height=&quot;2&quot; style=&quot;width:72px;height:2px;line-height:2px;font-size:0;background-color:#D4AF37;&quot;&gt;&amp;nbsp;&lt;/td&gt;&lt;/tr&gt;
+            &lt;/table&gt;
+            &lt;div style=&quot;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:13px;line-height:1.6;color:#F4EFE6;&quot;&gt;تفسير الرؤى بوضوح وعمق نحو سعادة الدارين&lt;/div&gt;
+          &lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;!-- content --&gt;
+        &lt;tr&gt;
+          &lt;td class=&quot;px&quot; style=&quot;padding:32px 36px 28px 36px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:16px;line-height:1.9;color:#0A1128;background-color:#F4EFE6;&quot; dir=&quot;rtl&quot; align=&quot;right&quot;&gt;
+            &lt;div&gt;
+  &lt;p style=&quot;margin:0 0 18px 0;font-size:18px;line-height:1.7;font-weight:600;color:#0A1128;&quot;&gt;السلام عليكم &lt;span&gt;interpreter&lt;/span&gt;،&lt;/p&gt;
+  &lt;p style=&quot;margin:0 0 16px 0;&quot;&gt;وصلت رؤيا جديدة من &lt;strong&gt;buyer&lt;/strong&gt; وأُضيفت إلى قائمة المراجعة.&lt;/p&gt;
+  &lt;p style=&quot;margin:0 0 16px 0;font-size:14px;line-height:1.8;color:#5B6478;&quot;&gt;الموعد المتوقع للتفسير: &lt;strong&gt;29 سبتمبر 2026، 11:24 م&lt;/strong&gt;&lt;/p&gt;
+  &lt;table role=&quot;presentation&quot; width=&quot;100%&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; border=&quot;0&quot;
+       style=&quot;margin:28px 0 8px 0;border-collapse:collapse;&quot;&gt;
+  &lt;tr&gt;
+    &lt;td align=&quot;center&quot;&gt;
+      &lt;table role=&quot;presentation&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; border=&quot;0&quot; align=&quot;center&quot;&gt;
+        &lt;tr&gt;
+          &lt;td align=&quot;center&quot; bgcolor=&quot;#D4AF37&quot; style=&quot;border-radius:999px;background-color:#D4AF37;&quot;&gt;
+            &lt;a href=&quot;http://localhost:5173/admin/dreams/6ae3fd60-fbaf-4967-a782-ea82e7e71c1f&quot; target=&quot;_blank&quot;
+               style=&quot;display:inline-block;padding:14px 38px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:16px;line-height:1.2;font-weight:600;color:#0A1128;text-decoration:none;border-radius:999px;&quot;&gt;فتح الرؤيا&lt;/a&gt;
+          &lt;/td&gt;
+        &lt;/tr&gt;
+      &lt;/table&gt;
+    &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+    &lt;td align=&quot;center&quot; style=&quot;padding-top:14px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:12px;line-height:1.6;color:#5B6478;&quot;&gt;
+      &lt;span&gt;إذا لم يعمل الزر، انسخ هذا الرابط في المتصفح:&lt;/span&gt;&lt;br&gt;
+      &lt;a href=&quot;http://localhost:5173/admin/dreams/6ae3fd60-fbaf-4967-a782-ea82e7e71c1f&quot; dir=&quot;ltr&quot; style=&quot;color:#5B6478;word-break:break-all;&quot;&gt;http://localhost:5173/admin/dreams/6ae3fd60-fbaf-4967-a782-ea82e7e71c1f&lt;/a&gt;
+    &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+          &lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;!-- footer --&gt;
+        &lt;tr&gt;
+          &lt;td align=&quot;center&quot; class=&quot;px&quot; style=&quot;background-color:#0A1128;padding:24px 32px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:13px;line-height:1.8;color:#F4EFE6;&quot;&gt;
+            &lt;a href=&quot;https://youtube.com/@almoaberafatema&quot; style=&quot;color:#D4AF37;text-decoration:none;font-weight:600;&quot;&gt;شاهد القناة على يوتيوب&lt;/a&gt;
+            &lt;div style=&quot;margin-top:6px;&quot;&gt;
+              &lt;span&gt;للتواصل معنا:&lt;/span&gt;
+              &lt;a href=&quot;mailto:support@saadatu-aldarein.com&quot; style=&quot;color:#D4AF37;text-decoration:none;&quot;&gt;support@saadatu-aldarein.com&lt;/a&gt;
+            &lt;/div&gt;
+            &lt;div style=&quot;margin-top:12px;font-size:12px;line-height:1.7;color:#AEB4C2;&quot;&gt;وصلتك هذه الرسالة لأنها تخص حسابك لدينا.&lt;/div&gt;
+            &lt;div style=&quot;margin-top:6px;font-size:12px;color:#AEB4C2;&quot;&gt;&amp;copy; &lt;span&gt;2026&lt;/span&gt; &lt;span&gt;إلى سعادة الدارين&lt;/span&gt;&lt;/div&gt;
+          &lt;/td&gt;
+        &lt;/tr&gt;
+      &lt;/table&gt;
+    &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/table&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+
+20:24:01.477 INFO  [async-3] [b0946669-7bc6-4420-9120-b5fc52d40be2] com.saadat.mail.MailService - SMTP not configured — e-mail 'dream-received' to b***@example.com (subject: وصلت رؤياك):
+&lt;!DOCTYPE html&gt;
+
+&lt;html lang=&quot;ar&quot; dir=&quot;rtl&quot;&gt;
+&lt;head&gt;
+  &lt;meta charset=&quot;UTF-8&quot;&gt;
+  &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot;&gt;
+  &lt;meta http-equiv=&quot;X-UA-Compatible&quot; content=&quot;IE=edge&quot;&gt;
+  &lt;meta name=&quot;x-apple-disable-message-reformatting&quot;&gt;
+  &lt;meta name=&quot;color-scheme&quot; content=&quot;light&quot;&gt;
+  &lt;meta name=&quot;supported-color-schemes&quot; content=&quot;light&quot;&gt;
+  &lt;title&gt;وصلت رؤياك&lt;/title&gt;
+  &lt;link href=&quot;https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;600&amp;amp;display=swap&quot; rel=&quot;stylesheet&quot;&gt;
+  &lt;style&gt;
+    body, table, td, p, a, div, span, strong { font-family: 'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif; }
+    a { color: #0A1128; }
+    @media only screen and (max-width: 620px) {
+      .container { width: 100% !important; }
+      .px { padding-left: 20px !important; padding-right: 20px !important; }
+    }
+  &lt;/style&gt;
+&lt;/head&gt;
+&lt;body style=&quot;margin:0;padding:0;background-color:#F4EFE6;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;&quot; dir=&quot;rtl&quot;&gt;
+&lt;div style=&quot;display:none;max-height:0;max-width:0;overflow:hidden;mso-hide:all;font-size:1px;line-height:1px;color:#F4EFE6;opacity:0;&quot;&gt;سنبدأ دراستها بعناية، وسيصلك إشعار حين يجهز التفسير.&lt;/div&gt;
+&lt;table role=&quot;presentation&quot; width=&quot;100%&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; border=&quot;0&quot; style=&quot;background-color:#F4EFE6;border-collapse:collapse;&quot; dir=&quot;rtl&quot;&gt;
+  &lt;tr&gt;
+    &lt;td align=&quot;center&quot; style=&quot;padding:24px 12px;&quot;&gt;
+      &lt;table role=&quot;presentation&quot; class=&quot;container&quot; width=&quot;600&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; border=&quot;0&quot;
+             style=&quot;width:600px;max-width:600px;border-collapse:separate;border:1px solid #E6DCC8;border-radius:16px;overflow:hidden;background-color:#F4EFE6;&quot;&gt;
+        &lt;!-- header band --&gt;
+        &lt;tr&gt;
+          &lt;td align=&quot;center&quot; class=&quot;px&quot; style=&quot;background-color:#0A1128;padding:28px 32px 22px 32px;&quot;&gt;
+            &lt;div style=&quot;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:22px;line-height:1.4;font-weight:600;color:#D4AF37;&quot;&gt;إلى سعادة الدارين&lt;/div&gt;
+            &lt;table role=&quot;presentation&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; border=&quot;0&quot; align=&quot;center&quot; style=&quot;margin:12px auto 10px auto;&quot;&gt;
+              &lt;tr&gt;&lt;td width=&quot;72&quot; height=&quot;2&quot; style=&quot;width:72px;height:2px;line-height:2px;font-size:0;background-color:#D4AF37;&quot;&gt;&amp;nbsp;&lt;/td&gt;&lt;/tr&gt;
+            &lt;/table&gt;
+            &lt;div style=&quot;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:13px;line-height:1.6;color:#F4EFE6;&quot;&gt;تفسير الرؤى بوضوح وعمق نحو سعادة الدارين&lt;/div&gt;
+          &lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;!-- content --&gt;
+        &lt;tr&gt;
+          &lt;td class=&quot;px&quot; style=&quot;padding:32px 36px 28px 36px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:16px;line-height:1.9;color:#0A1128;background-color:#F4EFE6;&quot; dir=&quot;rtl&quot; align=&quot;right&quot;&gt;
+            &lt;div&gt;
+  &lt;p style=&quot;margin:0 0 18px 0;font-size:18px;line-height:1.7;font-weight:600;color:#0A1128;&quot;&gt;السلام عليكم &lt;span&gt;buyer&lt;/span&gt;،&lt;/p&gt;
+  &lt;p style=&quot;margin:0 0 16px 0;&quot;&gt;وصلت رؤياك، وستُدرس بعناية وهدوء قبل كتابة التفسير.&lt;/p&gt;
+  &lt;p style=&quot;margin:0 0 16px 0;&quot;&gt;الموعد المتوقع للتفسير: &lt;strong&gt;29 سبتمبر 2026، 11:24 م&lt;/strong&gt;&lt;/p&gt;
+  &lt;p style=&quot;margin:0 0 16px 0;font-size:14px;line-height:1.8;color:#5B6478;&quot;&gt;نظراً لكثرة الرؤى، يستغرق التعبير حالياً من يومين إلى ثلاثة أيام، لنمنح كل رؤيا حقها من الدراسة المتعمقة وتحليل الرموز.&lt;/p&gt;
+  &lt;p style=&quot;margin:0 0 16px 0;&quot;&gt;سيصلك إشعار حين يكون التفسير جاهزاً في حسابك.&lt;/p&gt;
+  &lt;table role=&quot;presentation&quot; width=&quot;100%&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; border=&quot;0&quot;
+       style=&quot;margin:28px 0 8px 0;border-collapse:collapse;&quot;&gt;
+  &lt;tr&gt;
+    &lt;td align=&quot;center&quot;&gt;
+      &lt;table role=&quot;presentation&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; border=&quot;0&quot; align=&quot;center&quot;&gt;
+        &lt;tr&gt;
+          &lt;td align=&quot;center&quot; bgcolor=&quot;#D4AF37&quot; style=&quot;border-radius:999px;background-color:#D4AF37;&quot;&gt;
+            &lt;a href=&quot;http://localhost:5173/me/dreams/6ae3fd60-fbaf-4967-a782-ea82e7e71c1f&quot; target=&quot;_blank&quot;
+               style=&quot;display:inline-block;padding:14px 38px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:16px;line-height:1.2;font-weight:600;color:#0A1128;text-decoration:none;border-radius:999px;&quot;&gt;متابعة رؤياك&lt;/a&gt;
+          &lt;/td&gt;
+        &lt;/tr&gt;
+      &lt;/table&gt;
+    &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+    &lt;td align=&quot;center&quot; style=&quot;padding-top:14px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:12px;line-height:1.6;color:#5B6478;&quot;&gt;
+      &lt;span&gt;إذا لم يعمل الزر، انسخ هذا الرابط في المتصفح:&lt;/span&gt;&lt;br&gt;
+      &lt;a href=&quot;http://localhost:5173/me/dreams/6ae3fd60-fbaf-4967-a782-ea82e7e71c1f&quot; dir=&quot;ltr&quot; style=&quot;color:#5B6478;word-break:break-all;&quot;&gt;http://localhost:5173/me/dreams/6ae3fd60-fbaf-4967-a782-ea82e7e71c1f&lt;/a&gt;
+    &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+          &lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;!-- footer --&gt;
+        &lt;tr&gt;
+          &lt;td align=&quot;center&quot; class=&quot;px&quot; style=&quot;background-color:#0A1128;padding:24px 32px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:13px;line-height:1.8;color:#F4EFE6;&quot;&gt;
+            &lt;a href=&quot;https://youtube.com/@almoaberafatema&quot; style=&quot;color:#D4AF37;text-decoration:none;font-weight:600;&quot;&gt;شاهد القناة على يوتيوب&lt;/a&gt;
+            &lt;div style=&quot;margin-top:6px;&quot;&gt;
+              &lt;span&gt;للتواصل معنا:&lt;/span&gt;
+              &lt;a href=&quot;mailto:support@saadatu-aldarein.com&quot; style=&quot;color:#D4AF37;text-decoration:none;&quot;&gt;support@saadatu-aldarein.com&lt;/a&gt;
+            &lt;/div&gt;
+            &lt;div style=&quot;margin-top:12px;font-size:12px;line-height:1.7;color:#AEB4C2;&quot;&gt;وصلتك هذه الرسالة لأنها تخص حسابك لدينا.&lt;/div&gt;
+            &lt;div style=&quot;margin-top:6px;font-size:12px;color:#AEB4C2;&quot;&gt;&amp;copy; &lt;span&gt;2026&lt;/span&gt; &lt;span&gt;إلى سعادة الدارين&lt;/span&gt;&lt;/div&gt;
+          &lt;/td&gt;
+        &lt;/tr&gt;
+      &lt;/table&gt;
+    &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/table&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+
+20:24:01.478 INFO  [async-4] [b0946669-7bc6-4420-9120-b5fc52d40be2] com.saadat.mail.MailService - SMTP not configured — e-mail 'dream-submitted' to i***@example.com (subject: رؤيا جديدة من buyer):
+&lt;!DOCTYPE html&gt;
+
+&lt;html lang=&quot;ar&quot; dir=&quot;rtl&quot;&gt;
+&lt;head&gt;
+  &lt;meta charset=&quot;UTF-8&quot;&gt;
+  &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot;&gt;
+  &lt;meta http-equiv=&quot;X-UA-Compatible&quot; content=&quot;IE=edge&quot;&gt;
+  &lt;meta name=&quot;x-apple-disable-message-reformatting&quot;&gt;
+  &lt;meta name=&quot;color-scheme&quot; content=&quot;light&quot;&gt;
+  &lt;meta name=&quot;supported-color-schemes&quot; content=&quot;light&quot;&gt;
+  &lt;title&gt;رؤيا جديدة من buyer&lt;/title&gt;
+  &lt;link href=&quot;https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;600&amp;amp;display=swap&quot; rel=&quot;stylesheet&quot;&gt;
+  &lt;style&gt;
+    body, table, td, p, a, div, span, strong { font-family: 'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif; }
+    a { color: #0A1128; }
+    @media only screen and (max-width: 620px) {
+      .container { width: 100% !important; }
+      .px { padding-left: 20px !important; padding-right: 20px !important; }
+    }
+  &lt;/style&gt;
+&lt;/head&gt;
+&lt;body style=&quot;margin:0;padding:0;background-color:#F4EFE6;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;&quot; dir=&quot;rtl&quot;&gt;
+&lt;div style=&quot;display:none;max-height:0;max-width:0;overflow:hidden;mso-hide:all;font-size:1px;line-height:1px;color:#F4EFE6;opacity:0;&quot;&gt;أُضيفت رؤيا جديدة إلى قائمة المراجعة.&lt;/div&gt;
+&lt;table role=&quot;presentation&quot; width=&quot;100%&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; border=&quot;0&quot; style=&quot;background-color:#F4EFE6;border-collapse:collapse;&quot; dir=&quot;rtl&quot;&gt;
+  &lt;tr&gt;
+    &lt;td align=&quot;center&quot; style=&quot;padding:24px 12px;&quot;&gt;
+      &lt;table role=&quot;presentation&quot; class=&quot;container&quot; width=&quot;600&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; border=&quot;0&quot;
+             style=&quot;width:600px;max-width:600px;border-collapse:separate;border:1px solid #E6DCC8;border-radius:16px;overflow:hidden;background-color:#F4EFE6;&quot;&gt;
+        &lt;!-- header band --&gt;
+        &lt;tr&gt;
+          &lt;td align=&quot;center&quot; class=&quot;px&quot; style=&quot;background-color:#0A1128;padding:28px 32px 22px 32px;&quot;&gt;
+            &lt;div style=&quot;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:22px;line-height:1.4;font-weight:600;color:#D4AF37;&quot;&gt;إلى سعادة الدارين&lt;/div&gt;
+            &lt;table role=&quot;presentation&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; border=&quot;0&quot; align=&quot;center&quot; style=&quot;margin:12px auto 10px auto;&quot;&gt;
+              &lt;tr&gt;&lt;td width=&quot;72&quot; height=&quot;2&quot; style=&quot;width:72px;height:2px;line-height:2px;font-size:0;background-color:#D4AF37;&quot;&gt;&amp;nbsp;&lt;/td&gt;&lt;/tr&gt;
+            &lt;/table&gt;
+            &lt;div style=&quot;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:13px;line-height:1.6;color:#F4EFE6;&quot;&gt;تفسير الرؤى بوضوح وعمق نحو سعادة الدارين&lt;/div&gt;
+          &lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;!-- content --&gt;
+        &lt;tr&gt;
+          &lt;td class=&quot;px&quot; style=&quot;padding:32px 36px 28px 36px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:16px;line-height:1.9;color:#0A1128;background-color:#F4EFE6;&quot; dir=&quot;rtl&quot; align=&quot;right&quot;&gt;
+            &lt;div&gt;
+  &lt;p style=&quot;margin:0 0 18px 0;font-size:18px;line-height:1.7;font-weight:600;color:#0A1128;&quot;&gt;السلام عليكم &lt;span&gt;interpreter&lt;/span&gt;،&lt;/p&gt;
+  &lt;p style=&quot;margin:0 0 16px 0;&quot;&gt;وصلت رؤيا جديدة من &lt;strong&gt;buyer&lt;/strong&gt; وأُضيفت إلى قائمة المراجعة.&lt;/p&gt;
+  &lt;p style=&quot;margin:0 0 16px 0;font-size:14px;line-height:1.8;color:#5B6478;&quot;&gt;الموعد المتوقع للتفسير: &lt;strong&gt;29 سبتمبر 2026، 11:24 م&lt;/strong&gt;&lt;/p&gt;
+  &lt;table role=&quot;presentation&quot; width=&quot;100%&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; border=&quot;0&quot;
+       style=&quot;margin:28px 0 8px 0;border-collapse:collapse;&quot;&gt;
+  &lt;tr&gt;
+    &lt;td align=&quot;center&quot;&gt;
+      &lt;table role=&quot;presentation&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; border=&quot;0&quot; align=&quot;center&quot;&gt;
+        &lt;tr&gt;
+          &lt;td align=&quot;center&quot; bgcolor=&quot;#D4AF37&quot; style=&quot;border-radius:999px;background-color:#D4AF37;&quot;&gt;
+            &lt;a href=&quot;http://localhost:5173/admin/dreams/6ae3fd60-fbaf-4967-a782-ea82e7e71c1f&quot; target=&quot;_blank&quot;
+               style=&quot;display:inline-block;padding:14px 38px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:16px;line-height:1.2;font-weight:600;color:#0A1128;text-decoration:none;border-radius:999px;&quot;&gt;فتح الرؤيا&lt;/a&gt;
+          &lt;/td&gt;
+        &lt;/tr&gt;
+      &lt;/table&gt;
+    &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+    &lt;td align=&quot;center&quot; style=&quot;padding-top:14px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:12px;line-height:1.6;color:#5B6478;&quot;&gt;
+      &lt;span&gt;إذا لم يعمل الزر، انسخ هذا الرابط في المتصفح:&lt;/span&gt;&lt;br&gt;
+      &lt;a href=&quot;http://localhost:5173/admin/dreams/6ae3fd60-fbaf-4967-a782-ea82e7e71c1f&quot; dir=&quot;ltr&quot; style=&quot;color:#5B6478;word-break:break-all;&quot;&gt;http://localhost:5173/admin/dreams/6ae3fd60-fbaf-4967-a782-ea82e7e71c1f&lt;/a&gt;
+    &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+          &lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;!-- footer --&gt;
+        &lt;tr&gt;
+          &lt;td align=&quot;center&quot; class=&quot;px&quot; style=&quot;background-color:#0A1128;padding:24px 32px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:13px;line-height:1.8;color:#F4EFE6;&quot;&gt;
+            &lt;a href=&quot;https://youtube.com/@almoaberafatema&quot; style=&quot;color:#D4AF37;text-decoration:none;font-weight:600;&quot;&gt;شاهد القناة على يوتيوب&lt;/a&gt;
+            &lt;div style=&quot;margin-top:6px;&quot;&gt;
+              &lt;span&gt;للتواصل معنا:&lt;/span&gt;
+              &lt;a href=&quot;mailto:support@saadatu-aldarein.com&quot; style=&quot;color:#D4AF37;text-decoration:none;&quot;&gt;support@saadatu-aldarein.com&lt;/a&gt;
+            &lt;/div&gt;
+            &lt;div style=&quot;margin-top:12px;font-size:12px;line-height:1.7;color:#AEB4C2;&quot;&gt;وصلتك هذه الرسالة لأنها تخص حسابك لدينا.&lt;/div&gt;
+            &lt;div style=&quot;margin-top:6px;font-size:12px;color:#AEB4C2;&quot;&gt;&amp;copy; &lt;span&gt;2026&lt;/span&gt; &lt;span&gt;إلى سعادة الدارين&lt;/span&gt;&lt;/div&gt;
+          &lt;/td&gt;
+        &lt;/tr&gt;
+      &lt;/table&gt;
+    &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/table&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+
+20:24:01.478 INFO  [Test worker] [b0946669-7bc6-4420-9120-b5fc52d40be2] com.saadat.mail.MailService - SMTP not configured — e-mail 'payment-receipt' to b***@example.com (subject: إيصال الدفع — تفسير رؤيا واحدة):
+&lt;!DOCTYPE html&gt;
+
+&lt;html lang=&quot;ar&quot; dir=&quot;rtl&quot;&gt;
+&lt;head&gt;
+  &lt;meta charset=&quot;UTF-8&quot;&gt;
+  &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot;&gt;
+  &lt;meta http-equiv=&quot;X-UA-Compatible&quot; content=&quot;IE=edge&quot;&gt;
+  &lt;meta name=&quot;x-apple-disable-message-reformatting&quot;&gt;
+  &lt;meta name=&quot;color-scheme&quot; content=&quot;light&quot;&gt;
+  &lt;meta name=&quot;supported-color-schemes&quot; content=&quot;light&quot;&gt;
+  &lt;title&gt;إيصال الدفع — تفسير رؤيا واحدة&lt;/title&gt;
+  &lt;link href=&quot;https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;600&amp;amp;display=swap&quot; rel=&quot;stylesheet&quot;&gt;
+  &lt;style&gt;
+    body, table, td, p, a, div, span, strong { font-family: 'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif; }
+    a { color: #0A1128; }
+    @media only screen and (max-width: 620px) {
+      .container { width: 100% !important; }
+      .px { padding-left: 20px !important; padding-right: 20px !important; }
+    }
+  &lt;/style&gt;
+&lt;/head&gt;
+&lt;body style=&quot;margin:0;padding:0;background-color:#F4EFE6;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;&quot; dir=&quot;rtl&quot;&gt;
+&lt;div style=&quot;display:none;max-height:0;max-width:0;overflow:hidden;mso-hide:all;font-size:1px;line-height:1px;color:#F4EFE6;opacity:0;&quot;&gt;شكراً لك، تمت إضافة الرصيد إلى حسابك.&lt;/div&gt;
+&lt;table role=&quot;presentation&quot; width=&quot;100%&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; border=&quot;0&quot; style=&quot;background-color:#F4EFE6;border-collapse:collapse;&quot; dir=&quot;rtl&quot;&gt;
+  &lt;tr&gt;
+    &lt;td align=&quot;center&quot; style=&quot;padding:24px 12px;&quot;&gt;
+      &lt;table role=&quot;presentation&quot; class=&quot;container&quot; width=&quot;600&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; border=&quot;0&quot;
+             style=&quot;width:600px;max-width:600px;border-collapse:separate;border:1px solid #E6DCC8;border-radius:16px;overflow:hidden;background-color:#F4EFE6;&quot;&gt;
+        &lt;!-- header band --&gt;
+        &lt;tr&gt;
+          &lt;td align=&quot;center&quot; class=&quot;px&quot; style=&quot;background-color:#0A1128;padding:28px 32px 22px 32px;&quot;&gt;
+            &lt;div style=&quot;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:22px;line-height:1.4;font-weight:600;color:#D4AF37;&quot;&gt;إلى سعادة الدارين&lt;/div&gt;
+            &lt;table role=&quot;presentation&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; border=&quot;0&quot; align=&quot;center&quot; style=&quot;margin:12px auto 10px auto;&quot;&gt;
+              &lt;tr&gt;&lt;td width=&quot;72&quot; height=&quot;2&quot; style=&quot;width:72px;height:2px;line-height:2px;font-size:0;background-color:#D4AF37;&quot;&gt;&amp;nbsp;&lt;/td&gt;&lt;/tr&gt;
+            &lt;/table&gt;
+            &lt;div style=&quot;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:13px;line-height:1.6;color:#F4EFE6;&quot;&gt;تفسير الرؤى بوضوح وعمق نحو سعادة الدارين&lt;/div&gt;
+          &lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;!-- content --&gt;
+        &lt;tr&gt;
+          &lt;td class=&quot;px&quot; style=&quot;padding:32px 36px 28px 36px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:16px;line-height:1.9;color:#0A1128;background-color:#F4EFE6;&quot; dir=&quot;rtl&quot; align=&quot;right&quot;&gt;
+            &lt;div&gt;
+  &lt;p style=&quot;margin:0 0 18px 0;font-size:18px;line-height:1.7;font-weight:600;color:#0A1128;&quot;&gt;السلام عليكم &lt;span&gt;buyer&lt;/span&gt;،&lt;/p&gt;
+  &lt;p style=&quot;margin:0 0 16px 0;&quot;&gt;شكراً لك، تم الدفع بنجاح وأُضيف الرصيد إلى حسابك.&lt;/p&gt;
+  &lt;table role=&quot;presentation&quot; width=&quot;100%&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; border=&quot;0&quot; style=&quot;margin:4px 0 8px 0;border-collapse:collapse;background-color:#FFFFFF;border:1px solid #E6DCC8;border-radius:12px;&quot;&gt;
+    &lt;tr&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;&quot;&gt;الباقة&lt;/td&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;&quot;&gt;تفسير رؤيا واحدة&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;&quot;&gt;عدد الرؤى&lt;/td&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;&quot;&gt;1&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;&quot;&gt;المبلغ&lt;/td&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;&quot;&gt;49.00 SAR&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;&quot;&gt;رقم الطلب&lt;/td&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;&quot;&gt;MOCK-c04ecd48-24a2-4890-8c99-c919462fdda3-OK&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;&quot;&gt;تاريخ الدفع&lt;/td&gt;
+      &lt;td align=&quot;right&quot; style=&quot;padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;&quot;&gt;27 سبتمبر 2026، 11:24 م&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/table&gt;
+  &lt;p style=&quot;margin:0 0 16px 0;font-size:14px;line-height:1.8;color:#5B6478;&quot;&gt;احتفظ بهذه الرسالة إيصالاً للدفع.&lt;/p&gt;
+  &lt;table role=&quot;presentation&quot; width=&quot;100%&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; border=&quot;0&quot;
+       style=&quot;margin:28px 0 8px 0;border-collapse:collapse;&quot;&gt;
+  &lt;tr&gt;
+    &lt;td align=&quot;center&quot;&gt;
+      &lt;table role=&quot;presentation&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; border=&quot;0&quot; align=&quot;center&quot;&gt;
+        &lt;tr&gt;
+          &lt;td align=&quot;center&quot; bgcolor=&quot;#D4AF37&quot; style=&quot;border-radius:999px;background-color:#D4AF37;&quot;&gt;
+            &lt;a href=&quot;http://localhost:5173/me/payments&quot; target=&quot;_blank&quot;
+               style=&quot;display:inline-block;padding:14px 38px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:16px;line-height:1.2;font-weight:600;color:#0A1128;text-decoration:none;border-radius:999px;&quot;&gt;عرض المدفوعات&lt;/a&gt;
+          &lt;/td&gt;
+        &lt;/tr&gt;
+      &lt;/table&gt;
+    &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+    &lt;td align=&quot;center&quot; style=&quot;padding-top:14px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:12px;line-height:1.6;color:#5B6478;&quot;&gt;
+      &lt;span&gt;إذا لم يعمل الزر، انسخ هذا الرابط في المتصفح:&lt;/span&gt;&lt;br&gt;
+      &lt;a href=&quot;http://localhost:5173/me/payments&quot; dir=&quot;ltr&quot; style=&quot;color:#5B6478;word-break:break-all;&quot;&gt;http://localhost:5173/me/payments&lt;/a&gt;
+    &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+          &lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;!-- footer --&gt;
+        &lt;tr&gt;
+          &lt;td align=&quot;center&quot; class=&quot;px&quot; style=&quot;background-color:#0A1128;padding:24px 32px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:13px;line-height:1.8;color:#F4EFE6;&quot;&gt;
+            &lt;a href=&quot;https://youtube.com/@almoaberafatema&quot; style=&quot;color:#D4AF37;text-decoration:none;font-weight:600;&quot;&gt;شاهد القناة على يوتيوب&lt;/a&gt;
+            &lt;div style=&quot;margin-top:6px;&quot;&gt;
+              &lt;span&gt;للتواصل معنا:&lt;/span&gt;
+              &lt;a href=&quot;mailto:support@saadatu-aldarein.com&quot; style=&quot;color:#D4AF37;text-decoration:none;&quot;&gt;support@saadatu-aldarein.com&lt;/a&gt;
+            &lt;/div&gt;
+            &lt;div style=&quot;margin-top:12px;font-size:12px;line-height:1.7;color:#AEB4C2;&quot;&gt;وصلتك هذه الرسالة لأنها تخص حسابك لدينا.&lt;/div&gt;
+            &lt;div style=&quot;margin-top:6px;font-size:12px;color:#AEB4C2;&quot;&gt;&amp;copy; &lt;span&gt;2026&lt;/span&gt; &lt;span&gt;إلى سعادة الدارين&lt;/span&gt;&lt;/div&gt;
+          &lt;/td&gt;
+        &lt;/tr&gt;
+      &lt;/table&gt;
+    &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/table&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+
+20:24:01.482 DEBUG [async-2] [b0946669-7bc6-4420-9120-b5fc52d40be2] c.saadat.push.service.WebPushSender - Web push not configured — skipping push to user 83f21d33-69b4-4de0-aeaf-5ba6183043d5
+20:24:01.484 INFO  [async-2] [b0946669-7bc6-4420-9120-b5fc52d40be2] com.saadat.mail.MailService - SMTP not configured — e-mail 'dream-submitted' to i***@example.com (subject: رؤيا جديدة من buyer):
+&lt;!DOCTYPE html&gt;
+
+&lt;html lang=&quot;ar&quot; dir=&quot;rtl&quot;&gt;
+&lt;head&gt;
+  &lt;meta charset=&quot;UTF-8&quot;&gt;
+  &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot;&gt;
+  &lt;meta http-equiv=&quot;X-UA-Compatible&quot; content=&quot;IE=edge&quot;&gt;
+  &lt;meta name=&quot;x-apple-disable-message-reformatting&quot;&gt;
+  &lt;meta name=&quot;color-scheme&quot; content=&quot;light&quot;&gt;
+  &lt;meta name=&quot;supported-color-schemes&quot; content=&quot;light&quot;&gt;
+  &lt;title&gt;رؤيا جديدة من buyer&lt;/title&gt;
+  &lt;link href=&quot;https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;600&amp;amp;display=swap&quot; rel=&quot;stylesheet&quot;&gt;
+  &lt;style&gt;
+    body, table, td, p, a, div, span, strong { font-family: 'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif; }
+    a { color: #0A1128; }
+    @media only screen and (max-width: 620px) {
+      .container { width: 100% !important; }
+      .px { padding-left: 20px !important; padding-right: 20px !important; }
+    }
+  &lt;/style&gt;
+&lt;/head&gt;
+&lt;body style=&quot;margin:0;padding:0;background-color:#F4EFE6;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;&quot; dir=&quot;rtl&quot;&gt;
+&lt;div style=&quot;display:none;max-height:0;max-width:0;overflow:hidden;mso-hide:all;font-size:1px;line-height:1px;color:#F4EFE6;opacity:0;&quot;&gt;أُضيفت رؤيا جديدة إلى قائمة المراجعة.&lt;/div&gt;
+&lt;table role=&quot;presentation&quot; width=&quot;100%&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; border=&quot;0&quot; style=&quot;background-color:#F4EFE6;border-collapse:collapse;&quot; dir=&quot;rtl&quot;&gt;
+  &lt;tr&gt;
+    &lt;td align=&quot;center&quot; style=&quot;padding:24px 12px;&quot;&gt;
+      &lt;table role=&quot;presentation&quot; class=&quot;container&quot; width=&quot;600&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; border=&quot;0&quot;
+             style=&quot;width:600px;max-width:600px;border-collapse:separate;border:1px solid #E6DCC8;border-radius:16px;overflow:hidden;background-color:#F4EFE6;&quot;&gt;
+        &lt;!-- header band --&gt;
+        &lt;tr&gt;
+          &lt;td align=&quot;center&quot; class=&quot;px&quot; style=&quot;background-color:#0A1128;padding:28px 32px 22px 32px;&quot;&gt;
+            &lt;div style=&quot;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:22px;line-height:1.4;font-weight:600;color:#D4AF37;&quot;&gt;إلى سعادة الدارين&lt;/div&gt;
+            &lt;table role=&quot;presentation&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; border=&quot;0&quot; align=&quot;center&quot; style=&quot;margin:12px auto 10px auto;&quot;&gt;
+              &lt;tr&gt;&lt;td width=&quot;72&quot; height=&quot;2&quot; style=&quot;width:72px;height:2px;line-height:2px;font-size:0;background-color:#D4AF37;&quot;&gt;&amp;nbsp;&lt;/td&gt;&lt;/tr&gt;
+            &lt;/table&gt;
+            &lt;div style=&quot;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:13px;line-height:1.6;color:#F4EFE6;&quot;&gt;تفسير الرؤى بوضوح وعمق نحو سعادة الدارين&lt;/div&gt;
+          &lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;!-- content --&gt;
+        &lt;tr&gt;
+          &lt;td class=&quot;px&quot; style=&quot;padding:32px 36px 28px 36px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:16px;line-height:1.9;color:#0A1128;background-color:#F4EFE6;&quot; dir=&quot;rtl&quot; align=&quot;right&quot;&gt;
+            &lt;div&gt;
+  &lt;p style=&quot;margin:0 0 18px 0;font-size:18px;line-height:1.7;font-weight:600;color:#0A1128;&quot;&gt;السلام عليكم &lt;span&gt;interp&lt;/span&gt;،&lt;/p&gt;
+  &lt;p style=&quot;margin:0 0 16px 0;&quot;&gt;وصلت رؤيا جديدة من &lt;strong&gt;buyer&lt;/strong&gt; وأُضيفت إلى قائمة المراجعة.&lt;/p&gt;
+  &lt;p style=&quot;margin:0 0 16px 0;font-size:14px;line-height:1.8;color:#5B6478;&quot;&gt;الموعد المتوقع للتفسير: &lt;strong&gt;29 سبتمبر 2026، 11:24 م&lt;/strong&gt;&lt;/p&gt;
+  &lt;table role=&quot;presentation&quot; width=&quot;100%&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; border=&quot;0&quot;
+       style=&quot;margin:28px 0 8px 0;border-collapse:collapse;&quot;&gt;
+  &lt;tr&gt;
+    &lt;td align=&quot;center&quot;&gt;
+      &lt;table role=&quot;presentation&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; border=&quot;0&quot; align=&quot;center&quot;&gt;
+        &lt;tr&gt;
+          &lt;td align=&quot;center&quot; bgcolor=&quot;#D4AF37&quot; style=&quot;border-radius:999px;background-color:#D4AF37;&quot;&gt;
+            &lt;a href=&quot;http://localhost:5173/admin/dreams/6ae3fd60-fbaf-4967-a782-ea82e7e71c1f&quot; target=&quot;_blank&quot;
+               style=&quot;display:inline-block;padding:14px 38px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:16px;line-height:1.2;font-weight:600;color:#0A1128;text-decoration:none;border-radius:999px;&quot;&gt;فتح الرؤيا&lt;/a&gt;
+          &lt;/td&gt;
+        &lt;/tr&gt;
+      &lt;/table&gt;
+    &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+    &lt;td align=&quot;center&quot; style=&quot;padding-top:14px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:12px;line-height:1.6;color:#5B6478;&quot;&gt;
+      &lt;span&gt;إذا لم يعمل الزر، انسخ هذا الرابط في المتصفح:&lt;/span&gt;&lt;br&gt;
+      &lt;a href=&quot;http://localhost:5173/admin/dreams/6ae3fd60-fbaf-4967-a782-ea82e7e71c1f&quot; dir=&quot;ltr&quot; style=&quot;color:#5B6478;word-break:break-all;&quot;&gt;http://localhost:5173/admin/dreams/6ae3fd60-fbaf-4967-a782-ea82e7e71c1f&lt;/a&gt;
+    &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+          &lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;!-- footer --&gt;
+        &lt;tr&gt;
+          &lt;td align=&quot;center&quot; class=&quot;px&quot; style=&quot;background-color:#0A1128;padding:24px 32px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:13px;line-height:1.8;color:#F4EFE6;&quot;&gt;
+            &lt;a href=&quot;https://youtube.com/@almoaberafatema&quot; style=&quot;color:#D4AF37;text-decoration:none;font-weight:600;&quot;&gt;شاهد القناة على يوتيوب&lt;/a&gt;
+            &lt;div style=&quot;margin-top:6px;&quot;&gt;
+              &lt;span&gt;للتواصل معنا:&lt;/span&gt;
+              &lt;a href=&quot;mailto:support@saadatu-aldarein.com&quot; style=&quot;color:#D4AF37;text-decoration:none;&quot;&gt;support@saadatu-aldarein.com&lt;/a&gt;
+            &lt;/div&gt;
+            &lt;div style=&quot;margin-top:12px;font-size:12px;line-height:1.7;color:#AEB4C2;&quot;&gt;وصلتك هذه الرسالة لأنها تخص حسابك لدينا.&lt;/div&gt;
+            &lt;div style=&quot;margin-top:6px;font-size:12px;color:#AEB4C2;&quot;&gt;&amp;copy; &lt;span&gt;2026&lt;/span&gt; &lt;span&gt;إلى سعادة الدارين&lt;/span&gt;&lt;/div&gt;
+          &lt;/td&gt;
+        &lt;/tr&gt;
+      &lt;/table&gt;
+    &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/table&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+
+20:24:01.484 DEBUG [async-1] [b0946669-7bc6-4420-9120-b5fc52d40be2] c.saadat.push.service.WebPushSender - Web push not configured — skipping push to user d0b5877d-930f-4bbe-b689-3bdacb6d0206
+20:24:01.485 INFO  [Test worker] [b0946669-7bc6-4420-9120-b5fc52d40be2] c.s.payments.api.WebhookController - Mock webhook order=c04ecd48-24a2-4890-8c99-c919462fdda3 success=true → SUCCESS
+20:24:01.488 DEBUG [async-3] [b0946669-7bc6-4420-9120-b5fc52d40be2] c.saadat.push.service.WebPushSender - Web push not configured — skipping push to user f65201a4-5284-4095-a08e-6220216f1565
+20:24:01.489 INFO  [async-3] [b0946669-7bc6-4420-9120-b5fc52d40be2] com.saadat.mail.MailService - SMTP not configured — e-mail 'dream-submitted' to i***@example.com (subject: رؤيا جديدة من buyer):
+&lt;!DOCTYPE html&gt;
+
+&lt;html lang=&quot;ar&quot; dir=&quot;rtl&quot;&gt;
+&lt;head&gt;
+  &lt;meta charset=&quot;UTF-8&quot;&gt;
+  &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot;&gt;
+  &lt;meta http-equiv=&quot;X-UA-Compatible&quot; content=&quot;IE=edge&quot;&gt;
+  &lt;meta name=&quot;x-apple-disable-message-reformatting&quot;&gt;
+  &lt;meta name=&quot;color-scheme&quot; content=&quot;light&quot;&gt;
+  &lt;meta name=&quot;supported-color-schemes&quot; content=&quot;light&quot;&gt;
+  &lt;title&gt;رؤيا جديدة من buyer&lt;/title&gt;
+  &lt;link href=&quot;https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;600&amp;amp;display=swap&quot; rel=&quot;stylesheet&quot;&gt;
+  &lt;style&gt;
+    body, table, td, p, a, div, span, strong { font-family: 'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif; }
+    a { color: #0A1128; }
+    @media only screen and (max-width: 620px) {
+      .container { width: 100% !important; }
+      .px { padding-left: 20px !important; padding-right: 20px !important; }
+    }
+  &lt;/style&gt;
+&lt;/head&gt;
+&lt;body style=&quot;margin:0;padding:0;background-color:#F4EFE6;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;&quot; dir=&quot;rtl&quot;&gt;
+&lt;div style=&quot;display:none;max-height:0;max-width:0;overflow:hidden;mso-hide:all;font-size:1px;line-height:1px;color:#F4EFE6;opacity:0;&quot;&gt;أُضيفت رؤيا جديدة إلى قائمة المراجعة.&lt;/div&gt;
+&lt;table role=&quot;presentation&quot; width=&quot;100%&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; border=&quot;0&quot; style=&quot;background-color:#F4EFE6;border-collapse:collapse;&quot; dir=&quot;rtl&quot;&gt;
+  &lt;tr&gt;
+    &lt;td align=&quot;center&quot; style=&quot;padding:24px 12px;&quot;&gt;
+      &lt;table role=&quot;presentation&quot; class=&quot;container&quot; width=&quot;600&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; border=&quot;0&quot;
+             style=&quot;width:600px;max-width:600px;border-collapse:separate;border:1px solid #E6DCC8;border-radius:16px;overflow:hidden;background-color:#F4EFE6;&quot;&gt;
+        &lt;!-- header band --&gt;
+        &lt;tr&gt;
+          &lt;td align=&quot;center&quot; class=&quot;px&quot; style=&quot;background-color:#0A1128;padding:28px 32px 22px 32px;&quot;&gt;
+            &lt;div style=&quot;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:22px;line-height:1.4;font-weight:600;color:#D4AF37;&quot;&gt;إلى سعادة الدارين&lt;/div&gt;
+            &lt;table role=&quot;presentation&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; border=&quot;0&quot; align=&quot;center&quot; style=&quot;margin:12px auto 10px auto;&quot;&gt;
+              &lt;tr&gt;&lt;td width=&quot;72&quot; height=&quot;2&quot; style=&quot;width:72px;height:2px;line-height:2px;font-size:0;background-color:#D4AF37;&quot;&gt;&amp;nbsp;&lt;/td&gt;&lt;/tr&gt;
+            &lt;/table&gt;
+            &lt;div style=&quot;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:13px;line-height:1.6;color:#F4EFE6;&quot;&gt;تفسير الرؤى بوضوح وعمق نحو سعادة الدارين&lt;/div&gt;
+          &lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;!-- content --&gt;
+        &lt;tr&gt;
+          &lt;td class=&quot;px&quot; style=&quot;padding:32px 36px 28px 36px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:16px;line-height:1.9;color:#0A1128;background-color:#F4EFE6;&quot; dir=&quot;rtl&quot; align=&quot;right&quot;&gt;
+            &lt;div&gt;
+  &lt;p style=&quot;margin:0 0 18px 0;font-size:18px;line-height:1.7;font-weight:600;color:#0A1128;&quot;&gt;السلام عليكم &lt;span&gt;interp&lt;/span&gt;،&lt;/p&gt;
+  &lt;p style=&quot;margin:0 0 16px 0;&quot;&gt;وصلت رؤيا جديدة من &lt;strong&gt;buyer&lt;/strong&gt; وأُضيفت إلى قائمة المراجعة.&lt;/p&gt;
+  &lt;p style=&quot;margin:0 0 16px 0;font-size:14px;line-height:1.8;color:#5B6478;&quot;&gt;الموعد المتوقع للتفسير: &lt;strong&gt;29 سبتمبر 2026، 11:24 م&lt;/strong&gt;&lt;/p&gt;
+  &lt;table role=&quot;presentation&quot; width=&quot;100%&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; border=&quot;0&quot;
+       style=&quot;margin:28px 0 8px 0;border-collapse:collapse;&quot;&gt;
+  &lt;tr&gt;
+    &lt;td align=&quot;center&quot;&gt;
+      &lt;table role=&quot;presentation&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; border=&quot;0&quot; align=&quot;center&quot;&gt;
+        &lt;tr&gt;
+          &lt;td align=&quot;center&quot; bgcolor=&quot;#D4AF37&quot; style=&quot;border-radius:999px;background-color:#D4AF37;&quot;&gt;
+            &lt;a href=&quot;http://localhost:5173/admin/dreams/6ae3fd60-fbaf-4967-a782-ea82e7e71c1f&quot; target=&quot;_blank&quot;
+               style=&quot;display:inline-block;padding:14px 38px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:16px;line-height:1.2;font-weight:600;color:#0A1128;text-decoration:none;border-radius:999px;&quot;&gt;فتح الرؤيا&lt;/a&gt;
+          &lt;/td&gt;
+        &lt;/tr&gt;
+      &lt;/table&gt;
+    &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+    &lt;td align=&quot;center&quot; style=&quot;padding-top:14px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:12px;line-height:1.6;color:#5B6478;&quot;&gt;
+      &lt;span&gt;إذا لم يعمل الزر، انسخ هذا الرابط في المتصفح:&lt;/span&gt;&lt;br&gt;
+      &lt;a href=&quot;http://localhost:5173/admin/dreams/6ae3fd60-fbaf-4967-a782-ea82e7e71c1f&quot; dir=&quot;ltr&quot; style=&quot;color:#5B6478;word-break:break-all;&quot;&gt;http://localhost:5173/admin/dreams/6ae3fd60-fbaf-4967-a782-ea82e7e71c1f&lt;/a&gt;
+    &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+          &lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;!-- footer --&gt;
+        &lt;tr&gt;
+          &lt;td align=&quot;center&quot; class=&quot;px&quot; style=&quot;background-color:#0A1128;padding:24px 32px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:13px;line-height:1.8;color:#F4EFE6;&quot;&gt;
+            &lt;a href=&quot;https://youtube.com/@almoaberafatema&quot; style=&quot;color:#D4AF37;text-decoration:none;font-weight:600;&quot;&gt;شاهد القناة على يوتيوب&lt;/a&gt;
+            &lt;div style=&quot;margin-top:6px;&quot;&gt;
+              &lt;span&gt;للتواصل معنا:&lt;/span&gt;
+              &lt;a href=&quot;mailto:support@saadatu-aldarein.com&quot; style=&quot;color:#D4AF37;text-decoration:none;&quot;&gt;support@saadatu-aldarein.com&lt;/a&gt;
+            &lt;/div&gt;
+            &lt;div style=&quot;margin-top:12px;font-size:12px;line-height:1.7;color:#AEB4C2;&quot;&gt;وصلتك هذه الرسالة لأنها تخص حسابك لدينا.&lt;/div&gt;
+            &lt;div style=&quot;margin-top:6px;font-size:12px;color:#AEB4C2;&quot;&gt;&amp;copy; &lt;span&gt;2026&lt;/span&gt; &lt;span&gt;إلى سعادة الدارين&lt;/span&gt;&lt;/div&gt;
+          &lt;/td&gt;
+        &lt;/tr&gt;
+      &lt;/table&gt;
+    &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/table&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+
+20:24:01.490 DEBUG [async-4] [b0946669-7bc6-4420-9120-b5fc52d40be2] c.saadat.push.service.WebPushSender - Web push not configured — skipping push to user 9ba03b73-b199-4064-82a4-a84319aab8fd
+20:24:01.491 INFO  [async-1] [b0946669-7bc6-4420-9120-b5fc52d40be2] com.saadat.mail.MailService - SMTP not configured — e-mail 'dream-submitted' to i***@example.com (subject: رؤيا جديدة من buyer):
+&lt;!DOCTYPE html&gt;
+
+&lt;html lang=&quot;ar&quot; dir=&quot;rtl&quot;&gt;
+&lt;head&gt;
+  &lt;meta charset=&quot;UTF-8&quot;&gt;
+  &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot;&gt;
+  &lt;meta http-equiv=&quot;X-UA-Compatible&quot; content=&quot;IE=edge&quot;&gt;
+  &lt;meta name=&quot;x-apple-disable-message-reformatting&quot;&gt;
+  &lt;meta name=&quot;color-scheme&quot; content=&quot;light&quot;&gt;
+  &lt;meta name=&quot;supported-color-schemes&quot; content=&quot;light&quot;&gt;
+  &lt;title&gt;رؤيا جديدة من buyer&lt;/title&gt;
+  &lt;link href=&quot;https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;600&amp;amp;display=swap&quot; rel=&quot;stylesheet&quot;&gt;
+  &lt;style&gt;
+    body, table, td, p, a, div, span, strong { font-family: 'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif; }
+    a { color: #0A1128; }
+    @media only screen and (max-width: 620px) {
+      .container { width: 100% !important; }
+      .px { padding-left: 20px !important; padding-right: 20px !important; }
+    }
+  &lt;/style&gt;
+&lt;/head&gt;
+&lt;body style=&quot;margin:0;padding:0;background-color:#F4EFE6;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;&quot; dir=&quot;rtl&quot;&gt;
+&lt;div style=&quot;display:none;max-height:0;max-width:0;overflow:hidden;mso-hide:all;font-size:1px;line-height:1px;color:#F4EFE6;opacity:0;&quot;&gt;أُضيفت رؤيا جديدة إلى قائمة المراجعة.&lt;/div&gt;
+&lt;table role=&quot;presentation&quot; width=&quot;100%&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; border=&quot;0&quot; style=&quot;background-color:#F4EFE6;border-collapse:collapse;&quot; dir=&quot;rtl&quot;&gt;
+  &lt;tr&gt;
+    &lt;td align=&quot;center&quot; style=&quot;padding:24px 12px;&quot;&gt;
+      &lt;table role=&quot;presentation&quot; class=&quot;container&quot; width=&quot;600&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; border=&quot;0&quot;
+             style=&quot;width:600px;max-width:600px;border-collapse:separate;border:1px solid #E6DCC8;border-radius:16px;overflow:hidden;background-color:#F4EFE6;&quot;&gt;
+        &lt;!-- header band --&gt;
+        &lt;tr&gt;
+          &lt;td align=&quot;center&quot; class=&quot;px&quot; style=&quot;background-color:#0A1128;padding:28px 32px 22px 32px;&quot;&gt;
+            &lt;div style=&quot;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:22px;line-height:1.4;font-weight:600;color:#D4AF37;&quot;&gt;إلى سعادة الدارين&lt;/div&gt;
+            &lt;table role=&quot;presentation&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; border=&quot;0&quot; align=&quot;center&quot; style=&quot;margin:12px auto 10px auto;&quot;&gt;
+              &lt;tr&gt;&lt;td width=&quot;72&quot; height=&quot;2&quot; style=&quot;width:72px;height:2px;line-height:2px;font-size:0;background-color:#D4AF37;&quot;&gt;&amp;nbsp;&lt;/td&gt;&lt;/tr&gt;
+            &lt;/table&gt;
+            &lt;div style=&quot;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:13px;line-height:1.6;color:#F4EFE6;&quot;&gt;تفسير الرؤى بوضوح وعمق نحو سعادة الدارين&lt;/div&gt;
+          &lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;!-- content --&gt;
+        &lt;tr&gt;
+          &lt;td class=&quot;px&quot; style=&quot;padding:32px 36px 28px 36px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:16px;line-height:1.9;color:#0A1128;background-color:#F4EFE6;&quot; dir=&quot;rtl&quot; align=&quot;right&quot;&gt;
+            &lt;div&gt;
+  &lt;p style=&quot;margin:0 0 18px 0;font-size:18px;line-height:1.7;font-weight:600;color:#0A1128;&quot;&gt;السلام عليكم &lt;span&gt;interp&lt;/span&gt;،&lt;/p&gt;
+  &lt;p style=&quot;margin:0 0 16px 0;&quot;&gt;وصلت رؤيا جديدة من &lt;strong&gt;buyer&lt;/strong&gt; وأُضيفت إلى قائمة المراجعة.&lt;/p&gt;
+  &lt;p style=&quot;margin:0 0 16px 0;font-size:14px;line-height:1.8;color:#5B6478;&quot;&gt;الموعد المتوقع للتفسير: &lt;strong&gt;29 سبتمبر 2026، 11:24 م&lt;/strong&gt;&lt;/p&gt;
+  &lt;table role=&quot;presentation&quot; width=&quot;100%&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; border=&quot;0&quot;
+       style=&quot;margin:28px 0 8px 0;border-collapse:collapse;&quot;&gt;
+  &lt;tr&gt;
+    &lt;td align=&quot;center&quot;&gt;
+      &lt;table role=&quot;presentation&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; border=&quot;0&quot; align=&quot;center&quot;&gt;
+        &lt;tr&gt;
+          &lt;td align=&quot;center&quot; bgcolor=&quot;#D4AF37&quot; style=&quot;border-radius:999px;background-color:#D4AF37;&quot;&gt;
+            &lt;a href=&quot;http://localhost:5173/admin/dreams/6ae3fd60-fbaf-4967-a782-ea82e7e71c1f&quot; target=&quot;_blank&quot;
+               style=&quot;display:inline-block;padding:14px 38px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:16px;line-height:1.2;font-weight:600;color:#0A1128;text-decoration:none;border-radius:999px;&quot;&gt;فتح الرؤيا&lt;/a&gt;
+          &lt;/td&gt;
+        &lt;/tr&gt;
+      &lt;/table&gt;
+    &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+    &lt;td align=&quot;center&quot; style=&quot;padding-top:14px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:12px;line-height:1.6;color:#5B6478;&quot;&gt;
+      &lt;span&gt;إذا لم يعمل الزر، انسخ هذا الرابط في المتصفح:&lt;/span&gt;&lt;br&gt;
+      &lt;a href=&quot;http://localhost:5173/admin/dreams/6ae3fd60-fbaf-4967-a782-ea82e7e71c1f&quot; dir=&quot;ltr&quot; style=&quot;color:#5B6478;word-break:break-all;&quot;&gt;http://localhost:5173/admin/dreams/6ae3fd60-fbaf-4967-a782-ea82e7e71c1f&lt;/a&gt;
+    &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+          &lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;!-- footer --&gt;
+        &lt;tr&gt;
+          &lt;td align=&quot;center&quot; class=&quot;px&quot; style=&quot;background-color:#0A1128;padding:24px 32px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:13px;line-height:1.8;color:#F4EFE6;&quot;&gt;
+            &lt;a href=&quot;https://youtube.com/@almoaberafatema&quot; style=&quot;color:#D4AF37;text-decoration:none;font-weight:600;&quot;&gt;شاهد القناة على يوتيوب&lt;/a&gt;
+            &lt;div style=&quot;margin-top:6px;&quot;&gt;
+              &lt;span&gt;للتواصل معنا:&lt;/span&gt;
+              &lt;a href=&quot;mailto:support@saadatu-aldarein.com&quot; style=&quot;color:#D4AF37;text-decoration:none;&quot;&gt;support@saadatu-aldarein.com&lt;/a&gt;
+            &lt;/div&gt;
+            &lt;div style=&quot;margin-top:12px;font-size:12px;line-height:1.7;color:#AEB4C2;&quot;&gt;وصلتك هذه الرسالة لأنها تخص حسابك لدينا.&lt;/div&gt;
+            &lt;div style=&quot;margin-top:6px;font-size:12px;color:#AEB4C2;&quot;&gt;&amp;copy; &lt;span&gt;2026&lt;/span&gt; &lt;span&gt;إلى سعادة الدارين&lt;/span&gt;&lt;/div&gt;
+          &lt;/td&gt;
+        &lt;/tr&gt;
+      &lt;/table&gt;
+    &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/table&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+
+20:24:01.513 INFO  [Test worker] [4c653d78-1b1f-42ee-a4fa-59e00a138366] c.s.payments.service.PaymentService - Duplicate payment webhook txn=MOCK-c04ecd48-24a2-4890-8c99-c919462fdda3-OK ignored
+20:24:01.513 INFO  [Test worker] [4c653d78-1b1f-42ee-a4fa-59e00a138366] c.s.payments.api.WebhookController - Mock webhook order=c04ecd48-24a2-4890-8c99-c919462fdda3 success=true → DUPLICATE
+</pre>
+</span>
+</div>
+</div>
+<div id="footer">
+<p>
+<div>
+<label class="hidden" id="label-for-line-wrapping-toggle" for="line-wrapping-toggle">Wrap lines
+<input id="line-wrapping-toggle" type="checkbox" autocomplete="off"/>
+</label>
+</div>Generated by 
+<a href="https://www.gradle.org">Gradle 8.14.3</a> at Sep 27, 2026, 8:24:02 PM</p>
+</div>
+</div>
+</body>
+</html>

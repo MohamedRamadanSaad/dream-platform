@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.saadat.youtube.YoutubeFeedParserTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2026-09-27T20:24:01.709Z" hostname="runnervmtr4k5" time="0.054">
+  <properties/>
+  <testcase name="rejectsDoctype()" classname="com.saadat.youtube.YoutubeFeedParserTest" time="0.045"/>
+  <testcase name="emptyInputGivesNoEntries()" classname="com.saadat.youtube.YoutubeFeedParserTest" time="0.0"/>
+  <testcase name="parsesEntries()" classname="com.saadat.youtube.YoutubeFeedParserTest" time="0.008"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[[Fatal Error] :1:31: DOCTYPE is disallowed when the feature "http://apache.org/xml/features/disallow-doctype-decl" set to true.
+]]></system-err>
+</testsuite>

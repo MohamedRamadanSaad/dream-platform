@@ -1,0 +1,154 @@
+# Shared configuration. Profile files: application-{local,dev,prod}.yml (test: src/test/resources).
+# Secrets have NO defaults here — they come from env vars (see backend/.env.example);
+# convenient defaults exist only in application-local.yml.
+
+spring:
+  application:
+    name: saadat-backend
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    hikari:
+      maximum-pool-size: ${DB_POOL_SIZE:10}
+      connection-timeout: 10000
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: none            # Flyway owns the schema
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+        timezone:
+          default_storage: NORMALIZE_UTC
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+  jackson:
+    time-zone: UTC
+    serialization:
+      write-dates-as-timestamps: false
+    deserialization:
+      fail-on-unknown-properties: false
+  mail:
+    host: ${SMTP_HOST:}
+    port: ${SMTP_PORT:587}
+    username: ${SMTP_USERNAME:}
+    password: ${SMTP_PASSWORD:}
+    default-encoding: UTF-8
+    properties:
+      mail.smtp.auth: ${SMTP_AUTH:true}
+      mail.smtp.starttls.enable: ${SMTP_STARTTLS:true}
+      mail.smtp.connectiontimeout: 10000
+      mail.smtp.timeout: 10000
+      mail.smtp.writetimeout: 10000
+  thymeleaf:
+    check-template-location: false
+  messages:
+    basename: messages
+    encoding: UTF-8
+    fallback-to-system-locale: false
+  mvc:
+    problemdetails:
+      enabled: true
+  servlet:
+    multipart:
+      enabled: false
+  lifecycle:
+    timeout-per-shutdown-phase: 20s
+
+server:
+  port: ${PORT:8080}
+  servlet:
+    context-path: /api
+    encoding:
+      charset: UTF-8
+      force: true
+  forward-headers-strategy: framework
+  shutdown: graceful
+  error:
+    include-message: never
+    include-stacktrace: never
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: never
+  health:
+    mail:
+      enabled: false
+
+springdoc:
+  api-docs:
+    enabled: ${SWAGGER_ENABLED:true}
+  swagger-ui:
+    enabled: ${SWAGGER_ENABLED:true}
+
+sentry:
+  dsn: ${SENTRY_DSN:}
+  environment: ${SENTRY_ENVIRONMENT:local}
+  send-default-pii: false
+  traces-sample-rate: 0.0
+
+app:
+  frontend-url: ${FRONTEND_URL}
+  api-url: ${API_URL}
+  google-client-id: ${GOOGLE_CLIENT_ID:}
+  auth:
+    allow-mock: false
+    mock-email: ""
+    bootstrap-interpreter-emails: ${INTERPRETER_EMAILS:}
+    jwt-secret: ${JWT_SECRET}
+    jwt-issuer: ${JWT_ISSUER:saadat-api}
+    refresh-cookie-name: rt
+    refresh-cookie-path: /api/auth
+    refresh-cookie-secure: true
+    refresh-cookie-same-site: Lax
+  payments:
+    mock: false
+    paymob:
+      api-key: ${PAYMOB_API_KEY:}
+      integration-id: ${PAYMOB_INTEGRATION_ID:}
+      iframe-id: ${PAYMOB_IFRAME_ID:}
+      hmac-secret: ${PAYMOB_HMAC_SECRET:}
+      base-url: ${PAYMOB_BASE_URL:https://accept.paymob.com}
+    mor:
+      api-key: ${MOR_API_KEY:}
+      store-id: ${MOR_STORE_ID:}
+      webhook-secret: ${MOR_WEBHOOK_SECRET:}
+      base-url: ${MOR_BASE_URL:}
+  push:
+    public-key: ${VAPID_PUBLIC_KEY:}
+    private-key: ${VAPID_PRIVATE_KEY:}
+    subject: ${VAPID_SUBJECT:}
+  mail:
+    from: ${MAIL_FROM:}
+    from-name: ${MAIL_FROM_NAME:}
+  youtube:
+    feed-url: ${YOUTUBE_FEED_URL:https://www.youtube.com/feeds/videos.xml?channel_id={channelId}}
+    timeout-seconds: 10
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:}
+  rate-limit:
+    enabled: ${RATE_LIMIT_ENABLED:true}
+    auth-per-minute: 10
+    dreams-per-minute: 30
+    checkout-per-minute: 5
+    max-keys: 100000
+  async:
+    core-pool-size: 4
+    max-pool-size: 16
+    queue-capacity: 500
+
+logging:
+  level:
+    root: INFO
+    com.saadat: ${LOG_LEVEL_APP:INFO}
+    org.hibernate.SQL: WARN
