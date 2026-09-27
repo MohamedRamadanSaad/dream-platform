@@ -1,8 +1,0 @@
-# Staging server: real SMTP, Paymob TEST keys, JSON logs. All secrets from env.
-
-sentry:
-  environment: ${SENTRY_ENVIRONMENT:dev}
-
-app:
-  payments:
-    mock: ${PAYMENTS_MOCK:false}
