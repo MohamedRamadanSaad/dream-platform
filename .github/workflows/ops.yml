@@ -1,0 +1,24 @@
+name: ops
+on:
+  push:
+    branches: [main]
+    paths: ['deploy/ops/command.sh']
+  workflow_dispatch:
+concurrency: { group: ops, cancel-in-progress: false }
+permissions: { contents: write }
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    if: ${{ vars.VPS_ENABLED == 'true' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: webfactory/ssh-agent@v0.9.0
+        with: { ssh-private-key: "${{ secrets.VPS_SSH_KEY }}" }
+      - run: mkdir -p ~/.ssh && ssh-keyscan -H "${{ secrets.VPS_HOST }}" >> ~/.ssh/known_hosts
+      - name: run command on VPS
+        run: |
+          { echo "### $(date -u) — commit ${GITHUB_SHA::7}"; ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} 'bash -s' < deploy/ops/command.sh 2>&1 || echo "EXIT $?"; } | tail -c 60000 > deploy/ops/last-output.log
+      - name: publish output
+        run: |
+          git config user.name ops-bot && git config user.email ops-bot@users.noreply.github.com
+          git add deploy/ops/last-output.log && git commit -m "ops: output [skip ci]" && git push
