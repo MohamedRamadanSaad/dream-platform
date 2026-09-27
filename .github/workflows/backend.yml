@@ -6,6 +6,8 @@ on:
     paths: ['backend/**', '.github/workflows/backend.yml']
   workflow_dispatch:
 
+permissions: { contents: write }
+
 concurrency:
   group: backend-${{ github.ref }}
   cancel-in-progress: true
@@ -31,7 +33,23 @@ jobs:
 
       # Compiles, runs unit + Testcontainers integration tests (Docker is available on ubuntu-latest)
       - name: gradle build
-        run: gradle build --no-daemon
+        run: gradle build --no-daemon --console=plain 2>&1 | tee build.log; test ${PIPESTATUS[0]} -eq 0
+
+      - name: publish ci summary (ci-logs branch)
+        if: always()
+        working-directory: ${{ github.workspace }}
+        env: { GH_TOKEN: "${{ github.token }}" }
+        run: |
+          set +e
+          mkdir -p /tmp/ci && S=/tmp/ci/backend-${GITHUB_SHA::7}.txt
+          { echo "### commit $GITHUB_SHA run $GITHUB_RUN_ID $(date -u)";
+            echo "## tests"; for f in $(find backend/build/test-results -name '*.xml' 2>/dev/null); do grep -o '<testsuite[^>]*' "$f" | sed -E 's/.*name="([^"]+)".*tests="([0-9]+)".*failures="([0-9]+)".*errors="([0-9]+)".*/\1 tests=\2 failures=\3 errors=\4/'; done
+            echo "## failures"; grep -l -E '<failure|<error' $(find backend/build/test-results -name '*.xml' 2>/dev/null) 2>/dev/null | while read f; do echo "--- $f"; grep -A12 -E '<failure|<error' "$f" | head -60; done
+            echo "## build.log (errors + tail)"; grep -nE "error:|warning: \[|FAILED|Exception in|Caused by" backend/build.log | head -120; echo "..."; tail -n 150 backend/build.log; } > "$S"
+          git config user.name ci-bot && git config user.email ci-bot@users.noreply.github.com
+          git fetch origin ci-logs && git checkout ci-logs || git checkout --orphan ci-logs
+          git rm -rfq . 2>/dev/null; cp /tmp/ci/*.txt . && cp "$S" latest-backend.txt
+          git add -A && git commit -qm "ci: backend ${GITHUB_SHA::7}" && git push -f origin ci-logs
 
       - name: upload test reports
         if: always()
