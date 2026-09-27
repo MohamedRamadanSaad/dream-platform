@@ -1,5 +1,7 @@
 package com.saadat.auth.service;
 
+import com.saadat.config.props.AppProperties;
+
 import com.saadat.auth.api.AuthDtos.AuthResponse;
 import com.saadat.auth.api.AuthDtos.MagicVerifyRequest;
 import com.saadat.auth.api.AuthDtos.OnboardingRequest;
@@ -58,11 +60,13 @@ public class AuthService {
     private final SettingsService settings;
     private final UserDtoMapper userDtoMapper;
     private final Clock clock;
+    private final AppProperties appProperties;
 
     public AuthService(UserRepository userRepository, AuthIdentityRepository identityRepository,
                        UserSessionRepository sessionRepository, GoogleTokenVerifier googleTokenVerifier,
                        MagicLinkService magicLinkService, RefreshTokenService refreshTokenService,
-                       JwtService jwtService, SettingsService settings, UserDtoMapper userDtoMapper, Clock clock) {
+                       JwtService jwtService, SettingsService settings, UserDtoMapper userDtoMapper, Clock clock,
+                       AppProperties appProperties) {
         this.userRepository = userRepository;
         this.identityRepository = identityRepository;
         this.sessionRepository = sessionRepository;
@@ -73,6 +77,7 @@ public class AuthService {
         this.settings = settings;
         this.userDtoMapper = userDtoMapper;
         this.clock = clock;
+        this.appProperties = appProperties;
     }
 
     // ------------------------------------------------------------------ flows
@@ -229,6 +234,14 @@ public class AuthService {
         for (String candidate : settings.getList(SettingKeys.INTERPRETER_EMAILS)) {
             if (candidate.equalsIgnoreCase(email)) {
                 return true;
+            }
+        }
+        String bootstrap = appProperties.getAuth().getBootstrapInterpreterEmails();
+        if (bootstrap != null && !bootstrap.isBlank()) {
+            for (String candidate : bootstrap.split(",")) {
+                if (candidate.trim().equalsIgnoreCase(email)) {
+                    return true;
+                }
             }
         }
         return false;

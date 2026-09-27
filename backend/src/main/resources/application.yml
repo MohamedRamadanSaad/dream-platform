@@ -104,6 +104,7 @@ app:
   auth:
     allow-mock: false
     mock-email: ""
+    bootstrap-interpreter-emails: ${INTERPRETER_EMAILS:}
     jwt-secret: ${JWT_SECRET}
     jwt-issuer: ${JWT_ISSUER:saadat-api}
     refresh-cookie-name: rt

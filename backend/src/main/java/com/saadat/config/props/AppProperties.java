@@ -66,6 +66,12 @@ public class AppProperties {
         /** E-mail of the user that idToken "mock" logs in as (only when allowMock=true). */
         private String mockEmail = "";
 
+        /**
+         * Bootstrap list (env INTERPRETER_EMAILS, comma-separated) merged with setting interpreter.emails so the
+         * first interpreter can log in before any setting has been edited from the dashboard.
+         */
+        private String bootstrapInterpreterEmails = "";
+
         /** HS256 secret for access tokens; at least 32 characters. */
         @NotBlank
         @Size(min = 32)
