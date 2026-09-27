@@ -1,5 +1,7 @@
 package com.saadat.admin.analytics;
 
+import com.saadat.common.util.Ages;
+
 import com.saadat.admin.analytics.AnalyticsDtos.AdminUser360Dto;
 import com.saadat.admin.analytics.AnalyticsDtos.AdminUserRowDto;
 import com.saadat.admin.analytics.AnalyticsDtos.UserTestimonialDto;
@@ -68,7 +70,7 @@ public class AdminUserService {
                 row == null ? 0 : row.totalPaidBase(),
                 row == null ? null : row.avgRating(),
                 row == null ? u.getCreatedAt() : row.lastSeenAt(),
-                u.getGender(), u.getLocale(), providers, u.getCreatedAt(),
+                u.getGender(), u.getBirthDate(), Ages.of(u.getBirthDate()), u.getLocale(), providers, u.getCreatedAt(),
                 creditService.summary(userId),
                 orderQueryService.ofUser(userId),
                 dreams,

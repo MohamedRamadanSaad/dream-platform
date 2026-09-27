@@ -148,6 +148,7 @@ public class AuthService {
                 .orElseThrow(() -> new UnauthorizedException("Account unavailable", CODE_ACCOUNT_UNAVAILABLE));
         user.setName(request.name().trim());
         user.setGender(request.gender());
+        user.setBirthDate(request.birthDate());
         user.setOnboarded(true);
         userRepository.save(user);
         return userDtoMapper.toDto(user);

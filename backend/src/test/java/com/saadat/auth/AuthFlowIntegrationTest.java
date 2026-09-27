@@ -197,19 +197,19 @@ class AuthFlowIntegrationTest extends IntegrationTestBase {
 
         mvc.perform(post(ApiPaths.Auth.ONBOARDING)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"name\":\"Sara\",\"gender\":\"FEMALE\",\"acceptedTerms\":true}"))
+                        .content("{\"name\":\"Sara\",\"gender\":\"FEMALE\",\"birthDate\":\"1990-05-14\",\"acceptedTerms\":true}"))
                 .andExpect(status().isUnauthorized());
 
         mvc.perform(post(ApiPaths.Auth.ONBOARDING)
                         .header(HttpHeaders.AUTHORIZATION, bearer(user))
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"name\":\"Sara\",\"gender\":\"FEMALE\",\"acceptedTerms\":false}"))
+                        .content("{\"name\":\"Sara\",\"gender\":\"FEMALE\",\"birthDate\":\"1990-05-14\",\"acceptedTerms\":false}"))
                 .andExpect(status().isBadRequest());
 
         mvc.perform(post(ApiPaths.Auth.ONBOARDING)
                         .header(HttpHeaders.AUTHORIZATION, bearer(user))
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"name\":\"  Sara  \",\"gender\":\"FEMALE\",\"acceptedTerms\":true}"))
+                        .content("{\"name\":\"  Sara  \",\"gender\":\"FEMALE\",\"birthDate\":\"1990-05-14\",\"acceptedTerms\":true}"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.name").value("Sara"))
                 .andExpect(jsonPath("$.gender").value("FEMALE"))

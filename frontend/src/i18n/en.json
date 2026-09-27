@@ -104,7 +104,8 @@
     "male": "Male",
     "terms": "I agree to the Terms and Privacy Policy",
     "continue": "Continue",
-    "logout": "Sign out"
+    "logout": "Sign out",
+    "birthDate": "Date of birth"
   },
   "me": {
     "greeting": "Peace be upon you, {{name}}",
@@ -213,7 +214,10 @@
       "saved": "Saved",
       "push": "Phone notifications",
       "pushEnable": "Enable notifications",
-      "pushOn": "Enabled"
+      "pushOn": "Enabled",
+      "birthDate": "Date of birth",
+      "age": "Age",
+      "years": "{{n}} yrs"
     },
     "notifications": {
       "title": "Notifications",
@@ -388,6 +392,7 @@
     "close": "Close",
     "installTitle": "Install the app on your phone",
     "installIos": "In Safari: Share → Add to Home Screen",
-    "installAndroid": "From the browser menu: Add to Home screen"
+    "installAndroid": "From the browser menu: Add to Home screen",
+    "age": "Age"
   }
 }

@@ -41,6 +41,10 @@ export interface UserDto {
   name: string
   email: string
   gender: Gender | null
+  /** ISO date (YYYY-MM-DD); null until provided. */
+  birthDate: string | null
+  /** Derived by the server from birthDate. */
+  age: number | null
   role: Role
   providers: AuthProvider[]
   locale: Locale
@@ -68,6 +72,7 @@ export interface MagicVerifyRequest {
 export interface OnboardingRequest {
   name: string
   gender: Gender
+  birthDate: string
   acceptedTerms: true
 }
 
@@ -222,6 +227,7 @@ export interface PreferencesRequest {
   locale?: Locale
   name?: string
   gender?: Gender
+  birthDate?: string
   marketingOptIn?: boolean
 }
 
@@ -262,7 +268,7 @@ export interface AdminDreamRow {
   countryCode: string
 }
 export interface AdminDreamDetail extends DreamDetail {
-  user: { id: string; name: string; email: string; countryCode: string }
+  user: { id: string; name: string; email: string; countryCode: string; age: number | null }
   payment: {
     orderId: string
     payerName: string
@@ -362,6 +368,8 @@ export interface AdminUserRow {
 export interface AdminUser360 extends Omit<AdminUserRow, 'dreams'> {
   dreams: number
   gender: Gender | null
+  birthDate: string | null
+  age: number | null
   locale: Locale
   providers: AuthProvider[]
   createdAt: string

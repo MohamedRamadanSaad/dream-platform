@@ -1,5 +1,9 @@
 package com.saadat.users.api;
 
+import jakarta.validation.constraints.Past;
+
+import java.time.LocalDate;
+
 import com.saadat.common.domain.Gender;
 import com.saadat.common.domain.Locale;
 import com.saadat.publicapi.WaitTime;
@@ -17,6 +21,7 @@ public final class MeDtos {
             Locale locale,
             @Size(min = 1, max = 200) @Pattern(regexp = ".*\\S.*", message = "must not be blank") String name,
             Gender gender,
+            @Past LocalDate birthDate,
             Boolean marketingOptIn) {
     }
 

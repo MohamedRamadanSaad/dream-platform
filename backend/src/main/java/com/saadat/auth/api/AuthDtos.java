@@ -1,5 +1,9 @@
 package com.saadat.auth.api;
 
+import jakarta.validation.constraints.Past;
+
+import java.time.LocalDate;
+
 import com.saadat.common.domain.Gender;
 import com.saadat.users.api.UserDto;
 import jakarta.validation.constraints.AssertTrue;
@@ -37,6 +41,7 @@ public final class AuthDtos {
     public record OnboardingRequest(
             @NotBlank @Size(max = 200) String name,
             @NotNull Gender gender,
+            @NotNull @Past LocalDate birthDate,
             @NotNull @AssertTrue Boolean acceptedTerms) {
     }
 }

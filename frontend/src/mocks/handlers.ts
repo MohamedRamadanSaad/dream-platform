@@ -39,6 +39,7 @@ const waitTimePublic = (locale: string): T.WaitTime => {
   const w = db.waitTime
   return { busy: w.busy, minDays: w.busyMinDays, maxDays: w.busyMaxDays, hours: w.normalHours, message: locale.startsWith('en') ? w.messageEn : w.messageAr }
 }
+const ageOf = (d: string) => Math.floor((Date.now() - new Date(d).getTime()) / (365.25 * 864e5))
 const countryOf = (req: Request) => currentUser(req)?.countryCode ?? 'SA' // server would read CF-IPCountry
 
 export const handlers = [
@@ -50,7 +51,7 @@ export const handlers = [
     const email = body.email?.toLowerCase()
     let user = db.users.find((x) => x.email.toLowerCase() === email)
     if (!user && email) {
-      user = { id: uid(), name: '', email, gender: null, role: 'USER', providers: ['MAGIC_LINK'], locale: 'ar', countryCode: 'SA', countryName: 'السعودية', onboarded: false, createdAt: helpers.now() }
+      user = { id: uid(), name: '', email, gender: null, birthDate: null, age: null, role: 'USER', providers: ['MAGIC_LINK'], locale: 'ar', countryCode: 'SA', countryName: 'السعودية', onboarded: false, createdAt: helpers.now() }
       db.users.push(user)
     }
     if (!user) user = db.users[0]
@@ -62,7 +63,7 @@ export const handlers = [
   http.post(u('/auth/onboarding'), wrap(async ({ request }) => {
     const me = requireUser(request)
     const b = (await request.json()) as T.OnboardingRequest
-    Object.assign(me, { name: b.name, gender: b.gender, onboarded: true })
+    Object.assign(me, { name: b.name, gender: b.gender, birthDate: b.birthDate, age: ageOf(b.birthDate), onboarded: true })
     return HttpResponse.json(me)
   })),
 
@@ -104,7 +105,8 @@ export const handlers = [
   })),
   http.put(u('/me/preferences'), wrap(async ({ request }) => {
     const me = requireUser(request)
-    Object.assign(me, await request.json())
+    const b = (await request.json()) as T.PreferencesRequest
+    Object.assign(me, b, b.birthDate ? { age: ageOf(b.birthDate) } : {})
     return HttpResponse.json(me)
   })),
   http.get(u('/me/credits'), wrap(async ({ request }) => {
@@ -323,7 +325,7 @@ export const handlers = [
     const usr = db.users.find((x) => x.id === d.userId)!
     const order = d.credit?.orderId ? db.orders.find((o) => o.id === d.credit!.orderId) : null
     d.messages.forEach((m) => { if (m.senderRole === 'USER') m.readAt ??= helpers.now() })
-    const r: T.AdminDreamDetail = { ...toDetail(d), user: { id: usr.id, name: usr.name, email: usr.email, countryCode: usr.countryCode },
+    const r: T.AdminDreamDetail = { ...toDetail(d), user: { id: usr.id, name: usr.name, email: usr.email, countryCode: usr.countryCode, age: usr.age },
       payment: order ? { orderId: order.id, payerName: usr.name, payerEmail: usr.email, paidAt: order.paidAt ?? order.createdAt, packageName: order.packageName, amount: order.amount, currency: order.currency, provider: order.provider, providerRef: order.providerRef ?? '—', countryCode: order.countryCode } : null }
     return HttpResponse.json(r)
   })),
@@ -413,7 +415,7 @@ export const handlers = [
     const rated = mine.filter((d) => d.testimonial)
     const notes = db.userNotes[usr.id] ?? { notes: '', tags: [] }
     const r: T.AdminUser360 = {
-      id: usr.id, name: usr.name, email: usr.email, countryCode: usr.countryCode, visits: db.visits.filter((v) => v.userId === usr.id).reduce((a, v) => a + v.count, 0),
+      id: usr.id, name: usr.name, email: usr.email, countryCode: usr.countryCode, birthDate: usr.birthDate, age: usr.age, visits: db.visits.filter((v) => v.userId === usr.id).reduce((a, v) => a + v.count, 0),
       dreams: mine.filter((d) => d.status !== 'DRAFT').length, drafts: mine.filter((d) => d.status === 'DRAFT').length,
       totalPaidBase: db.orders.filter((o) => o.userId === usr.id && o.status === 'SUCCESS').reduce((a, o) => a + (o.currency === 'SAR' ? o.amount / 3.75 : o.currency === 'EGP' ? o.amount / 48 : o.amount), 0),
       avgRating: rated.length ? rated.reduce((a, d) => a + d.testimonial!.rating, 0) / rated.length : null, lastSeenAt: helpers.daysAgo(1),

@@ -69,7 +69,7 @@ export function User360Page() {
       <Link to="/admin/users" className="text-sm text-fg-muted">→ {t('common.back')}</Link>
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div><h1 className="font-display text-4xl">{u.name || u.email}</h1><div className="text-sm text-fg-muted" dir="ltr">{u.email}</div>
-          <div className="mt-2 flex flex-wrap gap-2 text-xs text-fg-dim"><span>{u.countryCode}</span><span>· {u.gender ? t(u.gender === 'FEMALE' ? 'auth.female' : 'auth.male') : '—'}</span><span>· {u.locale}</span><span>· {u.providers.join(', ')}</span><span>· {t('admin.users.since')} {fmtDate(u.createdAt, locale)}</span></div>
+          <div className="mt-2 flex flex-wrap gap-2 text-xs text-fg-dim"><span>{u.countryCode}</span><span>· {u.gender ? t(u.gender === 'FEMALE' ? 'auth.female' : 'auth.male') : '—'}</span>{u.age != null && <span>· {t('me.profile.years', { n: u.age })}</span>}<span>· {u.locale}</span><span>· {u.providers.join(', ')}</span><span>· {t('admin.users.since')} {fmtDate(u.createdAt, locale)}</span></div>
           {u.tags.length > 0 && <div className="mt-2 flex gap-1.5">{u.tags.map((x) => <span key={x} className="chip bg-gold/10 text-gold-deep">{x}</span>)}</div>}</div>
         <Button size="sm" onClick={() => setCreditModal(true)}><Icon name="plus" size={14} />{t('admin.users.addCredits')}</Button>
       </div>

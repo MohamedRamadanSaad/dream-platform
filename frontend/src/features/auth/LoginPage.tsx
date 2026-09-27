@@ -104,6 +104,7 @@ export function OnboardingPage() {
   const setUser = useAuthStore((s) => s.setUser)
   const [name, setName] = useState(user?.name ?? '')
   const [gender, setGender] = useState<Gender | ''>(user?.gender ?? '')
+  const [birthDate, setBirthDate] = useState(user?.birthDate ?? '')
   const [terms, setTerms] = useState(false)
   const m = useMutation({ mutationFn: authApi.onboarding, onSuccess: (u) => { setUser(u); navigate(params.get('next') || '/me') } })
   return (
@@ -112,7 +113,7 @@ export function OnboardingPage() {
       <PageEnter className="relative mx-auto flex min-h-screen max-w-md flex-col items-center justify-center px-5">
         <h1 className="font-display text-4xl">{t('auth.onboardingTitle')}</h1>
         <p className="mt-2 mb-8 text-center text-sm font-light text-pearl/60">{t('auth.onboardingLead')}</p>
-        <form className="card w-full p-6 text-fg flex flex-col gap-4" onSubmit={(e) => { e.preventDefault(); if (gender && terms) m.mutate({ name, gender, acceptedTerms: true }) }}>
+        <form className="card w-full p-6 text-fg flex flex-col gap-4" onSubmit={(e) => { e.preventDefault(); if (gender && terms && birthDate) m.mutate({ name, gender, birthDate, acceptedTerms: true }) }}>
           <div><Label>{t('auth.name')}</Label><Input required value={name} onChange={(e) => setName(e.target.value)} /></div>
           <div><Label>{t('auth.gender')}</Label>
             <div className="grid grid-cols-2 gap-2">
@@ -120,7 +121,8 @@ export function OnboardingPage() {
             </div>
           </div>
           <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={terms} onChange={(e) => setTerms(e.target.checked)} className="accent-[var(--gold)]" />{t('auth.terms')}</label>
-          <Button type="submit" disabled={!gender || !terms || !name} loading={m.isPending}>{t('auth.continue')}</Button>
+          <div><Label>{t('auth.birthDate')}</Label><Input type="date" dir="ltr" value={birthDate} max={new Date().toISOString().slice(0, 10)} onChange={(e) => setBirthDate(e.target.value)} required /></div>
+          <Button type="submit" disabled={!gender || !terms || !name || !birthDate} loading={m.isPending}>{t('auth.continue')}</Button>
         </form>
       </PageEnter>
     </div>

@@ -27,7 +27,7 @@ public record AdminDreamDetailDto(
         UserRef user,
         PaymentRef payment) {
 
-    public record UserRef(UUID id, String name, String email, String countryCode) {
+    public record UserRef(UUID id, String name, String email, String countryCode, Integer age) {
     }
 
     public record PaymentRef(

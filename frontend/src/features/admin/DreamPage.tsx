@@ -35,7 +35,7 @@ export function AdminDreamPage() {
       <div className="space-y-5 lg:col-span-2">
         <Link to="/admin/dreams" className="text-sm text-fg-muted">→ {t('common.back')}</Link>
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <h1 className="font-display text-3xl">{d.user.name} <span className="text-base text-fg-dim">· {t(d.gender === 'FEMALE' ? 'auth.female' : 'auth.male')} · {d.user.countryCode}</span></h1>
+          <h1 className="font-display text-3xl">{d.user.name} <span className="text-base text-fg-dim">· {t(d.gender === 'FEMALE' ? 'auth.female' : 'auth.male')}{d.user.age != null && <> · {t('me.profile.years', { n: d.user.age })}</>} · {d.user.countryCode}</span></h1>
           <div className="flex items-center gap-2"><StatusBadge status={d.status} />{open && d.expectedBy && <SlaChip deadline={d.expectedBy} overdue={new Date(d.expectedBy) < new Date()} />}</div>
         </div>
         <div className="card p-6"><Label>{t('me.detail.dream')}</Label><p className="whitespace-pre-wrap text-lg leading-loose">{d.text}</p><div className="mt-3 text-xs text-fg-dim">{d.submittedAt && fmtDate(d.submittedAt, locale, true)}</div></div>

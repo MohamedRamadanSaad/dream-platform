@@ -9,15 +9,15 @@ export const uid = () => Math.random().toString(36).slice(2, 10)
 export const db = {
   users: [
     {
-      id: 'u1', name: 'أم محمد', email: 'ummohamed@gmail.com', gender: 'FEMALE', role: 'USER', providers: ['GOOGLE'],
+      id: 'u1', name: 'أم محمد', email: 'ummohamed@gmail.com', gender: 'FEMALE', birthDate: '1988-03-12', age: 38, role: 'USER', providers: ['GOOGLE'],
       locale: 'ar', countryCode: 'SA', countryName: 'السعودية', onboarded: true, createdAt: daysAgo(40),
     },
     {
-      id: 'admin', name: 'المعبرة فاطمة', email: 'fatema@saadatu-aldarein.com', gender: 'FEMALE', role: 'INTERPRETER',
+      id: 'admin', name: 'المعبرة فاطمة', email: 'fatema@saadatu-aldarein.com', gender: 'FEMALE', birthDate: null, age: null, role: 'INTERPRETER',
       providers: ['GOOGLE'], locale: 'ar', countryCode: 'EG', countryName: 'مصر', onboarded: true, createdAt: daysAgo(400),
     },
-    { id: 'u2', name: 'خالد العتيبي', email: 'khaled@example.com', gender: 'MALE', role: 'USER', providers: ['MAGIC_LINK'], locale: 'ar', countryCode: 'SA', countryName: 'السعودية', onboarded: true, createdAt: daysAgo(20) },
-    { id: 'u3', name: 'Sara Ahmed', email: 'sara@example.de', gender: 'FEMALE', role: 'USER', providers: ['GOOGLE'], locale: 'en', countryCode: 'DE', countryName: 'ألمانيا', onboarded: true, createdAt: daysAgo(12) },
+    { id: 'u2', name: 'خالد العتيبي', email: 'khaled@example.com', gender: 'MALE', birthDate: '1995-11-02', age: 30, role: 'USER', providers: ['MAGIC_LINK'], locale: 'ar', countryCode: 'SA', countryName: 'السعودية', onboarded: true, createdAt: daysAgo(20) },
+    { id: 'u3', name: 'Sara Ahmed', email: 'sara@example.de', gender: 'FEMALE', birthDate: '2001-07-21', age: 25, role: 'USER', providers: ['GOOGLE'], locale: 'en', countryCode: 'DE', countryName: 'ألمانيا', onboarded: true, createdAt: daysAgo(12) },
     { id: 'u4', name: 'منى عبد الله', email: 'mona@example.com', gender: 'FEMALE', role: 'USER', providers: ['GOOGLE'], locale: 'ar', countryCode: 'EG', countryName: 'مصر', onboarded: true, createdAt: daysAgo(60) },
   ] as T.UserDto[],
 

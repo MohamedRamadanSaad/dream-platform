@@ -1,5 +1,7 @@
 package com.saadat.dreams.service;
 
+import com.saadat.common.util.Ages;
+
 import com.saadat.common.api.PageResponse;
 import com.saadat.common.api.Pages;
 import com.saadat.common.audit.AuditService;
@@ -102,7 +104,7 @@ public class AdminDreamService {
         DreamDetailDto detail = mapper.detail(d);
         User owner = userRepository.findById(d.getUserId()).orElse(null);
         AdminDreamDetailDto.UserRef userRef = owner == null ? null
-                : new AdminDreamDetailDto.UserRef(owner.getId(), owner.getName(), owner.getEmail(), owner.getCountryCode());
+                : new AdminDreamDetailDto.UserRef(owner.getId(), owner.getName(), owner.getEmail(), owner.getCountryCode(), Ages.of(owner.getBirthDate()));
         return AdminDreamDetailDto.of(detail, userRef, payment(detail.credit()));
     }
 

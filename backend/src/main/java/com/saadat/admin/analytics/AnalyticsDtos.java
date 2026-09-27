@@ -1,5 +1,7 @@
 package com.saadat.admin.analytics;
 
+import java.time.LocalDate;
+
 import com.saadat.common.domain.AuthProvider;
 import com.saadat.common.domain.Currency;
 import com.saadat.common.domain.Gender;
@@ -55,6 +57,8 @@ public final class AnalyticsDtos {
             Double avgRating,
             Instant lastSeenAt,
             Gender gender,
+            LocalDate birthDate,
+            Integer age,
             Locale locale,
             List<AuthProvider> providers,
             Instant createdAt,

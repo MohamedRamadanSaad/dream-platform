@@ -83,6 +83,9 @@ public class AccountService {
         if (request.gender() != null) {
             user.setGender(request.gender());
         }
+        if (request.birthDate() != null) {
+            user.setBirthDate(request.birthDate());
+        }
         if (request.marketingOptIn() != null) {
             user.setMarketingOptIn(request.marketingOptIn());
         }

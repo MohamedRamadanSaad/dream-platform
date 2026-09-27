@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useNavigate } from 'react-router-dom'
+import { Icon } from '@/components/icons/Icon'
 import { useMutation } from '@tanstack/react-query'
 import { meApi, notificationsApi } from '@/api/endpoints'
 import { useAuthStore } from '@/app/auth-store'
@@ -32,8 +34,11 @@ export function ProfilePage() {
   const setTheme = useAuthStore((s) => s.setTheme)
   const [name, setName] = useState(user.name)
   const [gender, setGender] = useState<Gender>(user.gender ?? 'FEMALE')
+  const [birthDate, setBirthDate] = useState(user.birthDate ?? '')
+  const clear = useAuthStore((s) => s.clear)
+  const navigate = useNavigate()
   const [push, setPush] = useState<string>(typeof Notification !== 'undefined' && Notification.permission === 'granted' ? 'granted' : '')
-  const save = useMutation({ mutationFn: () => meApi.preferences({ name, gender, locale }), onSuccess: setUser })
+  const save = useMutation({ mutationFn: () => meApi.preferences({ name, gender, locale, birthDate: birthDate || undefined }), onSuccess: setUser })
   const isIos = /iphone|ipad/i.test(navigator.userAgent)
   const standalone = window.matchMedia('(display-mode: standalone)').matches
   return (
@@ -43,6 +48,7 @@ export function ProfilePage() {
         <div><Label>{t('me.profile.name')}</Label><Input value={name} onChange={(e) => setName(e.target.value)} /></div>
         <div><Label>{t('me.profile.email')}</Label><Input dir="ltr" value={user.email} readOnly className="opacity-70" /></div>
         <div><Label>{t('me.profile.gender')}</Label><Segmented value={gender} onChange={setGender} items={[{ value: 'FEMALE', label: t('auth.female') }, { value: 'MALE', label: t('auth.male') }]} /></div>
+        <div><Label>{t('me.profile.birthDate')}{user.age != null && <span className="ms-2 text-fg-dim">({t('me.profile.years', { n: user.age })})</span>}</Label><Input type="date" dir="ltr" value={birthDate} max={new Date().toISOString().slice(0, 10)} onChange={(e) => setBirthDate(e.target.value)} /></div>
         <div><Label>{t('me.profile.language')}</Label><Segmented value={locale} onChange={(l: Locale) => { setLocale(l); applyLocale(l) }} items={[{ value: 'ar', label: 'العربية' }, { value: 'en', label: 'English' }]} /></div>
         <div><Label>{t('me.profile.theme')}</Label><Segmented value={theme} onChange={setTheme} items={[{ value: 'light', label: t('me.profile.light') }, { value: 'dark', label: t('me.profile.dark') }]} /></div>
         <div className="grid grid-cols-2 gap-4 text-sm">
@@ -58,6 +64,10 @@ export function ProfilePage() {
           : isIos && !standalone ? <div className="text-sm text-fg-muted"><div className="font-medium text-fg">{t('common.installTitle')}</div>{t('common.installIos')}</div>
           : <Button variant="ghost" size="sm" onClick={async () => setPush(await enablePush())}>{t('me.profile.pushEnable')}</Button>}
         {push === 'denied' && <p className="mt-2 text-xs text-danger">تم رفض الإذن من المتصفح.</p>}
+      </div>
+      <div className="card flex items-center justify-between p-6">
+        <div className="min-w-0"><Label>{t('me.profile.email')}</Label><div className="truncate text-sm" dir="ltr">{user.email}</div></div>
+        <Button variant="ghost" onClick={() => { clear(); navigate('/') }}><Icon name="logout" size={18} />{t('auth.logout')}</Button>
       </div>
       <button className="text-sm text-danger hover:underline" onClick={() => confirm(t('me.profile.delete') + '؟') && meApi.deleteAccount()}>{t('me.profile.delete')}</button>
     </PageEnter>

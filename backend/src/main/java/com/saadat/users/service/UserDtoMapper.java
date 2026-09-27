@@ -1,5 +1,7 @@
 package com.saadat.users.service;
 
+import com.saadat.common.util.Ages;
+
 import com.saadat.common.domain.AuthProvider;
 import com.saadat.common.domain.Locale;
 import com.saadat.pricing.domain.Country;
@@ -37,6 +39,8 @@ public class UserDtoMapper {
                 user.getName() == null ? "" : user.getName(),
                 user.getEmail(),
                 user.getGender(),
+                user.getBirthDate(),
+                Ages.of(user.getBirthDate()),
                 user.getRole(),
                 List.copyOf(providers),
                 user.getLocale(),

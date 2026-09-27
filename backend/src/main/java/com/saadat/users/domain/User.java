@@ -1,5 +1,7 @@
 package com.saadat.users.domain;
 
+import java.time.LocalDate;
+
 import com.saadat.common.domain.CountrySource;
 import com.saadat.common.domain.Gender;
 import com.saadat.common.domain.Locale;
@@ -40,6 +42,10 @@ public class User {
     @Enumerated(EnumType.STRING)
     @Column(name = "gender", length = 16)
     private Gender gender;
+
+    /** Date of birth (age is derived; null until the user fills it in). */
+    @Column(name = "birth_date")
+    private LocalDate birthDate;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "role", nullable = false, length = 16)

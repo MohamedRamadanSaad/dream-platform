@@ -1,5 +1,7 @@
 package com.saadat.users.api;
 
+import java.time.LocalDate;
+
 import com.saadat.common.domain.AuthProvider;
 import com.saadat.common.domain.Gender;
 import com.saadat.common.domain.Locale;
@@ -14,6 +16,8 @@ public record UserDto(
         String name,
         String email,
         Gender gender,
+        LocalDate birthDate,
+        Integer age,
         Role role,
         List<AuthProvider> providers,
         Locale locale,
