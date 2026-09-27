@@ -16,3 +16,20 @@ jobs:
         env: { VITE_USE_MOCKS: "true", VITE_API_URL: 'https://api.saadatu-aldarein.com' }
       - uses: actions/upload-artifact@v4
         with: { name: frontend-dist, path: frontend/dist }
+
+  # Preview on Vercel (mocks on). Runs only when a VERCEL_TOKEN secret exists; otherwise the preview
+  # is deployed manually from the Vercel dashboard / API.
+  vercel-preview:
+    needs: build
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Deploy to Vercel
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: team_XxPvi1SlfR3fXdFAeDA3O03j
+          VERCEL_PROJECT_ID: prj_4d9ouYQoZd4sAVcVFC931xZBwXXq
+        run: |
+          if [ -z "$VERCEL_TOKEN" ]; then echo "VERCEL_TOKEN not set — skipping preview deploy"; exit 0; fi
+          npx --yes vercel@latest deploy --prod --yes --token "$VERCEL_TOKEN"
