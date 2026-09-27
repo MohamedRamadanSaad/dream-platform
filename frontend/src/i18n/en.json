@@ -19,7 +19,16 @@
     "cta": "Request an interpretation",
     "youtube": "Follow on YouTube",
     "hadith": "“A good dream is from Allah, and a bad dream is from Satan.”",
-    "hadithSrc": "Agreed upon"
+    "hadithSrc": "Agreed upon",
+    "badges": {
+      "verse": "“With Him are the keys of the unseen”",
+      "verseSrc": "Al-An‘am 59",
+      "privacy": "Your privacy is kept",
+      "privacySub": "Full confidentiality for every dream",
+      "depth": "Careful study",
+      "depthSub": "of every symbol — no exaggeration",
+      "reply": "Reply within"
+    }
   },
   "waitTime": {
     "label": "Current turnaround",

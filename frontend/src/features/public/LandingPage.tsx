@@ -16,6 +16,45 @@ import type { PackageDto } from '@/api/types'
 
 const YT = (import.meta.env.VITE_YOUTUBE_URL as string) || 'https://youtube.com/@almoaberafatema'
 
+/** Trust badges drifting gently up and down around the hero (absolute on desktop, a row on mobile). */
+function FloatingBadges({ waitText }: { waitText?: string }) {
+  const { t } = useTranslation()
+  const root = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    if (reduced() || !root.current) return
+    const ctx = gsap.context(() => {
+      gsap.utils.toArray<HTMLElement>('.float-badge').forEach((b, i) => {
+        gsap.fromTo(b, { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 1, delay: 1.2 + i * 0.2, ease: 'power3.out' })
+        gsap.to(b, { y: i % 2 ? 10 : -10, duration: 3.2 + i * 0.6, repeat: -1, yoyo: true, ease: 'sine.inOut', delay: 2.2 + i * 0.2 })
+      })
+    }, root.current)
+    return () => ctx.revert()
+  }, [])
+  const badge = 'float-badge pointer-events-auto flex items-center gap-3 rounded-2xl border border-navy/80 bg-night/60 px-4 py-3 text-start shadow-calm backdrop-blur-md'
+  return (
+    <div ref={root} className="pointer-events-none relative z-[1] mx-auto mt-8 flex max-w-3xl flex-wrap justify-center gap-3 px-5 xl:absolute xl:inset-x-0 xl:top-28 xl:mt-0 xl:h-[490px] xl:max-w-7xl xl:block xl:px-6">
+      <div className={`${badge} xl:absolute xl:start-4 xl:top-0`}>
+        <span className="flex h-10 w-10 items-center justify-center rounded-full bg-gold/15 text-gold"><Icon name="sparkle" size={20} /></span>
+        <div><div className="font-quran text-lg text-gold-soft">{t('hero.badges.verse')}</div><div className="text-[11px] text-pearl/50">{t('hero.badges.verseSrc')}</div></div>
+      </div>
+      <div className={`${badge} xl:absolute xl:end-6 xl:top-36`}>
+        <span className="flex h-10 w-10 items-center justify-center rounded-full bg-gold/15 text-gold"><Icon name="shield" size={20} /></span>
+        <div><div className="text-sm font-medium text-pearl">{t('hero.badges.privacy')}</div><div className="text-[11px] text-pearl/50">{t('hero.badges.privacySub')}</div></div>
+      </div>
+      <div className={`${badge} xl:absolute xl:start-10 xl:bottom-6`}>
+        <span className="flex h-10 w-10 items-center justify-center rounded-full bg-gold/15 text-gold"><Icon name="book" size={20} /></span>
+        <div><div className="text-sm font-medium text-pearl">{t('hero.badges.depth')}</div><div className="text-[11px] text-pearl/50">{t('hero.badges.depthSub')}</div></div>
+      </div>
+      {waitText && (
+        <div className={`${badge} xl:absolute xl:end-14 xl:bottom-0`}>
+          <span className="flex h-10 w-10 items-center justify-center rounded-full bg-gold/15 text-gold"><Icon name="clock" size={20} /></span>
+          <div><div className="text-sm font-medium text-pearl">{t('hero.badges.reply')}</div><div className="text-[11px] text-pearl/50">{waitText}</div></div>
+        </div>
+      )}
+    </div>
+  )
+}
+
 function Hero() {
   const { t } = useTranslation()
   const { data: wait } = useQuery({ queryKey: ['public', 'wait-time'], queryFn: publicApi.waitTime })
@@ -41,7 +80,7 @@ function Hero() {
     <section className="relative overflow-hidden bg-night text-pearl">
       <NightSky className="absolute inset-0" />
       <PublicHeader />
-      <div className="relative mx-auto flex max-w-4xl flex-col items-center gap-7 px-5 pb-24 pt-16 text-center md:pt-24">
+      <div className="relative mx-auto flex max-w-4xl flex-col items-center gap-7 px-5 pb-24 pt-16 text-center md:pt-24 lg:px-0">
         <h1 ref={titleRef} className="font-display text-5xl leading-[1.35] md:text-7xl">
           {t('hero.title1')} <span className="text-gold">{t('hero.title2')}</span><br />{t('hero.title3')}
         </h1>
@@ -49,18 +88,13 @@ function Hero() {
         <div ref={ctaRef} className="flex flex-wrap items-center justify-center gap-3">
           <Link to="/me/new" className="btn btn-lg btn-gold">{t('hero.cta')}</Link>
           <a href={YT} target="_blank" rel="noreferrer" className="btn btn-lg border border-navy text-gold-soft hover:border-gold"><span className="text-[#FF0000]"><Icon name="youtube" size={20} /></span>{t('hero.youtube')}</a>
-          {wait && (
-            <div className="basis-full mt-2 flex items-center justify-center gap-2 text-sm text-pearl/60">
-              <span className="h-1.5 w-1.5 rounded-full bg-gold animate-[twinkle_3s_ease-in-out_infinite]" />
-              {t('waitTime.label')}: {wait.busy ? t('waitTime.range', { min: wait.minDays, max: wait.maxDays }) : t('waitTime.hours', { h: wait.hours })}
-            </div>
-          )}
         </div>
         <div className="mt-6 border-t border-navy pt-6">
           <p className="font-quran text-2xl text-gold-soft md:text-3xl">{t('hero.hadith')}</p>
           <p className="mt-1 text-xs text-pearl/50">{t('hero.hadithSrc')}</p>
         </div>
       </div>
+      <FloatingBadges waitText={wait ? (wait.busy ? t('waitTime.range', { min: wait.minDays, max: wait.maxDays }) : t('waitTime.hours', { h: wait.hours })) : undefined} />
     </section>
   )
 }
