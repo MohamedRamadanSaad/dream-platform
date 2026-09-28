@@ -11,6 +11,8 @@ import { Reveal, StaggerGroup, CountUp, reduced } from '@/components/motion'
 import { PublicHeader, Footer } from '@/components/layout'
 import { Icon } from '@/components/icons/Icon'
 import { Kicker, Skeleton, Stars } from '@/components/ui'
+import { Avatar, AvatarStack } from '@/components/ui/Avatar'
+import { fmtNum } from '@/lib/utils'
 import { cn, fmtMoney, countdown } from '@/lib/utils'
 import type { PackageDto } from '@/api/types'
 
@@ -45,6 +47,10 @@ function FloatingBadges() {
 function Hero() {
   const { t } = useTranslation()
   const { data: wait } = useQuery({ queryKey: ['public', 'wait-time'], queryFn: publicApi.waitTime })
+  const { data: stats } = useQuery({ queryKey: ['public', 'stats'], queryFn: publicApi.stats })
+  const locale = useAuthStore((s) => s.locale)
+  // "more than N": round the live counter down to the nearest hundred
+  const joined = fmtNum(Math.max(100, Math.floor((stats?.interpreted ?? 2000) / 100) * 100), locale)
   const titleRef = useRef<HTMLHeadingElement>(null)
   const leadRef = useRef<HTMLParagraphElement>(null)
   const ctaRef = useRef<HTMLDivElement>(null)
@@ -95,7 +101,13 @@ function Hero() {
         <p ref={leadRef} className="max-w-2xl text-lg font-light leading-loose text-pearl/70 md:text-xl">{t('hero.lead')}</p>
         <div ref={ctaRef} className="flex flex-wrap items-start justify-center gap-3">
           <div className="flex flex-col items-center gap-2">
-            <Link to="/me/new" className="btn btn-lg btn-gold">{t('hero.cta')}</Link>
+            <Link to="/me/new" className="btn btn-gold flex-col gap-1 px-8 py-3.5">
+              <span className="text-base font-medium">{t('hero.cta')}</span>
+              <span className="flex items-center gap-2 text-[11px] font-normal opacity-80">
+                <AvatarStack names={['أم محمد', 'خالد', 'سارة', 'نورة']} size={20} />
+                {t('hero.join', { n: joined })}
+              </span>
+            </Link>
             {wait && (
               <div className="flex items-center gap-2 text-sm text-pearl/60">
                 <span className="h-2 w-2 rounded-full bg-gold animate-[twinkle_2.4s_ease-in-out_infinite] shadow-[0_0_10px_rgba(212,175,55,.9)]" />
@@ -190,15 +202,28 @@ export default function LandingPage() {
       <Hero />
 
       <section id="about" className="mx-auto grid max-w-6xl gap-12 px-5 py-20 md:grid-cols-12 md:px-8">
-        <div className="md:col-span-5 flex flex-col gap-4">
+        <div className="md:col-span-7 flex flex-col gap-4">
           <Reveal><Kicker>{t('about.kicker')}</Kicker></Reveal>
-          <Reveal as="h2" className="font-display text-5xl text-night dark:text-pearl" split>{t('about.title')}</Reveal>
+          <Reveal as="h2" className="font-display text-4xl text-night dark:text-pearl md:text-5xl" split>{t('about.title')}</Reveal>
           <Reveal className="h-px w-16 bg-gold" />
-          <Reveal as="p" className="font-medium leading-loose" delay={0.15}>{t('about.experience')}</Reveal>
+          <Reveal as="p" className="leading-loose text-fg-muted" delay={0.15}>{t('about.p1')}</Reveal>
+          <Reveal as="h3" className="mt-6 font-display text-2xl text-night dark:text-pearl" delay={0.2}>{t('about.missionTitle')}</Reveal>
+          <StaggerGroup className="flex flex-col gap-4 font-light leading-loose text-fg-muted">
+            <p>{t('about.p2')}</p><p>{t('about.p3')}</p>
+          </StaggerGroup>
         </div>
-        <StaggerGroup className="md:col-span-7 flex flex-col gap-5 font-light leading-loose text-fg-muted">
-          <p>{t('about.p1')}</p><p>{t('about.p2')}</p><p>{t('about.p3')}</p>
-        </StaggerGroup>
+        <div className="md:col-span-5">
+          <Reveal className="card sticky top-24 p-7" delay={0.1}>
+            <div className="flex items-center gap-4">
+              <Avatar name={t('interpreter')} size={56} />
+              <div><div className="text-xs tracking-wider text-gold-deep">{t('about.aboutTitle')}</div><div className="font-display text-2xl text-night dark:text-pearl">{t('interpreter')}</div></div>
+            </div>
+            <ul className="mt-6 space-y-4 leading-loose">
+              <li className="flex gap-3"><span className="mt-2 h-2 w-2 shrink-0 rounded-full bg-gold" /><span>{t('about.bullet1')}</span></li>
+              <li className="flex gap-3"><span className="mt-2 h-2 w-2 shrink-0 rounded-full bg-gold" /><span>{t('about.bullet2')}</span></li>
+            </ul>
+          </Reveal>
+        </div>
       </section>
 
       <Reveal className="mx-5 md:mx-auto md:max-w-6xl rounded-xl2 bg-night px-8 py-10 text-center">
@@ -241,7 +266,7 @@ export default function LandingPage() {
             <div key={x.id} className="card card-hover p-6">
               <Stars value={x.rating} size={16} />
               <p className="my-4 font-light leading-relaxed">{x.comment}</p>
-              <div className="flex items-center justify-between text-xs text-fg-dim"><span>{x.name}</span><span className="chip bg-success/10 text-success"><Icon name="check" size={12} />{t('testimonials.verified')}</span></div>
+              <div className="flex items-center justify-between text-xs text-fg-dim"><span className="flex items-center gap-2"><Avatar name={x.name} size={26} />{x.name}</span><span className="chip bg-success/10 text-success"><Icon name="check" size={12} />{t('testimonials.verified')}</span></div>
             </div>
           ))}
         </StaggerGroup>

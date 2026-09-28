@@ -4,6 +4,7 @@ import { useAuthStore, isInterpreter } from '@/app/auth-store'
 import { applyLocale } from '@/i18n'
 import { Icon } from '@/components/icons/Icon'
 import { cn } from '@/lib/utils'
+import { Avatar } from '@/components/ui/Avatar'
 import { useQuery } from '@tanstack/react-query'
 import { meApi, notificationsApi, youtubeApi } from '@/api/endpoints'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
@@ -92,7 +93,7 @@ export function PublicHeader() {
         <YoutubeButton dark />
         <LocaleToggle dark />
         {user ? (
-          <Link to={isInterpreter(user) ? '/admin' : '/me'} aria-label={user.name || t('me.nav.dreams')} title={user.name} className="flex h-10 w-10 items-center justify-center rounded-full bg-gold text-night transition-transform hover:-translate-y-0.5"><Icon name="user" size={18} active /></Link>
+          <Link to={isInterpreter(user) ? '/admin' : '/me'} aria-label={user.name || t('me.nav.dreams')} title={user.name} className="transition-transform hover:-translate-y-0.5"><Avatar name={user.name || user.email} size={40} /></Link>
         ) : (
           <Link to="/login" aria-label={t('nav.login')} title={t('nav.login')} className="flex h-10 w-10 items-center justify-center rounded-full border border-gold text-gold-soft transition-colors hover:bg-gold hover:text-night"><Icon name="user" size={18} /></Link>
         )}
@@ -136,7 +137,7 @@ export function AppShell({ items, children, admin }: { items: { to: string; labe
           ))}
         </nav>
         <div className="mt-auto border-t border-navy pt-4 text-sm">
-          <div className="px-3 pb-3 text-pearl/50 truncate">{user?.email}</div>
+          <div className="flex items-center gap-3 px-3 pb-3"><Avatar name={user?.name || user?.email} size={34} /><div className="min-w-0"><div className="truncate text-pearl">{user?.name}</div><div className="truncate text-xs text-pearl/50" dir="ltr">{user?.email}</div></div></div>
           <button onClick={() => { clear(); navigate('/') }} className="flex items-center gap-3 rounded-xl px-3 py-2 text-pearl/60 hover:text-danger"><Icon name="logout" size={18} />{t('auth.logout')}</button>
         </div>
       </aside>

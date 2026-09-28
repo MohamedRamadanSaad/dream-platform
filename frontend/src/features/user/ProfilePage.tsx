@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { Icon } from '@/components/icons/Icon'
+import { Avatar } from '@/components/ui/Avatar'
 import { useMutation } from '@tanstack/react-query'
 import { meApi, notificationsApi } from '@/api/endpoints'
 import { useAuthStore } from '@/app/auth-store'
@@ -43,7 +44,7 @@ export function ProfilePage() {
   const standalone = window.matchMedia('(display-mode: standalone)').matches
   return (
     <PageEnter className="mx-auto max-w-2xl space-y-5">
-      <h1 className="font-display text-4xl">{t('me.profile.title')}</h1>
+      <div className="flex items-center gap-4"><Avatar name={name || user.email} size={56} /><h1 className="font-display text-4xl">{t('me.profile.title')}</h1></div>
       <div className="card p-6 space-y-5">
         <div><Label>{t('me.profile.name')}</Label><Input value={name} onChange={(e) => setName(e.target.value)} /></div>
         <div><Label>{t('me.profile.email')}</Label><Input dir="ltr" value={user.email} readOnly className="opacity-70" /></div>

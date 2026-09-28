@@ -67,6 +67,8 @@ public final class SettingKeys {
     public static final String STATS_SUBSCRIBERS = "stats.subscribers";
     public static final String STATS_VIEWS = "stats.views";
     public static final String STATS_VIDEOS = "stats.videos";
+    /** Historical interpreted-dreams count added to the live INTERPRETED count for the public counter. */
+    public static final String STATS_INTERPRETED_BASE = "stats.interpreted_base";
 
     // ---- scheduling ----
     /** IANA zone used for daily schedules (digest). */

@@ -19,7 +19,7 @@ public final class PublicDtos {
     }
 
     /** types.ts {@code PublicStats} (display strings from settings). */
-    public record PublicStats(String subscribers, String views, String videos) {
+    public record PublicStats(String subscribers, String views, String videos, long interpreted) {
     }
 
     /** {@code GET /public/push-key}: the VAPID public key (empty when push is not configured). */

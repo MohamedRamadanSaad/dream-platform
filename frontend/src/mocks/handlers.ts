@@ -87,7 +87,7 @@ export const handlers = [
     { id: 't2', name: 'خالد', rating: 5, comment: 'سألتني المعبّرة سؤالين قبل التفسير، وكان الفرق واضحاً في الدقة.', date: helpers.daysAgo(35) },
     { id: 't3', name: 'Sara', rating: 4, comment: 'Calm, deep and honest. No exaggeration at all.', date: helpers.daysAgo(50) },
   ] }))),
-  http.get(u('/public/stats'), wrap(async () => HttpResponse.json({ subscribers: '50K+', views: '1M+', videos: '230+' }))),
+  http.get(u('/public/stats'), wrap(async () => HttpResponse.json({ subscribers: '50K+', views: '1M+', videos: '230+', interpreted: 2000 + db.dreams.filter((d) => d.status === 'INTERPRETED').length } satisfies T.PublicStats))),
 
   // ---------- me ----------
   http.get(u('/me'), wrap(async ({ request }) => HttpResponse.json(requireUser(request)))),

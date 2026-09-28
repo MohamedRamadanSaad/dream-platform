@@ -6,6 +6,7 @@ import { adminApi } from '@/api/endpoints'
 import { useAuthStore } from '@/app/auth-store'
 import { Button, Empty, ErrorBox, Input, Label, Modal, Segmented, Skeleton, Stars, StatusBadge, Tabs, Textarea } from '@/components/ui'
 import { Icon } from '@/components/icons/Icon'
+import { Avatar } from '@/components/ui/Avatar'
 import { PageEnter, StaggerGroup } from '@/components/motion'
 import { fmtDate, fmtMoney, fmtNum, timeAgo } from '@/lib/utils'
 import type { UserListKind } from '@/api/types'
@@ -30,7 +31,7 @@ export function UsersPage() {
             <tbody>
               {users.data.items.map((u) => (
                 <tr key={u.id} className="border-b border-line last:border-0 hover:bg-surface-2/60">
-                  <td className="px-4 py-3"><Link to={`/admin/users/${u.id}`} className="font-medium hover:text-gold-deep">{u.name || u.email}</Link><div className="text-xs text-fg-dim" dir="ltr">{u.email}</div></td>
+                  <td className="px-4 py-3"><div className="flex items-center gap-3"><Avatar name={u.name || u.email} size={34} /><div><Link to={`/admin/users/${u.id}`} className="font-medium hover:text-gold-deep">{u.name || u.email}</Link><div className="text-xs text-fg-dim" dir="ltr">{u.email}</div></div></div></td>
                   <td className="px-4 py-3">{u.countryCode}</td><td className="px-4 py-3">{fmtNum(u.visits, locale)}</td><td className="px-4 py-3">{fmtNum(u.dreams, locale)}</td>
                   <td className="px-4 py-3">{u.drafts > 0 ? <span className="chip bg-warn/10 text-warn">{u.drafts}</span> : '—'}</td>
                   <td className="px-4 py-3">{fmtMoney(Math.round(u.totalPaidBase), 'USD', locale)}</td>
@@ -68,9 +69,9 @@ export function User360Page() {
     <PageEnter className="space-y-5">
       <Link to="/admin/users" className="text-sm text-fg-muted">→ {t('common.back')}</Link>
       <div className="flex flex-wrap items-start justify-between gap-4">
-        <div><h1 className="font-display text-4xl">{u.name || u.email}</h1><div className="text-sm text-fg-muted" dir="ltr">{u.email}</div>
+        <div className="flex items-start gap-4"><Avatar name={u.name || u.email} size={56} /><div><h1 className="font-display text-4xl">{u.name || u.email}</h1><div className="text-sm text-fg-muted" dir="ltr">{u.email}</div>
           <div className="mt-2 flex flex-wrap gap-2 text-xs text-fg-dim"><span>{u.countryCode}</span><span>· {u.gender ? t(u.gender === 'FEMALE' ? 'auth.female' : 'auth.male') : '—'}</span>{u.age != null && <span>· {t('me.profile.years', { n: u.age })}</span>}<span>· {u.locale}</span><span>· {u.providers.join(', ')}</span><span>· {t('admin.users.since')} {fmtDate(u.createdAt, locale)}</span></div>
-          {u.tags.length > 0 && <div className="mt-2 flex gap-1.5">{u.tags.map((x) => <span key={x} className="chip bg-gold/10 text-gold-deep">{x}</span>)}</div>}</div>
+          {u.tags.length > 0 && <div className="mt-2 flex gap-1.5">{u.tags.map((x) => <span key={x} className="chip bg-gold/10 text-gold-deep">{x}</span>)}</div>}</div></div>
         <Button size="sm" onClick={() => setCreditModal(true)}><Icon name="plus" size={14} />{t('admin.users.addCredits')}</Button>
       </div>
       <StaggerGroup className="grid grid-cols-2 gap-3 md:grid-cols-5" stagger={0.05}>

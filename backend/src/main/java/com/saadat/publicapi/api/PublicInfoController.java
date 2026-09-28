@@ -3,7 +3,9 @@ package com.saadat.publicapi.api;
 import com.saadat.common.api.ApiPaths;
 import com.saadat.common.domain.Locale;
 import com.saadat.config.props.AppProperties;
+import com.saadat.common.domain.DreamStatus;
 import com.saadat.dreams.domain.Testimonial;
+import com.saadat.dreams.repo.DreamRepository;
 import com.saadat.dreams.repo.TestimonialRepository;
 import com.saadat.publicapi.WaitTime;
 import com.saadat.publicapi.WaitTimeView;
@@ -43,9 +45,12 @@ public class PublicInfoController {
     private final UserRepository userRepository;
     private final SettingsService settings;
     private final AppProperties properties;
+    private final DreamRepository dreamRepository;
 
     public PublicInfoController(WaitTimeView waitTimeView, TestimonialRepository testimonialRepository,
-                            UserRepository userRepository, SettingsService settings, AppProperties properties) {
+                            UserRepository userRepository, SettingsService settings, AppProperties properties,
+                            DreamRepository dreamRepository) {
+        this.dreamRepository = dreamRepository;
         this.waitTimeView = waitTimeView;
         this.testimonialRepository = testimonialRepository;
         this.userRepository = userRepository;
@@ -82,7 +87,8 @@ public class PublicInfoController {
         return new PublicStats(
                 settings.getString(SettingKeys.STATS_SUBSCRIBERS, ""),
                 settings.getString(SettingKeys.STATS_VIEWS, ""),
-                settings.getString(SettingKeys.STATS_VIDEOS, ""));
+                settings.getString(SettingKeys.STATS_VIDEOS, ""),
+                settings.getInt(SettingKeys.STATS_INTERPRETED_BASE, 0) + dreamRepository.countByStatus(DreamStatus.INTERPRETED));
     }
 
     @GetMapping(ApiPaths.Public.PUSH_KEY)

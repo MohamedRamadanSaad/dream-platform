@@ -30,7 +30,8 @@
       "reply": "Reply within"
     },
     "skyHadith": "“A true dream is one of the forty-six parts of prophethood”",
-    "skyHadithSrc": "Agreed upon (al-Bukhari & Muslim)"
+    "skyHadithSrc": "Agreed upon (al-Bukhari & Muslim)",
+    "join": "Join {{n}}+ people who found peace in their dreams"
   },
   "waitTime": {
     "label": "Current turnaround",
@@ -38,14 +39,17 @@
     "hours": "{{h}} hours"
   },
   "about": {
-    "kicker": "A balanced approach",
-    "title": "Vision & Mission",
-    "experience": "Over 11 years of dream interpretation by the grace of Allah, grounded in the Quran and Sunnah. A researcher in the science of dream interpretation.",
-    "p1": "Fatema follows a scholarly, Sharia-based method, far from exaggeration. We believe dreams are messages carrying glad tidings, reassurance or warning, and we aim to offer a deep, realistic understanding of their symbols.",
+    "kicker": "Vision & mission",
+    "title": "A balanced method",
+    "p1": "Fatema follows a scholarly, Sharia-grounded method of dream interpretation, far from exaggeration or alarm. We believe dreams are messages from God carrying glad tidings and reassurance, or warning and caution, and we strive to offer a deep, realistic reading of their symbols.",
     "p2": "This site is dedicated to dream interpretation on sound foundations from the Quran and the Prophetic Sunnah, connecting interpretation with the call to Allah in a simple, concise way.",
     "p3": "Since entering this field I found that those most interested are often the most tested, so I dedicated episodes to true happiness — closeness to Allah — which leads to happiness in the Hereafter.",
     "verse": "﴿And who is better in speech than one who invites to Allah and does righteousness and says, “Indeed, I am of the Muslims.”﴾",
-    "verseSrc": "Fussilat: 33"
+    "verseSrc": "Fussilat: 33",
+    "aboutTitle": "About the interpreter",
+    "bullet1": "Over 11 years of dream interpretation, by God’s grace, grounded in the Qur’an and Sunnah.",
+    "bullet2": "Researcher in the science of dream interpretation.",
+    "missionTitle": "Our mission"
   },
   "method": {
     "title": "How we read your dream",

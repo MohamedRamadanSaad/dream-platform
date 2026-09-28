@@ -113,6 +113,8 @@ export interface PublicStats {
   subscribers: string
   views: string
   videos: string
+  /** Historical base + INTERPRETED dreams on the platform. */
+  interpreted: number
 }
 
 // ---------- Dreams ----------
