@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useQuery } from '@tanstack/react-query'
@@ -6,7 +6,7 @@ import gsap from 'gsap'
 import { SplitText } from 'gsap/SplitText'
 import { publicApi } from '@/api/endpoints'
 import { useAuthStore } from '@/app/auth-store'
-import { NightSky } from '@/components/motion/NightSky'
+import { NightSky, type MoonPos } from '@/components/motion/NightSky'
 import { Reveal, StaggerGroup, CountUp, reduced } from '@/components/motion'
 import { PublicHeader, Footer } from '@/components/layout'
 import { Icon } from '@/components/icons/Icon'
@@ -30,13 +30,14 @@ function FloatingBadges() {
     }, root.current)
     return () => ctx.revert()
   }, [])
-  const badge = 'float-badge flex items-center gap-2.5 rounded-2xl border border-navy/80 bg-night/60 px-3.5 py-2.5 text-start backdrop-blur-md'
+  // three-up on every screen: stacked (icon over text) on phones, icon beside text from md up
+  const badge = 'float-badge flex flex-col items-center gap-1.5 rounded-2xl border border-navy/80 bg-night/60 px-2 py-2.5 text-center backdrop-blur-md md:flex-row md:gap-2.5 md:px-3.5 md:text-start'
   const ico = 'flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gold/15 text-gold'
   return (
-    <div ref={root} className="mt-2 flex flex-wrap justify-center gap-2.5">
-      <div className={badge}><span className={ico}><Icon name="sparkle" size={16} /></span><div><div className="font-quran text-base leading-tight text-gold-soft">{t('hero.badges.verse')}</div><div className="text-[10px] text-pearl/45">{t('hero.badges.verseSrc')}</div></div></div>
-      <div className={badge}><span className={ico}><Icon name="shield" size={16} /></span><div><div className="text-xs font-medium text-pearl">{t('hero.badges.privacy')}</div><div className="text-[10px] text-pearl/45">{t('hero.badges.privacySub')}</div></div></div>
-      <div className={badge}><span className={ico}><Icon name="book" size={16} /></span><div><div className="text-xs font-medium text-pearl">{t('hero.badges.depth')}</div><div className="text-[10px] text-pearl/45">{t('hero.badges.depthSub')}</div></div></div>
+    <div ref={root} className="mt-2 grid w-full max-w-2xl grid-cols-3 gap-2 md:w-auto md:gap-2.5">
+      <div className={badge}><span className={ico}><Icon name="sparkle" size={16} /></span><div><div className="font-quran text-sm leading-tight text-gold-soft md:text-base">{t('hero.badges.verse')}</div><div className="text-[10px] text-pearl/45">{t('hero.badges.verseSrc')}</div></div></div>
+      <div className={badge}><span className={ico}><Icon name="shield" size={16} /></span><div><div className="text-[11px] font-medium leading-tight text-pearl md:text-xs">{t('hero.badges.privacy')}</div><div className="hidden text-[10px] text-pearl/45 md:block">{t('hero.badges.privacySub')}</div></div></div>
+      <div className={badge}><span className={ico}><Icon name="book" size={16} /></span><div><div className="text-[11px] font-medium leading-tight text-pearl md:text-xs">{t('hero.badges.depth')}</div><div className="hidden text-[10px] text-pearl/45 md:block">{t('hero.badges.depthSub')}</div></div></div>
     </div>
   )
 }
@@ -47,6 +48,16 @@ function Hero() {
   const titleRef = useRef<HTMLHeadingElement>(null)
   const leadRef = useRef<HTMLParagraphElement>(null)
   const ctaRef = useRef<HTMLDivElement>(null)
+  const sectionRef = useRef<HTMLElement>(null)
+  const hadithOverlayRef = useRef<HTMLDivElement>(null)
+  // The bright copy of the sky hadith is clipped to the moon disc so the letters stay readable on top of it.
+  const onMoon = useCallback((m: MoonPos) => {
+    const o = hadithOverlayRef.current, s = sectionRef.current
+    if (!o || !s) return
+    if (!m.visible) { o.style.clipPath = 'circle(0 at 0 0)'; return }
+    const sr = s.getBoundingClientRect(), or = o.getBoundingClientRect()
+    o.style.clipPath = `circle(${m.r}px at ${m.cx - (or.left - sr.left)}px ${m.cy - (or.top - sr.top)}px)`
+  }, [])
 
   useEffect(() => {
     if (reduced() || !titleRef.current) return
@@ -63,28 +74,36 @@ function Hero() {
   }, [])
 
   return (
-    <section className="relative overflow-hidden bg-night text-pearl">
-      <NightSky className="absolute inset-0" />
+    <section ref={sectionRef} className="relative overflow-hidden bg-night text-pearl">
+      <NightSky className="absolute inset-0" onMoon={onMoon} />
       <PublicHeader />
       {/* written in the sky: sits under the moon overlay (NightSky raises the moon above it) */}
       <div className="sky-hadith pointer-events-none relative mx-auto max-w-3xl px-6 pt-6 text-center md:pt-8">
+        {/* faint copy: sits under the moon */}
         <p className="font-quran text-lg leading-relaxed text-gold-soft/45 md:text-2xl [text-shadow:0_0_18px_rgba(234,219,170,.25)]">{t('hero.skyHadith')}</p>
         <p className="mt-1 text-[10px] tracking-[.3em] text-pearl/30">{t('hero.skyHadithSrc')}</p>
+        {/* bright copy: above the moon, clipped to its disc (see onMoon) */}
+        <div ref={hadithOverlayRef} aria-hidden="true" className="absolute inset-0 z-20 px-6 pt-6 md:pt-8" style={{ clipPath: 'circle(0 at 0 0)' }}>
+          <p className="font-quran text-lg leading-relaxed text-gold md:text-2xl [-webkit-text-stroke:0.6px_#16244a] [text-shadow:0_0_6px_rgba(22,36,74,.9),0_0_14px_rgba(212,175,55,.8)]">{t('hero.skyHadith')}</p>
+          <p className="mt-1 text-[10px] tracking-[.3em] text-navy">{t('hero.skyHadithSrc')}</p>
+        </div>
       </div>
       <div className="relative mx-auto flex max-w-4xl flex-col items-center gap-7 px-5 pb-24 pt-8 text-center md:pt-12 lg:px-0">
         <h1 ref={titleRef} className="font-display text-5xl leading-[1.35] md:text-7xl">
           {t('hero.title1')} <span className="text-gold">{t('hero.title2')}</span><br />{t('hero.title3')}
         </h1>
         <p ref={leadRef} className="max-w-2xl text-lg font-light leading-loose text-pearl/70 md:text-xl">{t('hero.lead')}</p>
-        <div ref={ctaRef} className="flex flex-wrap items-center justify-center gap-3">
-          <Link to="/me/new" className="btn btn-lg btn-gold">{t('hero.cta')}</Link>
+        <div ref={ctaRef} className="flex flex-wrap items-start justify-center gap-3">
+          <div className="flex flex-col items-center gap-2">
+            <Link to="/me/new" className="btn btn-lg btn-gold">{t('hero.cta')}</Link>
+            {wait && (
+              <div className="flex items-center gap-2 text-sm text-pearl/60">
+                <span className="h-2 w-2 rounded-full bg-gold animate-[twinkle_2.4s_ease-in-out_infinite] shadow-[0_0_10px_rgba(212,175,55,.9)]" />
+                {t('hero.badges.reply')}: {wait.busy ? t('waitTime.range', { min: wait.minDays, max: wait.maxDays }) : t('waitTime.hours', { h: wait.hours })}
+              </div>
+            )}
+          </div>
           <a href={YT} target="_blank" rel="noreferrer" className="btn btn-lg border border-navy text-gold-soft hover:border-gold"><span className="text-[#FF0000]"><Icon name="youtube" size={20} /></span>{t('hero.youtube')}</a>
-          {wait && (
-            <div className="basis-full mt-2 flex items-center justify-center gap-2 text-sm text-pearl/60">
-              <span className="h-2 w-2 rounded-full bg-gold animate-[twinkle_2.4s_ease-in-out_infinite] shadow-[0_0_10px_rgba(212,175,55,.9)]" />
-              {t('hero.badges.reply')}: {wait.busy ? t('waitTime.range', { min: wait.minDays, max: wait.maxDays }) : t('waitTime.hours', { h: wait.hours })}
-            </div>
-          )}
         </div>
         <FloatingBadges />
         <div className="mt-6 border-t border-navy pt-6">

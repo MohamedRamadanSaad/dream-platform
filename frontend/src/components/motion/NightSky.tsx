@@ -35,8 +35,12 @@ const DOTS = makeStars(90, 41, 0.5, 1.1) // dust: plain dots so the sky is not a
 
 const MOON_R = 34
 
-export function NightSky({ className, withMoon = true }: { className?: string; withMoon?: boolean }) {
+export interface MoonPos { cx: number; cy: number; r: number; visible: boolean }
+
+export function NightSky({ className, withMoon = true, onMoon }: { className?: string; withMoon?: boolean; onMoon?: (m: MoonPos) => void }) {
   const root = useRef<HTMLDivElement>(null)
+  const onMoonRef = useRef(onMoon)
+  onMoonRef.current = onMoon
   useEffect(() => {
     const el = root.current
     if (!el || reduced()) return
@@ -96,19 +100,27 @@ export function NightSky({ className, withMoon = true }: { className?: string; w
         const render = () => {
           const p = state.p
           const W = el.clientWidth || 1280, H = el.clientHeight || 700
-          const yBase = Math.min(H * 0.62, 560), yTop = Math.min(H * 0.1, 90)
-          const pad = MOON_R * 2
-          const x = (W + pad) - (W + 2 * pad) * p - size / 2 // centre: just past the right edge → just past the left edge
-          const y = yBase - (yBase - yTop) * Math.sin(Math.PI * p) - size / 2
-          const thin = 0.28 * MOON_R, gone = 2.15 * MOON_R
-          const dx = p < 0.5 ? -(thin + (gone - thin) * (p / 0.5)) : thin + (gone - thin) * ((1 - p) / 0.5)
-          const edge = Math.min(1, Math.min(p, 1 - p) / 0.08)
-          gsap.set(moon, { x, y, opacity: edge })
+          const yBase = Math.min(H * 0.62, 560), yTop = Math.min(H * 0.16, 135) // zenith crosses the sky hadith line
+          // centre: fully hidden past the right edge (p=0) → fully hidden past the left edge (p=1).
+          // The phase is tied to the SAME p, so the disc is an almost-empty crescent the moment it enters,
+          // full exactly at the screen centre, and empty again as it leaves — on every screen width.
+          const cx = (W + MOON_R) - (W + 2 * MOON_R) * p
+          const cy = yBase - (yBase - yTop) * Math.sin(Math.PI * p)
+          const thin = 0.14 * MOON_R, gone = 2.15 * MOON_R
+          // eased phase: stays a slim crescent for a while after entering, fills towards the centre, and mirrors on the way out
+          const u = p < 0.5 ? p / 0.5 : (1 - p) / 0.5
+          const f = Math.pow(u, 1.8)
+          const dx = p < 0.5 ? -(thin + (gone - thin) * f) : thin + (gone - thin) * f
+          const edge = Math.min(1, Math.min(p, 1 - p) / 0.05)
+          gsap.set(moon, { x: cx - size / 2, y: cy - size / 2, opacity: edge })
           gsap.set(shadow, { attr: { cx: dx.toFixed(2) } })
           gsap.set(glow, { opacity: 0.05 + 0.22 * Math.sin(Math.PI * p) })
+          onMoonRef.current?.({ cx, cy, r: MOON_R, visible: edge > 0 })
         }
         render()
-        gsap.to(state, { p: 1, duration: 34, ease: 'none', repeat: -1, repeatDelay: 2, onUpdate: render })
+        // slower on phones: the path is shorter, so the same speed would feel rushed
+        const duration = (el.clientWidth || 1280) < 768 ? 46 : 34
+        gsap.to(state, { p: 1, duration, ease: 'none', repeat: -1, repeatDelay: 2, onUpdate: render })
       }
     }, el)
     return () => ctx.revert()
