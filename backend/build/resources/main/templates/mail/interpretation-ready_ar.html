@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<!--/* interpretation-ready (ar) — copy is literal here (per-locale file); subject + preheader: messages mail.interpretation-ready.* */-->
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{mail/_layout :: layout('rtl', 'ar', ~{::content})}">
+<head><title>interpretation-ready</title></head>
+<body>
+<div th:fragment="content">
+  <p style="margin:0 0 18px 0;font-size:18px;line-height:1.7;font-weight:600;color:#0A1128;">السلام عليكم<th:block th:if="${!#strings.isEmpty(name)}"> <span th:text="${name}">…</span></th:block>،</p>
+  <p style="margin:0 0 16px 0;">تفسير رؤياك جاهز الآن في حسابك.</p>
+  <p style="margin:0 0 16px 0;font-size:14px;line-height:1.8;color:#5B6478;">ننصحك بقراءته في وقت هادئ. وإن بقي لديك سؤال، فنحن هنا.</p>
+  <table th:replace="~{mail/_layout :: cta(${ctaUrl}, 'قراءة التفسير')}"></table>
+</div>
+</body>
+</html>

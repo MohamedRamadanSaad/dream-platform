@@ -1,0 +1,825 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.saadat.notifications.NotificationsIntegrationTest" tests="4" skipped="0" failures="0" errors="0" timestamp="2026-09-28T01:44:15.815Z" hostname="runnervmtr4k5" time="0.149">
+  <properties/>
+  <testcase name="notificationsRequireAuthentication()" classname="com.saadat.notifications.NotificationsIntegrationTest" time="0.009"/>
+  <testcase name="interpreterDirectoryListsInterpreters()" classname="com.saadat.notifications.NotificationsIntegrationTest" time="0.048"/>
+  <testcase name="markSingleReadOnlyAffectsOwnNotification()" classname="com.saadat.notifications.NotificationsIntegrationTest" time="0.036"/>
+  <testcase name="notifyPersistsLocalizedTextAndReadAllClearsUnread()" classname="com.saadat.notifications.NotificationsIntegrationTest" time="0.049"/>
+  <system-out><![CDATA[01:44:15.796 INFO  [Test worker] [] o.s.t.c.s.AnnotationConfigContextLoaderUtils - Could not detect default configuration classes for test class [com.saadat.notifications.NotificationsIntegrationTest]: NotificationsIntegrationTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+01:44:15.807 INFO  [Test worker] [] o.s.b.t.c.SpringBootTestContextBootstrapper - Found @SpringBootConfiguration com.saadat.SaadatApplication for test class com.saadat.notifications.NotificationsIntegrationTest
+01:44:15.852 DEBUG [async-2] [] c.saadat.push.service.WebPushSender - Web push not configured — skipping push to user cf8e8531-3df0-4b95-b83b-b2e05a1e7184
+01:44:15.852 DEBUG [async-3] [] c.saadat.push.service.WebPushSender - Web push not configured — skipping push to user 5b80442f-6bb6-463b-9293-33ab7e6ca272
+01:44:15.852 DEBUG [async-4] [] c.saadat.push.service.WebPushSender - Web push not configured — skipping push to user 9eb0e65c-d9d5-4d2e-bab2-91e61802d53c
+01:44:15.854 DEBUG [async-1] [] c.saadat.push.service.WebPushSender - Web push not configured — skipping push to user 2de58792-5b12-422f-809d-788819193943
+01:44:15.856 INFO  [async-1] [] com.saadat.mail.MailService - SMTP not configured — e-mail 'dream-submitted' to i***@example.com (subject: رؤيا جديدة من Sara):
+<!DOCTYPE html>
+
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="x-apple-disable-message-reformatting">
+  <meta name="color-scheme" content="light">
+  <meta name="supported-color-schemes" content="light">
+  <title>رؤيا جديدة من Sara</title>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;600&amp;display=swap" rel="stylesheet">
+  <style>
+    body, table, td, p, a, div, span, strong { font-family: 'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif; }
+    a { color: #0A1128; }
+    @media only screen and (max-width: 620px) {
+      .container { width: 100% !important; }
+      .px { padding-left: 20px !important; padding-right: 20px !important; }
+    }
+  </style>
+</head>
+<body style="margin:0;padding:0;background-color:#F4EFE6;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;" dir="rtl">
+<div style="display:none;max-height:0;max-width:0;overflow:hidden;mso-hide:all;font-size:1px;line-height:1px;color:#F4EFE6;opacity:0;">أُضيفت رؤيا جديدة إلى قائمة المراجعة.</div>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#F4EFE6;border-collapse:collapse;" dir="rtl">
+  <tr>
+    <td align="center" style="padding:24px 12px;">
+      <table role="presentation" class="container" width="600" cellpadding="0" cellspacing="0" border="0"
+             style="width:600px;max-width:600px;border-collapse:separate;border:1px solid #E6DCC8;border-radius:16px;overflow:hidden;background-color:#F4EFE6;">
+        <!-- header band -->
+        <tr>
+          <td align="center" class="px" style="background-color:#0A1128;padding:28px 32px 22px 32px;">
+            <div style="font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:22px;line-height:1.4;font-weight:600;color:#D4AF37;">إلى سعادة الدارين</div>
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" style="margin:12px auto 10px auto;">
+              <tr><td width="72" height="2" style="width:72px;height:2px;line-height:2px;font-size:0;background-color:#D4AF37;">&nbsp;</td></tr>
+            </table>
+            <div style="font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:13px;line-height:1.6;color:#F4EFE6;">تفسير الرؤى بوضوح وعمق نحو سعادة الدارين</div>
+          </td>
+        </tr>
+        <!-- content -->
+        <tr>
+          <td class="px" style="padding:32px 36px 28px 36px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:16px;line-height:1.9;color:#0A1128;background-color:#F4EFE6;" dir="rtl" align="right">
+            <div>
+  <p style="margin:0 0 18px 0;font-size:18px;line-height:1.7;font-weight:600;color:#0A1128;">السلام عليكم <span>interpreter</span>،</p>
+  <p style="margin:0 0 16px 0;">وصلت رؤيا جديدة من <strong>Sara</strong> وأُضيفت إلى قائمة المراجعة.</p>
+  
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
+       style="margin:28px 0 8px 0;border-collapse:collapse;">
+  <tr>
+    <td align="center">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center">
+        <tr>
+          <td align="center" bgcolor="#D4AF37" style="border-radius:999px;background-color:#D4AF37;">
+            <a href="http://localhost:5173/admin/dreams/1" target="_blank"
+               style="display:inline-block;padding:14px 38px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:16px;line-height:1.2;font-weight:600;color:#0A1128;text-decoration:none;border-radius:999px;">فتح الرؤيا</a>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+  <tr>
+    <td align="center" style="padding-top:14px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:12px;line-height:1.6;color:#5B6478;">
+      <span>إذا لم يعمل الزر، انسخ هذا الرابط في المتصفح:</span><br>
+      <a href="http://localhost:5173/admin/dreams/1" dir="ltr" style="color:#5B6478;word-break:break-all;">http://localhost:5173/admin/dreams/1</a>
+    </td>
+  </tr>
+</table>
+</div>
+          </td>
+        </tr>
+        <!-- footer -->
+        <tr>
+          <td align="center" class="px" style="background-color:#0A1128;padding:24px 32px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:13px;line-height:1.8;color:#F4EFE6;">
+            <a href="https://youtube.com/@almoaberafatema" style="color:#D4AF37;text-decoration:none;font-weight:600;">شاهد القناة على يوتيوب</a>
+            <div style="margin-top:6px;">
+              <span>للتواصل معنا:</span>
+              <a href="mailto:support@saadatu-aldarein.com" style="color:#D4AF37;text-decoration:none;">support@saadatu-aldarein.com</a>
+            </div>
+            <div style="margin-top:12px;font-size:12px;line-height:1.7;color:#AEB4C2;">وصلتك هذه الرسالة لأنها تخص حسابك لدينا.</div>
+            <div style="margin-top:6px;font-size:12px;color:#AEB4C2;">&copy; <span>2026</span> <span>إلى سعادة الدارين</span></div>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
+</body>
+</html>
+
+01:44:15.856 INFO  [async-3] [] com.saadat.mail.MailService - SMTP not configured — e-mail 'dream-submitted' to f***@saadatu-aldarein.com (subject: رؤيا جديدة من Sara):
+<!DOCTYPE html>
+
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="x-apple-disable-message-reformatting">
+  <meta name="color-scheme" content="light">
+  <meta name="supported-color-schemes" content="light">
+  <title>رؤيا جديدة من Sara</title>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;600&amp;display=swap" rel="stylesheet">
+  <style>
+    body, table, td, p, a, div, span, strong { font-family: 'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif; }
+    a { color: #0A1128; }
+    @media only screen and (max-width: 620px) {
+      .container { width: 100% !important; }
+      .px { padding-left: 20px !important; padding-right: 20px !important; }
+    }
+  </style>
+</head>
+<body style="margin:0;padding:0;background-color:#F4EFE6;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;" dir="rtl">
+<div style="display:none;max-height:0;max-width:0;overflow:hidden;mso-hide:all;font-size:1px;line-height:1px;color:#F4EFE6;opacity:0;">أُضيفت رؤيا جديدة إلى قائمة المراجعة.</div>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#F4EFE6;border-collapse:collapse;" dir="rtl">
+  <tr>
+    <td align="center" style="padding:24px 12px;">
+      <table role="presentation" class="container" width="600" cellpadding="0" cellspacing="0" border="0"
+             style="width:600px;max-width:600px;border-collapse:separate;border:1px solid #E6DCC8;border-radius:16px;overflow:hidden;background-color:#F4EFE6;">
+        <!-- header band -->
+        <tr>
+          <td align="center" class="px" style="background-color:#0A1128;padding:28px 32px 22px 32px;">
+            <div style="font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:22px;line-height:1.4;font-weight:600;color:#D4AF37;">إلى سعادة الدارين</div>
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" style="margin:12px auto 10px auto;">
+              <tr><td width="72" height="2" style="width:72px;height:2px;line-height:2px;font-size:0;background-color:#D4AF37;">&nbsp;</td></tr>
+            </table>
+            <div style="font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:13px;line-height:1.6;color:#F4EFE6;">تفسير الرؤى بوضوح وعمق نحو سعادة الدارين</div>
+          </td>
+        </tr>
+        <!-- content -->
+        <tr>
+          <td class="px" style="padding:32px 36px 28px 36px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:16px;line-height:1.9;color:#0A1128;background-color:#F4EFE6;" dir="rtl" align="right">
+            <div>
+  <p style="margin:0 0 18px 0;font-size:18px;line-height:1.7;font-weight:600;color:#0A1128;">السلام عليكم،</p>
+  <p style="margin:0 0 16px 0;">وصلت رؤيا جديدة من <strong>Sara</strong> وأُضيفت إلى قائمة المراجعة.</p>
+  
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
+       style="margin:28px 0 8px 0;border-collapse:collapse;">
+  <tr>
+    <td align="center">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center">
+        <tr>
+          <td align="center" bgcolor="#D4AF37" style="border-radius:999px;background-color:#D4AF37;">
+            <a href="http://localhost:5173/admin/dreams/1" target="_blank"
+               style="display:inline-block;padding:14px 38px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:16px;line-height:1.2;font-weight:600;color:#0A1128;text-decoration:none;border-radius:999px;">فتح الرؤيا</a>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+  <tr>
+    <td align="center" style="padding-top:14px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:12px;line-height:1.6;color:#5B6478;">
+      <span>إذا لم يعمل الزر، انسخ هذا الرابط في المتصفح:</span><br>
+      <a href="http://localhost:5173/admin/dreams/1" dir="ltr" style="color:#5B6478;word-break:break-all;">http://localhost:5173/admin/dreams/1</a>
+    </td>
+  </tr>
+</table>
+</div>
+          </td>
+        </tr>
+        <!-- footer -->
+        <tr>
+          <td align="center" class="px" style="background-color:#0A1128;padding:24px 32px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:13px;line-height:1.8;color:#F4EFE6;">
+            <a href="https://youtube.com/@almoaberafatema" style="color:#D4AF37;text-decoration:none;font-weight:600;">شاهد القناة على يوتيوب</a>
+            <div style="margin-top:6px;">
+              <span>للتواصل معنا:</span>
+              <a href="mailto:support@saadatu-aldarein.com" style="color:#D4AF37;text-decoration:none;">support@saadatu-aldarein.com</a>
+            </div>
+            <div style="margin-top:12px;font-size:12px;line-height:1.7;color:#AEB4C2;">وصلتك هذه الرسالة لأنها تخص حسابك لدينا.</div>
+            <div style="margin-top:6px;font-size:12px;color:#AEB4C2;">&copy; <span>2026</span> <span>إلى سعادة الدارين</span></div>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
+</body>
+</html>
+
+01:44:15.856 INFO  [async-4] [] com.saadat.mail.MailService - SMTP not configured — e-mail 'dream-submitted' to i***@example.com (subject: رؤيا جديدة من Sara):
+<!DOCTYPE html>
+
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="x-apple-disable-message-reformatting">
+  <meta name="color-scheme" content="light">
+  <meta name="supported-color-schemes" content="light">
+  <title>رؤيا جديدة من Sara</title>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;600&amp;display=swap" rel="stylesheet">
+  <style>
+    body, table, td, p, a, div, span, strong { font-family: 'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif; }
+    a { color: #0A1128; }
+    @media only screen and (max-width: 620px) {
+      .container { width: 100% !important; }
+      .px { padding-left: 20px !important; padding-right: 20px !important; }
+    }
+  </style>
+</head>
+<body style="margin:0;padding:0;background-color:#F4EFE6;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;" dir="rtl">
+<div style="display:none;max-height:0;max-width:0;overflow:hidden;mso-hide:all;font-size:1px;line-height:1px;color:#F4EFE6;opacity:0;">أُضيفت رؤيا جديدة إلى قائمة المراجعة.</div>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#F4EFE6;border-collapse:collapse;" dir="rtl">
+  <tr>
+    <td align="center" style="padding:24px 12px;">
+      <table role="presentation" class="container" width="600" cellpadding="0" cellspacing="0" border="0"
+             style="width:600px;max-width:600px;border-collapse:separate;border:1px solid #E6DCC8;border-radius:16px;overflow:hidden;background-color:#F4EFE6;">
+        <!-- header band -->
+        <tr>
+          <td align="center" class="px" style="background-color:#0A1128;padding:28px 32px 22px 32px;">
+            <div style="font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:22px;line-height:1.4;font-weight:600;color:#D4AF37;">إلى سعادة الدارين</div>
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" style="margin:12px auto 10px auto;">
+              <tr><td width="72" height="2" style="width:72px;height:2px;line-height:2px;font-size:0;background-color:#D4AF37;">&nbsp;</td></tr>
+            </table>
+            <div style="font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:13px;line-height:1.6;color:#F4EFE6;">تفسير الرؤى بوضوح وعمق نحو سعادة الدارين</div>
+          </td>
+        </tr>
+        <!-- content -->
+        <tr>
+          <td class="px" style="padding:32px 36px 28px 36px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:16px;line-height:1.9;color:#0A1128;background-color:#F4EFE6;" dir="rtl" align="right">
+            <div>
+  <p style="margin:0 0 18px 0;font-size:18px;line-height:1.7;font-weight:600;color:#0A1128;">السلام عليكم <span>interpreter</span>،</p>
+  <p style="margin:0 0 16px 0;">وصلت رؤيا جديدة من <strong>Sara</strong> وأُضيفت إلى قائمة المراجعة.</p>
+  
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
+       style="margin:28px 0 8px 0;border-collapse:collapse;">
+  <tr>
+    <td align="center">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center">
+        <tr>
+          <td align="center" bgcolor="#D4AF37" style="border-radius:999px;background-color:#D4AF37;">
+            <a href="http://localhost:5173/admin/dreams/1" target="_blank"
+               style="display:inline-block;padding:14px 38px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:16px;line-height:1.2;font-weight:600;color:#0A1128;text-decoration:none;border-radius:999px;">فتح الرؤيا</a>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+  <tr>
+    <td align="center" style="padding-top:14px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:12px;line-height:1.6;color:#5B6478;">
+      <span>إذا لم يعمل الزر، انسخ هذا الرابط في المتصفح:</span><br>
+      <a href="http://localhost:5173/admin/dreams/1" dir="ltr" style="color:#5B6478;word-break:break-all;">http://localhost:5173/admin/dreams/1</a>
+    </td>
+  </tr>
+</table>
+</div>
+          </td>
+        </tr>
+        <!-- footer -->
+        <tr>
+          <td align="center" class="px" style="background-color:#0A1128;padding:24px 32px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:13px;line-height:1.8;color:#F4EFE6;">
+            <a href="https://youtube.com/@almoaberafatema" style="color:#D4AF37;text-decoration:none;font-weight:600;">شاهد القناة على يوتيوب</a>
+            <div style="margin-top:6px;">
+              <span>للتواصل معنا:</span>
+              <a href="mailto:support@saadatu-aldarein.com" style="color:#D4AF37;text-decoration:none;">support@saadatu-aldarein.com</a>
+            </div>
+            <div style="margin-top:12px;font-size:12px;line-height:1.7;color:#AEB4C2;">وصلتك هذه الرسالة لأنها تخص حسابك لدينا.</div>
+            <div style="margin-top:6px;font-size:12px;color:#AEB4C2;">&copy; <span>2026</span> <span>إلى سعادة الدارين</span></div>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
+</body>
+</html>
+
+01:44:15.856 INFO  [async-2] [] com.saadat.mail.MailService - SMTP not configured — e-mail 'dream-submitted' to a***@saadatu-aldarein.com (subject: رؤيا جديدة من Sara):
+<!DOCTYPE html>
+
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="x-apple-disable-message-reformatting">
+  <meta name="color-scheme" content="light">
+  <meta name="supported-color-schemes" content="light">
+  <title>رؤيا جديدة من Sara</title>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;600&amp;display=swap" rel="stylesheet">
+  <style>
+    body, table, td, p, a, div, span, strong { font-family: 'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif; }
+    a { color: #0A1128; }
+    @media only screen and (max-width: 620px) {
+      .container { width: 100% !important; }
+      .px { padding-left: 20px !important; padding-right: 20px !important; }
+    }
+  </style>
+</head>
+<body style="margin:0;padding:0;background-color:#F4EFE6;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;" dir="rtl">
+<div style="display:none;max-height:0;max-width:0;overflow:hidden;mso-hide:all;font-size:1px;line-height:1px;color:#F4EFE6;opacity:0;">أُضيفت رؤيا جديدة إلى قائمة المراجعة.</div>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#F4EFE6;border-collapse:collapse;" dir="rtl">
+  <tr>
+    <td align="center" style="padding:24px 12px;">
+      <table role="presentation" class="container" width="600" cellpadding="0" cellspacing="0" border="0"
+             style="width:600px;max-width:600px;border-collapse:separate;border:1px solid #E6DCC8;border-radius:16px;overflow:hidden;background-color:#F4EFE6;">
+        <!-- header band -->
+        <tr>
+          <td align="center" class="px" style="background-color:#0A1128;padding:28px 32px 22px 32px;">
+            <div style="font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:22px;line-height:1.4;font-weight:600;color:#D4AF37;">إلى سعادة الدارين</div>
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" style="margin:12px auto 10px auto;">
+              <tr><td width="72" height="2" style="width:72px;height:2px;line-height:2px;font-size:0;background-color:#D4AF37;">&nbsp;</td></tr>
+            </table>
+            <div style="font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:13px;line-height:1.6;color:#F4EFE6;">تفسير الرؤى بوضوح وعمق نحو سعادة الدارين</div>
+          </td>
+        </tr>
+        <!-- content -->
+        <tr>
+          <td class="px" style="padding:32px 36px 28px 36px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:16px;line-height:1.9;color:#0A1128;background-color:#F4EFE6;" dir="rtl" align="right">
+            <div>
+  <p style="margin:0 0 18px 0;font-size:18px;line-height:1.7;font-weight:600;color:#0A1128;">السلام عليكم،</p>
+  <p style="margin:0 0 16px 0;">وصلت رؤيا جديدة من <strong>Sara</strong> وأُضيفت إلى قائمة المراجعة.</p>
+  
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
+       style="margin:28px 0 8px 0;border-collapse:collapse;">
+  <tr>
+    <td align="center">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center">
+        <tr>
+          <td align="center" bgcolor="#D4AF37" style="border-radius:999px;background-color:#D4AF37;">
+            <a href="http://localhost:5173/admin/dreams/1" target="_blank"
+               style="display:inline-block;padding:14px 38px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:16px;line-height:1.2;font-weight:600;color:#0A1128;text-decoration:none;border-radius:999px;">فتح الرؤيا</a>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+  <tr>
+    <td align="center" style="padding-top:14px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:12px;line-height:1.6;color:#5B6478;">
+      <span>إذا لم يعمل الزر، انسخ هذا الرابط في المتصفح:</span><br>
+      <a href="http://localhost:5173/admin/dreams/1" dir="ltr" style="color:#5B6478;word-break:break-all;">http://localhost:5173/admin/dreams/1</a>
+    </td>
+  </tr>
+</table>
+</div>
+          </td>
+        </tr>
+        <!-- footer -->
+        <tr>
+          <td align="center" class="px" style="background-color:#0A1128;padding:24px 32px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:13px;line-height:1.8;color:#F4EFE6;">
+            <a href="https://youtube.com/@almoaberafatema" style="color:#D4AF37;text-decoration:none;font-weight:600;">شاهد القناة على يوتيوب</a>
+            <div style="margin-top:6px;">
+              <span>للتواصل معنا:</span>
+              <a href="mailto:support@saadatu-aldarein.com" style="color:#D4AF37;text-decoration:none;">support@saadatu-aldarein.com</a>
+            </div>
+            <div style="margin-top:12px;font-size:12px;line-height:1.7;color:#AEB4C2;">وصلتك هذه الرسالة لأنها تخص حسابك لدينا.</div>
+            <div style="margin-top:6px;font-size:12px;color:#AEB4C2;">&copy; <span>2026</span> <span>إلى سعادة الدارين</span></div>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
+</body>
+</html>
+
+01:44:15.859 DEBUG [async-1] [] c.saadat.push.service.WebPushSender - Web push not configured — skipping push to user ae234225-1d51-4921-ae03-648162b0a62c
+01:44:15.863 INFO  [async-1] [] com.saadat.mail.MailService - SMTP not configured — e-mail 'dream-submitted' to i***@example.com (subject: رؤيا جديدة من Sara):
+<!DOCTYPE html>
+
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="x-apple-disable-message-reformatting">
+  <meta name="color-scheme" content="light">
+  <meta name="supported-color-schemes" content="light">
+  <title>رؤيا جديدة من Sara</title>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;600&amp;display=swap" rel="stylesheet">
+  <style>
+    body, table, td, p, a, div, span, strong { font-family: 'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif; }
+    a { color: #0A1128; }
+    @media only screen and (max-width: 620px) {
+      .container { width: 100% !important; }
+      .px { padding-left: 20px !important; padding-right: 20px !important; }
+    }
+  </style>
+</head>
+<body style="margin:0;padding:0;background-color:#F4EFE6;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;" dir="rtl">
+<div style="display:none;max-height:0;max-width:0;overflow:hidden;mso-hide:all;font-size:1px;line-height:1px;color:#F4EFE6;opacity:0;">أُضيفت رؤيا جديدة إلى قائمة المراجعة.</div>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#F4EFE6;border-collapse:collapse;" dir="rtl">
+  <tr>
+    <td align="center" style="padding:24px 12px;">
+      <table role="presentation" class="container" width="600" cellpadding="0" cellspacing="0" border="0"
+             style="width:600px;max-width:600px;border-collapse:separate;border:1px solid #E6DCC8;border-radius:16px;overflow:hidden;background-color:#F4EFE6;">
+        <!-- header band -->
+        <tr>
+          <td align="center" class="px" style="background-color:#0A1128;padding:28px 32px 22px 32px;">
+            <div style="font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:22px;line-height:1.4;font-weight:600;color:#D4AF37;">إلى سعادة الدارين</div>
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" style="margin:12px auto 10px auto;">
+              <tr><td width="72" height="2" style="width:72px;height:2px;line-height:2px;font-size:0;background-color:#D4AF37;">&nbsp;</td></tr>
+            </table>
+            <div style="font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:13px;line-height:1.6;color:#F4EFE6;">تفسير الرؤى بوضوح وعمق نحو سعادة الدارين</div>
+          </td>
+        </tr>
+        <!-- content -->
+        <tr>
+          <td class="px" style="padding:32px 36px 28px 36px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:16px;line-height:1.9;color:#0A1128;background-color:#F4EFE6;" dir="rtl" align="right">
+            <div>
+  <p style="margin:0 0 18px 0;font-size:18px;line-height:1.7;font-weight:600;color:#0A1128;">السلام عليكم <span>interp</span>،</p>
+  <p style="margin:0 0 16px 0;">وصلت رؤيا جديدة من <strong>Sara</strong> وأُضيفت إلى قائمة المراجعة.</p>
+  
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
+       style="margin:28px 0 8px 0;border-collapse:collapse;">
+  <tr>
+    <td align="center">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center">
+        <tr>
+          <td align="center" bgcolor="#D4AF37" style="border-radius:999px;background-color:#D4AF37;">
+            <a href="http://localhost:5173/admin/dreams/1" target="_blank"
+               style="display:inline-block;padding:14px 38px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:16px;line-height:1.2;font-weight:600;color:#0A1128;text-decoration:none;border-radius:999px;">فتح الرؤيا</a>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+  <tr>
+    <td align="center" style="padding-top:14px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:12px;line-height:1.6;color:#5B6478;">
+      <span>إذا لم يعمل الزر، انسخ هذا الرابط في المتصفح:</span><br>
+      <a href="http://localhost:5173/admin/dreams/1" dir="ltr" style="color:#5B6478;word-break:break-all;">http://localhost:5173/admin/dreams/1</a>
+    </td>
+  </tr>
+</table>
+</div>
+          </td>
+        </tr>
+        <!-- footer -->
+        <tr>
+          <td align="center" class="px" style="background-color:#0A1128;padding:24px 32px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:13px;line-height:1.8;color:#F4EFE6;">
+            <a href="https://youtube.com/@almoaberafatema" style="color:#D4AF37;text-decoration:none;font-weight:600;">شاهد القناة على يوتيوب</a>
+            <div style="margin-top:6px;">
+              <span>للتواصل معنا:</span>
+              <a href="mailto:support@saadatu-aldarein.com" style="color:#D4AF37;text-decoration:none;">support@saadatu-aldarein.com</a>
+            </div>
+            <div style="margin-top:12px;font-size:12px;line-height:1.7;color:#AEB4C2;">وصلتك هذه الرسالة لأنها تخص حسابك لدينا.</div>
+            <div style="margin-top:6px;font-size:12px;color:#AEB4C2;">&copy; <span>2026</span> <span>إلى سعادة الدارين</span></div>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
+</body>
+</html>
+
+01:44:15.864 DEBUG [async-3] [] c.saadat.push.service.WebPushSender - Web push not configured — skipping push to user 7f1ebe66-67ae-423a-8c7d-abceece9b284
+01:44:15.864 DEBUG [async-2] [] c.saadat.push.service.WebPushSender - Web push not configured — skipping push to user 6213d2c1-2b72-4014-8fef-c67b0243f4b9
+01:44:15.867 INFO  [async-3] [] com.saadat.mail.MailService - SMTP not configured — e-mail 'dream-submitted' to i***@example.com (subject: رؤيا جديدة من Sara):
+<!DOCTYPE html>
+
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="x-apple-disable-message-reformatting">
+  <meta name="color-scheme" content="light">
+  <meta name="supported-color-schemes" content="light">
+  <title>رؤيا جديدة من Sara</title>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;600&amp;display=swap" rel="stylesheet">
+  <style>
+    body, table, td, p, a, div, span, strong { font-family: 'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif; }
+    a { color: #0A1128; }
+    @media only screen and (max-width: 620px) {
+      .container { width: 100% !important; }
+      .px { padding-left: 20px !important; padding-right: 20px !important; }
+    }
+  </style>
+</head>
+<body style="margin:0;padding:0;background-color:#F4EFE6;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;" dir="rtl">
+<div style="display:none;max-height:0;max-width:0;overflow:hidden;mso-hide:all;font-size:1px;line-height:1px;color:#F4EFE6;opacity:0;">أُضيفت رؤيا جديدة إلى قائمة المراجعة.</div>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#F4EFE6;border-collapse:collapse;" dir="rtl">
+  <tr>
+    <td align="center" style="padding:24px 12px;">
+      <table role="presentation" class="container" width="600" cellpadding="0" cellspacing="0" border="0"
+             style="width:600px;max-width:600px;border-collapse:separate;border:1px solid #E6DCC8;border-radius:16px;overflow:hidden;background-color:#F4EFE6;">
+        <!-- header band -->
+        <tr>
+          <td align="center" class="px" style="background-color:#0A1128;padding:28px 32px 22px 32px;">
+            <div style="font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:22px;line-height:1.4;font-weight:600;color:#D4AF37;">إلى سعادة الدارين</div>
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" style="margin:12px auto 10px auto;">
+              <tr><td width="72" height="2" style="width:72px;height:2px;line-height:2px;font-size:0;background-color:#D4AF37;">&nbsp;</td></tr>
+            </table>
+            <div style="font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:13px;line-height:1.6;color:#F4EFE6;">تفسير الرؤى بوضوح وعمق نحو سعادة الدارين</div>
+          </td>
+        </tr>
+        <!-- content -->
+        <tr>
+          <td class="px" style="padding:32px 36px 28px 36px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:16px;line-height:1.9;color:#0A1128;background-color:#F4EFE6;" dir="rtl" align="right">
+            <div>
+  <p style="margin:0 0 18px 0;font-size:18px;line-height:1.7;font-weight:600;color:#0A1128;">السلام عليكم <span>interp</span>،</p>
+  <p style="margin:0 0 16px 0;">وصلت رؤيا جديدة من <strong>Sara</strong> وأُضيفت إلى قائمة المراجعة.</p>
+  
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
+       style="margin:28px 0 8px 0;border-collapse:collapse;">
+  <tr>
+    <td align="center">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center">
+        <tr>
+          <td align="center" bgcolor="#D4AF37" style="border-radius:999px;background-color:#D4AF37;">
+            <a href="http://localhost:5173/admin/dreams/1" target="_blank"
+               style="display:inline-block;padding:14px 38px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:16px;line-height:1.2;font-weight:600;color:#0A1128;text-decoration:none;border-radius:999px;">فتح الرؤيا</a>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+  <tr>
+    <td align="center" style="padding-top:14px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:12px;line-height:1.6;color:#5B6478;">
+      <span>إذا لم يعمل الزر، انسخ هذا الرابط في المتصفح:</span><br>
+      <a href="http://localhost:5173/admin/dreams/1" dir="ltr" style="color:#5B6478;word-break:break-all;">http://localhost:5173/admin/dreams/1</a>
+    </td>
+  </tr>
+</table>
+</div>
+          </td>
+        </tr>
+        <!-- footer -->
+        <tr>
+          <td align="center" class="px" style="background-color:#0A1128;padding:24px 32px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:13px;line-height:1.8;color:#F4EFE6;">
+            <a href="https://youtube.com/@almoaberafatema" style="color:#D4AF37;text-decoration:none;font-weight:600;">شاهد القناة على يوتيوب</a>
+            <div style="margin-top:6px;">
+              <span>للتواصل معنا:</span>
+              <a href="mailto:support@saadatu-aldarein.com" style="color:#D4AF37;text-decoration:none;">support@saadatu-aldarein.com</a>
+            </div>
+            <div style="margin-top:12px;font-size:12px;line-height:1.7;color:#AEB4C2;">وصلتك هذه الرسالة لأنها تخص حسابك لدينا.</div>
+            <div style="margin-top:6px;font-size:12px;color:#AEB4C2;">&copy; <span>2026</span> <span>إلى سعادة الدارين</span></div>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
+</body>
+</html>
+
+01:44:15.868 INFO  [async-2] [] com.saadat.mail.MailService - SMTP not configured — e-mail 'dream-submitted' to i***@example.com (subject: رؤيا جديدة من Sara):
+<!DOCTYPE html>
+
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="x-apple-disable-message-reformatting">
+  <meta name="color-scheme" content="light">
+  <meta name="supported-color-schemes" content="light">
+  <title>رؤيا جديدة من Sara</title>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;600&amp;display=swap" rel="stylesheet">
+  <style>
+    body, table, td, p, a, div, span, strong { font-family: 'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif; }
+    a { color: #0A1128; }
+    @media only screen and (max-width: 620px) {
+      .container { width: 100% !important; }
+      .px { padding-left: 20px !important; padding-right: 20px !important; }
+    }
+  </style>
+</head>
+<body style="margin:0;padding:0;background-color:#F4EFE6;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;" dir="rtl">
+<div style="display:none;max-height:0;max-width:0;overflow:hidden;mso-hide:all;font-size:1px;line-height:1px;color:#F4EFE6;opacity:0;">أُضيفت رؤيا جديدة إلى قائمة المراجعة.</div>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#F4EFE6;border-collapse:collapse;" dir="rtl">
+  <tr>
+    <td align="center" style="padding:24px 12px;">
+      <table role="presentation" class="container" width="600" cellpadding="0" cellspacing="0" border="0"
+             style="width:600px;max-width:600px;border-collapse:separate;border:1px solid #E6DCC8;border-radius:16px;overflow:hidden;background-color:#F4EFE6;">
+        <!-- header band -->
+        <tr>
+          <td align="center" class="px" style="background-color:#0A1128;padding:28px 32px 22px 32px;">
+            <div style="font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:22px;line-height:1.4;font-weight:600;color:#D4AF37;">إلى سعادة الدارين</div>
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" style="margin:12px auto 10px auto;">
+              <tr><td width="72" height="2" style="width:72px;height:2px;line-height:2px;font-size:0;background-color:#D4AF37;">&nbsp;</td></tr>
+            </table>
+            <div style="font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:13px;line-height:1.6;color:#F4EFE6;">تفسير الرؤى بوضوح وعمق نحو سعادة الدارين</div>
+          </td>
+        </tr>
+        <!-- content -->
+        <tr>
+          <td class="px" style="padding:32px 36px 28px 36px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:16px;line-height:1.9;color:#0A1128;background-color:#F4EFE6;" dir="rtl" align="right">
+            <div>
+  <p style="margin:0 0 18px 0;font-size:18px;line-height:1.7;font-weight:600;color:#0A1128;">السلام عليكم <span>interp</span>،</p>
+  <p style="margin:0 0 16px 0;">وصلت رؤيا جديدة من <strong>Sara</strong> وأُضيفت إلى قائمة المراجعة.</p>
+  
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
+       style="margin:28px 0 8px 0;border-collapse:collapse;">
+  <tr>
+    <td align="center">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center">
+        <tr>
+          <td align="center" bgcolor="#D4AF37" style="border-radius:999px;background-color:#D4AF37;">
+            <a href="http://localhost:5173/admin/dreams/1" target="_blank"
+               style="display:inline-block;padding:14px 38px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:16px;line-height:1.2;font-weight:600;color:#0A1128;text-decoration:none;border-radius:999px;">فتح الرؤيا</a>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+  <tr>
+    <td align="center" style="padding-top:14px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:12px;line-height:1.6;color:#5B6478;">
+      <span>إذا لم يعمل الزر، انسخ هذا الرابط في المتصفح:</span><br>
+      <a href="http://localhost:5173/admin/dreams/1" dir="ltr" style="color:#5B6478;word-break:break-all;">http://localhost:5173/admin/dreams/1</a>
+    </td>
+  </tr>
+</table>
+</div>
+          </td>
+        </tr>
+        <!-- footer -->
+        <tr>
+          <td align="center" class="px" style="background-color:#0A1128;padding:24px 32px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:13px;line-height:1.8;color:#F4EFE6;">
+            <a href="https://youtube.com/@almoaberafatema" style="color:#D4AF37;text-decoration:none;font-weight:600;">شاهد القناة على يوتيوب</a>
+            <div style="margin-top:6px;">
+              <span>للتواصل معنا:</span>
+              <a href="mailto:support@saadatu-aldarein.com" style="color:#D4AF37;text-decoration:none;">support@saadatu-aldarein.com</a>
+            </div>
+            <div style="margin-top:12px;font-size:12px;line-height:1.7;color:#AEB4C2;">وصلتك هذه الرسالة لأنها تخص حسابك لدينا.</div>
+            <div style="margin-top:6px;font-size:12px;color:#AEB4C2;">&copy; <span>2026</span> <span>إلى سعادة الدارين</span></div>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
+</body>
+</html>
+
+01:44:15.887 DEBUG [async-4] [] c.saadat.push.service.WebPushSender - Web push not configured — skipping push to user a010afa9-0e24-4f14-bfce-712144c7638b
+01:44:15.889 INFO  [async-4] [] com.saadat.mail.MailService - SMTP not configured — e-mail 'interpretation-ready' to o***@example.com (subject: تفسير رؤياك جاهز):
+<!DOCTYPE html>
+
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="x-apple-disable-message-reformatting">
+  <meta name="color-scheme" content="light">
+  <meta name="supported-color-schemes" content="light">
+  <title>تفسير رؤياك جاهز</title>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;600&amp;display=swap" rel="stylesheet">
+  <style>
+    body, table, td, p, a, div, span, strong { font-family: 'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif; }
+    a { color: #0A1128; }
+    @media only screen and (max-width: 620px) {
+      .container { width: 100% !important; }
+      .px { padding-left: 20px !important; padding-right: 20px !important; }
+    }
+  </style>
+</head>
+<body style="margin:0;padding:0;background-color:#F4EFE6;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;" dir="rtl">
+<div style="display:none;max-height:0;max-width:0;overflow:hidden;mso-hide:all;font-size:1px;line-height:1px;color:#F4EFE6;opacity:0;">يمكنك قراءة التفسير الآن في حسابك.</div>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#F4EFE6;border-collapse:collapse;" dir="rtl">
+  <tr>
+    <td align="center" style="padding:24px 12px;">
+      <table role="presentation" class="container" width="600" cellpadding="0" cellspacing="0" border="0"
+             style="width:600px;max-width:600px;border-collapse:separate;border:1px solid #E6DCC8;border-radius:16px;overflow:hidden;background-color:#F4EFE6;">
+        <!-- header band -->
+        <tr>
+          <td align="center" class="px" style="background-color:#0A1128;padding:28px 32px 22px 32px;">
+            <div style="font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:22px;line-height:1.4;font-weight:600;color:#D4AF37;">إلى سعادة الدارين</div>
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" style="margin:12px auto 10px auto;">
+              <tr><td width="72" height="2" style="width:72px;height:2px;line-height:2px;font-size:0;background-color:#D4AF37;">&nbsp;</td></tr>
+            </table>
+            <div style="font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:13px;line-height:1.6;color:#F4EFE6;">تفسير الرؤى بوضوح وعمق نحو سعادة الدارين</div>
+          </td>
+        </tr>
+        <!-- content -->
+        <tr>
+          <td class="px" style="padding:32px 36px 28px 36px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:16px;line-height:1.9;color:#0A1128;background-color:#F4EFE6;" dir="rtl" align="right">
+            <div>
+  <p style="margin:0 0 18px 0;font-size:18px;line-height:1.7;font-weight:600;color:#0A1128;">السلام عليكم <span>owner</span>،</p>
+  <p style="margin:0 0 16px 0;">تفسير رؤياك جاهز الآن في حسابك.</p>
+  <p style="margin:0 0 16px 0;font-size:14px;line-height:1.8;color:#5B6478;">ننصحك بقراءته في وقت هادئ. وإن بقي لديك سؤال، فنحن هنا.</p>
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
+       style="margin:28px 0 8px 0;border-collapse:collapse;">
+  <tr>
+    <td align="center">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center">
+        <tr>
+          <td align="center" bgcolor="#D4AF37" style="border-radius:999px;background-color:#D4AF37;">
+            <a href="http://localhost:5173/me/dreams/x" target="_blank"
+               style="display:inline-block;padding:14px 38px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:16px;line-height:1.2;font-weight:600;color:#0A1128;text-decoration:none;border-radius:999px;">قراءة التفسير</a>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+  <tr>
+    <td align="center" style="padding-top:14px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:12px;line-height:1.6;color:#5B6478;">
+      <span>إذا لم يعمل الزر، انسخ هذا الرابط في المتصفح:</span><br>
+      <a href="http://localhost:5173/me/dreams/x" dir="ltr" style="color:#5B6478;word-break:break-all;">http://localhost:5173/me/dreams/x</a>
+    </td>
+  </tr>
+</table>
+</div>
+          </td>
+        </tr>
+        <!-- footer -->
+        <tr>
+          <td align="center" class="px" style="background-color:#0A1128;padding:24px 32px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:13px;line-height:1.8;color:#F4EFE6;">
+            <a href="https://youtube.com/@almoaberafatema" style="color:#D4AF37;text-decoration:none;font-weight:600;">شاهد القناة على يوتيوب</a>
+            <div style="margin-top:6px;">
+              <span>للتواصل معنا:</span>
+              <a href="mailto:support@saadatu-aldarein.com" style="color:#D4AF37;text-decoration:none;">support@saadatu-aldarein.com</a>
+            </div>
+            <div style="margin-top:12px;font-size:12px;line-height:1.7;color:#AEB4C2;">وصلتك هذه الرسالة لأنها تخص حسابك لدينا.</div>
+            <div style="margin-top:6px;font-size:12px;color:#AEB4C2;">&copy; <span>2026</span> <span>إلى سعادة الدارين</span></div>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
+</body>
+</html>
+
+01:44:15.925 DEBUG [async-1] [] c.saadat.push.service.WebPushSender - Web push not configured — skipping push to user 50efe85b-fc74-4197-ab6f-ef9d6ee24c63
+01:44:15.929 DEBUG [async-2] [] c.saadat.push.service.WebPushSender - Web push not configured — skipping push to user 50efe85b-fc74-4197-ab6f-ef9d6ee24c63
+01:44:15.933 INFO  [async-1] [] com.saadat.mail.MailService - SMTP not configured — e-mail 'dream-received' to n***@example.com (subject: وصلت رؤياك):
+<!DOCTYPE html>
+
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="x-apple-disable-message-reformatting">
+  <meta name="color-scheme" content="light">
+  <meta name="supported-color-schemes" content="light">
+  <title>وصلت رؤياك</title>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;600&amp;display=swap" rel="stylesheet">
+  <style>
+    body, table, td, p, a, div, span, strong { font-family: 'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif; }
+    a { color: #0A1128; }
+    @media only screen and (max-width: 620px) {
+      .container { width: 100% !important; }
+      .px { padding-left: 20px !important; padding-right: 20px !important; }
+    }
+  </style>
+</head>
+<body style="margin:0;padding:0;background-color:#F4EFE6;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;" dir="rtl">
+<div style="display:none;max-height:0;max-width:0;overflow:hidden;mso-hide:all;font-size:1px;line-height:1px;color:#F4EFE6;opacity:0;">سنبدأ دراستها بعناية، وسيصلك إشعار حين يجهز التفسير.</div>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#F4EFE6;border-collapse:collapse;" dir="rtl">
+  <tr>
+    <td align="center" style="padding:24px 12px;">
+      <table role="presentation" class="container" width="600" cellpadding="0" cellspacing="0" border="0"
+             style="width:600px;max-width:600px;border-collapse:separate;border:1px solid #E6DCC8;border-radius:16px;overflow:hidden;background-color:#F4EFE6;">
+        <!-- header band -->
+        <tr>
+          <td align="center" class="px" style="background-color:#0A1128;padding:28px 32px 22px 32px;">
+            <div style="font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:22px;line-height:1.4;font-weight:600;color:#D4AF37;">إلى سعادة الدارين</div>
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" style="margin:12px auto 10px auto;">
+              <tr><td width="72" height="2" style="width:72px;height:2px;line-height:2px;font-size:0;background-color:#D4AF37;">&nbsp;</td></tr>
+            </table>
+            <div style="font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:13px;line-height:1.6;color:#F4EFE6;">تفسير الرؤى بوضوح وعمق نحو سعادة الدارين</div>
+          </td>
+        </tr>
+        <!-- content -->
+        <tr>
+          <td class="px" style="padding:32px 36px 28px 36px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:16px;line-height:1.9;color:#0A1128;background-color:#F4EFE6;" dir="rtl" align="right">
+            <div>
+  <p style="margin:0 0 18px 0;font-size:18px;line-height:1.7;font-weight:600;color:#0A1128;">السلام عليكم <span>notif</span>،</p>
+  <p style="margin:0 0 16px 0;">وصلت رؤياك، وستُدرس بعناية وهدوء قبل كتابة التفسير.</p>
+  <p style="margin:0 0 16px 0;">الموعد المتوقع للتفسير: <strong>28 سبتمبر 2026، 4:44 ص</strong></p>
+  <p style="margin:0 0 16px 0;font-size:14px;line-height:1.8;color:#5B6478;">نظراً لكثرة الرؤى، يستغرق التعبير حالياً من يومين إلى ثلاثة أيام، لنمنح كل رؤيا حقها من الدراسة المتعمقة وتحليل الرموز.</p>
+  <p style="margin:0 0 16px 0;">سيصلك إشعار حين يكون التفسير جاهزاً في حسابك.</p>
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
+       style="margin:28px 0 8px 0;border-collapse:collapse;">
+  <tr>
+    <td align="center">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center">
+        <tr>
+          <td align="center" bgcolor="#D4AF37" style="border-radius:999px;background-color:#D4AF37;">
+            <a href="http://localhost:5173/me/dreams/abc" target="_blank"
+               style="display:inline-block;padding:14px 38px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:16px;line-height:1.2;font-weight:600;color:#0A1128;text-decoration:none;border-radius:999px;">متابعة رؤياك</a>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+  <tr>
+    <td align="center" style="padding-top:14px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:12px;line-height:1.6;color:#5B6478;">
+      <span>إذا لم يعمل الزر، انسخ هذا الرابط في المتصفح:</span><br>
+      <a href="http://localhost:5173/me/dreams/abc" dir="ltr" style="color:#5B6478;word-break:break-all;">http://localhost:5173/me/dreams/abc</a>
+    </td>
+  </tr>
+</table>
+</div>
+          </td>
+        </tr>
+        <!-- footer -->
+        <tr>
+          <td align="center" class="px" style="background-color:#0A1128;padding:24px 32px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:13px;line-height:1.8;color:#F4EFE6;">
+            <a href="https://youtube.com/@almoaberafatema" style="color:#D4AF37;text-decoration:none;font-weight:600;">شاهد القناة على يوتيوب</a>
+            <div style="margin-top:6px;">
+              <span>للتواصل معنا:</span>
+              <a href="mailto:support@saadatu-aldarein.com" style="color:#D4AF37;text-decoration:none;">support@saadatu-aldarein.com</a>
+            </div>
+            <div style="margin-top:12px;font-size:12px;line-height:1.7;color:#AEB4C2;">وصلتك هذه الرسالة لأنها تخص حسابك لدينا.</div>
+            <div style="margin-top:6px;font-size:12px;color:#AEB4C2;">&copy; <span>2026</span> <span>إلى سعادة الدارين</span></div>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
+</body>
+</html>
+
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

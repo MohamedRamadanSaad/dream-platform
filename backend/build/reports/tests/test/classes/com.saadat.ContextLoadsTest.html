@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<meta http-equiv="x-ua-compatible" content="IE=edge"/>
+<title>Test results - ContextLoadsTest</title>
+<link href="../css/base-style.css" rel="stylesheet" type="text/css"/>
+<link href="../css/style.css" rel="stylesheet" type="text/css"/>
+<script src="../js/report.js" type="text/javascript"></script>
+</head>
+<body>
+<div id="content">
+<h1>ContextLoadsTest</h1>
+<div class="breadcrumbs">
+<a href="../index.html">all</a> &gt; 
+<a href="../packages/com.saadat.html">com.saadat</a> &gt; ContextLoadsTest</div>
+<div id="summary">
+<table>
+<tr>
+<td>
+<div class="summaryGroup">
+<table>
+<tr>
+<td>
+<div class="infoBox" id="tests">
+<div class="counter">6</div>
+<p>tests</p>
+</div>
+</td>
+<td>
+<div class="infoBox" id="failures">
+<div class="counter">0</div>
+<p>failures</p>
+</div>
+</td>
+<td>
+<div class="infoBox" id="ignored">
+<div class="counter">0</div>
+<p>ignored</p>
+</div>
+</td>
+<td>
+<div class="infoBox" id="duration">
+<div class="counter">1.003s</div>
+<p>duration</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+</td>
+<td>
+<div class="infoBox success" id="successRate">
+<div class="percent">100%</div>
+<p>successful</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="tab-container">
+<ul class="tabLinks">
+<li>
+<a href="#">Tests</a>
+</li>
+<li>
+<a href="#">Standard output</a>
+</li>
+<li>
+<a href="#">Standard error</a>
+</li>
+</ul>
+<div class="tab">
+<h2>Tests</h2>
+<table>
+<thead>
+<tr>
+<th>Test</th>
+<th>Duration</th>
+<th>Result</th>
+</tr>
+</thead>
+<tr>
+<td class="success">adminCanUpdateSettingsAndItIsAudited()</td>
+<td class="success">0.073s</td>
+<td class="success">passed</td>
+</tr>
+<tr>
+<td class="success">adminRouteIs403ForUserAnd200ForInterpreter()</td>
+<td class="success">0.704s</td>
+<td class="success">passed</td>
+</tr>
+<tr>
+<td class="success">contextLoadsAndSeedsAreApplied()</td>
+<td class="success">0.141s</td>
+<td class="success">passed</td>
+</tr>
+<tr>
+<td class="success">healthIsPublic()</td>
+<td class="success">0.039s</td>
+<td class="success">passed</td>
+</tr>
+<tr>
+<td class="success">protectedRouteWithoutTokenIs401Problem()</td>
+<td class="success">0.012s</td>
+<td class="success">passed</td>
+</tr>
+<tr>
+<td class="success">unknownRouteIs404ProblemForAuthenticatedUser()</td>
+<td class="success">0.034s</td>
+<td class="success">passed</td>
+</tr>
+</table>
+</div>
+<div class="tab">
+<h2>Standard output</h2>
+<span class="code">
+<pre>Standard Commons Logging discovery in action with spring-jcl: please remove commons-logging.jar from classpath in order to avoid potential conflicts
+01:43:54.320 [Test worker] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [com.saadat.ContextLoadsTest]: ContextLoadsTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+01:43:54.442 [Test worker] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration com.saadat.SaadatApplication for test class com.saadat.ContextLoadsTest
+01:43:54.553 [Test worker] INFO org.testcontainers.images.PullPolicy -- Image pull policy will be performed by: DefaultPullPolicy()
+01:43:54.556 [Test worker] INFO org.testcontainers.utility.ImageNameSubstitutor -- Image name substitution will be performed by: DefaultImageNameSubstitutor (composite of 'ConfigurationFileImageNameSubstitutor' and 'PrefixingImageNameSubstitutor')
+01:43:54.967 [Test worker] INFO org.testcontainers.dockerclient.DockerClientProviderStrategy -- Found Docker environment with local Unix socket (unix:///var/run/docker.sock)
+01:43:54.975 [Test worker] INFO org.testcontainers.DockerClientFactory -- Docker host IP address is localhost
+01:43:54.988 [Test worker] INFO org.testcontainers.DockerClientFactory -- Connected to docker: 
+  Server Version: 28.0.4
+  API Version: 1.48
+  Operating System: Ubuntu 24.04.5 LTS
+  Total Memory: 15989 MB
+01:43:55.016 [Test worker] INFO tc.testcontainers/ryuk:0.7.0 -- Pulling docker image: testcontainers/ryuk:0.7.0. Please be patient; this may take some time but only needs to be done once.
+01:43:55.928 [docker-java-stream--477934557] INFO tc.testcontainers/ryuk:0.7.0 -- Starting to pull image
+01:43:55.943 [docker-java-stream--477934557] INFO tc.testcontainers/ryuk:0.7.0 -- Pulling image layers:  0 pending,  0 downloaded,  0 extracted, (0 bytes/0 bytes)
+01:43:56.389 [docker-java-stream--477934557] INFO tc.testcontainers/ryuk:0.7.0 -- Pulling image layers:  2 pending,  1 downloaded,  0 extracted, (324 KB/? MB)
+01:43:56.399 [docker-java-stream--477934557] INFO tc.testcontainers/ryuk:0.7.0 -- Pulling image layers:  1 pending,  2 downloaded,  0 extracted, (356 KB/? MB)
+01:43:56.411 [docker-java-stream--477934557] INFO tc.testcontainers/ryuk:0.7.0 -- Pulling image layers:  0 pending,  3 downloaded,  0 extracted, (372 KB/6 MB)
+01:43:56.504 [docker-java-stream--477934557] INFO tc.testcontainers/ryuk:0.7.0 -- Pulling image layers:  0 pending,  3 downloaded,  1 extracted, (3 MB/6 MB)
+01:43:57.327 [docker-java-stream--477934557] INFO tc.testcontainers/ryuk:0.7.0 -- Pulling image layers:  0 pending,  3 downloaded,  2 extracted, (3 MB/6 MB)
+01:43:57.373 [docker-java-stream--477934557] INFO tc.testcontainers/ryuk:0.7.0 -- Pulling image layers:  0 pending,  3 downloaded,  3 extracted, (6 MB/6 MB)
+01:43:57.378 [docker-java-stream--477934557] INFO tc.testcontainers/ryuk:0.7.0 -- Pull complete. 3 layers, pulled in 1s (downloaded 6 MB at 6 MB/s)
+01:43:57.378 [Test worker] INFO tc.testcontainers/ryuk:0.7.0 -- Image testcontainers/ryuk:0.7.0 pull took PT2.361942869S
+01:43:57.398 [Test worker] INFO tc.testcontainers/ryuk:0.7.0 -- Creating container for image: testcontainers/ryuk:0.7.0
+01:43:57.463 [Test worker] INFO tc.testcontainers/ryuk:0.7.0 -- Container testcontainers/ryuk:0.7.0 is starting: bfbc09f8743a82c5ef6bb565da3c7dc38e1f8ea5f9998a156c5a6821bf2d60b9
+01:43:57.722 [Test worker] INFO tc.testcontainers/ryuk:0.7.0 -- Container testcontainers/ryuk:0.7.0 started in PT0.324590727S
+01:43:57.727 [Test worker] INFO org.testcontainers.utility.RyukResourceReaper -- Ryuk started - will monitor and terminate Testcontainers containers on JVM exit
+01:43:57.727 [Test worker] INFO org.testcontainers.DockerClientFactory -- Checking the system...
+01:43:57.728 [Test worker] INFO org.testcontainers.DockerClientFactory -- ✔︎ Docker server version should be at least 1.6.0
+01:43:57.730 [Test worker] INFO tc.postgres:16-alpine -- Pulling docker image: postgres:16-alpine. Please be patient; this may take some time but only needs to be done once.
+01:43:58.586 [docker-java-stream--180489640] INFO tc.postgres:16-alpine -- Starting to pull image
+01:43:58.587 [docker-java-stream--180489640] INFO tc.postgres:16-alpine -- Pulling image layers:  0 pending,  0 downloaded,  0 extracted, (0 bytes/0 bytes)
+01:43:59.058 [docker-java-stream--180489640] INFO tc.postgres:16-alpine -- Pulling image layers: 10 pending,  1 downloaded,  0 extracted, (969 bytes/? MB)
+01:43:59.066 [docker-java-stream--180489640] INFO tc.postgres:16-alpine -- Pulling image layers:  9 pending,  2 downloaded,  0 extracted, (63 KB/? MB)
+01:43:59.079 [docker-java-stream--180489640] INFO tc.postgres:16-alpine -- Pulling image layers:  8 pending,  3 downloaded,  0 extracted, (63 KB/? MB)
+01:43:59.189 [docker-java-stream--180489640] INFO tc.postgres:16-alpine -- Pulling image layers:  8 pending,  3 downloaded,  1 extracted, (3 MB/? MB)
+01:43:59.206 [docker-java-stream--180489640] INFO tc.postgres:16-alpine -- Pulling image layers:  8 pending,  3 downloaded,  2 extracted, (3 MB/? MB)
+01:43:59.234 [docker-java-stream--180489640] INFO tc.postgres:16-alpine -- Pulling image layers:  8 pending,  3 downloaded,  3 extracted, (4 MB/? MB)
+01:43:59.271 [docker-java-stream--180489640] INFO tc.postgres:16-alpine -- Pulling image layers:  7 pending,  4 downloaded,  3 extracted, (4 MB/? MB)
+01:43:59.278 [docker-java-stream--180489640] INFO tc.postgres:16-alpine -- Pulling image layers:  6 pending,  5 downloaded,  3 extracted, (4 MB/? MB)
+01:43:59.286 [docker-java-stream--180489640] INFO tc.postgres:16-alpine -- Pulling image layers:  6 pending,  5 downloaded,  4 extracted, (4 MB/? MB)
+01:43:59.299 [docker-java-stream--180489640] INFO tc.postgres:16-alpine -- Pulling image layers:  6 pending,  5 downloaded,  5 extracted, (4 MB/? MB)
+01:43:59.496 [docker-java-stream--180489640] INFO tc.postgres:16-alpine -- Pulling image layers:  5 pending,  6 downloaded,  5 extracted, (31 MB/? MB)
+01:43:59.498 [docker-java-stream--180489640] INFO tc.postgres:16-alpine -- Pulling image layers:  4 pending,  7 downloaded,  5 extracted, (31 MB/? MB)
+01:43:59.723 [docker-java-stream--180489640] INFO tc.postgres:16-alpine -- Pulling image layers:  3 pending,  8 downloaded,  5 extracted, (104 MB/? MB)
+01:43:59.725 [docker-java-stream--180489640] INFO tc.postgres:16-alpine -- Pulling image layers:  2 pending,  9 downloaded,  5 extracted, (104 MB/? MB)
+01:43:59.750 [docker-java-stream--180489640] INFO tc.postgres:16-alpine -- Pulling image layers:  1 pending, 10 downloaded,  5 extracted, (104 MB/? MB)
+01:43:59.942 [docker-java-stream--180489640] INFO tc.postgres:16-alpine -- Pulling image layers:  0 pending, 11 downloaded,  5 extracted, (104 MB/110 MB)
+01:44:02.233 [docker-java-stream--180489640] INFO tc.postgres:16-alpine -- Pulling image layers:  0 pending, 11 downloaded,  6 extracted, (110 MB/110 MB)
+01:44:02.248 [docker-java-stream--180489640] INFO tc.postgres:16-alpine -- Pulling image layers:  0 pending, 11 downloaded,  7 extracted, (110 MB/110 MB)
+01:44:02.256 [docker-java-stream--180489640] INFO tc.postgres:16-alpine -- Pulling image layers:  0 pending, 11 downloaded,  8 extracted, (110 MB/110 MB)
+01:44:02.266 [docker-java-stream--180489640] INFO tc.postgres:16-alpine -- Pulling image layers:  0 pending, 11 downloaded,  9 extracted, (110 MB/110 MB)
+01:44:02.279 [docker-java-stream--180489640] INFO tc.postgres:16-alpine -- Pulling image layers:  0 pending, 11 downloaded, 10 extracted, (110 MB/110 MB)
+01:44:02.290 [docker-java-stream--180489640] INFO tc.postgres:16-alpine -- Pulling image layers:  0 pending, 11 downloaded, 11 extracted, (110 MB/110 MB)
+01:44:02.296 [docker-java-stream--180489640] INFO tc.postgres:16-alpine -- Pull complete. 11 layers, pulled in 3s (downloaded 110 MB at 36 MB/s)
+01:44:02.296 [Test worker] INFO tc.postgres:16-alpine -- Image postgres:16-alpine pull took PT4.565825319S
+01:44:02.299 [Test worker] INFO tc.postgres:16-alpine -- Creating container for image: postgres:16-alpine
+01:44:02.312 [Test worker] INFO tc.postgres:16-alpine -- Container postgres:16-alpine is starting: 74d26793418ec902af1beceb61ca6e8057b75be0850e008800edd1f157ca7168
+01:44:03.713 [Test worker] INFO tc.postgres:16-alpine -- Container postgres:16-alpine started in PT1.414474141S
+01:44:03.714 [Test worker] INFO tc.postgres:16-alpine -- Container is started (JDBC URL: jdbc:postgresql://localhost:32769/saadat?loggerLevel=OFF)
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v3.3.5)
+
+01:44:04.120 INFO  [Test worker] [] com.saadat.ContextLoadsTest - Starting ContextLoadsTest using Java 21.0.12.1 with PID 2646 (started by runner in /home/runner/work/dream-platform/dream-platform/backend)
+01:44:04.121 DEBUG [Test worker] [] com.saadat.ContextLoadsTest - Running with Spring Boot v3.3.5, Spring v6.1.14
+01:44:04.122 INFO  [Test worker] [] com.saadat.ContextLoadsTest - The following 1 profile is active: &quot;test&quot;
+01:44:05.365 INFO  [Test worker] [] o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+01:44:05.474 INFO  [Test worker] [] o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 101 ms. Found 27 JPA repository interfaces.
+01:44:06.477 INFO  [Test worker] [] com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting...
+01:44:06.632 INFO  [Test worker] [] com.zaxxer.hikari.pool.HikariPool - HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@40b958c5
+01:44:06.633 INFO  [Test worker] [] com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed.
+01:44:06.659 INFO  [Test worker] [] org.flywaydb.core.FlywayExecutor - Database: jdbc:postgresql://localhost:32769/saadat (PostgreSQL 16.15)
+01:44:06.692 INFO  [Test worker] [] o.f.c.i.s.JdbcTableSchemaHistory - Schema history table &quot;public&quot;.&quot;flyway_schema_history&quot; does not exist yet
+01:44:06.695 INFO  [Test worker] [] o.f.core.internal.command.DbValidate - Successfully validated 11 migrations (execution time 00:00.018s)
+01:44:06.708 INFO  [Test worker] [] o.f.c.i.s.JdbcTableSchemaHistory - Creating Schema History table &quot;public&quot;.&quot;flyway_schema_history&quot; ...
+01:44:06.761 INFO  [Test worker] [] o.f.core.internal.command.DbMigrate - Current version of schema &quot;public&quot;: &lt;&lt; Empty Schema &gt;&gt;
+01:44:06.776 INFO  [Test worker] [] o.f.core.internal.command.DbMigrate - Migrating schema &quot;public&quot; to version &quot;1 - settings&quot;
+01:44:06.826 INFO  [Test worker] [] o.f.core.internal.command.DbMigrate - Migrating schema &quot;public&quot; to version &quot;2 - users auth&quot;
+01:44:06.900 INFO  [Test worker] [] o.f.core.internal.command.DbMigrate - Migrating schema &quot;public&quot; to version &quot;3 - geo pricing&quot;
+01:44:06.980 INFO  [Test worker] [] o.f.core.internal.command.DbMigrate - Migrating schema &quot;public&quot; to version &quot;4 - orders credits&quot;
+01:44:07.024 INFO  [Test worker] [] o.f.core.internal.command.DbMigrate - Migrating schema &quot;public&quot; to version &quot;5 - dreams&quot;
+01:44:07.078 INFO  [Test worker] [] o.f.core.internal.command.DbMigrate - Migrating schema &quot;public&quot; to version &quot;6 - notifications&quot;
+01:44:07.114 INFO  [Test worker] [] o.f.core.internal.command.DbMigrate - Migrating schema &quot;public&quot; to version &quot;7 - youtube&quot;
+01:44:07.132 INFO  [Test worker] [] o.f.core.internal.command.DbMigrate - Migrating schema &quot;public&quot; to version &quot;8 - audit interpreter&quot;
+01:44:07.153 INFO  [Test worker] [] o.f.core.internal.command.DbMigrate - Migrating schema &quot;public&quot; to version &quot;9 - user birth date&quot;
+01:44:07.161 INFO  [Test worker] [] o.f.core.internal.command.DbMigrate - Migrating schema &quot;public&quot; to version &quot;10 - interpreter email domain&quot;
+01:44:07.168 INFO  [Test worker] [] o.f.core.internal.command.DbMigrate - Migrating schema &quot;public&quot; to version &quot;11 - national day promotions&quot;
+01:44:07.181 INFO  [Test worker] [] o.f.core.internal.command.DbMigrate - Successfully applied 11 migrations to schema &quot;public&quot;, now at version v11 (execution time 00:00.282s)
+01:44:07.284 INFO  [Test worker] [] o.h.jpa.internal.util.LogHelper - HHH000204: Processing PersistenceUnitInfo [name: default]
+01:44:07.320 INFO  [Test worker] [] org.hibernate.Version - HHH000412: Hibernate ORM core version 6.5.3.Final
+01:44:07.343 INFO  [Test worker] [] o.h.c.i.RegionFactoryInitiator - HHH000026: Second-level cache disabled
+01:44:07.562 INFO  [Test worker] [] o.s.o.j.p.SpringPersistenceUnitInfo - No LoadTimeWeaver setup: ignoring JPA class transformer
+01:44:08.718 INFO  [Test worker] [] o.h.e.t.j.p.i.JtaPlatformInitiator - HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+01:44:08.720 INFO  [Test worker] [] o.s.o.j.LocalContainerEntityManagerFactoryBean - Initialized JPA EntityManagerFactory for persistence unit 'default'
+01:44:09.018 INFO  [Test worker] [] o.s.d.j.r.query.QueryEnhancerFactory - Hibernate is in classpath; If applicable, HQL parser will be used.
+01:44:10.539 WARN  [Test worker] [] c.s.a.service.GoogleVerifierConfig - Mock Google login is ENABLED (app.auth.allow-mock=true) — never use this in production
+01:44:12.082 INFO  [Test worker] [] o.s.b.a.e.web.EndpointLinksResolver - Exposing 2 endpoints beneath base path '/actuator'
+01:44:12.888 DEBUG [Test worker] [] c.saadat.common.web.RequestIdFilter - Filter 'requestIdFilter' configured for use
+01:44:12.889 INFO  [Test worker] [] o.s.b.t.m.w.SpringBootMockServletContext - Initializing Spring TestDispatcherServlet ''
+01:44:12.890 INFO  [Test worker] [] o.s.t.w.s.TestDispatcherServlet - Initializing Servlet ''
+01:44:12.891 INFO  [Test worker] [] o.s.t.w.s.TestDispatcherServlet - Completed initialization in 1 ms
+01:44:12.975 INFO  [Test worker] [] com.saadat.ContextLoadsTest - Started ContextLoadsTest in 9.237 seconds (process running for 19.583)
+</pre>
+</span>
+</div>
+<div class="tab">
+<h2>Standard error</h2>
+<span class="code">
+<pre>WARNING: A Java agent has been loaded dynamically (/home/runner/.gradle/caches/modules-2/files-2.1/net.bytebuddy/byte-buddy-agent/1.14.19/154da3a65b4f4a909d3e5bdec55d1b2b4cbb6ce1/byte-buddy-agent-1.14.19.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+</pre>
+</span>
+</div>
+</div>
+<div id="footer">
+<p>
+<div>
+<label class="hidden" id="label-for-line-wrapping-toggle" for="line-wrapping-toggle">Wrap lines
+<input id="line-wrapping-toggle" type="checkbox" autocomplete="off"/>
+</label>
+</div>Generated by 
+<a href="https://www.gradle.org">Gradle 8.14.3</a> at Sep 28, 2026, 1:44:17 AM</p>
+</div>
+</div>
+</body>
+</html>

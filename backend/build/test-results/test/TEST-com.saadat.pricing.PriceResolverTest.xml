@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.saadat.pricing.PriceResolverTest" tests="8" skipped="0" failures="0" errors="0" timestamp="2026-09-28T01:44:16.419Z" hostname="runnervmtr4k5" time="0.006">
+  <properties/>
+  <testcase name="globalIsTheFallback()" classname="com.saadat.pricing.PriceResolverTest" time="0.0"/>
+  <testcase name="continentRuleWinsOverGlobal()" classname="com.saadat.pricing.PriceResolverTest" time="0.001"/>
+  <testcase name="groupRuleWinsOverContinentAndGlobal()" classname="com.saadat.pricing.PriceResolverTest" time="0.0"/>
+  <testcase name="groupWithoutRuleFallsThroughToContinent()" classname="com.saadat.pricing.PriceResolverTest" time="0.0"/>
+  <testcase name="countryRuleWinsOverEverything()" classname="com.saadat.pricing.PriceResolverTest" time="0.002"/>
+  <testcase name="noRulesMeansNotPurchasable()" classname="com.saadat.pricing.PriceResolverTest" time="0.0"/>
+  <testcase name="countryRuleWinsEvenWhenCountryIsInAGroupAndContinentWithRules()" classname="com.saadat.pricing.PriceResolverTest" time="0.0"/>
+  <testcase name="unknownCountryUsesGlobal()" classname="com.saadat.pricing.PriceResolverTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>
