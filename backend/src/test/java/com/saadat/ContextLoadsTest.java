@@ -53,8 +53,8 @@ class ContextLoadsTest extends IntegrationTestBase {
         assertThat(countryRepository.count()).isGreaterThanOrEqualTo(60);
         assertThat(packageRepository.findByActiveTrueOrderBySortOrderAsc()).hasSize(3);
         assertThat(priceRuleRepository.count()).isEqualTo(12);
-        assertThat(promotionRepository.findAll()).singleElement()
-                .satisfies(p -> assertThat(p.getPackageIds()).hasSize(1));
+        assertThat(promotionRepository.findAll()).hasSize(2)
+                .allSatisfy(p -> assertThat(p.getPackageIds()).hasSize(1));
     }
 
     @Test

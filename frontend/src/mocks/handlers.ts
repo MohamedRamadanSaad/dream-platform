@@ -76,7 +76,7 @@ export const handlers = [
     const locale = request.headers.get('accept-language') ?? 'ar'
     const packages: T.PackageDto[] = db.packages.filter((p) => p.active).sort((a, b) => a.sortOrder - b.sortOrder).map((p) => {
       const r = resolvePrice(cc, p.id)
-      const a = applyPromotion(p.id, r.price)
+      const a = applyPromotion(p.id, r.price, cc)
       return { id: p.id, name: locale.startsWith('en') ? p.nameEn : p.nameAr, description: locale.startsWith('en') ? p.descriptionEn : p.descriptionAr, credits: p.credits, badge: p.badge, price: a.price, originalPrice: a.original, currency: r.currency, promotion: a.promo, validityMonths: p.validityMonths }
     })
     return HttpResponse.json({ countryCode: cc, countryName: c?.nameAr ?? cc, currency: packages[0]?.currency ?? 'USD', packages } satisfies T.Catalog)
@@ -216,7 +216,7 @@ export const handlers = [
     const pkg = db.packages.find((p) => p.id === b.packageId && p.active)
     if (!pkg) return problem(404, 'Not found')
     const r = resolvePrice(me.countryCode, pkg.id)
-    let { price } = applyPromotion(pkg.id, r.price)
+    let { price } = applyPromotion(pkg.id, r.price, me.countryCode)
     if (b.couponCode) {
       const c = db.coupons.find((x) => x.active && x.code.toLowerCase() === b.couponCode!.toLowerCase())
       if (!c) return problem(422, 'Invalid coupon', 'كود الخصم غير صالح')

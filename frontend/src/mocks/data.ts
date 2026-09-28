@@ -83,7 +83,8 @@ export const db = {
   ] as T.PriceRule[],
 
   promotions: [
-    { id: 'pr1', name: 'عرض المولد', packageIds: ['p2'], type: 'PERCENT', value: 20, startsAt: daysAgo(1), endsAt: daysAhead(2), maxUses: 100, usedCount: 23, scope: 'GLOBAL', scopeId: null, active: true },
+    { id: 'pr1', name: 'عرض اليوم الوطني السعودي', packageIds: ['p2'], type: 'PERCENT', value: 20, startsAt: daysAgo(1), endsAt: daysAhead(6), maxUses: 100, usedCount: 23, scope: 'COUNTRY', scopeId: 'SA', active: true },
+    { id: 'pr2', name: 'عرض نصر أكتوبر', packageIds: ['p2'], type: 'PERCENT', value: 15, startsAt: daysAhead(3), endsAt: daysAhead(10), maxUses: 200, usedCount: 0, scope: 'COUNTRY', scopeId: 'EG', active: true },
   ] as T.PromotionDto[],
 
   coupons: [
@@ -189,8 +190,10 @@ export function resolvePrice(countryCode: string, packageId: string): { price: n
   return { price: hit.price, currency: hit.currency, scope: hit.scope }
 }
 
-export function applyPromotion(packageId: string, price: number): { price: number; original: number | null; promo: T.PackageDto['promotion'] } {
-  const p = db.promotions.find((x) => x.active && x.packageIds.includes(packageId) && new Date(x.endsAt) > new Date() && new Date(x.startsAt) <= new Date())
+export function applyPromotion(packageId: string, price: number, countryCode?: string): { price: number; original: number | null; promo: T.PackageDto['promotion'] } {
+  const c = db.countries.find((x) => x.code === countryCode)
+  const inScope = (x: T.PromotionDto) => x.scope === 'GLOBAL' || (x.scope === 'COUNTRY' && x.scopeId === countryCode) || (x.scope === 'GROUP' && x.scopeId === c?.groupId) || (x.scope === 'CONTINENT' && x.scopeId === c?.continent)
+  const p = db.promotions.find((x) => x.active && inScope(x) && x.packageIds.includes(packageId) && new Date(x.endsAt) > new Date() && new Date(x.startsAt) <= new Date())
   if (!p) return { price, original: null, promo: null }
   const discounted = p.type === 'PERCENT' ? Math.round(price * (1 - p.value / 100)) : p.type === 'FIXED' ? Math.max(0, price - p.value) : price
   return { price: discounted, original: price, promo: { label: p.name, endsAt: p.endsAt } }
