@@ -28,3 +28,6 @@ export function countdown(iso: string) {
   const d = Math.floor(s / 86400), h = Math.floor((s % 86400) / 3600), m = Math.floor((s % 3600) / 60)
   return { d, h, m }
 }
+
+/** E-mails on the site domain are interpreter accounts (magic-code login only; mirrors backend setting interpreter.email_domain). */
+export const INTERPRETER_DOMAIN = (import.meta.env.VITE_INTERPRETER_DOMAIN as string | undefined) || '@saadatu-aldarein.com'

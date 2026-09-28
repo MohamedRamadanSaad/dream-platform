@@ -92,9 +92,9 @@ export function PublicHeader() {
         <YoutubeButton dark />
         <LocaleToggle dark />
         {user ? (
-          <Link to={isInterpreter(user) ? '/admin' : '/me'} className="btn btn-sm btn-gold">{user.name || t('me.nav.dreams')}</Link>
+          <Link to={isInterpreter(user) ? '/admin' : '/me'} aria-label={user.name || t('me.nav.dreams')} title={user.name} className="flex h-10 w-10 items-center justify-center rounded-full bg-gold text-night transition-transform hover:-translate-y-0.5"><Icon name="user" size={18} active /></Link>
         ) : (
-          <Link to="/login" className="btn btn-sm border border-gold text-gold-soft hover:bg-gold hover:text-night">{t('nav.login')}</Link>
+          <Link to="/login" aria-label={t('nav.login')} title={t('nav.login')} className="flex h-10 w-10 items-center justify-center rounded-full border border-gold text-gold-soft transition-colors hover:bg-gold hover:text-night"><Icon name="user" size={18} /></Link>
         )}
       </div>
     </header>

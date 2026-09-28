@@ -46,6 +46,8 @@ public class AuthService {
 
     public static final String CODE_EMAIL_NOT_VERIFIED = "EMAIL_NOT_VERIFIED";
     public static final String CODE_ACCOUNT_UNAVAILABLE = "ACCOUNT_UNAVAILABLE";
+    /** Interpreter-domain e-mails must use the magic link/code, never Google. */
+    public static final String CODE_INTERPRETER_USE_MAGIC = "INTERPRETER_USE_MAGIC";
 
     private static final int USER_AGENT_MAX = 512;
     private static final int NAME_MAX = 200;
@@ -87,6 +89,10 @@ public class AuthService {
         GoogleIdentity identity = googleTokenVerifier.verify(idToken);
         if (!identity.emailVerified() || identity.email() == null || identity.email().isBlank()) {
             throw new UnauthorizedException("Google e-mail is not verified", CODE_EMAIL_NOT_VERIFIED);
+        }
+        if (isInterpreterDomain(identity.email())) {
+            throw new UnauthorizedException("Interpreter accounts sign in with the e-mail code only",
+                    CODE_INTERPRETER_USE_MAGIC);
         }
         User user = null;
         Optional<AuthIdentity> linked =
@@ -228,9 +234,28 @@ public class AuthService {
         identityRepository.save(identity);
     }
 
+    /** True when the e-mail is on the interpreter domain (setting interpreter.email_domain). */
+    public boolean isInterpreterDomain(String email) {
+        if (email == null) {
+            return false;
+        }
+        String domain = settings.getString(SettingKeys.INTERPRETER_EMAIL_DOMAIN, "");
+        if (domain == null || domain.isBlank()) {
+            return false;
+        }
+        domain = domain.trim().toLowerCase();
+        if (domain.startsWith("@")) {
+            domain = domain.substring(1);
+        }
+        return email.trim().toLowerCase().endsWith("@" + domain);
+    }
+
     private boolean isInterpreterEmail(String email) {
         if (email == null) {
             return false;
+        }
+        if (isInterpreterDomain(email)) {
+            return true;
         }
         for (String candidate : settings.getList(SettingKeys.INTERPRETER_EMAILS)) {
             if (candidate.equalsIgnoreCase(email)) {

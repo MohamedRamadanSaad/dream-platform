@@ -67,7 +67,7 @@ export function ProfilePage() {
       </div>
       <div className="card flex items-center justify-between p-6">
         <div className="min-w-0"><Label>{t('me.profile.email')}</Label><div className="truncate text-sm" dir="ltr">{user.email}</div></div>
-        <Button variant="ghost" onClick={() => { clear(); navigate('/') }}><Icon name="logout" size={18} />{t('auth.logout')}</Button>
+        <button aria-label={t('auth.logout')} title={t('auth.logout')} onClick={() => { clear(); navigate('/') }} className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-line text-fg-muted transition-colors hover:border-danger hover:text-danger"><Icon name="logout" size={20} /></button>
       </div>
       <button className="text-sm text-danger hover:underline" onClick={() => confirm(t('me.profile.delete') + '؟') && meApi.deleteAccount()}>{t('me.profile.delete')}</button>
     </PageEnter>

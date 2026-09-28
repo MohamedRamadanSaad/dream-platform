@@ -28,7 +28,9 @@
       "depth": "Careful study",
       "depthSub": "of every symbol — no exaggeration",
       "reply": "Reply within"
-    }
+    },
+    "skyHadith": "“A good dream of a righteous man is one of the forty-six parts of prophethood”",
+    "skyHadithSrc": "Agreed upon (al-Bukhari & Muslim)"
   },
   "waitTime": {
     "label": "Current turnaround",
@@ -105,7 +107,9 @@
     "terms": "I agree to the Terms and Privacy Policy",
     "continue": "Continue",
     "logout": "Sign out",
-    "birthDate": "Date of birth"
+    "birthDate": "Date of birth",
+    "interpreterDomainHint": "Interpreter accounts sign in with the e-mail code only (no Google).",
+    "interpreterUseMagic": "This is an interpreter e-mail — use the e-mail code to sign in."
   },
   "me": {
     "greeting": "Peace be upon you, {{name}}",

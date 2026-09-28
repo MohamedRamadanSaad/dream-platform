@@ -142,7 +142,7 @@ export function NightSky({ className, withMoon = true }: { className?: string; w
 
       </svg>
       {withMoon && (
-        <svg className="sky-moon absolute left-0 top-0 will-change-transform" width={MOON_R * 6} height={MOON_R * 6} viewBox={`${-MOON_R * 3} ${-MOON_R * 3} ${MOON_R * 6} ${MOON_R * 6}`} style={{ opacity: 0 }}>
+        <svg className="sky-moon pointer-events-none absolute left-0 top-0 z-10 will-change-transform" width={MOON_R * 6} height={MOON_R * 6} viewBox={`${-MOON_R * 3} ${-MOON_R * 3} ${MOON_R * 6} ${MOON_R * 6}`} style={{ opacity: 0 }}>
           <defs>
             <radialGradient id="moonglow" cx="50%" cy="50%" r="50%"><stop offset="0%" stopColor="#EADBAA" stopOpacity=".9" /><stop offset="55%" stopColor="#EADBAA" stopOpacity=".25" /><stop offset="100%" stopColor="#EADBAA" stopOpacity="0" /></radialGradient>
             <clipPath id="moonclip"><circle cx="0" cy="0" r={MOON_R} /></clipPath>

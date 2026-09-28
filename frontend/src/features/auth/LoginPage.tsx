@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams, Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useMutation } from '@tanstack/react-query'
 import { GoogleLogin, GoogleOAuthProvider } from '@react-oauth/google'
+import { INTERPRETER_DOMAIN } from '@/lib/utils'
 import { authApi } from '@/api/endpoints'
 import { useAuthStore, isInterpreter } from '@/app/auth-store'
 import { NightSky } from '@/components/motion/NightSky'
@@ -40,6 +41,7 @@ export default function LoginPage() {
   const magic = useMutation({ mutationFn: authApi.magicRequest, onSuccess: () => setSent(true), onError: (e) => setErr((e as ApiError).message) })
   const verify = useMutation({ mutationFn: authApi.magicVerify, onSuccess: finish, onError: (e) => setErr((e as ApiError).message) })
 
+  const isInterpreterEmail = email.trim().toLowerCase().endsWith(INTERPRETER_DOMAIN)
   const submitEmail = (e: FormEvent) => { e.preventDefault(); setErr(null); magic.mutate({ email: email.trim().toLowerCase() }) }
   const submitCode = (e: FormEvent) => { e.preventDefault(); setErr(null); verify.mutate({ email: email.trim().toLowerCase(), code }) }
 
@@ -52,7 +54,9 @@ export default function LoginPage() {
         <h1 className="font-display text-4xl">{t('auth.title')}</h1>
         <p className="mt-2 mb-8 text-center text-sm font-light text-pearl/60">{t('auth.lead')}</p>
         <div className="card w-full bg-surface p-6 text-fg">
-          {GOOGLE_ID && !MOCKS ? (
+          {isInterpreterEmail ? (
+            <p className="rounded-xl border border-gold/40 bg-gold/10 p-3 text-center text-xs text-gold-deep">{t('auth.interpreterDomainHint')}</p>
+          ) : GOOGLE_ID && !MOCKS ? (
             <GoogleOAuthProvider clientId={GOOGLE_ID}>
               <div className="flex justify-center"><GoogleLogin onSuccess={(c) => c.credential && google.mutate({ idToken: c.credential })} onError={() => setErr(t('common.error'))} shape="pill" width="320" /></div>
             </GoogleOAuthProvider>
@@ -61,7 +65,7 @@ export default function LoginPage() {
               <GoogleG /> {t('auth.google')}
             </Button>
           )}
-          <div className="my-5 flex items-center gap-3 text-xs text-fg-dim"><span className="h-px flex-1 bg-line" />{t('auth.or')}<span className="h-px flex-1 bg-line" /></div>
+          {!isInterpreterEmail && <div className="my-5 flex items-center gap-3 text-xs text-fg-dim"><span className="h-px flex-1 bg-line" />{t('auth.or')}<span className="h-px flex-1 bg-line" /></div>}
           {!sent ? (
             <form onSubmit={submitEmail} className="flex flex-col gap-3">
               <Label>{t('auth.email')}</Label>

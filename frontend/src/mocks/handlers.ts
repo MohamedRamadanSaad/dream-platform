@@ -1,5 +1,6 @@
 import { http, HttpResponse, delay } from 'msw'
 import type * as T from '@/api/types'
+import { INTERPRETER_DOMAIN } from '@/lib/utils'
 import { db, resolvePrice, applyPromotion, balanceOf, toSummary, toDetail, uid, helpers, ytVideos, ytSeen } from './data'
 
 const BASE = (import.meta.env.VITE_API_URL as string) || ''
@@ -55,7 +56,8 @@ export const handlers = [
       db.users.push(user)
     }
     if (!user) user = db.users[0]
-    // admin shortcut: email of interpreter → interpreter session
+    // rule: any e-mail on the site domain is an interpreter account (backend: setting interpreter.email_domain)
+    if (email && email.endsWith(INTERPRETER_DOMAIN)) user.role = 'INTERPRETER'
     return HttpResponse.json(session(user))
   })),
   http.post(u('/auth/refresh'), wrap(async () => problem(401, 'Unauthenticated'))),

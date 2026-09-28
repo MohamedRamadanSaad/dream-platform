@@ -49,6 +49,8 @@ public final class SettingKeys {
     // ---- interpreter ----
     /** Comma-separated list of e-mails that get role INTERPRETER on first login. */
     public static final String INTERPRETER_EMAILS = "interpreter.emails";
+    /** E-mails ending with @domain are interpreter accounts (magic-link only). Empty disables the rule. */
+    public static final String INTERPRETER_EMAIL_DOMAIN = "interpreter.email_domain";
     public static final String INTERPRETER_DIGEST_HOUR = "interpreter.digest_hour";
 
     // ---- pricing ----

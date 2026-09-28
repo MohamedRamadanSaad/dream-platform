@@ -7,6 +7,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.saadat.IntegrationTestBase;
+import com.saadat.auth.service.AuthService;
 import com.saadat.auth.service.MagicLinkService;
 import com.saadat.auth.service.MagicLinkService.IssuedMagicLink;
 import com.saadat.auth.service.RefreshTokenService;
@@ -35,6 +36,9 @@ class AuthFlowIntegrationTest extends IntegrationTestBase {
 
     @Autowired
     MagicLinkService magicLinkService;
+
+    @Autowired
+    AuthService authService;
 
     @Autowired
     MagicLinkRepository magicLinkRepository;
@@ -235,6 +239,23 @@ class AuthFlowIntegrationTest extends IntegrationTestBase {
                         .content("{\"email\":\"" + email + "\",\"code\":\"" + link.code() + "\"}"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.user.role").value("INTERPRETER"));
+    }
+
+    @Test
+    void anyEmailOnTheInterpreterDomainIsAnInterpreter() throws Exception {
+        String email = "assistant@saadatu-aldarein.com"; // not in interpreter.emails, but on interpreter.email_domain
+        IssuedMagicLink link = magicLinkService.issue(email, "127.0.0.1");
+        mvc.perform(post(ApiPaths.Auth.MAGIC_VERIFY)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"email\":\"" + email + "\",\"code\":\"" + link.code() + "\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.user.role").value("INTERPRETER"));
+    }
+
+    @Test
+    void interpreterDomainCannotSignInWithGoogle() {
+        assertThat(authService.isInterpreterDomain("x@saadatu-aldarein.com")).isTrue();
+        assertThat(authService.isInterpreterDomain("x@gmail.com")).isFalse();
     }
 
     @Test
