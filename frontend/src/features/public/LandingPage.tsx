@@ -84,7 +84,7 @@ function Hero() {
       <NightSky className="absolute inset-0" onMoon={onMoon} />
       <PublicHeader />
       {/* written in the sky: sits under the moon overlay (NightSky raises the moon above it) */}
-      <div className="sky-hadith pointer-events-none relative mx-auto max-w-3xl px-6 pt-6 text-center md:pt-8">
+      <div className="sky-hadith pointer-events-none relative z-[1] mx-auto max-w-3xl px-6 pt-6 text-center md:pt-8">
         {/* faint copy: sits under the moon */}
         <p className="font-quran text-lg leading-relaxed text-gold-soft/45 md:text-2xl [text-shadow:0_0_18px_rgba(234,219,170,.25)]">{t('hero.skyHadith')}</p>
         <p className="mt-1 text-[10px] tracking-[.3em] text-pearl/30">{t('hero.skyHadithSrc')}</p>
@@ -94,7 +94,7 @@ function Hero() {
           <p className="mt-1 text-[10px] tracking-[.3em] text-navy">{t('hero.skyHadithSrc')}</p>
         </div>
       </div>
-      <div className="relative mx-auto flex max-w-4xl flex-col items-center gap-7 px-5 pb-24 pt-8 text-center md:pt-12 lg:px-0">
+      <div className="relative z-[1] mx-auto flex max-w-4xl flex-col items-center gap-7 px-5 pb-24 pt-8 text-center md:pt-12 lg:px-0">
         <h1 ref={titleRef} className="font-display text-5xl leading-[1.35] md:text-7xl">
           {t('hero.title1')} <span className="text-gold">{t('hero.title2')}</span><br />{t('hero.title3')}
         </h1>
