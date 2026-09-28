@@ -7,7 +7,7 @@ import { useAuthStore } from '@/app/auth-store'
 import { Button, ErrorBox, Label, Skeleton, Stars, StatusBadge, Textarea } from '@/components/ui'
 import { Icon } from '@/components/icons/Icon'
 import { PageEnter } from '@/components/motion'
-import { cn, fmtDate } from '@/lib/utils'
+import { arrowBack, cn, fmtDate } from '@/lib/utils'
 import type { DreamDetail, DreamMessage } from '@/api/types'
 
 const STEPS: DreamDetail['status'][] = ['DRAFT', 'IN_REVIEW', 'INTERPRETED']
@@ -62,7 +62,7 @@ export function DreamDetailPage() {
 
   return (
     <PageEnter className="mx-auto max-w-3xl space-y-5">
-      <Link to="/me" className="text-sm text-fg-muted hover:text-fg">→ {t('common.back')}</Link>
+      <Link to="/me" className="text-sm text-fg-muted hover:text-fg">{arrowBack(locale)} {t('common.back')}</Link>
       <div className="flex items-center justify-between"><h1 className="font-display text-3xl">{t('me.detail.title')}</h1><StatusBadge status={d.status} /></div>
       {d.status !== 'DRAFT' && <div className="card p-5"><Stepper status={d.status} /></div>}
 

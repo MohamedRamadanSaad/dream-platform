@@ -69,7 +69,7 @@ export function GeoPricingPage() {
               <div key={ct}>
                 <div className="flex items-center">
                   <button onClick={() => { setOpenCont(open ? null : ct); setSel({ kind: 'CONTINENT', id: ct }) }} className={cn('flex flex-1 items-center justify-between rounded-xl px-3 py-2.5 text-sm', sel.kind === 'CONTINENT' && sel.id === ct ? 'bg-night text-pearl' : 'hover:bg-surface-2')}>
-                    <span>{t(`admin.pricing.${ct}`)} <span className="text-xs opacity-60">· {cs.filter((c) => c.continent === ct).length}</span></span><span className={cn('transition-transform', open && 'rotate-90')}>‹</span>
+                    <span>{t(`admin.pricing.${ct}`)} <span className="text-xs opacity-60">· {cs.filter((c) => c.continent === ct).length}</span></span><span className={cn('transition-transform', open && 'rotate-90')}>{locale === 'ar' ? '‹' : '›'}</span>
                   </button>
                 </div>
                 {open && (
@@ -94,7 +94,7 @@ export function GeoPricingPage() {
           ))}
           <div className="mt-4 space-y-2 px-1">
             <Input placeholder={t('common.search')} value={search} onChange={(e) => setSearch(e.target.value)} className="py-2 text-xs" />
-            <label className="flex items-center gap-2 text-xs text-fg-muted"><input type="checkbox" checked={customOnly} onChange={(e) => setCustomOnly(e.target.checked)} className="accent-[var(--gold)]" />{t('admin.pricing.custom')} فقط</label>
+            <label className="flex items-center gap-2 text-xs text-fg-muted"><input type="checkbox" checked={customOnly} onChange={(e) => setCustomOnly(e.target.checked)} className="accent-[var(--gold)]" />{t('admin.pricing.customOnly')}</label>
           </div>
         </aside>
 

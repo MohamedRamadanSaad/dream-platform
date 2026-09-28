@@ -30,4 +30,8 @@ export function countdown(iso: string) {
 }
 
 /** E-mails on the site domain are interpreter accounts (magic-code login only; mirrors backend setting interpreter.email_domain). */
+/** Direction-aware arrows: “back” points to the reading start, “next” to the reading end. */
+export const arrowBack = (locale: string) => (locale === 'ar' ? '→' : '←')
+export const arrowNext = (locale: string) => (locale === 'ar' ? '←' : '→')
+
 export const INTERPRETER_DOMAIN = (import.meta.env.VITE_INTERPRETER_DOMAIN as string | undefined) || '@saadatu-aldarein.com'

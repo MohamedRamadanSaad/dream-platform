@@ -6,6 +6,7 @@ import { dreamsApi } from '@/api/endpoints'
 import { useAuthStore } from '@/app/auth-store'
 import { Button, Label, Textarea } from '@/components/ui'
 import { PageEnter } from '@/components/motion'
+import { arrowNext } from '@/lib/utils'
 import type { Gender } from '@/api/types'
 
 export function NewDreamPage() {
@@ -14,6 +15,7 @@ export function NewDreamPage() {
   const navigate = useNavigate()
   const qc = useQueryClient()
   const user = useAuthStore((s) => s.user)
+  const locale = useAuthStore((s) => s.locale)
   const [text, setText] = useState('')
   const [gender, setGender] = useState<Gender>(user?.gender ?? 'FEMALE')
   const [draftId, setDraftId] = useState<string | undefined>(id)
@@ -62,7 +64,7 @@ export function NewDreamPage() {
         </div>
         <div className="mt-6 flex flex-wrap justify-end gap-3">
           <Button variant="ghost" disabled={!valid} loading={save.isPending} onClick={saveAndGo}>{t('me.newDream.saveDraft')}</Button>
-          <Button disabled={!valid} onClick={saveAndSubmit}>{t('me.newDream.saveAndSubmit')} ←</Button>
+          <Button disabled={!valid} onClick={saveAndSubmit}>{t('me.newDream.saveAndSubmit')} {arrowNext(locale)}</Button>
         </div>
       </div>
     </PageEnter>

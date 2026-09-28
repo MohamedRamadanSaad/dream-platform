@@ -20,7 +20,7 @@ export function OrdersAdminPage() {
       <div className="mb-6 flex items-center justify-between"><h1 className="font-display text-4xl">{t('admin.orders.title')}</h1><Button size="sm" variant="ghost" onClick={exportCsv}>{t('admin.orders.export')}</Button></div>
       {q.isLoading ? <Skeleton className="h-64" /> : (
         <div className="card overflow-x-auto p-0"><table className="w-full text-sm">
-          <thead className="text-xs text-fg-dim"><tr className="border-b border-line">{['المستخدم', 'الباقة', 'المبلغ', 'الحالة', 'المزوّد', t('common.country'), 'التاريخ'].map((h) => <th key={h} className="px-4 py-3 text-start font-normal">{h}</th>)}</tr></thead>
+          <thead className="text-xs text-fg-dim"><tr className="border-b border-line">{[t('admin.orders.user'), t('admin.orders.package'), t('admin.orders.amount'), t('admin.orders.status'), t('admin.orders.provider'), t('common.country'), t('admin.orders.date')].map((h) => <th key={h} className="px-4 py-3 text-start font-normal">{h}</th>)}</tr></thead>
           <tbody>{q.data!.items.map((o) => <tr key={o.id} className="border-b border-line last:border-0 hover:bg-surface-2/60"><td className="px-4 py-3">{o.userName}</td><td className="px-4 py-3">{o.packageName}</td><td className="px-4 py-3">{fmtMoney(o.amount, o.currency, locale)}</td><td className="px-4 py-3"><StatusBadge status={o.status} kind="order" /></td><td className="px-4 py-3 text-xs" dir="ltr">{o.provider} {o.providerRef ?? ''}</td><td className="px-4 py-3">{o.countryCode}</td><td className="px-4 py-3 text-xs text-fg-dim">{fmtDate(o.createdAt, locale, true)}</td></tr>)}</tbody>
         </table></div>
       )}

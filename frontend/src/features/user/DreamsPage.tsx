@@ -7,7 +7,7 @@ import { useAuthStore } from '@/app/auth-store'
 import { Button, Empty, ErrorBox, Skeleton, StatusBadge, Tabs } from '@/components/ui'
 import { Icon } from '@/components/icons/Icon'
 import { PageEnter, StaggerGroup } from '@/components/motion'
-import { cn, fmtDate, timeAgo } from '@/lib/utils'
+import { arrowNext, cn, fmtDate, timeAgo } from '@/lib/utils'
 import type { DreamStatus, DreamSummary } from '@/api/types'
 import { ApiError } from '@/api/client'
 
@@ -42,6 +42,7 @@ export function UserDreamsPage() {
   const navigate = useNavigate()
   const qc = useQueryClient()
   const user = useAuthStore((s) => s.user)
+  const locale = useAuthStore((s) => s.locale)
   const [tab, setTab] = useState<Tab>('DRAFT')
   const [selected, setSelected] = useState<string[]>([])
 
@@ -86,7 +87,7 @@ export function UserDreamsPage() {
         <button onClick={() => setTab('AWAITING_USER_REPLY')} className="card mb-6 flex w-full items-center gap-3 border-danger/30 bg-danger/5 p-4 text-start text-sm">
           <span className="text-danger"><Icon name="chat" size={20} /></span>
           <span className="flex-1">{t('me.tabs.awaiting')} · {dash.data.awaitingReply}</span>
-          <span className="text-gold-deep">{t('common.seeAll')} ←</span>
+          <span className="text-gold-deep">{t('common.seeAll')} {arrowNext(locale)}</span>
         </button>
       )}
 

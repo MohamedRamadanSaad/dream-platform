@@ -263,8 +263,8 @@ export default function LandingPage() {
           {tst?.items.map((x) => (
             <div key={x.id} className="card card-hover p-6">
               <Stars value={x.rating} size={16} />
-              <p className="my-4 font-light leading-relaxed">{x.comment}</p>
-              <div className="flex items-center justify-between text-xs text-fg-dim"><span className="flex items-center gap-2"><Avatar name={x.name} size={26} />{x.name}</span><span className="chip bg-success/10 text-success"><Icon name="check" size={12} />{t('testimonials.verified')}</span></div>
+              <p className="my-4 font-light leading-relaxed" dir="auto">{x.comment}</p>
+              <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-fg-dim"><span className="flex min-w-0 items-center gap-2"><Avatar name={x.name} size={26} /><span className="truncate" dir="auto">{x.name}</span></span><span className="chip bg-success/10 text-success"><Icon name="check" size={12} />{t('testimonials.verified')}</span></div>
             </div>
           ))}
         </StaggerGroup>

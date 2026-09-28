@@ -5,7 +5,7 @@ import { adminApi } from '@/api/endpoints'
 import { useAuthStore } from '@/app/auth-store'
 import { Button, Input, Label, Modal, Skeleton, Tabs, Textarea } from '@/components/ui'
 import { PageEnter } from '@/components/motion'
-import { cn, fmtDate } from '@/lib/utils'
+import { arrowNext, cn, fmtDate } from '@/lib/utils'
 import type { AdminPackage, CouponDto, PromotionDto } from '@/api/types'
 
 type Tab = 'packages' | 'promotions' | 'coupons'
@@ -44,7 +44,7 @@ export function PackagesAdminPage() {
         )))}
         {tab === 'promotions' && (pr.isLoading ? <Skeleton className="h-40" /> : pr.data!.map((p) => (
           <div key={p.id} className={cn('card flex items-center justify-between gap-4 p-5', !p.active && 'opacity-50')}>
-            <div><div className="font-medium">{p.name} <span className="text-xs text-fg-dim">· {p.type === 'PERCENT' ? `${p.value}%` : p.type === 'FIXED' ? `-${p.value}` : `+${p.value}`}</span></div><div className="text-xs text-fg-dim">{fmtDate(p.startsAt, locale)} → {fmtDate(p.endsAt, locale)} · {t('admin.packages.used')} {p.usedCount}{p.maxUses ? `/${p.maxUses}` : ''} · {p.packageIds.map((id) => pk.data?.find((x) => x.id === id)?.nameAr).join('، ')}</div></div>
+            <div><div className="font-medium">{p.name} <span className="text-xs text-fg-dim">· {p.type === 'PERCENT' ? `${p.value}%` : p.type === 'FIXED' ? `-${p.value}` : `+${p.value}`}</span></div><div className="text-xs text-fg-dim">{fmtDate(p.startsAt, locale)} {arrowNext(locale)} {fmtDate(p.endsAt, locale)} · {t('admin.packages.used')} {p.usedCount}{p.maxUses ? `/${p.maxUses}` : ''} · {p.packageIds.map((id) => { const x = pk.data?.find((y) => y.id === id); return locale === 'ar' ? x?.nameAr : x?.nameEn }).join(locale === 'ar' ? '، ' : ', ')}</div></div>
             <div className="flex gap-2"><Button size="sm" variant="ghost" onClick={() => setEditPr(p)}>{t('common.edit')}</Button><Button size="sm" variant="ghost" className="text-danger" onClick={() => confirm('?') && delPr.mutate(p.id)}>{t('common.delete')}</Button></div>
           </div>
         )))}
@@ -72,8 +72,8 @@ export function PackagesAdminPage() {
 
       <Modal open={!!editPr} onClose={() => setEditPr(null)} title={t('admin.packages.promotions')}>
         {editPr && <div className="grid gap-3 sm:grid-cols-2">
-          <div className="sm:col-span-2"><Label>الاسم</Label><Input value={editPr.name ?? ''} onChange={(e) => setEditPr({ ...editPr, name: e.target.value })} /></div>
-          <div><Label>{t('admin.packages.type')}</Label><select className="input" value={editPr.type} onChange={(e) => setEditPr({ ...editPr, type: e.target.value as PromotionDto['type'] })}><option value="PERCENT">نسبة %</option><option value="FIXED">خصم ثابت</option><option value="BONUS">رؤيا مجانية إضافية</option></select></div>
+          <div className="sm:col-span-2"><Label>{t('admin.packages.name')}</Label><Input value={editPr.name ?? ''} onChange={(e) => setEditPr({ ...editPr, name: e.target.value })} /></div>
+          <div><Label>{t('admin.packages.type')}</Label><select className="input" value={editPr.type} onChange={(e) => setEditPr({ ...editPr, type: e.target.value as PromotionDto['type'] })}><option value="PERCENT">{t('admin.packages.types.PERCENT')}</option><option value="FIXED">{t('admin.packages.types.FIXED')}</option><option value="BONUS">{t('admin.packages.types.BONUS')}</option></select></div>
           <div><Label>{t('admin.packages.value')}</Label><Input type="number" value={editPr.value ?? 0} onChange={(e) => setEditPr({ ...editPr, value: Number(e.target.value) })} /></div>
           <div><Label>{t('admin.packages.starts')}</Label><Input type="datetime-local" value={local(editPr.startsAt ?? '')} onChange={(e) => setEditPr({ ...editPr, startsAt: iso(e.target.value) })} /></div>
           <div><Label>{t('admin.packages.ends')}</Label><Input type="datetime-local" value={local(editPr.endsAt ?? '')} onChange={(e) => setEditPr({ ...editPr, endsAt: iso(e.target.value) })} /></div>
@@ -86,7 +86,7 @@ export function PackagesAdminPage() {
       <Modal open={!!editC} onClose={() => setEditC(null)} title={t('admin.packages.coupons')}>
         {editC && <div className="grid gap-3 sm:grid-cols-2">
           <div><Label>{t('admin.packages.code')}</Label><Input dir="ltr" value={editC.code ?? ''} onChange={(e) => setEditC({ ...editC, code: e.target.value.toUpperCase() })} /></div>
-          <div><Label>{t('admin.packages.type')}</Label><select className="input" value={editC.type} onChange={(e) => setEditC({ ...editC, type: e.target.value as CouponDto['type'] })}><option value="PERCENT">نسبة %</option><option value="FIXED">خصم ثابت</option></select></div>
+          <div><Label>{t('admin.packages.type')}</Label><select className="input" value={editC.type} onChange={(e) => setEditC({ ...editC, type: e.target.value as CouponDto['type'] })}><option value="PERCENT">{t('admin.packages.types.PERCENT')}</option><option value="FIXED">{t('admin.packages.types.FIXED')}</option></select></div>
           <div><Label>{t('admin.packages.value')}</Label><Input type="number" value={editC.value ?? 0} onChange={(e) => setEditC({ ...editC, value: Number(e.target.value) })} /></div>
           <div><Label>{t('admin.packages.maxUses')}</Label><Input type="number" value={editC.maxUses ?? ''} onChange={(e) => setEditC({ ...editC, maxUses: e.target.value ? Number(e.target.value) : null })} /></div>
           <div><Label>{t('admin.packages.perUser')}</Label><Input type="number" value={editC.perUserLimit ?? 1} onChange={(e) => setEditC({ ...editC, perUserLimit: Number(e.target.value) })} /></div>

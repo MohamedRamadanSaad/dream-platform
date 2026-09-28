@@ -8,7 +8,7 @@ import { Button, ErrorBox, Input, Label, Skeleton } from '@/components/ui'
 import { Icon } from '@/components/icons/Icon'
 import { PageEnter, StaggerGroup } from '@/components/motion'
 import { PackageCard } from '@/features/public/LandingPage'
-import { fmtMoney } from '@/lib/utils'
+import { arrowBack, fmtMoney } from '@/lib/utils'
 import { ApiError } from '@/api/client'
 import type { PackageDto } from '@/api/types'
 
@@ -51,13 +51,13 @@ export function CheckoutPage() {
   if (!packageId) { navigate('/me/packages'); return null }
   return (
     <PageEnter className="mx-auto max-w-lg">
-      <Link to="/me/packages" className="text-sm text-fg-muted">→ {t('common.back')}</Link>
+      <Link to="/me/packages" className="text-sm text-fg-muted">{arrowBack(locale)} {t('common.back')}</Link>
       <h1 className="mt-2 font-display text-4xl">{t('me.checkout.title')}</h1>
       <p className="mb-6 text-sm font-light text-fg-muted"><Icon name="shield" size={14} className="inline" /> {t('me.checkout.secure')}</p>
       {!pkg ? <Skeleton className="h-40" /> : (
         <div className="card p-6">
           <div className="flex items-center justify-between"><div><div className="font-display text-2xl">{pkg.name}</div><div className="text-xs text-fg-dim">{t('packages.dreams', { count: pkg.credits })}</div></div><div className="text-3xl font-medium">{fmtMoney(pkg.price, pkg.currency, locale)}</div></div>
-          {dreamIds?.length ? <div className="mt-3 text-xs text-fg-muted">سيتم تقديم {dreamIds.length} رؤيا تلقائياً بعد الدفع</div> : null}
+          {dreamIds?.length ? <div className="mt-3 text-xs text-fg-muted">{t('me.checkout.autoSubmit', { count: dreamIds.length, n: dreamIds.length })}</div> : null}
           <div className="mt-6"><Label>{t('me.checkout.coupon')}</Label><div className="flex gap-2"><Input dir="ltr" value={coupon} onChange={(e) => setCoupon(e.target.value.toUpperCase())} placeholder="CODE" /></div></div>
           {err && <p className="mt-3 text-sm text-danger">{err}</p>}
           <Button className="mt-6 w-full" size="lg" loading={create.isPending} onClick={() => { setErr(null); create.mutate() }}>{t('me.checkout.pay', { amount: fmtMoney(pkg.price, pkg.currency, locale), currency: '' })}</Button>
@@ -83,11 +83,11 @@ export function MockCheckoutPage() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-night p-5 text-pearl">
       <div className="card w-full max-w-md bg-surface p-8 text-center text-fg">
-        <div className="mb-3 text-fg-dim text-xs">[ محاكاة صفحة الدفع الخاصة بالمزوّد ]</div>
+        <div className="mb-3 text-fg-dim text-xs">{t('me.checkout.mockProvider')}</div>
         {ok ? (
           <><div className="mx-auto mb-3 text-success"><Icon name="check" size={40} active /></div><div className="text-lg text-success">{t('me.checkout.success')}</div></>
         ) : (
-          <><div className="mx-auto mb-3 h-8 w-8 animate-spin rounded-full border-2 border-gold border-t-transparent" /><div className="text-sm text-fg-muted">{t('me.checkout.waiting')} ({tries})</div><p className="mt-4 text-xs text-fg-dim">في الإنتاج تظهر هنا نافذة المزوّد؛ الرصيد يُضاف فقط عند وصول Webhook موقّع.</p>
+          <><div className="mx-auto mb-3 h-8 w-8 animate-spin rounded-full border-2 border-gold border-t-transparent" /><div className="text-sm text-fg-muted">{t('me.checkout.waiting')} ({tries})</div><p className="mt-4 text-xs text-fg-dim">{t('me.checkout.mockNote')}</p>
             <div className="mt-6 flex flex-col gap-2">
               <Button onClick={() => trigger.mutate(true)} loading={trigger.isPending}>{t('me.checkout.mockPay')}</Button>
               <Button variant="ghost" onClick={() => trigger.mutate(false)} disabled={trigger.isPending}>{t('me.checkout.mockFail')}</Button>

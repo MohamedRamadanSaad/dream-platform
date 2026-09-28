@@ -10,7 +10,7 @@ import { Avatar } from '@/components/ui/Avatar'
 import { PageEnter } from '@/components/motion'
 import { Conversation } from '@/features/user/DreamDetailPage'
 import { SlaChip } from './QueuePage'
-import { fmtDate, fmtMoney } from '@/lib/utils'
+import { arrowBack, arrowNext, fmtDate, fmtMoney } from '@/lib/utils'
 
 export function AdminDreamPage() {
   const { t } = useTranslation()
@@ -34,7 +34,7 @@ export function AdminDreamPage() {
   return (
     <PageEnter className="grid gap-5 lg:grid-cols-3">
       <div className="space-y-5 lg:col-span-2">
-        <Link to="/admin/dreams" className="text-sm text-fg-muted">→ {t('common.back')}</Link>
+        <Link to="/admin/dreams" className="text-sm text-fg-muted">{arrowBack(locale)} {t('common.back')}</Link>
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h1 className="flex items-center gap-3 font-display text-3xl"><Avatar name={d.user.name || d.user.email} size={40} />{d.user.name} <span className="text-base text-fg-dim">· {t(d.gender === 'FEMALE' ? 'auth.female' : 'auth.male')}{d.user.age != null && <> · {t('me.profile.years', { n: d.user.age })}</>} · {d.user.countryCode}</span></h1>
           <div className="flex items-center gap-2"><StatusBadge status={d.status} />{open && d.expectedBy && <SlaChip deadline={d.expectedBy} overdue={new Date(d.expectedBy) < new Date()} />}</div>
@@ -48,7 +48,7 @@ export function AdminDreamPage() {
             <div className="mt-4"><Textarea rows={2} value={question} onChange={(e) => setQuestion(e.target.value)} placeholder={t('admin.dream.askPlaceholder')} maxLength={1000} />
               <div className="mt-2 flex justify-end"><Button size="sm" variant="ghost" disabled={question.trim().length < 3} loading={ask.isPending} onClick={() => ask.mutate()}><Icon name="chat" size={14} />{t('admin.dream.ask')}</Button></div></div>
           )}
-          {d.status === 'AWAITING_USER_REPLY' && <p className="mt-3 text-xs text-fg-dim">بانتظار رد المستخدم — عدّاد المدة متوقف.</p>}
+          {d.status === 'AWAITING_USER_REPLY' && <p className="mt-3 text-xs text-fg-dim">{t('admin.dream.awaitingNote')}</p>}
         </div>
 
         {d.interpretation ? (
@@ -71,12 +71,12 @@ export function AdminDreamPage() {
               <div className="flex justify-between"><dt className="text-fg-muted">{t('admin.dream.paidAt')}</dt><dd>{fmtDate(d.payment.paidAt, locale, true)}</dd></div>
               <div className="flex justify-between"><dt className="text-fg-muted">{t('admin.dream.package')}</dt><dd>{d.payment.packageName}</dd></div>
               <div className="flex justify-between"><dt className="text-fg-muted">{t('common.country')}</dt><dd>{d.payment.countryCode}</dd></div>
-              <div className="flex justify-between"><dt className="text-fg-muted">المبلغ</dt><dd>{fmtMoney(d.payment.amount, d.payment.currency, locale)}</dd></div>
+              <div className="flex justify-between"><dt className="text-fg-muted">{t('admin.dream.amount')}</dt><dd>{fmtMoney(d.payment.amount, d.payment.currency, locale)}</dd></div>
               <div className="flex justify-between"><dt className="text-fg-muted">{t('admin.dream.ref')}</dt><dd dir="ltr" className="text-xs">{d.payment.provider} · {d.payment.providerRef}</dd></div>
             </dl>
-          ) : <p className="text-sm text-fg-muted">رصيد يدوي / بلا أمر شراء</p>}
+          ) : <p className="text-sm text-fg-muted">{t('admin.dream.noOrder')}</p>}
         </div>
-        <Link to={`/admin/users/${d.user.id}`} className="card card-hover flex items-center gap-3 p-5 text-sm"><span className="text-gold-deep"><Icon name="user" size={22} /></span>{t('admin.dream.user360')} ←</Link>
+        <Link to={`/admin/users/${d.user.id}`} className="card card-hover flex items-center gap-3 p-5 text-sm"><span className="text-gold-deep"><Icon name="user" size={22} /></span>{t('admin.dream.user360')} {arrowNext(locale)}</Link>
       </aside>
 
       <Modal open={confirm} onClose={() => setConfirm(false)} title={t('admin.dream.publish')}>

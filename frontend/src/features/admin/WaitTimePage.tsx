@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { adminApi } from '@/api/endpoints'
+import { useAuthStore } from '@/app/auth-store'
 import { Button, Input, Label, Skeleton, Textarea } from '@/components/ui'
 import { PageEnter } from '@/components/motion'
 import { cn } from '@/lib/utils'
@@ -9,6 +10,7 @@ import type { WaitTimeSettings } from '@/api/types'
 
 export function WaitTimePage() {
   const { t } = useTranslation()
+  const locale = useAuthStore((s) => s.locale)
   const qc = useQueryClient()
   const q = useQuery({ queryKey: ['admin', 'wait-time'], queryFn: adminApi.waitTime })
   const [f, setF] = useState<WaitTimeSettings | null>(null)
@@ -31,7 +33,7 @@ export function WaitTimePage() {
         </div>
         <div><Label>{t('admin.waitTime.msgAr')}</Label><Textarea rows={3} value={f.messageAr} onChange={(e) => setF({ ...f, messageAr: e.target.value })} /></div>
         <div><Label>{t('admin.waitTime.msgEn')}</Label><Textarea dir="ltr" rows={3} value={f.messageEn} onChange={(e) => setF({ ...f, messageEn: e.target.value })} /></div>
-        <div><Label>{t('admin.waitTime.preview')}</Label><div className="card flex items-center gap-3 p-4 text-sm"><span className="pulse-ring h-2 w-2 rounded-full bg-gold" /><span className="font-light text-fg-muted">{f.busy ? f.messageAr : `الرد خلال ${f.normalHours} ساعة إن شاء الله`}</span></div></div>
+        <div><Label>{t('admin.waitTime.preview')}</Label><div className="card flex items-center gap-3 p-4 text-sm"><span className="pulse-ring h-2 w-2 rounded-full bg-gold" /><span className="font-light text-fg-muted">{f.busy ? (locale === 'ar' ? f.messageAr : f.messageEn) : t('admin.waitTime.normalPreview', { n: f.normalHours })}</span></div></div>
         <div className="flex items-center justify-between"><span className="text-xs text-success">{save.isSuccess && '✓'}</span><Button loading={save.isPending} onClick={() => save.mutate(f)}>{t('admin.waitTime.save')}</Button></div>
       </div>
     </PageEnter>

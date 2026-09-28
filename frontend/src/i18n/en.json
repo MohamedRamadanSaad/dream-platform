@@ -13,119 +13,121 @@
   },
   "hero": {
     "title1": "Dream interpretation:",
-    "title2": "calm and depth",
-    "title3": "towards happiness in both worlds",
-    "lead": "We help you understand the symbols of your dream gently, deeply and realistically — no exaggeration, no shallowness — with a balanced reading full of reassurance.",
+    "title2": "peace and depth",
+    "title3": "toward happiness in this life and the next",
+    "lead": "We help you understand the symbols in your dream in a gentle, deep and realistic way. No exaggeration and no shallow answers — just a balanced reading that brings good news and peace of mind.",
     "cta": "Request an interpretation",
     "youtube": "Follow on YouTube",
     "hadith": "“A good dream is from Allah, and a bad dream is from Satan.”",
-    "hadithSrc": "Agreed upon",
+    "hadithSrc": "Narrated by al-Bukhari and Muslim",
     "badges": {
-      "privacy": "Your privacy is kept",
-      "privacySub": "Full confidentiality for every dream",
+      "privacy": "Your privacy is protected",
+      "privacySub": "Every dream is kept private",
       "depth": "Careful study",
-      "depthSub": "of every symbol — no exaggeration",
+      "depthSub": "of every symbol, with no exaggeration",
       "reply": "Reply within",
       "honesty": "Honesty",
       "honestySub": "We say what we see, kindly"
     },
-    "skyHadith": "“A true dream is one of the forty-six parts of prophethood”",
-    "skyHadithSrc": "Agreed upon (al-Bukhari & Muslim)",
-    "join": "Join {{n}}+ people who found peace in their dreams"
+    "skyHadith": "“A true dream is one of the forty-six parts of prophethood.”",
+    "skyHadithSrc": "Narrated by al-Bukhari and Muslim",
+    "join": "Join {{n}}+ people who found peace through their dreams"
   },
   "waitTime": {
-    "label": "Current turnaround",
+    "label": "Current reply time",
     "range": "{{min}} to {{max}} days",
     "hours": "{{h}} hours"
   },
   "about": {
     "kicker": "Vision & mission",
-    "title": "A balanced method",
-    "p1": "Fatema follows a scholarly, Sharia-grounded method of dream interpretation, far from exaggeration or alarm. We believe dreams are messages from God carrying glad tidings and reassurance, or warning and caution, and we strive to offer a deep, realistic reading of their symbols.",
-    "p2": "This site is dedicated to dream interpretation on sound foundations from the Quran and the Prophetic Sunnah, connecting interpretation with the call to Allah in a simple, concise way.",
-    "p3": "Since entering this field I found that those most interested are often the most tested, so I dedicated episodes to true happiness — closeness to Allah — which leads to happiness in the Hereafter.",
+    "title": "A balanced approach",
+    "p1": "Fatema interprets dreams with a scholarly method based on Islamic teaching, without exaggeration and without causing fear. We believe dreams are messages from God. Some bring good news and comfort; others bring a warning. We work hard to give a deep and realistic reading of their symbols.",
+    "p2": "This site is for interpreting dreams on sound foundations from the Quran and the Sunnah of the Prophet. It links dream interpretation with calling people to Allah, in a simple and short way.",
+    "p3": "Since I started this work, I have seen that the people most interested in dreams are often the ones facing the hardest trials. So I made episodes about true happiness — being close to Allah — which leads to happiness in the Hereafter.",
     "verse": "“And who is better in speech than one who calls to Allah, does good, and says: I am one of the Muslims.”",
-    "verseSrc": "Fussilat: 33",
+    "verseSrc": "Surah Fussilat, verse 33",
     "aboutTitle": "About the interpreter",
-    "bullet1": "Over 11 years of dream interpretation, by God’s grace, grounded in the Qur’an and Sunnah.",
-    "bullet2": "Researcher in the science of dream interpretation.",
+    "bullet1": "Over 11 years of interpreting dreams, by God’s grace, based on the Quran and Sunnah.",
+    "bullet2": "A researcher in the science of dream interpretation.",
     "missionTitle": "Our mission"
   },
   "method": {
     "title": "How we read your dream",
-    "depth": "Depth & symbol analysis",
-    "depthText": "Every symbol is studied in its context, never from a ready-made dictionary.",
+    "depth": "A deep look at every symbol",
+    "depthText": "We study each symbol in its context, not from a ready-made dream dictionary.",
     "honesty": "Honesty",
-    "honestyText": "We say what we see, kindly and with regard to your situation.",
+    "honestyText": "We say what we see, kindly and with care for your situation.",
     "calm": "No exaggeration",
-    "calmText": "No fear-mongering; a dream is a message understood with peace.",
-    "context": "Your circumstances matter",
-    "contextText": "The interpreter may ask you a question or two first, so the meaning is closer and truer."
+    "calmText": "We do not try to scare you. A dream is a message to understand with a calm heart.",
+    "context": "Your situation matters",
+    "contextText": "The interpreter may first ask you a question or two, so the meaning is clearer and more accurate."
   },
   "stats": {
     "kicker": "In numbers",
-    "title": "By Allah's grace, our interpretations match reality — as our community testifies",
+    "title": "By Allah’s grace, our interpretations match what really happens — as the people who asked us confirm",
     "subscribers": "YouTube subscribers",
     "views": "video views",
     "videos": "interpretation videos"
   },
   "packages": {
     "title": "Interpretation packages",
-    "lead": "Packages tailored to your needs, with several payment options and currencies for our audience everywhere.",
+    "lead": "Packages that fit your needs, with many ways to pay and many currencies, for people everywhere.",
     "shownFor": "Prices shown for {{country}}",
     "choose": "Choose",
     "endsIn": "Offer ends in",
     "dreams_one": "1 dream",
     "dreams_other": "{{count}} dreams",
-    "validity": "Valid {{m}} months"
+    "validity": "Valid for {{m}} months"
   },
   "testimonials": {
-    "title": "What dreamers say",
-    "quote": "Most of our interpretations came true, as the people who asked us have told us. We thank them, and we ask Allah to accept this work — it is a gift and a blessing from Him.",
-    "verified": "Verified: from an interpreted dream",
+    "title": "What people say",
+    "quote": "Most of our interpretations came true, as the people who asked us have told us. We thank them, and we ask Allah to accept this work. It is a gift and a blessing from Him.",
+    "verified": "Verified: from a dream we interpreted",
     "quoteBy": "Interpreter Fatema"
   },
   "footer": {
-    "rights": "© {{year}} Interpreter Fatema — balanced dream interpretation with depth and realism",
+    "rights": "© {{year}} Interpreter Fatema — balanced dream interpretation, deep and realistic",
     "terms": "Terms",
     "privacy": "Privacy",
     "contact": "Contact"
   },
   "auth": {
     "title": "Welcome",
-    "lead": "Sign in with Google or a link sent to your email. No passwords.",
+    "lead": "Sign in with Google or with a link sent to your email. No password needed.",
     "google": "Continue with Google",
     "or": "or",
     "email": "Email",
     "sendLink": "Send me a sign-in link",
     "sent": "We sent a sign-in link to your email",
-    "sentHint": "Valid for 15 minutes. You can also enter the code:",
+    "sentHint": "The link works for 15 minutes. You can also type the code:",
     "code": "Sign-in code",
     "verify": "Sign in",
     "noPassword": "No password — one link signs you in",
     "onboardingTitle": "One last step",
-    "onboardingLead": "We need your name and gender, since interpretation differs between them.",
+    "onboardingLead": "We need your name and gender, because the interpretation can be different for men and women.",
     "name": "Name",
     "gender": "Gender",
     "female": "Female",
     "male": "Male",
-    "terms": "I agree to the Terms and Privacy Policy",
+    "terms": "I agree to the Terms and the Privacy Policy",
     "continue": "Continue",
     "logout": "Sign out",
     "birthDate": "Date of birth",
-    "interpreterDomainHint": "Interpreter accounts sign in with the e-mail code only (no Google).",
-    "interpreterUseMagic": "This is an interpreter e-mail — use the e-mail code to sign in."
+    "interpreterDomainHint": "Interpreter accounts sign in with the email code only (not Google).",
+    "interpreterUseMagic": "This is an interpreter email. Please sign in with the email code.",
+    "mockHint": "Test mode: any code will sign you in. Use {{email}} to sign in as the interpreter.",
+    "linkInvalid": "This link is not valid or has expired"
   },
   "me": {
     "greeting": "Peace be upon you, {{name}}",
     "sub": "May Allah show you what you love",
     "credits": "{{n}} dreams available",
     "credits_one": "1 dream available",
-    "credits_zero": "No credits",
+    "credits_zero": "No dreams available",
     "tabs": {
       "drafts": "Drafts",
       "inReview": "In review",
-      "awaiting": "Awaiting your reply",
+      "awaiting": "Waiting for your reply",
       "interpreted": "Interpretations"
     },
     "nav": {
@@ -138,44 +140,44 @@
       "notifications": "Notifications"
     },
     "submitSelected": "Submit ({{n}})",
-    "submitHint": "{{n}} will be deducted, {{left}} left",
-    "needMore": "You need {{n}} more — choose a package",
+    "submitHint": "{{n}} will be used. {{left}} will be left.",
+    "needMore": "You need {{n}} more. Choose a package.",
     "empty": {
       "drafts": "No drafts yet. Write your dream and it will be saved here.",
       "inReview": "Nothing in review.",
-      "awaiting": "No questions awaiting your reply.",
+      "awaiting": "No questions waiting for your reply.",
       "interpreted": "No interpretations yet."
     },
     "newDream": {
       "title": "New dream",
-      "lead": "The more precise the description, the truer the interpretation. Write everything you saw: people, colors, feelings, places.",
+      "lead": "The more details you give, the more accurate the interpretation. Write everything you saw: people, colors, feelings and places.",
       "placeholder": "I saw that I…",
       "chars": "{{n}} characters",
       "saveDraft": "Save as draft",
-      "saveAndSubmit": "Save & submit",
+      "saveAndSubmit": "Save and submit",
       "saved": "Draft saved",
-      "autosave": "Autosaves"
+      "autosave": "Saves automatically"
     },
     "detail": {
       "title": "Dream details",
       "dream": "Dream",
       "interpretation": "Interpretation",
-      "question": "Interpreter's question",
+      "question": "Question from the interpreter",
       "reply": "Write your reply",
       "send": "Send reply",
       "waiting": "Your dream is being studied",
-      "waitingText": "You'll be notified when the interpretation is ready",
-      "expected": "Expected before",
+      "waitingText": "We will let you know when the interpretation is ready",
+      "expected": "Expected by",
       "rate": "Did any of it come true?",
       "rateCta": "Add your review",
       "rated": "Thank you for your review",
-      "submittedAt": "Submitted",
+      "submittedAt": "Submitted on",
       "download": "Download PDF"
     },
     "status": {
       "DRAFT": "Draft",
       "IN_REVIEW": "In review",
-      "AWAITING_USER_REPLY": "Awaiting your reply",
+      "AWAITING_USER_REPLY": "Waiting for your reply",
       "INTERPRETED": "Interpreted",
       "CANCELLED": "Cancelled"
     },
@@ -183,11 +185,18 @@
       "title": "Payments",
       "balance": "Your balance",
       "history": "Purchase history",
-      "ledger": "Credit movements",
-      "retry": "Retry"
+      "ledger": "Credit history",
+      "retry": "Retry",
+      "reason": {
+        "PURCHASE": "Package purchase",
+        "SUBMIT": "Dream submitted",
+        "REFUND": "Refund",
+        "MANUAL": "Added by the interpreter",
+        "BONUS": "Gift"
+      }
     },
     "orderStatus": {
-      "INITIATED": "Incomplete",
+      "INITIATED": "Not finished",
       "SUCCESS": "Paid",
       "FAILED": "Failed",
       "EXPIRED": "Expired",
@@ -196,15 +205,19 @@
     },
     "checkout": {
       "title": "Checkout",
-      "secure": "Secure payment — we never store card details",
+      "secure": "Secure payment. We never store your card details.",
       "coupon": "Coupon code",
       "apply": "Apply",
       "pay": "Pay {{amount}} {{currency}}",
-      "waiting": "Waiting for payment confirmation…",
-      "success": "Paid — credits added",
-      "failed": "Payment incomplete",
-      "mockPay": "Confirm payment (mock)",
-      "mockFail": "Simulate failure"
+      "waiting": "Waiting for the payment to be confirmed…",
+      "success": "Paid. Your credits have been added.",
+      "failed": "Payment was not completed",
+      "mockPay": "Confirm payment (test)",
+      "mockFail": "Make the payment fail (test)",
+      "mockProvider": "[ Test copy of the payment provider’s page ]",
+      "mockNote": "On the live site, the payment provider’s window shows here. Credits are added only when a signed webhook arrives.",
+      "autoSubmit_one": "1 dream will be submitted automatically after payment",
+      "autoSubmit_other": "{{count}} dreams will be submitted automatically after payment"
     },
     "profile": {
       "title": "Account",
@@ -222,11 +235,13 @@
       "save": "Save",
       "saved": "Saved",
       "push": "Phone notifications",
-      "pushEnable": "Enable notifications",
-      "pushOn": "Enabled",
+      "pushEnable": "Turn on notifications",
+      "pushOn": "Turned on",
       "birthDate": "Date of birth",
       "age": "Age",
-      "years": "{{n}} yrs"
+      "years": "{{n}} years",
+      "pushDenied": "Your browser blocked notifications.",
+      "deleteConfirm": "Delete your account and all your data?"
     },
     "notifications": {
       "title": "Notifications",
@@ -238,9 +253,9 @@
     "nav": {
       "dashboard": "Dashboard",
       "dreams": "Dreams",
-      "pricing": "Geo pricing",
+      "pricing": "Prices by country",
       "packages": "Packages & offers",
-      "waitTime": "Turnaround",
+      "waitTime": "Reply time",
       "users": "Users",
       "testimonials": "Reviews",
       "orders": "Payments"
@@ -248,11 +263,11 @@
     "dashboard": {
       "title": "Interpreter dashboard",
       "inReview": "In review",
-      "awaiting": "Awaiting reply",
+      "awaiting": "Waiting for reply",
       "overdue": "Overdue",
       "today": "Interpreted today",
-      "avg": "Avg. response (h)",
-      "revenue": "This month",
+      "avg": "Average reply time (hours)",
+      "revenue": "Revenue this month",
       "topVisits": "Top countries by visits",
       "topDreams": "Top countries by dreams",
       "topRevenue": "Top countries by revenue",
@@ -274,21 +289,24 @@
     },
     "dream": {
       "ask": "Send a question",
-      "askPlaceholder": "What do you want to ask?",
+      "askPlaceholder": "What would you like to ask?",
       "interpret": "Write the interpretation",
       "publish": "Publish",
-      "confirm": "This will be sent to the user immediately. Sure?",
+      "confirm": "This will be sent to the user right away. Are you sure?",
       "payment": "Payment source",
-      "payer": "Payer",
-      "paidAt": "Paid at",
+      "payer": "Paid by",
+      "paidAt": "Paid on",
       "package": "Package",
       "ref": "Reference",
       "conversation": "Conversation",
-      "user360": "User profile"
+      "user360": "User profile",
+      "awaitingNote": "Waiting for the user to reply. The timer is paused.",
+      "amount": "Amount",
+      "noOrder": "Manual credit (no purchase)"
     },
     "pricing": {
-      "title": "Geo pricing",
-      "lead": "Price resolves in order: country → group → continent → global.",
+      "title": "Prices by country",
+      "lead": "The price is chosen in this order: country → group → continent → global.",
       "continents": "Continents",
       "groups": "Groups",
       "global": "Global price",
@@ -296,7 +314,7 @@
       "custom": "Custom",
       "fromGroup": "From group",
       "fromContinent": "From continent",
-      "reset": "Reset to inherited",
+      "reset": "Go back to the inherited price",
       "newGroup": "New group",
       "groupName": "Group name",
       "save": "Save",
@@ -305,7 +323,8 @@
       "EU": "Europe",
       "NA": "North America",
       "SA": "South America",
-      "OC": "Oceania"
+      "OC": "Oceania",
+      "customOnly": "Custom only"
     },
     "packages": {
       "title": "Packages & offers",
@@ -321,35 +340,42 @@
       "nameEn": "Name (English)",
       "descAr": "Description (Arabic)",
       "descEn": "Description (English)",
-      "validity": "Validity (months)",
+      "validity": "Valid for (months)",
       "type": "Type",
       "value": "Value",
       "starts": "Starts",
       "ends": "Ends",
-      "maxUses": "Max uses",
+      "maxUses": "Maximum uses",
       "used": "Used",
       "code": "Code",
       "perUser": "Per user",
-      "expires": "Expires"
+      "expires": "Expires",
+      "name": "Name",
+      "types": {
+        "PERCENT": "Percent (%)",
+        "FIXED": "Fixed discount",
+        "BONUS": "One extra free dream"
+      }
     },
     "waitTime": {
-      "title": "Turnaround",
-      "lead": "The service never closes; only the displayed time changes.",
+      "title": "Reply time",
+      "lead": "The service never closes. Only the time shown to users changes.",
       "busy": "Busy mode",
       "normal": "Normal (hours)",
-      "min": "Min (days)",
-      "max": "Max (days)",
+      "min": "Minimum (days)",
+      "max": "Maximum (days)",
       "msgAr": "Message (Arabic)",
       "msgEn": "Message (English)",
-      "preview": "As users will see it",
-      "save": "Save"
+      "preview": "What users will see",
+      "save": "Save",
+      "normalPreview": "We will reply within {{n}} hours, God willing"
     },
     "users": {
       "title": "Users",
       "lists": {
         "all": "All",
         "top-visits": "Most visits",
-        "top-paying": "Top paying",
+        "top-paying": "Paid the most",
         "has-drafts": "Have drafts",
         "high-rating": "High rating",
         "low-rating": "Low rating"
@@ -368,23 +394,39 @@
       "orders": "Payments",
       "userDreams": "Dreams",
       "testimonials": "Reviews",
-      "since": "Member since"
+      "since": "Member since",
+      "reasons": {
+        "PURCHASE": "Purchase",
+        "SUBMIT": "Submitted",
+        "REFUND": "Refund",
+        "MANUAL": "Manual",
+        "BONUS": "Gift"
+      },
+      "reason": "Reason",
+      "draftHidden": "[Draft — hidden until it is submitted]",
+      "tagsPlaceholder": "Regular follower, …"
     },
     "testimonials": {
       "title": "Reviews",
-      "pending": "Pending",
+      "pending": "Waiting for approval",
       "approved": "Approved",
       "approve": "Approve",
       "hide": "Hide"
     },
     "orders": {
       "title": "Payments",
-      "export": "Export CSV"
+      "export": "Export CSV",
+      "user": "User",
+      "package": "Package",
+      "amount": "Amount",
+      "status": "Status",
+      "provider": "Provider",
+      "date": "Date"
     }
   },
   "common": {
     "loading": "Loading…",
-    "error": "Something went wrong, try again",
+    "error": "Something went wrong. Please try again.",
     "retry": "Retry",
     "cancel": "Cancel",
     "confirm": "Confirm",
@@ -400,8 +442,21 @@
     "all": "All",
     "close": "Close",
     "installTitle": "Install the app on your phone",
-    "installIos": "In Safari: Share → Add to Home Screen",
-    "installAndroid": "From the browser menu: Add to Home screen",
+    "installIos": "In Safari: tap Share → Add to Home Screen",
+    "installAndroid": "In the browser menu: Add to Home Screen",
     "age": "Age"
+  },
+  "static": {
+    "terms": "Terms and Conditions",
+    "privacy": "Privacy Policy",
+    "placeholder": "[{{title}} text — will be written and reviewed before launch]"
+  },
+  "courses": {
+    "lead": "Video courses with their own subscription, separate from dream packages. Coming in phase two.",
+    "soon": "Coming soon",
+    "c1": "Introduction to dream interpretation",
+    "c2": "True happiness: being close to Allah",
+    "lessons_one": "1 lesson",
+    "lessons_other": "{{count}} lessons"
   }
 }

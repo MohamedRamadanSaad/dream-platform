@@ -8,7 +8,7 @@ import { Button, Empty, ErrorBox, Input, Label, Modal, Segmented, Skeleton, Star
 import { Icon } from '@/components/icons/Icon'
 import { Avatar } from '@/components/ui/Avatar'
 import { PageEnter, StaggerGroup } from '@/components/motion'
-import { fmtDate, fmtMoney, fmtNum, timeAgo } from '@/lib/utils'
+import { arrowBack, fmtDate, fmtMoney, fmtNum, timeAgo } from '@/lib/utils'
 import type { UserListKind } from '@/api/types'
 
 const LISTS: UserListKind[] = ['all', 'top-visits', 'top-paying', 'has-drafts', 'high-rating', 'low-rating']
@@ -64,10 +64,10 @@ export function User360Page() {
   if (q.isLoading) return <Skeleton className="h-96" />
   if (q.isError || !q.data) return <ErrorBox onRetry={() => q.refetch()} />
   const u = q.data
-  const reasonL: Record<string, string> = { PURCHASE: 'شراء', SUBMIT: 'تقديم', REFUND: 'استرجاع', MANUAL: 'يدوي', BONUS: 'هدية' }
+  const reasonL = (k: string) => t(`admin.users.reasons.${k}`)
   return (
     <PageEnter className="space-y-5">
-      <Link to="/admin/users" className="text-sm text-fg-muted">→ {t('common.back')}</Link>
+      <Link to="/admin/users" className="text-sm text-fg-muted">{arrowBack(locale)} {t('common.back')}</Link>
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="flex items-start gap-4"><Avatar name={u.name || u.email} size={56} /><div><h1 className="font-display text-4xl">{u.name || u.email}</h1><div className="text-sm text-fg-muted" dir="ltr">{u.email}</div>
           <div className="mt-2 flex flex-wrap gap-2 text-xs text-fg-dim"><span>{u.countryCode}</span><span>· {u.gender ? t(u.gender === 'FEMALE' ? 'auth.female' : 'auth.male') : '—'}</span>{u.age != null && <span>· {t('me.profile.years', { n: u.age })}</span>}<span>· {u.locale}</span><span>· {u.providers.join(', ')}</span><span>· {t('admin.users.since')} {fmtDate(u.createdAt, locale)}</span></div>
@@ -81,20 +81,20 @@ export function User360Page() {
         <div className="lg:col-span-2">
           <Tabs value={tab} onChange={setTab} items={[{ value: 'dreams', label: t('admin.users.userDreams'), count: u.dreamList.length }, { value: 'orders', label: t('admin.users.orders'), count: u.orders.length }, { value: 'credits', label: t('admin.users.credits') }, { value: 'testimonials', label: t('admin.users.testimonials'), count: u.testimonials.length }]} />
           <div className="mt-4 space-y-2">
-            {tab === 'dreams' && (u.dreamList.length ? u.dreamList.map((d) => <Link key={d.id} to={d.status === 'DRAFT' ? '#' : `/admin/dreams/${d.id}`} className="card card-hover block p-4"><div className="mb-1 flex justify-between"><StatusBadge status={d.status} /><span className="text-xs text-fg-dim">{fmtDate(d.createdAt, locale)}</span></div><p className="line-clamp-2 text-sm font-light">{d.status === 'DRAFT' ? '[مسودة — لا تُعرض قبل التقديم]' : d.excerpt}</p></Link>) : <Empty text={t('common.none')} />)}
+            {tab === 'dreams' && (u.dreamList.length ? u.dreamList.map((d) => <Link key={d.id} to={d.status === 'DRAFT' ? '#' : `/admin/dreams/${d.id}`} className="card card-hover block p-4"><div className="mb-1 flex justify-between"><StatusBadge status={d.status} /><span className="text-xs text-fg-dim">{fmtDate(d.createdAt, locale)}</span></div><p className="line-clamp-2 text-sm font-light">{d.status === 'DRAFT' ? t('admin.users.draftHidden') : d.excerpt}</p></Link>) : <Empty text={t('common.none')} />)}
             {tab === 'orders' && (u.orders.length ? u.orders.map((o) => <div key={o.id} className="card flex items-center justify-between p-4 text-sm"><div>{o.packageName} · {fmtMoney(o.amount, o.currency, locale)}<div className="text-xs text-fg-dim" dir="ltr">{o.provider} {o.providerRef ?? ''} · {o.countryCode} · {fmtDate(o.createdAt, locale, true)}</div></div><StatusBadge status={o.status} kind="order" /></div>) : <Empty text={t('common.none')} />)}
-            {tab === 'credits' && u.credits.entries.map((e) => <div key={e.id} className="card flex items-center justify-between p-4 text-sm"><div>{reasonL[e.reason]}<div className="text-xs text-fg-dim">{fmtDate(e.createdAt, locale, true)}</div></div><div className={e.delta > 0 ? 'text-success' : 'text-fg-muted'} dir="ltr">{e.delta > 0 ? '+' : ''}{e.delta}</div></div>)}
+            {tab === 'credits' && u.credits.entries.map((e) => <div key={e.id} className="card flex items-center justify-between p-4 text-sm"><div>{reasonL(e.reason)}<div className="text-xs text-fg-dim">{fmtDate(e.createdAt, locale, true)}</div></div><div className={e.delta > 0 ? 'text-success' : 'text-fg-muted'} dir="ltr">{e.delta > 0 ? '+' : ''}{e.delta}</div></div>)}
             {tab === 'testimonials' && (u.testimonials.length ? u.testimonials.map((x) => <div key={x.dreamId} className="card p-4 text-sm"><Stars value={x.rating} size={14} /><p className="mt-2">{x.comment}</p><div className="mt-1 text-xs text-fg-dim">{x.approved ? t('admin.testimonials.approved') : t('admin.testimonials.pending')}</div></div>) : <Empty text={t('common.none')} />)}
           </div>
         </div>
         <aside className="card space-y-4 p-5">
           <div><Label>{t('admin.users.notes')}</Label><Textarea rows={5} value={notes ?? u.notes} onChange={(e) => setNotes(e.target.value)} /></div>
-          <div><Label>{t('admin.users.tags')}</Label><Input value={tags ?? u.tags.join(', ')} onChange={(e) => setTags(e.target.value)} placeholder="متابع دائم، …" /></div>
+          <div><Label>{t('admin.users.tags')}</Label><Input value={tags ?? u.tags.join(', ')} onChange={(e) => setTags(e.target.value)} placeholder={t('admin.users.tagsPlaceholder')} /></div>
           <div className="flex justify-end"><Button size="sm" variant="ghost" loading={saveNotes.isPending} onClick={() => saveNotes.mutate()}>{t('admin.pricing.save')}</Button></div>
         </aside>
       </div>
       <Modal open={creditModal} onClose={() => setCreditModal(false)} title={t('admin.users.addCredits')}>
-        <div className="space-y-3"><div><Label>{t('admin.packages.credits')}</Label><Input type="number" value={delta} onChange={(e) => setDelta(Number(e.target.value))} /></div><div><Label>السبب</Label><Input value={reason} onChange={(e) => setReason(e.target.value)} /></div>
+        <div className="space-y-3"><div><Label>{t('admin.packages.credits')}</Label><Input type="number" value={delta} onChange={(e) => setDelta(Number(e.target.value))} /></div><div><Label>{t('admin.users.reason')}</Label><Input value={reason} onChange={(e) => setReason(e.target.value)} /></div>
           <div className="flex justify-end gap-2"><Button variant="ghost" onClick={() => setCreditModal(false)}>{t('common.cancel')}</Button><Button disabled={!reason || !delta} loading={addCredits.isPending} onClick={() => addCredits.mutate()}>{t('common.confirm')}</Button></div></div>
       </Modal>
     </PageEnter>

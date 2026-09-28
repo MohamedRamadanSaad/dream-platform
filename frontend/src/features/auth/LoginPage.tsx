@@ -79,7 +79,7 @@ export default function LoginPage() {
               <p className="text-xs text-fg-dim">{t('auth.sentHint')}</p>
               <Input dir="ltr" inputMode="numeric" maxLength={6} placeholder="123456" className="text-center tracking-[.4em]" value={code} onChange={(e) => setCode(e.target.value)} />
               <Button type="submit" loading={verify.isPending}>{t('auth.verify')}</Button>
-              {MOCKS && <p className="text-[11px] text-fg-dim">وضع التجربة: أي رمز يدخلك. استخدم fatema@saadatu-aldarein.com لدخول المعبّرة.</p>}
+              {MOCKS && <p className="text-[11px] text-fg-dim">{t('auth.mockHint', { email: 'fatema@saadatu-aldarein.com' })}</p>}
             </form>
           )}
           {err && <p className="mt-4 text-center text-sm text-danger">{err}</p>}
@@ -135,10 +135,11 @@ export function OnboardingPage() {
 
 export function MagicCallbackPage() {
   // /auth/callback?token=… — the backend redirects here after verifying a link.
+  const { t } = useTranslation()
   const [params] = useSearchParams()
   const finish = useFinishLogin()
   const m = useMutation({ mutationFn: authApi.magicVerify, onSuccess: finish })
   const token = params.get('token')
   if (token && m.isIdle) m.mutate({ token })
-  return <div className="flex min-h-screen items-center justify-center bg-night text-pearl">{m.isError ? 'الرابط غير صالح أو انتهت صلاحيته' : '…'}</div>
+  return <div className="flex min-h-screen items-center justify-center bg-night text-pearl">{m.isError ? t('auth.linkInvalid') : '…'}</div>
 }

@@ -6,7 +6,7 @@ import { adminApi } from '@/api/endpoints'
 import { useAuthStore } from '@/app/auth-store'
 import { Button, Empty, Skeleton, Stars, Tabs } from '@/components/ui'
 import { PageEnter } from '@/components/motion'
-import { fmtDate } from '@/lib/utils'
+import { arrowNext, fmtDate } from '@/lib/utils'
 
 export function TestimonialsAdminPage() {
   const { t } = useTranslation()
@@ -22,7 +22,7 @@ export function TestimonialsAdminPage() {
       <div className="mt-6 space-y-3">
         {q.isLoading ? <Skeleton className="h-40" /> : !q.data?.items.length ? <Empty text={t('common.none')} /> : q.data.items.map((x) => (
           <div key={x.id} className="card flex flex-col gap-3 p-5 md:flex-row md:items-center">
-            <div className="flex-1"><div className="mb-1 flex items-center gap-3"><Stars value={x.rating} size={14} /><span className="text-sm">{x.userName}</span><span className="text-xs text-fg-dim">{fmtDate(x.createdAt, locale)}</span></div><p className="text-sm font-light">{x.comment}</p><Link to={`/admin/dreams/${x.dreamId}`} className="text-xs text-gold-deep">الرؤيا ←</Link></div>
+            <div className="flex-1"><div className="mb-1 flex items-center gap-3"><Stars value={x.rating} size={14} /><span className="text-sm">{x.userName}</span><span className="text-xs text-fg-dim">{fmtDate(x.createdAt, locale)}</span></div><p className="text-sm font-light">{x.comment}</p><Link to={`/admin/dreams/${x.dreamId}`} className="text-xs text-gold-deep">{t('me.detail.dream')} {arrowNext(locale)}</Link></div>
             <Button size="sm" variant={x.approved ? 'ghost' : 'gold'} loading={set.isPending} onClick={() => set.mutate({ id: x.id, approved: !x.approved })}>{x.approved ? t('admin.testimonials.hide') : t('admin.testimonials.approve')}</Button>
           </div>
         ))}
