@@ -44,7 +44,7 @@
     "p1": "Fatema follows a scholarly, Sharia-grounded method of dream interpretation, far from exaggeration or alarm. We believe dreams are messages from God carrying glad tidings and reassurance, or warning and caution, and we strive to offer a deep, realistic reading of their symbols.",
     "p2": "This site is dedicated to dream interpretation on sound foundations from the Quran and the Prophetic Sunnah, connecting interpretation with the call to Allah in a simple, concise way.",
     "p3": "Since entering this field I found that those most interested are often the most tested, so I dedicated episodes to true happiness — closeness to Allah — which leads to happiness in the Hereafter.",
-    "verse": "﴿And who is better in speech than one who invites to Allah and does righteousness and says, “Indeed, I am of the Muslims.”﴾",
+    "verse": "“And who is better in speech than one who calls to Allah, does good, and says: I am one of the Muslims.”",
     "verseSrc": "Fussilat: 33",
     "aboutTitle": "About the interpreter",
     "bullet1": "Over 11 years of dream interpretation, by God’s grace, grounded in the Qur’an and Sunnah.",
@@ -81,8 +81,9 @@
   },
   "testimonials": {
     "title": "What dreamers say",
-    "quote": "We rely on the testimonies of those who sought interpretation that most readings came true; we thank them and ask Allah for acceptance — this is a gift and success from Allah.",
-    "verified": "Verified: from an interpreted dream"
+    "quote": "Most of our interpretations came true, as the people who asked us have told us. We thank them, and we ask Allah to accept this work — it is a gift and a blessing from Him.",
+    "verified": "Verified: from an interpreted dream",
+    "quoteBy": "Interpreter Fatema"
   },
   "footer": {
     "rights": "© {{year}} Interpreter Fatema — balanced dream interpretation with depth and realism",

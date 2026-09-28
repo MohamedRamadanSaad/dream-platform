@@ -104,7 +104,7 @@ function Hero() {
             <Link to="/me/new" className="btn btn-gold flex-col gap-1 px-8 py-3.5">
               <span className="text-base font-medium">{t('hero.cta')}</span>
               <span className="flex items-center gap-2 text-[11px] font-normal opacity-80">
-                <AvatarStack names={['أم محمد', 'خالد', 'سارة', 'نورة']} size={20} />
+                <AvatarStack names={locale === 'ar' ? ['أم محمد', 'خالد', 'سارة', 'نورة'] : ['Maryam', 'Khalid', 'Sara', 'Noor']} size={20} />
                 {t('hero.join', { n: joined })}
               </span>
             </Link>
@@ -197,7 +197,7 @@ export default function LandingPage() {
 
   return (
     <div>
-      <Hero />
+      <Hero key={locale} />
 
       <section id="about" className="mx-auto grid max-w-6xl gap-12 px-5 py-20 md:grid-cols-12 md:px-8">
         <div className="md:col-span-7 flex flex-col gap-4">
@@ -268,7 +268,13 @@ export default function LandingPage() {
             </div>
           ))}
         </StaggerGroup>
-        <Reveal as="p" className="mx-auto mt-12 max-w-3xl text-center font-display text-2xl leading-loose text-night dark:text-pearl" delay={0.2}>{t('testimonials.quote')}</Reveal>
+        <Reveal className="mx-auto mt-12 max-w-3xl" delay={0.2}>
+          <div className="card flex flex-col items-center gap-3 px-8 py-8 text-center">
+            <span className="text-gold"><Icon name="quote" size={28} /></span>
+            <p className="font-display text-xl leading-loose text-night dark:text-pearl md:text-2xl">{t('testimonials.quote')}</p>
+            <span className="text-xs tracking-wider text-gold-deep">{t('testimonials.quoteBy')}</span>
+          </div>
+        </Reveal>
       </section>
 
       <Footer />

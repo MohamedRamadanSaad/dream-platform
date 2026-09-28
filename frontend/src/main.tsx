@@ -4,12 +4,13 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { RouterProvider } from 'react-router-dom'
 import { router } from './app/router'
 import { useAuthStore } from './app/auth-store'
-import { applyLocale } from './i18n'
+import { applyLocale, setLocaleChangeListener } from './i18n'
 import './i18n'
 import './theme/globals.css'
 import { startMocks } from './mocks/browser'
 
 const qc = new QueryClient({ defaultOptions: { queries: { retry: 1, staleTime: 15_000, refetchOnWindowFocus: false } } })
+setLocaleChangeListener(() => { qc.invalidateQueries() })
 
 function Root() {
   const locale = useAuthStore((s) => s.locale)

@@ -79,7 +79,7 @@ export const handlers = [
       const a = applyPromotion(p.id, r.price, cc)
       return { id: p.id, name: locale.startsWith('en') ? p.nameEn : p.nameAr, description: locale.startsWith('en') ? p.descriptionEn : p.descriptionAr, credits: p.credits, badge: p.badge, price: a.price, originalPrice: a.original, currency: r.currency, promotion: a.promo, validityMonths: p.validityMonths }
     })
-    return HttpResponse.json({ countryCode: cc, countryName: c?.nameAr ?? cc, currency: packages[0]?.currency ?? 'USD', packages } satisfies T.Catalog)
+    return HttpResponse.json({ countryCode: cc, countryName: (locale.startsWith('en') ? c?.nameEn : c?.nameAr) ?? cc, currency: packages[0]?.currency ?? 'USD', packages } satisfies T.Catalog)
   })),
   http.get(u('/public/wait-time'), wrap(async ({ request }) => HttpResponse.json(waitTimePublic(request.headers.get('accept-language') ?? 'ar')))),
   http.get(u('/public/testimonials'), wrap(async () => HttpResponse.json({ items: [

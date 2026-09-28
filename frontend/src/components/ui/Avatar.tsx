@@ -24,9 +24,9 @@ export function initialOf(name?: string | null) {
   if (!t) return '✦'
   const first = t.split(/\s+/)[0]
   // Arabic names starting with "أم"/"أبو"/"عبد" read better with the next word's letter
-  const skip = ['أم', 'ام', 'أبو', 'ابو', 'عبد', 'عبدال', 'المعبرة', 'المعبّرة', 'الشيخ', 'الشيخة', 'الدكتور', 'الدكتورة', 'د.']
+  const skip = ['أم', 'ام', 'أبو', 'ابو', 'عبد', 'عبدال', 'المعبرة', 'المعبّرة', 'الشيخ', 'الشيخة', 'الدكتور', 'الدكتورة', 'د.', 'interpreter', 'sheikh', 'sheikha', 'dr', 'dr.', 'mr', 'mrs', 'ms', 'umm', 'abu', 'abdul', 'abd']
   const parts = t.split(/\s+/)
-  const word = skip.includes(first) && parts[1] ? parts[1] : first
+  const word = skip.includes(first.toLowerCase()) && parts[1] ? parts[1] : first
   return Array.from(word)[0]!.toUpperCase()
 }
 
