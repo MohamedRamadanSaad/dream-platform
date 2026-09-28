@@ -7,7 +7,7 @@ import { SplitText } from 'gsap/SplitText'
 import { publicApi } from '@/api/endpoints'
 import { useAuthStore } from '@/app/auth-store'
 import { NightSky, type MoonPos } from '@/components/motion/NightSky'
-import { Reveal, StaggerGroup, CountUp, reduced } from '@/components/motion'
+import { Reveal, StaggerGroup, CountUp, parseStat, reduced } from '@/components/motion'
 import { PublicHeader, Footer } from '@/components/layout'
 import { Icon } from '@/components/icons/Icon'
 import { Kicker, Skeleton, Stars } from '@/components/ui'
@@ -194,8 +194,6 @@ export default function LandingPage() {
   const locale = useAuthStore((s) => s.locale)
   const user = useAuthStore((s) => s.user)
   const choose = (p: PackageDto) => { window.location.href = user ? `/me/checkout?package=${p.id}` : `/login?next=${encodeURIComponent(`/me/checkout?package=${p.id}`)}` }
-  const num = (s?: string) => Number((s ?? '0').replace(/\D/g, '')) || 0
-  const suf = (s?: string) => (s ?? '').replace(/[\d,]/g, '')
 
   return (
     <div>
@@ -250,7 +248,7 @@ export default function LandingPage() {
           {[{ k: 'subscribers', v: stats?.subscribers, i: 'user' }, { k: 'views', v: stats?.views, i: 'play' }, { k: 'videos', v: stats?.videos, i: 'youtube' }].map((s) => (
             <div key={s.k} className="card card-hover flex flex-col items-center gap-2 p-8">
               <div className="text-fg"><Icon name={s.i as never} size={32} strokeWidth={1.2} /></div>
-              <div className="text-5xl font-medium text-night dark:text-pearl" dir="ltr">{s.v ? <CountUp to={num(s.v)} suffix={suf(s.v)} /> : '…'}</div>
+              <div className="text-5xl font-medium text-night dark:text-pearl" dir="ltr">{s.v ? (() => { const st = parseStat(s.v); return <CountUp to={st.full} compact={st.compact} suffix={st.sign} /> })() : '…'}</div>
               <div className="text-sm font-light text-fg-muted">{t(`stats.${s.k}`)}</div>
             </div>
           ))}

@@ -1,6 +1,7 @@
 // Motion helpers: text reveal, fade-up on scroll, morphing blob. GSAP-driven, honoring reduced motion.
 import { useEffect, useRef, type ReactNode } from 'react'
 import gsap from 'gsap'
+import { cn } from '@/lib/utils'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { SplitText } from 'gsap/SplitText'
 
@@ -50,15 +51,36 @@ export function PageEnter({ children, className }: { children: ReactNode; classN
 }
 
 /** Counts a number up when it scrolls into view. */
-export function CountUp({ to, suffix = '', className }: { to: number; suffix?: string; className?: string }) {
+/** Parses "1M+", "50K+", "230+" → full value, compact label and trailing sign. */
+export function parseStat(raw: string): { full: number; compact: string; sign: string } {
+  const m = /^\s*([\d.,]+)\s*([KkMmBb]?)\s*(\+?)\s*$/.exec(raw) ?? []
+  const n = Number(String(m[1] ?? '0').replace(/,/g, '')) || 0
+  const unit = (m[2] ?? '').toUpperCase()
+  const mult = unit === 'K' ? 1e3 : unit === 'M' ? 1e6 : unit === 'B' ? 1e9 : 1
+  return { full: Math.round(n * mult), compact: `${m[1] ?? n}${unit}`, sign: m[3] ?? '' }
+}
+
+/**
+ * Counts up through the FULL number with digit grouping (0 → 1,000,000), then collapses to the compact
+ * label ("1M+") once it lands — so a million reads like a million, not like a one.
+ */
+export function CountUp({ to, suffix = '', compact, className }: { to: number; suffix?: string; compact?: string; className?: string }) {
   const ref = useRef<HTMLSpanElement>(null)
+  const fmt = (v: number) => Math.round(v).toLocaleString('en-US')
+  const final = `${compact ?? fmt(to)}${suffix}`
   useEffect(() => {
     const el = ref.current
     if (!el) return
-    if (reduced()) { el.textContent = `${to}${suffix}`; return }
+    if (reduced()) { el.textContent = final; return }
     const o = { v: 0 }
-    const ctx = gsap.context(() => { gsap.to(o, { v: to, duration: 1.8, ease: 'power2.out', scrollTrigger: { trigger: el, start: 'top 90%', once: true }, onUpdate: () => { el.textContent = `${Math.round(o.v)}${suffix}` } }) }, el)
+    const dur = to >= 1e6 ? 3.2 : to >= 1e3 ? 2.4 : 1.8
+    const ctx = gsap.context(() => {
+      gsap.timeline({ scrollTrigger: { trigger: el, start: 'top 90%', once: true } })
+        .to(o, { v: to, duration: dur, ease: 'power3.out', onUpdate: () => { el.textContent = `${fmt(o.v)}${suffix}` } })
+        .to(el, { opacity: 0.2, scale: 0.94, duration: 0.18, ease: 'power1.in', onComplete: () => { el.textContent = final } })
+        .to(el, { opacity: 1, scale: 1, duration: 0.35, ease: 'back.out(2)' })
+    }, el)
     return () => ctx.revert()
-  }, [to, suffix])
-  return <span ref={ref} className={className}>0{suffix}</span>
+  }, [to, suffix, final])
+  return <span ref={ref} className={cn('inline-block tabular-nums', className)}>0{suffix}</span>
 }
