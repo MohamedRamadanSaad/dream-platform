@@ -37,7 +37,7 @@ function FloatingBadges() {
   const ico = 'flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gold/15 text-gold'
   return (
     <div ref={root} className="mt-2 grid w-full max-w-2xl grid-cols-3 gap-2 md:w-auto md:gap-2.5">
-      <div className={badge}><span className={ico}><Icon name="sparkle" size={16} /></span><div><div className="font-quran text-sm leading-tight text-gold-soft md:text-base">{t('hero.badges.verse')}</div><div className="text-[10px] text-pearl/45">{t('hero.badges.verseSrc')}</div></div></div>
+      <div className={badge}><span className={ico}><Icon name="heart" size={16} /></span><div><div className="text-[11px] font-medium leading-tight text-pearl md:text-xs">{t('hero.badges.honesty')}</div><div className="hidden text-[10px] text-pearl/45 md:block">{t('hero.badges.honestySub')}</div></div></div>
       <div className={badge}><span className={ico}><Icon name="shield" size={16} /></span><div><div className="text-[11px] font-medium leading-tight text-pearl md:text-xs">{t('hero.badges.privacy')}</div><div className="hidden text-[10px] text-pearl/45 md:block">{t('hero.badges.privacySub')}</div></div></div>
       <div className={badge}><span className={ico}><Icon name="book" size={16} /></span><div><div className="text-[11px] font-medium leading-tight text-pearl md:text-xs">{t('hero.badges.depth')}</div><div className="hidden text-[10px] text-pearl/45 md:block">{t('hero.badges.depthSub')}</div></div></div>
     </div>
