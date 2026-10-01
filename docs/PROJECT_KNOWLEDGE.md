@@ -1,6 +1,6 @@
 # Project Knowledge — إلى سعادة الدارين (saadatu-aldarein.com)
 
-Single source of truth for anyone (human or AI session) continuing this project. Last updated: 2026-10-01.
+Single source of truth for anyone (human or AI session) continuing this project. Last updated: 2026-10-01. Binding rules: docs/DEVELOPMENT_RULES.md.
 
 ---
 
