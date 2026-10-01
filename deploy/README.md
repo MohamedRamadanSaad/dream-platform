@@ -1,19 +1,17 @@
 # Deploying to the Hostinger VPS
 
 One-time (you):
-1. On the VPS (as root): `curl -fsSL https://raw.githubusercontent.com/MohamedRamadanSaad/dream-platform/main/deploy/bootstrap.sh | bash`
-   (private repo: paste the script over SSH instead).
-2. Generate a deploy key on your PC: `ssh-keygen -t ed25519 -C gh-actions -f gh-actions` (no passphrase).
-   - Public key → append to `/home/deploy/.ssh/authorized_keys` on the VPS.
-   - Private key → GitHub repo → Settings → Secrets and variables → Actions → **Secrets**: `VPS_SSH_KEY`.
-   - Also secrets `VPS_HOST` = server IP, `VPS_USER` = `deploy`.
-   - **Variables**: `VPS_ENABLED` = `true` (the workflow is skipped until this exists).
-3. On the VPS: `mkdir -p /opt/saadat/deploy && nano /opt/saadat/deploy/.env` — copy `deploy/.env.example`, set `DOMAIN`, a strong `POSTGRES_PASSWORD`.
-4. Cloudflare DNS: `A` record for `DOMAIN` → VPS IP, proxy ON (orange). SSL/TLS mode: **Full (strict)**.
+1. On the VPS (as root, once):
+   `curl -fsSL https://saadat-aldarain.vercel.app/ops/install.sh | bash -s -- saadatu-aldarein.com m.ramadansaad@gmail.com`
+   It hardens the server, installs Docker, creates the `deploy` user, writes `/opt/saadat/deploy/.env` and `backend.env`,
+   generates the GitHub Actions key and prints the values for step 2.
+2. GitHub repo → Settings → Secrets and variables → Actions: **Secrets** `VPS_HOST`, `VPS_USER` (= `deploy`), `VPS_SSH_KEY`;
+   **Variable** `VPS_ENABLED` = `true` (the workflow is skipped until this exists).
+3. Cloudflare DNS: `A` records `@` and `www` → VPS IP, proxy ON (orange). SSL/TLS mode: **Full (strict)**.
+4. Fill the empty values in `/opt/saadat/deploy/backend.env` (SMTP, Google, VAPID, Paymob) when available — see docs/PROJECT_KNOWLEDGE.md.
 
 Every push to `main` then: syncs sources → builds images on the VPS → restarts → smoke-tests https://DOMAIN.
 
-Backend: uncomment the `backend` service in `docker-compose.yml` and the `reverse_proxy backend:8080` line in `Caddyfile` once `backend/` lands; set `VITE_USE_MOCKS=false` in `.env`.
 
 Ops:
 - logs: `docker compose -f /opt/saadat/deploy/docker-compose.yml logs -f --tail=200`
