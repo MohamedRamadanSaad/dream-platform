@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.saadat.youtube.YoutubeIntegrationTest" tests="2" skipped="0" failures="0" errors="0" timestamp="2026-10-01T19:38:28.911Z" hostname="runnervm8df0l" time="0.07">
+  <properties/>
+  <testcase name="adminRefreshIsForbiddenForUsersAndNotConfiguredWithoutChannel()" classname="com.saadat.youtube.YoutubeIntegrationTest" time="0.013"/>
+  <testcase name="unseenCountDropsAfterSeenAndCountsNewerVideos()" classname="com.saadat.youtube.YoutubeIntegrationTest" time="0.056"/>
+  <system-out><![CDATA[19:38:28.899 INFO  [Test worker] [] o.s.t.c.s.AnnotationConfigContextLoaderUtils - Could not detect default configuration classes for test class [com.saadat.youtube.YoutubeIntegrationTest]: YoutubeIntegrationTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+19:38:28.908 INFO  [Test worker] [] o.s.b.t.c.SpringBootTestContextBootstrapper - Found @SpringBootConfiguration com.saadat.SaadatApplication for test class com.saadat.youtube.YoutubeIntegrationTest
+19:38:28.921 WARN  [Test worker] [4ceecb15-e86a-44d1-9b9f-373ec64b87bf] c.s.common.error.ApiExceptionHandler - API error 503 on /admin/youtube/refresh: YouTube channel id is not set (brand.youtube_channel_id)
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

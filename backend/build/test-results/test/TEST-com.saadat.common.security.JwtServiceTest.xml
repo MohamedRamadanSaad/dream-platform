@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.saadat.common.security.JwtServiceTest" tests="9" skipped="0" failures="0" errors="0" timestamp="2026-10-01T19:38:26.816Z" hostname="runnervm8df0l" time="0.01">
+  <properties/>
+  <testcase name="shortSecretFailsFast()" classname="com.saadat.common.security.JwtServiceTest" time="0.0"/>
+  <testcase name="wrongIssuerIsRejected()" classname="com.saadat.common.security.JwtServiceTest" time="0.002"/>
+  <testcase name="garbageAndBlankTokensAreRejected()" classname="com.saadat.common.security.JwtServiceTest" time="0.001"/>
+  <testcase name="tamperedPayloadIsRejected()" classname="com.saadat.common.security.JwtServiceTest" time="0.001"/>
+  <testcase name="unknownRoleIsRejected()" classname="com.saadat.common.security.JwtServiceTest" time="0.0"/>
+  <testcase name="issueAndVerifyRoundTrip()" classname="com.saadat.common.security.JwtServiceTest" time="0.001"/>
+  <testcase name="tokenSignedWithAnotherSecretIsRejected()" classname="com.saadat.common.security.JwtServiceTest" time="0.0"/>
+  <testcase name="tokenStillValidJustBeforeExpiry()" classname="com.saadat.common.security.JwtServiceTest" time="0.0"/>
+  <testcase name="expiredTokenIsRejected()" classname="com.saadat.common.security.JwtServiceTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

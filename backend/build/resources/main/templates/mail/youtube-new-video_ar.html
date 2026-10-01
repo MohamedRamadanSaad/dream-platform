@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<!--/* youtube-new-video (ar) — copy is literal here (per-locale file); subject + preheader: messages mail.youtube-new-video.* */-->
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{mail/_layout :: layout('rtl', 'ar', ~{::content})}">
+<head><title>youtube-new-video</title></head>
+<body>
+<div th:fragment="content">
+  <p style="margin:0 0 18px 0;font-size:18px;line-height:1.7;font-weight:600;color:#0A1128;">السلام عليكم<th:block th:if="${!#strings.isEmpty(name)}"> <span th:text="${name}">…</span></th:block>،</p>
+  <p style="margin:0 0 16px 0;">نُشر مقطع جديد على القناة:</p>
+  <p style="margin:0 0 18px 0;font-size:18px;line-height:1.7;font-weight:600;color:#0A1128;" th:text="${videoTitle}">العنوان</p>
+  <p style="margin:0 0 16px 0;" th:if="${!#strings.isEmpty(thumbnailUrl)}"><a th:href="${videoUrl}"><img th:src="${thumbnailUrl}" th:alt="${videoTitle}" width="100%" style="display:block;width:100%;max-width:528px;height:auto;border:0;border-radius:12px;" alt=""></a></p>
+  <table th:replace="~{mail/_layout :: cta(${videoUrl}, 'مشاهدة المقطع')}"></table>
+</div>
+</body>
+</html>

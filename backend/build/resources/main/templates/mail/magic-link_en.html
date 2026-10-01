@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<!--/* magic-link (en) — copy is literal here (per-locale file); subject + preheader: messages mail.magic-link.* */-->
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{mail/_layout :: layout('ltr', 'en', ~{::content})}">
+<head><title>magic-link</title></head>
+<body>
+<div th:fragment="content">
+  <p style="margin:0 0 18px 0;font-size:18px;line-height:1.7;font-weight:600;color:#0A1128;">Assalamu alaikum<th:block th:if="${!#strings.isEmpty(name)}"> <span th:text="${name}">…</span></th:block>,</p>
+  <p style="margin:0 0 16px 0;">You asked to sign in to your account. Use the button below, or type this code on the sign-in page:</p>
+  <div dir="ltr" th:text="${code}" style="margin:8px 0 12px 0;padding:16px;text-align:center;font-size:30px;line-height:1.2;letter-spacing:8px;font-weight:600;color:#0A1128;background-color:#FFFFFF;border:1px solid #E6DCC8;border-radius:12px;">000000</div>
+  <p style="margin:0 0 16px 0;font-size:14px;line-height:1.8;color:#5B6478;">The link and the code are valid for <span th:text="${ttlMinutes}">15</span> minutes and can be used once.</p>
+  <table th:replace="~{mail/_layout :: cta(${ctaUrl}, 'Sign in')}"></table>
+  <p style="margin:18px 0 0 0;font-size:13px;line-height:1.8;color:#5B6478;">If you did not request this, you can safely ignore this message. Nothing changes in your account.</p>
+</div>
+</body>
+</html>
