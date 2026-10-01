@@ -87,7 +87,7 @@ public class AdminDreamService {
             User u = users.get(d.getUserId());
             return new AdminDreamRow(d.getId(), d.getUserId(), u == null ? "" : u.getName(), d.getGender(),
                     DreamMapper.excerpt(d.getText()), d.getStatus(), d.getSubmittedAt(), d.getExpectedBy(),
-                    isOverdue(d, now), u == null ? null : u.getCountryCode());
+                    isOverdue(d, now), u == null || u.getCountryCode() == null ? "" : u.getCountryCode());
         };
         return PageResponse.from(dreams, toRow);
     }
@@ -102,9 +102,9 @@ public class AdminDreamService {
         Dream d = find(dreamId);
         messageRepository.markRead(d.getId(), Role.USER, clock.instant());
         DreamDetailDto detail = mapper.detail(d);
-        User owner = userRepository.findById(d.getUserId()).orElse(null);
-        AdminDreamDetailDto.UserRef userRef = owner == null ? null
-                : new AdminDreamDetailDto.UserRef(owner.getId(), owner.getName(), owner.getEmail(), owner.getCountryCode(), Ages.of(owner.getBirthDate()));
+        User owner = userRepository.findById(d.getUserId())
+                .orElseThrow(() -> new NotFoundException("Dream owner not found"));
+        AdminDreamDetailDto.UserRef userRef = new AdminDreamDetailDto.UserRef(owner.getId(), owner.getName(), owner.getEmail(), owner.getCountryCode(), Ages.of(owner.getBirthDate()));
         return AdminDreamDetailDto.of(detail, userRef, payment(detail.credit()));
     }
 

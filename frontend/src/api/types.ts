@@ -17,6 +17,7 @@ export type NotificationType =
   | 'INTERPRETATION_READY'
   | 'PAYMENT_SUCCESS'
   | 'PROMOTION'
+  | 'YOUTUBE_VIDEO'
 
 export interface ApiProblem {
   type: string
