@@ -710,7 +710,9 @@
       "totalVisitors": "All visitors",
       "sinceStart": "since the site opened",
       "rankBest": "This is the best month ever!",
-      "rank": "This month is <b>#{{n}}</b> of all months"
+      "rank": "This month is <b>#{{n}}</b> of all months",
+      "emptyTitle": "No visits recorded yet",
+      "emptyHint": "Records (best day, best month, all views and visitors) start with the first visit to the site's pages. Your own visits to the dashboard are not counted."
     },
     "emails": {
       "title": "E-mail notifications",

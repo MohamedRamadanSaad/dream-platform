@@ -74,21 +74,30 @@ export function CountUp({ to, suffix = '', compact, className, format = enDigits
   useEffect(() => {
     const el = ref.current
     if (!el) return
-    if (reduced()) { el.textContent = final; return }
+    if (reduced() || typeof IntersectionObserver === 'undefined') { el.textContent = final; return }
     const o = { v: 0 }
     const dur = to >= 1e6 ? 3.2 : to >= 1e3 ? 2.4 : 1.8
-    const ctx = gsap.context(() => {
-      const tl = gsap.timeline({ scrollTrigger: { trigger: el, start: 'top 90%', once: true } })
-        .to(o, { v: to, duration: dur, ease: 'power3.out', onUpdate: () => { el.textContent = `${fmtRef.current(Math.round(o.v))}${suffix}` } })
-      // the compact label (1M+) lands with a small pop; a full number simply settles
-      if (compact) {
-        tl.to(el, { opacity: 0.2, scale: 0.94, duration: 0.18, ease: 'power1.in', onComplete: () => { el.textContent = final } })
-          .to(el, { opacity: 1, scale: 1, duration: 0.35, ease: 'back.out(2)' })
-      } else {
-        tl.call(() => { el.textContent = final })
-      }
-    }, el)
-    return () => ctx.revert()
+    let ctx: gsap.Context | null = null
+    const run = () => {
+      ctx = gsap.context(() => {
+        const tl = gsap.timeline()
+          .to(o, { v: to, duration: dur, ease: 'power3.out', onUpdate: () => { el.textContent = `${fmtRef.current(Math.round(o.v))}${suffix}` } })
+        // the compact label (1M+) lands with a small pop; a full number simply settles
+        if (compact) {
+          tl.to(el, { opacity: 0.2, scale: 0.94, duration: 0.18, ease: 'power1.in', onComplete: () => { el.textContent = final } })
+            .to(el, { opacity: 1, scale: 1, duration: 0.35, ease: 'back.out(2)' })
+        } else {
+          tl.call(() => { el.textContent = final })
+        }
+      }, el)
+    }
+    // Starts when the number itself becomes visible. An IntersectionObserver follows the element wherever
+    // layout moves it (sections above loading or shrinking), unlike a scroll position computed once.
+    const io = new IntersectionObserver((entries) => {
+      if (entries.some((e) => e.isIntersecting)) { io.disconnect(); run() }
+    }, { threshold: 0.2 })
+    io.observe(el)
+    return () => { io.disconnect(); ctx?.revert(); el.textContent = final }
   }, [to, suffix, final, compact])
   return <span ref={ref} className={cn('inline-block tabular-nums', className)}>{format(0)}{suffix}</span>
 }

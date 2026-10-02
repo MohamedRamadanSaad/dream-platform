@@ -60,19 +60,27 @@ export function RecordsBoard({ records }: { records: TrafficReport['records'] })
             <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gold/15 text-gold"><Icon name="trophy" size={22} /></span>
             <div className="min-w-0">
               <h2 id="records-title" className="font-display text-2xl text-gold-soft">{t('admin.records.title')}</h2>
-              <p className="mt-1 text-sm font-light text-pearl/70">{records.totalViews ? t('admin.records.lead') : t('admin.records.empty')}</p>
+              <p className="mt-1 text-sm font-light text-pearl/70">{t('admin.records.lead')}</p>
             </div>
           </div>
           {records.thisMonthRank !== null && records.totalViews > 0 && <RankBadge rank={records.thisMonthRank} />}
         </header>
+        {records.totalViews === 0 ? (
+          <div className="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-navy bg-navy/30 px-6 py-10 text-center">
+            <span className="flex h-12 w-12 items-center justify-center rounded-full bg-gold/10 text-gold"><Icon name="sparkle" size={22} /></span>
+            <p className="font-medium text-gold-soft">{t('admin.records.emptyTitle')}</p>
+            <p className="max-w-md text-sm font-light text-pearl/70">{t('admin.records.emptyHint')}</p>
+          </div>
+        ) : (
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
           <RecordTile icon="trophy" label={t('admin.records.bestDay')} value={records.bestDay?.views ?? null}
-            sub={records.bestDay ? fmtDay(records.bestDay.date, locale, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) : null} />
+            sub={records.bestDay ? `${fmtDay(records.bestDay.date, locale, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}` : null} />
           <RecordTile icon="calendar" label={t('admin.records.bestMonth')} value={records.bestMonth?.views ?? null}
-            sub={records.bestMonth ? fmtMonth(records.bestMonth.month, locale) : null} />
+            sub={records.bestMonth ? `${fmtMonth(records.bestMonth.month, locale)}` : null} />
           <RecordTile icon="eye" label={t('admin.records.totalViews')} value={records.totalViews} sub={t('admin.records.sinceStart')} />
           <RecordTile icon="user" label={t('admin.records.totalVisitors')} value={records.totalVisitors} sub={t('admin.records.sinceStart')} />
         </div>
+        )}
       </div>
     </section>
   )
