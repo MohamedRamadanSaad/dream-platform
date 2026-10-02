@@ -261,7 +261,11 @@ export default function LandingPage() {
         <StaggerGroup className="grid grid-cols-3 gap-3 md:gap-6">
           {[{ k: 'subscribers', v: stats?.subscribers, i: 'user' }, { k: 'views', v: stats?.views, i: 'play' }, { k: 'videos', v: stats?.videos, i: 'youtube' }].map((s) => (
             <div key={s.k} className="card card-hover flex flex-col items-center gap-1.5 px-2 py-5 text-center md:gap-2 md:p-8">
-              <div className="flex h-[26px] items-center text-fg">{s.k === 'videos' ? <YoutubeLogo size={22} /> : <Icon name={s.i as never} size={26} strokeWidth={1.2} />}</div>
+              {/* one soft tinted badge per number: gold for people, calm blue for views, YouTube red for videos */}
+              <div className={cn('mb-1 flex h-12 w-12 items-center justify-center rounded-full ring-1 md:h-14 md:w-14',
+                s.k === 'subscribers' ? 'bg-gold/15 text-gold-ink ring-gold/30' : s.k === 'views' ? 'bg-[#3B82F6]/10 text-[#2563EB] ring-[#3B82F6]/25 dark:text-[#93C5FD]' : 'bg-[#FF0000]/10 ring-[#FF0000]/20')}>
+                {s.k === 'videos' ? <YoutubeLogo size={18} /> : <Icon name={s.i as never} size={24} strokeWidth={1.4} />}
+              </div>
               <div className="text-3xl font-medium text-night dark:text-pearl md:text-5xl" dir="ltr">{s.v ? (() => { const st = parseStat(s.v); return <CountUp to={st.full} compact={st.compact} suffix={st.sign} /> })() : '…'}</div>
               <div className="text-xs font-light leading-snug text-fg-muted md:text-sm">{t(`stats.${s.k}`)}</div>
             </div>
