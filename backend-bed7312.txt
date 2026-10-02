@@ -1,4 +1,4 @@
-### commit df2669657b40803870872e608c30286e0b6ab451 run 36979051662 Fri Oct  2 07:33:07 UTC 2026
+### commit bed73126f9655451e1e7ab7ecffc7acd0936b56b run 36981859239 Fri Oct  2 08:04:42 UTC 2026
 ## tests
 com.saadat.settings.AdminWaitTimeIntegrationTest tests=2 failures=0 errors=0
 com.saadat.mail.MailEventsIntegrationTest tests=7 failures=0 errors=0
@@ -19,6 +19,7 @@ com.saadat.reports.ReportsIntegrationTest tests=2 failures=0 errors=0
 com.saadat.youtube.YoutubeIntegrationTest tests=2 failures=0 errors=0
 com.saadat.ContextLoadsTest tests=6 failures=0 errors=0
 com.saadat.mail.MailServiceIntegrationTest tests=7 failures=0 errors=0
+com.saadat.reports.pdf.ArabicPdfReordererTest tests=4 failures=0 errors=0
 com.saadat.reports.ExcelExportIntegrationTest tests=2 failures=0 errors=0
 com.saadat.users.MeControllerIntegrationTest tests=5 failures=0 errors=0
 com.saadat.youtube.YoutubeFeedParserTest tests=3 failures=0 errors=0
@@ -43,15 +44,15 @@ Note: Recompile with -Xlint:deprecation for details.
 > Task :processTestResources
 > Task :testClasses
 OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
-07:33:07.502 INFO  [SpringApplicationShutdownHook] [] o.s.o.j.LocalContainerEntityManagerFactoryBean - Closing JPA EntityManagerFactory for persistence unit 'default'
-07:33:07.507 INFO  [SpringApplicationShutdownHook] [] com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated...
-07:33:07.525 INFO  [SpringApplicationShutdownHook] [] com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed.
+08:04:41.634 INFO  [SpringApplicationShutdownHook] [] o.s.o.j.LocalContainerEntityManagerFactoryBean - Closing JPA EntityManagerFactory for persistence unit 'default'
+08:04:41.637 INFO  [SpringApplicationShutdownHook] [] com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated...
+08:04:41.651 INFO  [SpringApplicationShutdownHook] [] com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed.
 > Task :test
 > Task :check
 > Task :build
-gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/__run-1790926338769.json
+gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/__run-1790928217448.json
 
 [Incubating] Problems report is available at: file:///home/runner/work/dream-platform/dream-platform/backend/build/reports/problems/problems-report.html
 
-BUILD SUCCESSFUL in 52s
+BUILD SUCCESSFUL in 1m 9s
 7 actionable tasks: 7 executed
