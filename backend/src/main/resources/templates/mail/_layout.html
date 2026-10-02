@@ -55,7 +55,7 @@
               <tr>
                 <td align="center" valign="middle" height="180" class="px" style="height:180px;padding:0 32px;text-align:center;">
                   <div th:text="${brandName}"
-                       th:style="|font-family:${font};font-size:28px;line-height:1.35;font-weight:700;color:${theme.accent};text-align:center;|">Brand</div>
+                       th:style="|font-family:${font};font-size:28px;line-height:1.35;font-weight:700;color:${theme.highlight};text-align:center;|">Brand</div>
                   <div th:text="${tagline}"
                        th:style="|margin-top:8px;font-family:${font};font-size:14px;line-height:1.6;color:${theme.headerText};text-align:center;|">Tagline</div>
                 </td>
@@ -83,17 +83,17 @@
                     th:style="|padding:26px 32px;font-family:${font};font-size:13px;line-height:1.8;color:${theme.footerText};text-align:center;|">
                   <div>
                     <a th:href="${youtubeUrl}" th:text="#{mail.footer.youtube}" target="_blank"
-                       th:style="|font-family:${font};color:${theme.accent};text-decoration:none;font-weight:600;|">YouTube</a>
+                       th:style="|font-family:${font};color:${theme.highlight};text-decoration:none;font-weight:600;|">YouTube</a>
                   </div>
                   <div style="margin-top:6px;">
                     <span th:text="#{mail.footer.website}">Please visit our website</span>
                     <a th:href="${frontendUrl}" th:text="${siteHost}" dir="ltr" target="_blank"
-                       th:style="|font-family:${font};color:${theme.accent};text-decoration:none;font-weight:600;|">example.com</a>
+                       th:style="|font-family:${font};color:${theme.highlight};text-decoration:none;font-weight:600;|">example.com</a>
                   </div>
                   <div th:if="${!#strings.isEmpty(supportEmail)}" style="margin-top:6px;">
                     <span th:text="#{mail.footer.support}">Support</span>
                     <a th:href="${'mailto:' + supportEmail}" th:text="${supportEmail}" dir="ltr"
-                       th:style="|font-family:${font};color:${theme.accent};text-decoration:none;|">support@example.com</a>
+                       th:style="|font-family:${font};color:${theme.highlight};text-decoration:none;|">support@example.com</a>
                   </div>
                   <div th:if="${showAccountNote}" th:text="#{mail.footer.note}"
                        th:style="|margin-top:12px;font-family:${font};font-size:12px;line-height:1.7;color:${theme.footerText};opacity:0.8;|">Note</div>
@@ -121,7 +121,7 @@
         <tr>
           <td align="center" th:attr="bgcolor=${theme.accent}" th:style="|border-radius:999px;background-color:${theme.accent};|">
             <a th:href="${url}" th:text="${label}" target="_blank"
-               th:style="|display:inline-block;padding:14px 38px;font-family:${cf};font-size:16px;line-height:1.2;font-weight:600;color:${theme.bodyText};text-decoration:none;border-radius:999px;|">Open</a>
+               th:style="|display:inline-block;padding:14px 38px;font-family:${cf};font-size:16px;line-height:1.2;font-weight:600;color:${theme.buttonText};text-decoration:none;border-radius:999px;|">Open</a>
           </td>
         </tr>
       </table>

@@ -131,10 +131,15 @@ export function AppShell({ items, children, admin }: { items: { to: string; labe
   const { signOut, pending: signingOut } = useSignOut()
   const user = useAuthStore((s) => s.user)
   const profile = admin ? '/admin/profile' : '/me/profile'
-  // phones: the admin has more pages than the bottom bar holds — the rest open from a "More" sheet
-  const overflow = !!admin && items.length > 5
-  const primary = overflow ? items.slice(0, 4) : items.slice(0, 5)
-  const rest = overflow ? items.slice(4) : []
+  // "My account" is always the last entry: at the end of the sidebar and the last tab on phones
+  const account = items.find((it) => it.to === profile)
+  const others = items.filter((it) => it !== account)
+  const ordered = account ? [...others, account] : others
+  // phones: 5 tabs. When the pages don't fit, the middle ones open from a "More" sheet placed just before the account tab
+  const slots = account ? 4 : 5
+  const overflow = others.length > slots
+  const lead = overflow ? others.slice(0, slots - 1) : others.slice(0, slots)
+  const rest = overflow ? others.slice(slots - 1) : []
   const restActive = rest.some((it) => matchPath({ path: it.to, end: !!it.end }, pathname))
   const [moreOpen, setMoreOpen] = useState(false)
   useEffect(() => setMoreOpen(false), [pathname])
@@ -149,7 +154,7 @@ export function AppShell({ items, children, admin }: { items: { to: string; labe
       <aside className="hidden md:flex md:w-64 md:flex-col bg-night text-pearl sticky top-0 h-screen p-5">
         <Link to="/" className="mb-8 px-2 leading-tight"><div className="font-display text-2xl text-gold-soft">{t('interpreter')}</div><div className="text-[11px] text-pearl/50">{t('brand')}</div></Link>
         <nav className="flex flex-col gap-1">
-          {items.map((it) => (
+          {ordered.map((it) => (
             <NavLink key={it.to} to={it.to} end={it.end} className={({ isActive }) => cn('group flex items-center gap-3 rounded-xl px-3 py-3 text-sm transition-colors', isActive ? 'bg-navy text-pearl' : 'text-pearl/60 hover:bg-navy/60 hover:text-pearl')}>
               {({ isActive }) => <><span className={cn(isActive ? 'text-gold' : 'text-current')}><Icon name={it.icon} size={18} active={isActive} /></span>{it.label}</>}
             </NavLink>
@@ -174,7 +179,6 @@ export function AppShell({ items, children, admin }: { items: { to: string; labe
             {/* theme lives in the profile on phones; the header keeps only what fits */}
             <div className="hidden md:block"><ThemeToggle /></div>
             <LocaleToggle />
-            {/* the interpreter's account page sits in the "More" sheet on phones: the avatar is the short way there */}
             {admin && (
               <Link to={profile} aria-label={t('admin.nav.profile')} title={t('admin.nav.profile')} className="rounded-full transition-transform hover:-translate-y-0.5">
                 <Avatar name={user?.name || user?.email} size={36} />
@@ -184,17 +188,22 @@ export function AppShell({ items, children, admin }: { items: { to: string; labe
         </header>
         <main className="mx-auto max-w-6xl px-4 py-6 pb-[calc(7rem_+_env(safe-area-inset-bottom))] md:px-8 md:pb-10">{children}</main>
         <nav className="pb-safe fixed bottom-0 inset-x-0 z-30 flex border-t border-line bg-bg/95 backdrop-blur md:hidden">
-          {primary.map((it) => (
+          {lead.map((it) => (
             <NavLink key={it.to} to={it.to} end={it.end} className={({ isActive }) => cn('flex flex-1 flex-col items-center gap-1 py-2 text-[11px]', isActive ? 'text-gold-ink' : 'text-fg-muted')}>
               {({ isActive }) => <><Icon name={it.icon} size={20} active={isActive} />{it.label}</>}
             </NavLink>
           ))}
           {overflow && (
             <button type="button" onClick={() => setMoreOpen((v) => !v)} aria-expanded={moreOpen} aria-controls="more-sheet"
-              className={cn('flex flex-1 flex-col items-center gap-1 py-2 text-[10px]', restActive || moreOpen ? 'text-gold-ink' : 'text-fg-muted')}>
+              className={cn('flex flex-1 flex-col items-center gap-1 py-2 text-[11px]', restActive || moreOpen ? 'text-gold-ink' : 'text-fg-muted')}>
               <Icon name="menu" size={20} active={moreOpen || restActive} />{t('admin.nav.more')}
             </button>
           )}
+          {account && [account].map((it) => (
+            <NavLink key={it.to} to={it.to} end={it.end} className={({ isActive }) => cn('flex flex-1 flex-col items-center gap-1 py-2 text-[11px]', isActive ? 'text-gold-ink' : 'text-fg-muted')}>
+              {({ isActive }) => <><Icon name={it.icon} size={20} active={isActive} />{it.label}</>}
+            </NavLink>
+          ))}
         </nav>
         {overflow && moreOpen && (
           <>
