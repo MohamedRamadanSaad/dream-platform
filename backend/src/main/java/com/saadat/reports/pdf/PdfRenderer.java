@@ -59,7 +59,6 @@ public class PdfRenderer {
         String html = templateEngine.process(template, new Context(MessageText.toJava(loc), model));
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         PdfRendererBuilder builder = new PdfRendererBuilder();
-        builder.useFastMode();
         builder.useUnicodeBidiSplitter(new ICUBidiSplitter.ICUBidiSplitterFactory());
         builder.useUnicodeBidiReorderer(new ArabicPdfReorderer());
         builder.defaultTextDirection(loc == Locale.AR

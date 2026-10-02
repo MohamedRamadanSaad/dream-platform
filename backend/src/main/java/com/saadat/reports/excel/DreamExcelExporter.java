@@ -154,8 +154,7 @@ public class DreamExcelExporter {
         sql.append(" order by d.submitted_at desc nulls last, d.id limit :limit");
         params.addValue("limit", settings.getInt(SettingKeys.REPORTS_EXCEL_MAX_ROWS));
 
-        SXSSFWorkbook workbook = new SXSSFWorkbook(WINDOW);
-        try {
+        try (SXSSFWorkbook workbook = new SXSSFWorkbook(WINDOW)) { // close() also deletes the temp files
             workbook.setCompressTempFiles(true);
             Styles styles = styles(workbook);
             SXSSFSheet sheet = workbook.createSheet(WorkbookUtil.createSafeSheetName(text(loc, SHEET_KEY)));
@@ -175,9 +174,6 @@ public class DreamExcelExporter {
             jdbc.query(sql.toString(), params, writer);
             sheet.setAutoFilter(new CellRangeAddress(0, Math.max(next[0] - 1, 0), 0, COLUMNS.length - 1));
             workbook.write(out);
-        } finally {
-            workbook.dispose();
-            workbook.close();
         }
     }
 
