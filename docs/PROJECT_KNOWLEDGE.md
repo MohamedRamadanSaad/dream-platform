@@ -47,9 +47,9 @@ docs/            API_CONTRACT.md, BACKEND_SPEC.md (binding spec), screens/, this
 - `vercel.json` — SPA rewrite excluding `assets|icons|ops|sw.js|...`.
 
 ### Backend map (`com.saadat.*`)
-`common` (api/ApiPaths — every route constant; error RFC 7807; security JWT HS256 15 min + refresh cookie family reuse detection; web/CountryResolver; audit; util/Ages), `config` (AppProperties), `settings` (SettingKeys, SettingsService 60 s cache, admin settings API), `auth` (Google ID token, magic link token+code hashed single-use, onboarding), `users`, `publicapi` (catalog, wait time, testimonials, stats, push key), `notifications` (in-app + web-push VAPID + Thymeleaf mails ar/en; LOGGED when SMTP empty), `push`, `mail` (12 templates × 2 langs, `_layout.html`), `youtube` (Atom feed poll, unseen count), `pricing` (PriceResolver, promotions, coupons), `credits` (ledger, SELECT FOR UPDATE), `payments` (PaymentProvider: Paymob Accept + HMAC-SHA512, MoR stub 503, Mock + `/webhooks/mock/{orderId}`; idempotent webhooks; auto-submit `checkout_intent`), `dreams` (status machine DRAFT → IN_REVIEW ⇄ AWAITING_USER_REPLY → INTERPRETED; CANCELLED refunds; SLA snapshot/pause), `admin/analytics` (countries, user lists, 360°). Scheduled jobs: order expiry, reply reminder, testimonial request, interpreter digest. Profiles `local/dev/prod/test`; `ProductionSafetyCheck` refuses mocks in prod. Testcontainers integration tests (≈95 tests, all green in CI).
+`common` (api/ApiPaths — every route constant; error RFC 7807; security JWT HS256 15 min + refresh cookie family reuse detection; web/CountryResolver; audit; util/Ages), `config` (AppProperties), `settings` (SettingKeys, SettingsService 60 s cache, admin settings API), `auth` (Google ID token, magic link token+code hashed single-use, onboarding), `users`, `publicapi` (catalog, wait time, testimonials, stats, push key), `notifications` (in-app + web-push VAPID + Thymeleaf mails ar/en; LOGGED when SMTP empty), `push`, `mail` (21 templates × 2 langs, `_layout.html` themed by `mail/themes.json` via `MailThemes`/`MailThemeService`; admin `api/AdminMailController` with preview from `MailSamples`; `inbound/` support-mailbox auto-reply), `youtube` (Atom feed poll, unseen count), `pricing` (PriceResolver, promotions, coupons), `credits` (ledger, SELECT FOR UPDATE), `payments` (PaymentProvider: Paymob Accept + HMAC-SHA512, MoR stub 503, Mock + `/webhooks/mock/{orderId}`; idempotent webhooks; auto-submit `checkout_intent`), `dreams` (status machine DRAFT → IN_REVIEW ⇄ AWAITING_USER_REPLY → INTERPRETED; CANCELLED refunds; SLA snapshot/pause), `admin/analytics` (countries, user lists, 360°). Scheduled jobs: order expiry, reply reminder, testimonial request, interpreter digest. Profiles `local/dev/prod/test`; `ProductionSafetyCheck` refuses mocks in prod. Testcontainers integration tests (≈95 tests, all green in CI).
 
-Migrations: V1 settings · V2 users/auth · V3 geo pricing (+seed packages/rules/promotion) · V4 orders/credits · V5 dreams · V6 notifications · V7 youtube · V8 audit/interpreter · V9 users.birth_date · V10 setting interpreter.email_domain · V11 national-day promotions · V12 setting stats.interpreted_base.
+Migrations: V1 settings · V2 users/auth · V3 geo pricing (+seed packages/rules/promotion) · V4 orders/credits · V5 dreams · V6 notifications · V7 youtube · V8 audit/interpreter · V9 users.birth_date · V10 setting interpreter.email_domain · V11 national-day promotions · V12 setting stats.interpreted_base · V13 page views · V14 mail.event.* switches · V15 insights/report settings · V16 e-mail themes + support auto-reply settings.
 
 ### API routes (prefix `/api`)
 ```
@@ -61,13 +61,14 @@ Migrations: V1 settings · V2 users/auth · V3 geo pricing (+seed packages/rules
 /youtube: unseen, seen
 /admin: analytics/{summary,countries,users}, dreams(/{id}, messages, interpretation, cancel), wait-time, settings,
         packages, countries, country-groups, price-rules, promotions, coupons, users(/{id}, notes, credits),
-        testimonials, orders, youtube/refresh
-/webhooks: paymob, mor, mock/{orderId}
+        testimonials, orders, youtube/refresh,
+        mail/themes, mail/templates, mail/templates/{template}/theme, mail/theme-default, mail/preview
+/webhooks: paymob, mor, mock/{orderId}, mail/inbound (support mailbox, Bearer MAIL_WEBHOOK_SECRET)
 /actuator/health, /v3/api-docs, /swagger-ui.html (dev only)
 ```
 
 ### Settings keys (table `app_settings`, editable from the dashboard)
-brand.* (name/tagline ar+en, support_email, youtube_url, youtube_channel_id) · wait.* (busy, normal_hours, busy_min_days, busy_max_days, message_ar/en, auto_reset_at) · dreams.* (min/max chars, draft_limit, reply_reminder_hours, testimonial_request_days) · auth.* (magic_ttl_minutes, access_ttl_minutes, refresh_ttl_days) · orders.expire_minutes · interpreter.* (emails, email_domain, digest_hour) · pricing.* (global_currency, default_country, fx_to_usd) · youtube.poll_minutes · stats.* (subscribers, views, videos — display strings like `1M+`; interpreted_base — number) · schedule.time_zone.
+brand.* (name/tagline ar+en, support_email, youtube_url, youtube_channel_id) · wait.* (busy, normal_hours, busy_min_days, busy_max_days, message_ar/en, auto_reset_at) · dreams.* (min/max chars, draft_limit, reply_reminder_hours, testimonial_request_days) · auth.* (magic_ttl_minutes, access_ttl_minutes, refresh_ttl_days) · orders.expire_minutes · interpreter.* (emails, email_domain, digest_hour) · pricing.* (global_currency, default_country, fx_to_usd) · youtube.poll_minutes · stats.* (subscribers, views, videos — display strings like `1M+`; interpreted_base — number) · schedule.time_zone · mail.event.<template> (BOOL switches, incl. support-auto-reply) · mail.theme.<template> (STRING, blank = default) · mail.theme.default (`crescent-night`) · mail.assets_base_url (blank = FRONTEND_URL) · mail.auto_reply_cooldown_hours (24).
 
 ---
 
@@ -84,7 +85,8 @@ brand.* (name/tagline ar+en, support_email, youtube_url, youtube_channel_id) · 
 ```
 /opt/saadat/deploy/.env          DOMAIN, ACME_EMAIL, VITE_API_URL=/api, VITE_USE_MOCKS=false, POSTGRES_*
 /opt/saadat/deploy/backend.env   SPRING_PROFILES_ACTIVE=dev, FRONTEND_URL, API_URL, JWT_SECRET, INTERPRETER_EMAILS,
-                                 PAYMENTS_MOCK=true, PAYMOB_*, SMTP_*, MAIL_FROM(_NAME), VAPID_*, GOOGLE_CLIENT_ID
+                                 PAYMENTS_MOCK=true, PAYMOB_*, SMTP_*, MAIL_FROM(_NAME), MAIL_WEBHOOK_SECRET, VAPID_*,
+                                 GOOGLE_CLIENT_ID
 deploy user: deploy (docker group); GitHub Actions key: /home/deploy/.ssh/gh-actions
 ```
 Ops: `docker compose -f /opt/saadat/deploy/docker-compose.yml logs -f --tail=200`; DB backup: `docker compose exec postgres pg_dump -U dreams dreams | gzip > /opt/saadat/backup-$(date +%F).sql.gz`.
@@ -106,7 +108,8 @@ Done: full frontend, full backend + DB, CI green, deploy files, Vercel preview l
 5. VAPID keys (`npx web-push generate-vapid-keys`) → `VAPID_PUBLIC_KEY/PRIVATE_KEY`.
 6. YouTube channel id → setting `brand.youtube_channel_id`.
 7. Paymob (last): `PAYMOB_API_KEY/INTEGRATION_ID/IFRAME_ID/HMAC_SECRET`, callback `https://saadatu-aldarein.com/api/webhooks/paymob`; then `PAYMENTS_MOCK=false`, `SPRING_PROFILES_ACTIVE=prod`.
-8. Optional: `VERCEL_TOKEN` secret for automatic preview deploys; link Vercel project to the repo.
+8. E-mail designs: upload `header.jpg` (1200×360) and `footer.jpg` (1200×300) per theme to `frontend/public/email/themes/<key>/`. Support auto-reply: create a Hostinger webhook (event `message.received`) on `support@saadatu-aldarein.com` → `https://saadatu-aldarein.com/api/webhooks/mail/inbound`, put its secret in `MAIL_WEBHOOK_SECRET` (backend.env) and recreate the backend.
+9. Optional: `VERCEL_TOKEN` secret for automatic preview deploys; link Vercel project to the repo.
 
 Later roadmap: Merchant-of-record provider for SAR/USD (MOR stub exists), Apple sign-in, courses module (page is a placeholder), bilingual promotion names.
 
