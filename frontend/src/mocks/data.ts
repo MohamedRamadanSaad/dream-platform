@@ -201,9 +201,13 @@ export const MAIL_TEMPLATES = ['magic-link', ...MAIL_EVENTS] as const
 /** The e-mail theme registry (backend classpath mail/themes.json). Image paths are on the site. */
 export const MAIL_THEMES: Omit<T.MailThemeDto, 'headerImageUrl' | 'footerImageUrl' | 'usedByDefault'>[] = [
   { key: 'crescent-night', nameAr: 'ليلة الهلال', nameEn: 'Crescent night', pageBg: '#0A1128', cardBg: '#F4EFE6', accent: '#D4AF37' },
-  { key: 'full-moon', nameAr: 'البدر', nameEn: 'Full moon', pageBg: '#070D1F', cardBg: '#F4EFE6', accent: '#D4AF37' },
-  { key: 'dawn-glow', nameAr: 'نور الفجر', nameEn: 'Dawn light', pageBg: '#1B2347', cardBg: '#FBF7EF', accent: '#C9962B' },
-  { key: 'golden-midnight', nameAr: 'منتصف الليل الذهبي', nameEn: 'Golden midnight', pageBg: '#05070F', cardBg: '#F4EFE6', accent: '#D4AF37' },
+  { key: 'rose-dawn', nameAr: 'فجر وردي', nameEn: 'Rose dawn', pageBg: '#3E3352', cardBg: '#FBF4F2', accent: '#B76E79' },
+  { key: 'sea-breeze', nameAr: 'نسيم البحر', nameEn: 'Sea breeze', pageBg: '#0A2A33', cardBg: '#F1F8F6', accent: '#2E8C83' },
+  { key: 'lavender-night', nameAr: 'ليل الخزامى', nameEn: 'Lavender night', pageBg: '#1E1739', cardBg: '#F6F2FB', accent: '#8C6CC8' },
+  { key: 'desert-dusk', nameAr: 'غروب الصحراء', nameEn: 'Desert dusk', pageBg: '#2E2333', cardBg: '#FBF5EC', accent: '#B5713F' },
+  { key: 'emerald-night', nameAr: 'ليلة الزمرد', nameEn: 'Emerald night', pageBg: '#0A221B', cardBg: '#F2F6F1', accent: '#B8963F' },
+  { key: 'winter-sky', nameAr: 'سماء الشتاء', nameEn: 'Winter sky', pageBg: '#222C3E', cardBg: '#F3F6F9', accent: '#5F7FA8' },
+  { key: 'calm-morning', nameAr: 'صباح هادئ', nameEn: 'Calm morning', pageBg: '#E6EEF5', cardBg: '#FFFFFF', accent: '#B8862B' },
 ]
 
 db.settings = {

@@ -63,6 +63,20 @@ public final class MailThemeView {
         return theme.footerText();
     }
 
+    /** Colour of the brand name and links on the header/footer images (falls back to the accent). */
+    public String getHighlight() {
+        return isBlank(theme.highlight()) ? theme.accent() : theme.highlight();
+    }
+
+    /** Text colour on the accent button (falls back to the body text colour). */
+    public String getButtonText() {
+        return isBlank(theme.buttonText()) ? theme.bodyText() : theme.buttonText();
+    }
+
+    private static boolean isBlank(String value) {
+        return value == null || value.isBlank();
+    }
+
     public String getHeaderImageUrl() {
         return headerImageUrl;
     }
