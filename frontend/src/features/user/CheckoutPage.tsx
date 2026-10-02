@@ -61,7 +61,7 @@ export function CheckoutPage() {
           <div className="mt-6"><Label>{t('me.checkout.coupon')}</Label><div className="flex gap-2"><Input dir="ltr" value={coupon} onChange={(e) => setCoupon(e.target.value.toUpperCase())} placeholder="CODE" /></div></div>
           {err && <p className="mt-3 text-sm text-danger">{err}</p>}
           <Button className="mt-6 w-full" size="lg" loading={create.isPending} onClick={() => { setErr(null); create.mutate() }}>{t('me.checkout.pay', { amount: fmtMoney(pkg.price, pkg.currency, locale), currency: '' })}</Button>
-          <p className="mt-3 text-center text-[11px] text-fg-dim">{pkg.currency === 'EGP' ? 'Paymob' : 'Cards · Apple Pay · Google Pay'}</p>
+          <p className="mt-3 text-center text-xs text-fg-dim">{pkg.currency === 'EGP' ? t('me.checkout.methodsEg') : t('me.checkout.methods')}</p>
         </div>
       )}
     </PageEnter>

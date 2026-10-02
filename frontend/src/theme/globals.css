@@ -4,43 +4,54 @@
 @tailwind utilities;
 
 :root {
-  --night: #0a1128;
-  --navy: #16244a;
-  --ink: #1e3a5f;
-  --gold: #d4af37;
-  --gold-soft: #eadbaa;
-  --gold-deep: #a8872a;
-  --pearl: #f4efe6;
+  /* colours are "r g b" channels so Tailwind opacity modifiers (text-pearl/50, bg-gold/10…) work */
+  --night: 10 17 40;
+  --navy: 22 36 74;
+  --ink: 30 58 95;
+  --gold: 212 175 55;
+  --gold-soft: 234 219 170;
+  --gold-deep: 168 135 42;
+  --pearl: 244 239 230;
+  --gold-ink: 127 100 24;     /* gold for small text on light surfaces (≥4.5:1) */
+  --success: 39 107 78;
+  --warn: 154 90 18;
+  --danger: 181 68 45;
+  --info: 59 110 168;
 
-  --bg: #f4efe6;
-  --surface: #fbf8f2;
-  --surface-2: #ede5d4;
-  --line: #e6dcc8;
-  --fg: #1e3a5f;
-  --fg-muted: #5a6b88;
-  --fg-dim: #8a94ab;
+  --bg: 244 239 230;
+  --surface: 251 248 242;
+  --surface-2: 237 229 212;
+  --line: 230 220 200;
+  --fg: 30 58 95;
+  --fg-muted: 90 107 136;
+  --fg-dim: 138 148 171;
 }
 .dark {
-  --bg: #070c1f;
-  --surface: #0f1833;
-  --surface-2: #16244a;
-  --line: #24325c;
-  --fg: #f4efe6;
-  --fg-muted: #b7bfd6;
-  --fg-dim: #7d879f;
+  --bg: 7 12 31;
+  --surface: 15 24 51;
+  --surface-2: 22 36 74;
+  --line: 36 50 92;
+  --fg: 244 239 230;
+  --fg-muted: 183 191 214;
+  --fg-dim: 125 135 159;
+  --gold-ink: 222 196 120;
+  --success: 108 199 154;
+  --warn: 230 167 90;
+  --danger: 239 138 114;
+  --info: 138 180 232;
 }
 
 html { scroll-behavior: smooth; }
 body {
-  @apply bg-[color:var(--bg)] text-fg font-body antialiased;
+  @apply bg-bg text-fg font-body antialiased;
   transition: background-color .5s ease, color .5s ease;
 }
 [dir='rtl'] body { font-family: 'IBM Plex Sans Arabic', 'IBM Plex Sans', system-ui, sans-serif; }
 [dir='ltr'] body { font-family: 'IBM Plex Sans', 'IBM Plex Sans Arabic', system-ui, sans-serif; }
 .font-display { font-weight: 600; letter-spacing: -0.01em; }
 
-::selection { background: var(--gold); color: var(--night); }
-:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+::selection { background: rgb(var(--gold)); color: rgb(var(--night)); }
+:focus-visible { outline: 2px solid rgb(var(--gold)); outline-offset: 2px; }
 
 @layer components {
 .card { @apply bg-surface border border-line rounded-xl2 transition-[transform,box-shadow,border-color] duration-500; }
@@ -53,9 +64,12 @@ body {
 .btn-lg { @apply px-8 py-4 text-base; }
 .btn-sm { @apply px-4 py-2 text-xs; }
 .input { @apply w-full rounded-xl border border-line bg-surface px-4 py-3 text-sm text-fg placeholder:text-fg-dim focus:border-gold; }
-.label { @apply block text-xs tracking-wider text-gold-deep mb-2; }
+.label { @apply block text-[13px] text-gold-ink mb-2 ltr:text-xs ltr:tracking-wider; }
 .chip { @apply inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs; }
 }
+
+/* iPhone home-indicator clearance for fixed bottom bars */
+.pb-safe { padding-bottom: env(safe-area-inset-bottom); }
 
 @keyframes twinkle { 0%,100%{opacity:.25} 50%{opacity:1} }
 @keyframes pulse-ring { 0%,100%{box-shadow:0 0 0 0 rgba(212,175,55,.55)} 50%{box-shadow:0 0 0 7px rgba(212,175,55,0)} }

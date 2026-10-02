@@ -35,7 +35,7 @@ export function Avatar({ name, size = 36, className, ring }: { name?: string | n
   return (
     <span
       aria-hidden="true"
-      className={cn('inline-flex shrink-0 select-none items-center justify-center rounded-full font-display leading-none', ring && 'ring-2 ring-[color:var(--bg)]', className)}
+      className={cn('inline-flex shrink-0 select-none items-center justify-center rounded-full font-display leading-none', ring && 'ring-2 ring-bg', className)}
       style={{ width: size, height: size, background: bg, color: fg, fontSize: Math.round(size * 0.45) }}
     >
       {initialOf(name)}

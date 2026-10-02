@@ -5,7 +5,7 @@ import type { DreamStatus, OrderStatus } from '@/api/types'
 import { useTranslation } from 'react-i18next'
 
 const button = cva('btn', {
-  variants: { variant: { gold: 'btn-gold', night: 'btn-night', ghost: 'btn-ghost', link: 'text-fg hover:text-gold-deep underline-offset-4 hover:underline' }, size: { sm: 'btn-sm', md: 'btn-md', lg: 'btn-lg' } },
+  variants: { variant: { gold: 'btn-gold', night: 'btn-night', ghost: 'btn-ghost', link: 'text-fg hover:text-gold-ink underline-offset-4 hover:underline' }, size: { sm: 'btn-sm', md: 'btn-md', lg: 'btn-lg' } },
   defaultVariants: { variant: 'gold', size: 'md' },
 })
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement>, VariantProps<typeof button> { loading?: boolean }
@@ -29,7 +29,7 @@ Textarea.displayName = 'Textarea'
 export const Label = ({ children, className }: { children: ReactNode; className?: string }) => <span className={cn('label', className)}>{children}</span>
 export const H1 = ({ children, className }: { children: ReactNode; className?: string }) => <h1 className={cn('font-display text-4xl md:text-5xl text-fg', className)}>{children}</h1>
 export const H2 = ({ children, className }: { children: ReactNode; className?: string }) => <h2 className={cn('font-display text-3xl md:text-4xl text-fg', className)}>{children}</h2>
-export const Kicker = ({ children }: { children: ReactNode }) => <div className="text-xs tracking-[.15em] text-gold-deep">{children}</div>
+export const Kicker = ({ children }: { children: ReactNode }) => <div className="text-[13px] font-medium text-gold-ink ltr:text-xs ltr:tracking-[.15em]">{children}</div>
 
 const statusColor: Record<DreamStatus | OrderStatus, string> = {
   DRAFT: 'bg-surface-2 text-fg-muted', IN_REVIEW: 'bg-info/10 text-info', AWAITING_USER_REPLY: 'bg-danger/10 text-danger', INTERPRETED: 'bg-success/10 text-success', CANCELLED: 'bg-surface-2 text-fg-dim',
@@ -89,7 +89,7 @@ export function Stars({ value, onChange, size = 22 }: { value: number; onChange?
     <div className="inline-flex gap-1" role={onChange ? 'radiogroup' : undefined}>
       {[1, 2, 3, 4, 5].map((i) => (
         <button key={i} type="button" disabled={!onChange} onClick={() => onChange?.(i)} aria-label={`${i}`} className="disabled:cursor-default">
-          <svg width={size} height={size} viewBox="0 0 24 24" fill={i <= value ? 'var(--gold)' : 'transparent'} stroke="var(--gold)" strokeWidth="1.3"><path d="M12 3l2.4 5.2 5.6.6-4.2 3.8 1.2 5.6L12 15.4 7 18.2l1.2-5.6L4 8.8l5.6-.6z" /></svg>
+          <svg width={size} height={size} viewBox="0 0 24 24" fill={i <= value ? 'rgb(var(--gold))' : 'transparent'} stroke="rgb(var(--gold))" strokeWidth="1.3"><path d="M12 3l2.4 5.2 5.6.6-4.2 3.8 1.2 5.6L12 15.4 7 18.2l1.2-5.6L4 8.8l5.6-.6z" /></svg>
         </button>
       ))}
     </div>
@@ -100,7 +100,7 @@ export function Stat({ label, value, tone, icon }: { label: string; value: React
   return (
     <div className={cn('card p-5 flex items-center justify-between gap-3', tone === 'gold' && 'border-gold/50', tone === 'danger' && 'border-danger/30 bg-danger/5', tone === 'night' && 'bg-night text-pearl border-navy')}>
       <div><div className={cn('text-xs', tone === 'night' ? 'text-gold-soft/70' : 'text-fg-muted')}>{label}</div><div className="mt-1 text-3xl font-display">{value}</div></div>
-      {icon && <div className={cn(tone === 'night' ? 'text-gold' : 'text-gold-deep')}>{icon}</div>}
+      {icon && <div className={cn('hidden sm:block', tone === 'night' ? 'text-gold' : 'text-gold-ink')}>{icon}</div>}
     </div>
   )
 }

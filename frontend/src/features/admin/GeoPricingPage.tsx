@@ -61,7 +61,7 @@ export function GeoPricingPage() {
       <div className="grid gap-5 lg:grid-cols-3">
         <aside className="card p-3 lg:sticky lg:top-20 lg:self-start">
           <button onClick={() => setSel({ kind: 'GLOBAL' })} className={cn('flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-sm', sel.kind === 'GLOBAL' ? 'bg-night text-pearl' : 'hover:bg-surface-2')}><Icon name="globe" size={16} />{t('admin.pricing.global')}</button>
-          <div className="mt-3 px-3 text-xs tracking-wider text-gold-deep">{t('admin.pricing.continents')}</div>
+          <div className="mt-3 px-3 text-xs ltr:tracking-wider text-gold-ink">{t('admin.pricing.continents')}</div>
           {CONTINENTS.map((ct) => {
             const list = filtered.filter((c) => c.continent === ct)
             const open = openCont === ct
@@ -76,7 +76,7 @@ export function GeoPricingPage() {
                   <div className="ms-3 border-s border-line ps-2 py-1">
                     {list.length === 0 && <div className="px-3 py-1 text-xs text-fg-dim">{t('common.none')}</div>}
                     {list.map((c) => (
-                      <button key={c.code} onClick={() => setSel({ kind: 'COUNTRY', id: c.code })} className={cn('flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm', sel.kind === 'COUNTRY' && sel.id === c.code ? 'bg-gold/15 text-gold-deep' : 'hover:bg-surface-2')}>
+                      <button key={c.code} onClick={() => setSel({ kind: 'COUNTRY', id: c.code })} className={cn('flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm', sel.kind === 'COUNTRY' && sel.id === c.code ? 'bg-gold/15 text-gold-ink' : 'hover:bg-surface-2')}>
                         <span>{FLAG(c.code)} {name(c)}</span>
                         <span className="text-[10px] text-fg-dim">{hasCustom(c) ? t('admin.pricing.custom') : c.groupId ? gs.find((g) => g.id === c.groupId)?.name : t('admin.pricing.inherited')}</span>
                       </button>
@@ -86,7 +86,7 @@ export function GeoPricingPage() {
               </div>
             )
           })}
-          <div className="mt-4 flex items-center justify-between px-3 text-xs tracking-wider text-gold-deep"><span>{t('admin.pricing.groups')}</span><button onClick={() => setGroupModal({ name: '', countryCodes: [] })} className="text-fg-muted hover:text-fg"><Icon name="plus" size={14} /></button></div>
+          <div className="mt-4 flex items-center justify-between px-3 text-xs ltr:tracking-wider text-gold-ink"><span>{t('admin.pricing.groups')}</span><button onClick={() => setGroupModal({ name: '', countryCodes: [] })} className="text-fg-muted hover:text-fg"><Icon name="plus" size={14} /></button></div>
           {gs.map((g) => (
             <button key={g.id} onClick={() => setSel({ kind: 'GROUP', id: g.id })} className={cn('flex w-full items-center justify-between rounded-xl px-3 py-2.5 text-sm', sel.kind === 'GROUP' && sel.id === g.id ? 'bg-night text-pearl' : 'hover:bg-surface-2')}>
               <span><Icon name="heart" size={14} className="inline me-1" />{g.name}</span><span className="text-xs opacity-60">{g.countryCodes.length}</span>
@@ -94,7 +94,7 @@ export function GeoPricingPage() {
           ))}
           <div className="mt-4 space-y-2 px-1">
             <Input placeholder={t('common.search')} value={search} onChange={(e) => setSearch(e.target.value)} className="py-2 text-xs" />
-            <label className="flex items-center gap-2 text-xs text-fg-muted"><input type="checkbox" checked={customOnly} onChange={(e) => setCustomOnly(e.target.checked)} className="accent-[var(--gold)]" />{t('admin.pricing.customOnly')}</label>
+            <label className="flex items-center gap-2 text-xs text-fg-muted"><input type="checkbox" checked={customOnly} onChange={(e) => setCustomOnly(e.target.checked)} className="accent-gold" />{t('admin.pricing.customOnly')}</label>
           </div>
         </aside>
 
@@ -118,7 +118,7 @@ export function GeoPricingPage() {
             <div><Label>{t('common.country')}</Label>
               <div className="grid max-h-64 grid-cols-2 gap-1 overflow-auto rounded-xl border border-line p-2 text-sm">
                 {cs.map((c) => { const on = groupModal.countryCodes?.includes(c.code); const other = c.groupId && c.groupId !== groupModal.id ? gs.find((g) => g.id === c.groupId)?.name : null
-                  return <label key={c.code} className={cn('flex items-center gap-2 rounded-lg px-2 py-1.5', on && 'bg-gold/10')}><input type="checkbox" checked={!!on} onChange={(e) => setGroupModal({ ...groupModal, countryCodes: e.target.checked ? [...(groupModal.countryCodes ?? []), c.code] : (groupModal.countryCodes ?? []).filter((x) => x !== c.code) })} className="accent-[var(--gold)]" />{FLAG(c.code)} {name(c)}{other && <span className="text-[10px] text-fg-dim">({other})</span>}</label> })}
+                  return <label key={c.code} className={cn('flex items-center gap-2 rounded-lg px-2 py-1.5', on && 'bg-gold/10')}><input type="checkbox" checked={!!on} onChange={(e) => setGroupModal({ ...groupModal, countryCodes: e.target.checked ? [...(groupModal.countryCodes ?? []), c.code] : (groupModal.countryCodes ?? []).filter((x) => x !== c.code) })} className="accent-gold" />{FLAG(c.code)} {name(c)}{other && <span className="text-[10px] text-fg-dim">({other})</span>}</label> })}
               </div>
             </div>
             <div className="flex justify-end gap-2"><Button variant="ghost" onClick={() => setGroupModal(null)}>{t('common.cancel')}</Button><Button disabled={!groupModal.name} loading={saveGroup.isPending} onClick={() => saveGroup.mutate(groupModal)}>{t('admin.pricing.save')}</Button></div>
@@ -142,7 +142,7 @@ function PriceRow({ pkg, sel, country, rules, groups, currencyDefault, onSave, o
   const srcLabel = own ? t('admin.pricing.custom') : source === 'GROUP' ? `${t('admin.pricing.fromGroup')} ${groups.find((g) => g.id === rule?.scopeId)?.name ?? ''}` : source === 'CONTINENT' ? t('admin.pricing.fromContinent') : source === 'GLOBAL' && scope !== 'GLOBAL' ? t('admin.pricing.inherited') : ''
   return (
     <div className={cn('flex flex-wrap items-center gap-3 rounded-xl border p-4', own ? 'border-gold/50 bg-gold/5' : 'border-line')}>
-      <div className="min-w-0 flex-1"><div className="font-medium">{locale === 'ar' ? pkg.nameAr : pkg.nameEn}</div><div className="text-xs text-fg-dim">{t('packages.dreams', { count: pkg.credits })}{srcLabel && <> · <span className={own ? 'text-gold-deep' : ''}>{srcLabel}</span></>}</div></div>
+      <div className="min-w-0 flex-1"><div className="font-medium">{locale === 'ar' ? pkg.nameAr : pkg.nameEn}</div><div className="text-xs text-fg-dim">{t('packages.dreams', { count: pkg.credits })}{srcLabel && <> · <span className={own ? 'text-gold-ink' : ''}>{srcLabel}</span></>}</div></div>
       {edit ? (
         <div className="flex items-center gap-2">
           <Input type="number" min={0} value={price} onChange={(e) => setPrice(e.target.value)} className="w-28 py-2" dir="ltr" />

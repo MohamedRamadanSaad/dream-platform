@@ -29,7 +29,7 @@ export function PaymentsPage() {
             {orders.data!.items.map((o) => (
               <div key={o.id} className="flex items-center justify-between gap-4 p-4">
                 <div className="min-w-0"><div className="text-sm">{o.packageName} · {fmtMoney(o.amount, o.currency, locale)}</div><div className="text-xs text-fg-dim" dir="ltr">{o.providerRef ?? o.id} · {fmtDate(o.createdAt, locale, true)}</div></div>
-                <div className="text-end"><StatusBadge status={o.status} kind="order" />{(o.status === 'FAILED' || o.status === 'EXPIRED') && <div><Link to="/me/packages" className="text-xs text-gold-deep">{t('me.payments.retry')} {arrowNext(locale)}</Link></div>}</div>
+                <div className="text-end"><StatusBadge status={o.status} kind="order" />{(o.status === 'FAILED' || o.status === 'EXPIRED') && <div><Link to="/me/packages" className="text-xs text-gold-ink">{t('me.payments.retry')} {arrowNext(locale)}</Link></div>}</div>
               </div>
             ))}
             {orders.data!.items.length === 0 && <div className="p-6 text-center text-fg-muted">{t('common.none')}</div>}
@@ -42,7 +42,7 @@ export function PaymentsPage() {
           <div className="card divide-y divide-line p-0">
             {credits.data?.entries.map((e) => (
               <div key={e.id} className="flex items-center justify-between p-4 text-sm">
-                <div><div>{reason(e.reason)}</div><div className="text-xs text-fg-dim">{fmtDate(e.createdAt, locale, true)}{e.dreamId && <> · <Link to={`/me/dreams/${e.dreamId}`} className="text-gold-deep">{t('me.detail.dream')}</Link></>}</div></div>
+                <div><div>{reason(e.reason)}</div><div className="text-xs text-fg-dim">{fmtDate(e.createdAt, locale, true)}{e.dreamId && <> · <Link to={`/me/dreams/${e.dreamId}`} className="text-gold-ink">{t('me.detail.dream')}</Link></>}</div></div>
                 <div className={e.delta > 0 ? 'text-success' : 'text-fg-muted'} dir="ltr">{e.delta > 0 ? '+' : ''}{e.delta}</div>
               </div>
             ))}

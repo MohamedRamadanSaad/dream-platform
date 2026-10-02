@@ -29,8 +29,8 @@ export function DreamRow({ d, selectable, selected, onToggle }: { d: DreamSummar
   if (selectable) {
     return (
       <label className={cn('card card-hover flex cursor-pointer gap-4 p-5', selected && 'border-gold bg-gold/5')}>
-        <input type="checkbox" checked={!!selected} onChange={onToggle} className="mt-1 h-5 w-5 accent-[var(--gold)]" />
-        <div className="flex-1 min-w-0">{inner}<div className="mt-3 flex gap-3 text-xs"><Link to={`/me/dreams/${d.id}/edit`} className="text-gold-deep hover:underline">{t('common.edit')}</Link></div></div>
+        <input type="checkbox" checked={!!selected} onChange={onToggle} className="mt-1 h-5 w-5 accent-gold" />
+        <div className="flex-1 min-w-0">{inner}<div className="mt-3 flex gap-3 text-xs"><Link to={`/me/dreams/${d.id}/edit`} className="text-gold-ink hover:underline">{t('common.edit')}</Link></div></div>
       </label>
     )
   }
@@ -87,7 +87,7 @@ export function UserDreamsPage() {
         <button onClick={() => setTab('AWAITING_USER_REPLY')} className="card mb-6 flex w-full items-center gap-3 border-danger/30 bg-danger/5 p-4 text-start text-sm">
           <span className="text-danger"><Icon name="chat" size={20} /></span>
           <span className="flex-1">{t('me.tabs.awaiting')} · {dash.data.awaitingReply}</span>
-          <span className="text-gold-deep">{t('common.seeAll')} {arrowNext(locale)}</span>
+          <span className="text-gold-ink">{t('common.seeAll')} {arrowNext(locale)}</span>
         </button>
       )}
 

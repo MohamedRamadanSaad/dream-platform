@@ -76,7 +76,7 @@ brand.* (name/tagline ar+en, support_email, youtube_url, youtube_channel_id) · 
 | What | Where |
 |---|---|
 | Preview (frontend only, **mocks on**) | https://saadat-aldarain.vercel.app — Vercel project `saadat-aldarain` (`prj_4d9ouYQoZd4sAVcVFC931xZBwXXq`, team `team_XxPvi1SlfR3fXdFAeDA3O03j`). **Not** git-linked: deploy manually via Vercel API/MCP `create_deployment` with `gitSource` (org `MohamedRamadanSaad`, repo `dream-platform`, ref `main`, sha), or set GitHub secret `VERCEL_TOKEN` so `frontend.yml` deploys automatically. |
-| Production (target) | https://saadatu-aldarein.com — Hostinger VPS KVM, Ubuntu 24.04, IP `186.241.26.214`, Cloudflare DNS (A `@` and `www` → IP, proxied, SSL Full strict). Replaces the old site directly. |
+| Production (live since 2026-10-02) | https://saadatu-aldarein.com — Hostinger VPS KVM, Ubuntu 24.04, IP `186.241.26.214`. DNS is managed at **Hostinger** (nameservers `*.dns-parking.com`, not Cloudflare): A `@` and A `www` → IP, not proxied; Caddy issues the Let's Encrypt certificates. Country pricing needs the `CF-IPCountry` header, so moving DNS to Cloudflare (proxied, SSL Full strict) is still pending — until then every visitor gets `pricing.default_country`. |
 | Setup scripts | https://saadat-aldarain.vercel.app/ops/install.sh (+ bootstrap.sh) |
 | CI | GitHub Actions; backend test summary is pushed to branch `ci-logs` (`latest-backend.txt`) because job logs can't be downloaded from the sandbox. |
 

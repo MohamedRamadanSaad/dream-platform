@@ -12,7 +12,8 @@ interface Shape { before: string; after: string; fill?: boolean; extra?: JSX.Ele
 
 const shapes: Record<IconName, Shape> = {
   moon: { before: 'M20 13.5A8.5 8.5 0 1 1 10.5 4a6.5 6.5 0 0 0 9.5 9.5z', after: 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z' },
-  sun: { before: 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z', after: 'M20 13.5A8.5 8.5 0 1 1 10.5 4a6.5 6.5 0 0 0 9.5 9.5z' },
+  // a sun with rays (a bare circle read as an empty button); hover lengthens the rays
+  sun: { before: 'M12 16.5a4.5 4.5 0 1 0 0-9 4.5 4.5 0 0 0 0 9zM12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M5.3 18.7l1.4-1.4M17.3 6.7l1.4-1.4', after: 'M12 17a5 5 0 1 0 0-10 5 5 0 0 0 0 10zM12 1.5v2.5M12 20v2.5M1.5 12H4M20 12h2.5M4.6 4.6l1.8 1.8M17.6 17.6l1.8 1.8M4.6 19.4l1.8-1.8M17.6 6.4l1.8-1.8' },
   star: { before: 'M12 3l2.4 5.2 5.6.6-4.2 3.8 1.2 5.6L12 15.4 7 18.2l1.2-5.6L4 8.8l5.6-.6z', after: 'M12 2l1.8 6.2 6.2 1.8-6.2 1.8L12 18l-1.8-6.2L4 10l6.2-1.8z', fill: true },
   sparkle: { before: 'M12 2l1.8 6.2 6.2 1.8-6.2 1.8L12 18l-1.8-6.2L4 10l6.2-1.8z', after: 'M12 4l1 4 4 1-4 1-1 4-1-4-4-1 4-1z', fill: true },
   scroll: { before: 'M6 3h11a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z', after: 'M5 4h14a1 1 0 0 1 1 1v3H4V5a1 1 0 0 1 1-1zM4 8h16v11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z' },

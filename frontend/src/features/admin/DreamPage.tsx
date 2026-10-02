@@ -76,7 +76,7 @@ export function AdminDreamPage() {
             </dl>
           ) : <p className="text-sm text-fg-muted">{t('admin.dream.noOrder')}</p>}
         </div>
-        <Link to={`/admin/users/${d.user.id}`} className="card card-hover flex items-center gap-3 p-5 text-sm"><span className="text-gold-deep"><Icon name="user" size={22} /></span>{t('admin.dream.user360')} {arrowNext(locale)}</Link>
+        <Link to={`/admin/users/${d.user.id}`} className="card card-hover flex items-center gap-3 p-5 text-sm"><span className="text-gold-ink"><Icon name="user" size={22} /></span>{t('admin.dream.user360')} {arrowNext(locale)}</Link>
       </aside>
 
       <Modal open={confirm} onClose={() => setConfirm(false)} title={t('admin.dream.publish')}>

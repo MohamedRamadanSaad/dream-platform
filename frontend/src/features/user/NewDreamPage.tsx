@@ -54,7 +54,7 @@ export function NewDreamPage() {
       <div className="card p-6">
         <Label>{t('auth.gender')}</Label>
         <div className="mb-5 grid grid-cols-2 gap-2">
-          {(['FEMALE', 'MALE'] as Gender[]).map((g) => <button key={g} type="button" onClick={() => setGender(g)} className={`rounded-xl border px-4 py-2.5 text-sm transition-colors ${gender === g ? 'border-gold bg-gold/10 text-gold-deep' : 'border-line text-fg-muted'}`}>{t(g === 'FEMALE' ? 'auth.female' : 'auth.male')}</button>)}
+          {(['FEMALE', 'MALE'] as Gender[]).map((g) => <button key={g} type="button" onClick={() => setGender(g)} className={`rounded-xl border px-4 py-2.5 text-sm transition-colors ${gender === g ? 'border-gold bg-gold/10 text-gold-ink' : 'border-line text-fg-muted'}`}>{t(g === 'FEMALE' ? 'auth.female' : 'auth.male')}</button>)}
         </div>
         <Label>{t('me.detail.dream')}</Label>
         <Textarea rows={12} value={text} onChange={(e) => setText(e.target.value)} placeholder={t('me.newDream.placeholder')} className="text-base" />

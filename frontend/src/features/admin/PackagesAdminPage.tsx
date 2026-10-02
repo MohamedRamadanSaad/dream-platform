@@ -38,7 +38,7 @@ export function PackagesAdminPage() {
       <div className="mt-6 space-y-3">
         {tab === 'packages' && (pk.isLoading ? <Skeleton className="h-40" /> : pk.data!.sort((a, b) => a.sortOrder - b.sortOrder).map((p) => (
           <div key={p.id} className={cn('card flex items-center justify-between gap-4 p-5', !p.active && 'opacity-50')}>
-            <div><div className="font-medium">{locale === 'ar' ? p.nameAr : p.nameEn} {p.badge && <span className="chip bg-gold/10 text-gold-deep">{p.badge}</span>}</div><div className="text-xs text-fg-dim">{t('packages.dreams', { count: p.credits })} · {p.active ? t('admin.packages.active') : t('admin.packages.inactive')}</div></div>
+            <div><div className="font-medium">{locale === 'ar' ? p.nameAr : p.nameEn} {p.badge && <span className="chip bg-gold/10 text-gold-ink">{p.badge}</span>}</div><div className="text-xs text-fg-dim">{t('packages.dreams', { count: p.credits })} · {p.active ? t('admin.packages.active') : t('admin.packages.inactive')}</div></div>
             <div className="flex gap-2"><Button size="sm" variant="ghost" onClick={() => setEditP(p)}>{t('common.edit')}</Button><Button size="sm" variant="ghost" onClick={() => saveP.mutate({ id: p.id, active: !p.active })}>{p.active ? t('admin.packages.inactive') : t('admin.packages.active')}</Button></div>
           </div>
         )))}
@@ -65,7 +65,7 @@ export function PackagesAdminPage() {
           <div><Label>{t('admin.packages.credits')}</Label><Input type="number" min={1} value={editP.credits ?? 1} onChange={(e) => setEditP({ ...editP, credits: Number(e.target.value) })} /></div>
           <div><Label>{t('admin.packages.badge')}</Label><Input value={editP.badge ?? ''} onChange={(e) => setEditP({ ...editP, badge: e.target.value || null })} /></div>
           <div><Label>{t('admin.packages.validity')}</Label><Input type="number" value={editP.validityMonths ?? ''} onChange={(e) => setEditP({ ...editP, validityMonths: e.target.value ? Number(e.target.value) : null })} /></div>
-          <div className="flex items-end"><label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={!!editP.active} onChange={(e) => setEditP({ ...editP, active: e.target.checked })} className="accent-[var(--gold)]" />{t('admin.packages.active')}</label></div>
+          <div className="flex items-end"><label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={!!editP.active} onChange={(e) => setEditP({ ...editP, active: e.target.checked })} className="accent-gold" />{t('admin.packages.active')}</label></div>
           <div className="sm:col-span-2 flex justify-end gap-2"><Button variant="ghost" onClick={() => setEditP(null)}>{t('common.cancel')}</Button><Button loading={saveP.isPending} onClick={() => saveP.mutate(editP)}>{t('admin.pricing.save')}</Button></div>
         </div>}
       </Modal>

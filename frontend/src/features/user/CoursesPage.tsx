@@ -17,7 +17,7 @@ export function CoursesPage({ publicView }: { publicView?: boolean }) {
       <div className="grid gap-5 md:grid-cols-2">
         {courses.map((c) => (
           <div key={c.id} className="card card-hover p-6">
-            <div className="mb-3 flex items-center justify-between"><span className="text-fg"><Icon name="play" size={28} strokeWidth={1.2} /></span>{c.soon && <span className="chip bg-gold/10 text-gold-deep">{t('courses.soon')}</span>}</div>
+            <div className="mb-3 flex items-center justify-between"><span className="text-fg"><Icon name="play" size={28} strokeWidth={1.2} /></span>{c.soon && <span className="chip bg-gold/10 text-gold-ink">{t('courses.soon')}</span>}</div>
             <div className="font-display text-2xl">{t(c.title)}</div>
             <div className="text-xs text-fg-dim">{t('courses.lessons', { count: c.lessons })}</div>
             <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-surface-2"><div className="h-full bg-gold" style={{ width: `${c.progress}%` }} /></div>

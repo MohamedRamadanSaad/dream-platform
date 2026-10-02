@@ -26,7 +26,7 @@ export function NotificationsPage() {
         : <div className="space-y-3">
           {q.data.items.map((n) => (
             <Link key={n.id} to={n.link ?? '#'} onClick={() => !n.readAt && read.mutate(n.id)} className={cn('card card-hover flex gap-4 p-4', !n.readAt && 'border-gold/50 bg-gold/5')}>
-              <span className={cn('mt-0.5', n.readAt ? 'text-fg-dim' : 'text-gold-deep')}><Icon name={icon[n.type]} size={20} active={!n.readAt} /></span>
+              <span className={cn('mt-0.5', n.readAt ? 'text-fg-dim' : 'text-gold-ink')}><Icon name={icon[n.type]} size={20} active={!n.readAt} /></span>
               <div className="min-w-0 flex-1"><div className="flex items-center justify-between gap-2"><div className="font-medium">{n.title}</div><div className="text-xs text-fg-dim">{timeAgo(n.createdAt, locale)}</div></div><div className="text-sm font-light text-fg-muted">{n.body}</div></div>
             </Link>
           ))}

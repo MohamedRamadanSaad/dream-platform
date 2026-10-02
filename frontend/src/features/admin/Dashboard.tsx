@@ -17,7 +17,7 @@ function CountryList({ title, rows, value, format, icon }: { title: string; rows
   const [h, setH] = useState(false)
   return (
     <div className="card p-5" onMouseEnter={() => setH(true)} onMouseLeave={() => setH(false)}>
-      <div className="mb-4 flex items-center gap-2 text-fg"><span className="text-gold-deep"><Icon name={icon} size={18} active={h} /></span><h3 className="font-medium">{title}</h3></div>
+      <div className="mb-4 flex items-center gap-2 text-fg"><span className="text-gold-ink"><Icon name={icon} size={18} active={h} /></span><h3 className="font-medium">{title}</h3></div>
       <ol className="space-y-2.5">
         {rows.map((r, i) => {
           const v = value(r)
@@ -49,13 +49,13 @@ export function AdminDashboard() {
         <Segmented value={period} onChange={setPeriod} items={(['7d', '30d', '1y', 'all'] as const).map((p) => ({ value: p, label: t(`admin.dashboard.period.${p}`) }))} />
       </div>
       {summary.isLoading ? <div className="grid gap-4 md:grid-cols-3">{[1, 2, 3].map((i) => <Skeleton key={i} className="h-24" />)}</div> : s && (
-        <StaggerGroup className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3" stagger={0.06}>
+        <StaggerGroup className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3" stagger={0.06}>
           <Link to="/admin/dreams?status=IN_REVIEW"><Stat label={t('admin.dashboard.inReview')} value={fmtNum(s.inReview, locale)} icon={<Icon name="moon" size={28} />} tone="gold" /></Link>
           <Link to="/admin/dreams?status=AWAITING_USER_REPLY"><Stat label={t('admin.dashboard.awaiting')} value={fmtNum(s.awaitingReply, locale)} icon={<Icon name="chat" size={28} />} /></Link>
           <Link to="/admin/dreams?status=IN_REVIEW"><Stat label={t('admin.dashboard.overdue')} value={fmtNum(s.overdue, locale)} icon={<Icon name="clock" size={28} />} tone={s.overdue ? 'danger' : undefined} /></Link>
           <Stat label={t('admin.dashboard.today')} value={fmtNum(s.interpretedToday, locale)} icon={<Icon name="check" size={28} />} />
           <Stat label={t('admin.dashboard.avg')} value={fmtNum(s.avgResponseHours, locale)} icon={<Icon name="clock" size={28} />} />
-          <Stat tone="night" label={t('admin.dashboard.revenue')} value={<div className="flex flex-wrap gap-x-3 text-lg">{s.revenue.map((r) => <span key={r.currency}>{fmtMoney(r.amount, r.currency, locale)}</span>)}</div>} icon={<Icon name="wallet" size={28} />} />
+          <Stat tone="night" label={t('admin.dashboard.revenue')} value={<div className="flex flex-col gap-0.5 text-xl leading-snug">{s.revenue.map((r) => <span key={r.currency}>{fmtMoney(r.amount, r.currency, locale)}</span>)}</div>} icon={<Icon name="wallet" size={28} />} />
         </StaggerGroup>
       )}
       {countries.isLoading ? <div className="grid gap-4 lg:grid-cols-3">{[1, 2, 3].map((i) => <Skeleton key={i} className="h-72" />)}</div> : countries.data && (

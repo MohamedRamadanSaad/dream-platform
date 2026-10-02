@@ -37,9 +37,9 @@ function FloatingBadges() {
   const ico = 'flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gold/15 text-gold'
   return (
     <div ref={root} className="mt-2 grid w-full max-w-2xl grid-cols-3 gap-2 md:w-auto md:gap-2.5">
-      <div className={badge}><span className={ico}><Icon name="heart" size={16} /></span><div><div className="text-[11px] font-medium leading-tight text-pearl md:text-xs">{t('hero.badges.honesty')}</div><div className="hidden text-[10px] text-pearl/45 md:block">{t('hero.badges.honestySub')}</div></div></div>
-      <div className={badge}><span className={ico}><Icon name="shield" size={16} /></span><div><div className="text-[11px] font-medium leading-tight text-pearl md:text-xs">{t('hero.badges.privacy')}</div><div className="hidden text-[10px] text-pearl/45 md:block">{t('hero.badges.privacySub')}</div></div></div>
-      <div className={badge}><span className={ico}><Icon name="book" size={16} /></span><div><div className="text-[11px] font-medium leading-tight text-pearl md:text-xs">{t('hero.badges.depth')}</div><div className="hidden text-[10px] text-pearl/45 md:block">{t('hero.badges.depthSub')}</div></div></div>
+      <div className={badge}><span className={ico}><Icon name="heart" size={16} /></span><div><div className="text-[11px] font-medium leading-tight text-pearl md:text-xs">{t('hero.badges.honesty')}</div><div className="hidden text-[11px] text-pearl/65 md:block">{t('hero.badges.honestySub')}</div></div></div>
+      <div className={badge}><span className={ico}><Icon name="shield" size={16} /></span><div><div className="text-[11px] font-medium leading-tight text-pearl md:text-xs">{t('hero.badges.privacy')}</div><div className="hidden text-[11px] text-pearl/65 md:block">{t('hero.badges.privacySub')}</div></div></div>
+      <div className={badge}><span className={ico}><Icon name="book" size={16} /></span><div><div className="text-[11px] font-medium leading-tight text-pearl md:text-xs">{t('hero.badges.depth')}</div><div className="hidden text-[11px] text-pearl/65 md:block">{t('hero.badges.depthSub')}</div></div></div>
     </div>
   )
 }
@@ -87,15 +87,15 @@ function Hero() {
       <div className="sky-hadith pointer-events-none relative z-[1] mx-auto max-w-3xl px-6 pt-6 text-center md:pt-8">
         {/* faint copy: sits under the moon */}
         <p className="font-quran text-lg leading-relaxed text-gold-soft/45 md:text-2xl [text-shadow:0_0_18px_rgba(234,219,170,.25)]">{t('hero.skyHadith')}</p>
-        <p className="mt-1 text-[10px] tracking-[.3em] text-pearl/30">{t('hero.skyHadithSrc')}</p>
+        <p className="mt-1 text-[11px] ltr:tracking-[.3em] text-pearl/40">{t('hero.skyHadithSrc')}</p>
         {/* bright copy: above the moon, clipped to its disc (see onMoon) */}
         <div ref={hadithOverlayRef} aria-hidden="true" className="absolute inset-0 z-20 px-6 pt-6 md:pt-8" style={{ clipPath: 'circle(0 at 0 0)' }}>
           <p className="font-quran text-lg leading-relaxed text-gold md:text-2xl [-webkit-text-stroke:0.6px_#16244a] [text-shadow:0_0_6px_rgba(22,36,74,.9),0_0_14px_rgba(212,175,55,.8)]">{t('hero.skyHadith')}</p>
-          <p className="mt-1 text-[10px] tracking-[.3em] text-navy">{t('hero.skyHadithSrc')}</p>
+          <p className="mt-1 text-[11px] ltr:tracking-[.3em] text-navy">{t('hero.skyHadithSrc')}</p>
         </div>
       </div>
       <div className="relative z-[1] mx-auto flex max-w-4xl flex-col items-center gap-7 px-5 pb-24 pt-8 text-center md:pt-12 lg:px-0">
-        <h1 ref={titleRef} className="font-display text-5xl leading-[1.35] md:text-7xl">
+        <h1 ref={titleRef} className={cn('font-display', locale === 'ar' ? 'text-5xl leading-[1.35] md:text-7xl' : 'text-[2rem] leading-[1.2] md:text-5xl')}>
           {t('hero.title1')} <span className="text-gold">{t('hero.title2')}</span><br />{t('hero.title3')}
         </h1>
         <p ref={leadRef} className="max-w-2xl text-lg font-light leading-loose text-pearl/70 md:text-xl">{t('hero.lead')}</p>
@@ -130,19 +130,25 @@ function Hero() {
 function MethodCard({ icon, title, text }: { icon: Parameters<typeof Icon>[0]['name']; title: string; text: string }) {
   const [h, setH] = useState(false)
   return (
-    <div className="card card-hover p-7" onMouseEnter={() => setH(true)} onMouseLeave={() => setH(false)}>
-      <div className="mb-4 text-fg"><Icon name={icon} size={36} active={h} strokeWidth={1.2} /></div>
-      <div className="mb-2 text-xl font-medium">{title}</div>
-      <p className="text-sm font-light leading-relaxed text-fg-muted">{text}</p>
+    // phones: icon beside the text (four stacked tall cards cost two screens); from sm up: icon on top
+    <div className="card card-hover flex gap-4 p-5 sm:block sm:p-7" onMouseEnter={() => setH(true)} onMouseLeave={() => setH(false)}>
+      <div className="shrink-0 text-fg sm:mb-4"><Icon name={icon} size={32} active={h} strokeWidth={1.2} /></div>
+      <div>
+        <div className="mb-1.5 text-lg font-medium sm:mb-2 sm:text-xl">{title}</div>
+        <p className="text-sm font-light leading-relaxed text-fg-muted">{text}</p>
+      </div>
     </div>
   )
 }
 
+/** "Offer ends in 5 days, 23 hours" — full words (with Arabic dual/plural forms), never "5ي 23س". */
 function Countdown({ iso }: { iso: string }) {
   const { t } = useTranslation()
   const [c, setC] = useState(countdown(iso))
   useEffect(() => { const id = setInterval(() => setC(countdown(iso)), 60_000); return () => clearInterval(id) }, [iso])
-  return <span className="text-xs">{t('packages.endsIn')} {c.d}{t('common.days').slice(0, 1)} {c.h}{t('common.hours').slice(0, 1)}</span>
+  const d = t('common.dayCount', { count: c.d }), h = t('common.hourCount', { count: c.h })
+  const text = c.d > 0 && c.h > 0 ? t('packages.endsInDH', { d, h }) : c.d > 0 ? t('packages.endsInD', { d }) : c.h > 0 ? t('packages.endsInH', { h }) : t('packages.endsSoon')
+  return <span>{text}</span>
 }
 
 export function PackageCard({ p, featured, onChoose }: { p: PackageDto; featured?: boolean; onChoose: (p: PackageDto) => void }) {
@@ -150,7 +156,7 @@ export function PackageCard({ p, featured, onChoose }: { p: PackageDto; featured
   const locale = useAuthStore((s) => s.locale)
   const [h, setH] = useState(false)
   return (
-    <div onMouseEnter={() => setH(true)} onMouseLeave={() => setH(false)} className={cn('card card-hover relative flex flex-col items-center gap-3 p-8 text-center', featured && 'bg-night text-pearl border-gold')}>
+    <div onMouseEnter={() => setH(true)} onMouseLeave={() => setH(false)} className={cn('card card-hover relative flex h-full flex-col items-center gap-3 p-8 text-center', featured && 'bg-night text-pearl border-gold')}>
       {p.badge && <span className="absolute -top-3 rounded-full bg-gold px-3 py-1 text-xs font-bold text-night">{p.badge}</span>}
       <div className={featured ? 'text-gold' : 'text-fg'}><Icon name={p.credits === 1 ? 'star' : p.credits === 2 ? 'sparkle' : 'moon'} size={34} active={h} strokeWidth={1.2} /></div>
       <div className="font-display text-2xl">{p.name}</div>
@@ -159,9 +165,15 @@ export function PackageCard({ p, featured, onChoose }: { p: PackageDto; featured
         <span className="text-4xl font-medium">{fmtMoney(p.price, p.currency, locale)}</span>
         {p.originalPrice && <span className={cn('text-sm line-through', featured ? 'text-pearl/40' : 'text-fg-dim')}>{fmtMoney(p.originalPrice, p.currency, locale)}</span>}
       </div>
-      {p.promotion && <div className={cn('chip', featured ? 'bg-gold/20 text-gold-soft' : 'bg-gold/10 text-gold-deep')}>{p.promotion.label} · <Countdown iso={p.promotion.endsAt} /></div>}
+      {p.promotion && (
+        <div className={cn('flex flex-col items-center rounded-2xl px-4 py-2 text-xs leading-relaxed', featured ? 'bg-gold/15 text-gold-soft' : 'bg-gold/10 text-gold-ink')}>
+          <span className="font-medium">{p.promotion.label}</span>
+          <Countdown iso={p.promotion.endsAt} />
+        </div>
+      )}
       <div className={cn('text-xs', featured ? 'text-pearl/50' : 'text-fg-dim')}>{t('packages.dreams', { count: p.credits })}{p.validityMonths ? ` · ${t('packages.validity', { m: p.validityMonths })}` : ''}</div>
-      <button onClick={() => onChoose(p)} className={cn('btn btn-md mt-3 w-full', featured ? 'btn-gold' : 'btn-ghost border-fg text-fg')}>{t('packages.choose')}</button>
+      {/* pinned to the bottom so the three buttons line up whatever each card contains */}
+      <button onClick={() => onChoose(p)} className={cn('btn btn-md mt-auto w-full', featured ? 'btn-gold' : 'btn-ghost border-fg text-fg')}>{t('packages.choose')}</button>
     </div>
   )
 }
@@ -214,7 +226,7 @@ export default function LandingPage() {
           <Reveal className="card sticky top-24 p-7" delay={0.1}>
             <div className="flex items-center gap-4">
               <Avatar name={t('interpreter')} size={56} />
-              <div><div className="text-xs tracking-wider text-gold-deep">{t('about.aboutTitle')}</div><div className="font-display text-2xl text-night dark:text-pearl">{t('interpreter')}</div></div>
+              <div><div className="text-xs ltr:tracking-wider text-gold-ink">{t('about.aboutTitle')}</div><div className="font-display text-2xl text-night dark:text-pearl">{t('interpreter')}</div></div>
             </div>
             <ul className="mt-6 space-y-4 leading-loose">
               <li className="flex gap-3"><span className="mt-2 h-2 w-2 shrink-0 rounded-full bg-gold" /><span>{t('about.bullet1')}</span></li>
@@ -226,7 +238,7 @@ export default function LandingPage() {
 
       <Reveal className="mx-5 md:mx-auto md:max-w-6xl rounded-xl2 bg-night px-8 py-10 text-center">
         <p className="font-quran text-2xl leading-loose text-gold-soft md:text-3xl">{t('about.verse')}</p>
-        <div className="mt-2 text-sm text-pearl/50">{t('about.verseSrc')}</div>
+        <div className="mt-2 text-sm text-pearl">{t('about.verseSrc')}</div>
       </Reveal>
 
       <section className="mx-auto max-w-6xl px-5 py-20 md:px-8">
@@ -244,12 +256,13 @@ export default function LandingPage() {
           <Reveal><Kicker>{t('stats.kicker')}</Kicker></Reveal>
           <Reveal as="h2" className="max-w-3xl font-display text-3xl md:text-4xl" split>{t('stats.title')}</Reveal>
         </div>
-        <StaggerGroup className="grid gap-6 md:grid-cols-3">
+        {/* three across on every screen: the numbers are short, stacking them cost a full phone screen */}
+        <StaggerGroup className="grid grid-cols-3 gap-3 md:gap-6">
           {[{ k: 'subscribers', v: stats?.subscribers, i: 'user' }, { k: 'views', v: stats?.views, i: 'play' }, { k: 'videos', v: stats?.videos, i: 'youtube' }].map((s) => (
-            <div key={s.k} className="card card-hover flex flex-col items-center gap-2 p-8">
-              <div className="text-fg"><Icon name={s.i as never} size={32} strokeWidth={1.2} /></div>
-              <div className="text-5xl font-medium text-night dark:text-pearl" dir="ltr">{s.v ? (() => { const st = parseStat(s.v); return <CountUp to={st.full} compact={st.compact} suffix={st.sign} /> })() : '…'}</div>
-              <div className="text-sm font-light text-fg-muted">{t(`stats.${s.k}`)}</div>
+            <div key={s.k} className="card card-hover flex flex-col items-center gap-1.5 px-2 py-5 text-center md:gap-2 md:p-8">
+              <div className="text-fg"><Icon name={s.i as never} size={26} strokeWidth={1.2} /></div>
+              <div className="text-3xl font-medium text-night dark:text-pearl md:text-5xl" dir="ltr">{s.v ? (() => { const st = parseStat(s.v); return <CountUp to={st.full} compact={st.compact} suffix={st.sign} /> })() : '…'}</div>
+              <div className="text-xs font-light leading-snug text-fg-muted md:text-sm">{t(`stats.${s.k}`)}</div>
             </div>
           ))}
         </StaggerGroup>
@@ -272,7 +285,7 @@ export default function LandingPage() {
           <div className="card flex flex-col items-center gap-3 px-8 py-8 text-center">
             <span className="text-gold"><Icon name="quote" size={28} /></span>
             <p className="font-display text-xl leading-loose text-night dark:text-pearl md:text-2xl">{t('testimonials.quote')}</p>
-            <span className="text-xs tracking-wider text-gold-deep">{t('testimonials.quoteBy')}</span>
+            <span className="text-xs ltr:tracking-wider text-gold-ink">{t('testimonials.quoteBy')}</span>
           </div>
         </Reveal>
       </section>

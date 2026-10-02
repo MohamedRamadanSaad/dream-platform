@@ -14,7 +14,9 @@ export function SlaChip({ deadline, overdue }: { deadline: string; overdue: bool
   const { t } = useTranslation()
   const h = hoursLeft(deadline)
   const tone = overdue || h < 0 ? 'bg-danger/10 text-danger' : h < 12 ? 'bg-warn/10 text-warn' : 'bg-success/10 text-success'
-  const label = h < 0 ? `${t('admin.queue.overdue')} ${Math.round(-h)}${t('common.hours').slice(0, 1)}` : h < 48 ? `${Math.round(h)} ${t('common.hours')} ${t('admin.queue.left')}` : `${Math.round(h / 24)} ${t('common.days')} ${t('admin.queue.left')}`
+  // full words with Arabic dual/plural ("متأخرة 4 ساعات", "خلال يومين"), never "4س"
+  const span = (x: number) => (x < 48 ? t('common.hourCount', { count: Math.max(1, Math.round(x)) }) : t('common.dayCount', { count: Math.round(x / 24) }))
+  const label = h < 0 ? t('admin.queue.overdueBy', { x: span(-h) }) : t('admin.queue.within', { x: span(h) })
   return <span className={cn('chip font-medium', tone)}><span className="h-1.5 w-1.5 rounded-full bg-current" />{label}</span>
 }
 

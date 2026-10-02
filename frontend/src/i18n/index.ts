@@ -3,9 +3,16 @@ import { initReactI18next } from 'react-i18next'
 import ar from './ar.json'
 import en from './en.json'
 
+// Start in the visitor's saved language. Starting in Arabic and switching after the first render left
+// English visitors with a half-Arabic hero title (the title animation splits the words already on screen).
+const saved = (() => { try { return JSON.parse(localStorage.getItem('saadat-auth') ?? '{}')?.state?.locale } catch { return undefined } })()
+const initial: 'ar' | 'en' = saved === 'en' ? 'en' : 'ar'
+document.documentElement.lang = initial
+document.documentElement.dir = initial === 'ar' ? 'rtl' : 'ltr'
+
 i18n.use(initReactI18next).init({
   resources: { ar: { translation: ar }, en: { translation: en } },
-  lng: 'ar',
+  lng: initial,
   fallbackLng: 'ar',
   interpolation: { escapeValue: false },
 })

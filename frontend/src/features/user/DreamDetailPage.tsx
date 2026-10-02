@@ -20,7 +20,7 @@ export function Stepper({ status }: { status: DreamDetail['status'] }) {
         <div key={s} className={cn('flex items-center', i < STEPS.length - 1 && 'flex-1')}>
           <div className="flex flex-col items-center gap-1.5">
             <div className={cn('h-3.5 w-3.5 rounded-full border-2 transition-all', i <= idx ? 'border-gold bg-gold' : 'border-line', i === idx && status !== 'INTERPRETED' && 'pulse-ring')} />
-            <span className={cn('whitespace-nowrap text-[10px]', i <= idx ? 'text-gold-deep' : 'text-fg-dim')}>{t(`me.status.${i === 1 && status === 'AWAITING_USER_REPLY' ? 'AWAITING_USER_REPLY' : s}`)}</span>
+            <span className={cn('whitespace-nowrap text-[11px] md:text-xs', i <= idx ? 'text-gold-ink' : 'text-fg-dim')}>{t(`me.status.${i === 1 && status === 'AWAITING_USER_REPLY' ? 'AWAITING_USER_REPLY' : s}`)}</span>
           </div>
           {i < STEPS.length - 1 && <div className="relative mx-2 mb-5 h-0.5 flex-1 overflow-hidden bg-line"><div className="absolute inset-0 origin-right bg-gold transition-transform duration-700" style={{ transform: `scaleX(${i < idx ? 1 : 0})` }} /></div>}
         </div>
@@ -37,7 +37,7 @@ export function Conversation({ messages, meRole }: { messages: DreamMessage[]; m
       {messages.map((m) => (
         <div key={m.id} className={cn('max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-relaxed', m.senderRole === meRole ? 'self-end bg-night text-pearl' : 'self-start bg-surface-2 text-fg')}>
           <div>{m.body}</div>
-          <div className={cn('mt-1 text-[10px]', m.senderRole === meRole ? 'text-pearl/50' : 'text-fg-dim')}>{fmtDate(m.createdAt, locale, true)}</div>
+          <div className={cn('mt-1 text-[11px]', m.senderRole === meRole ? 'text-pearl/50' : 'text-fg-dim')}>{fmtDate(m.createdAt, locale, true)}</div>
         </div>
       ))}
     </div>
@@ -97,7 +97,7 @@ export function DreamDetailPage() {
       {d.interpretation && (
         <div className="card border-success/30 p-6">
           <div className="mb-4 flex items-center gap-3"><span className="text-success"><Icon name="moon" size={22} /></span><div><div className="text-sm text-success">{t('me.detail.interpretation')} — {t('interpreter')}</div><div className="text-xs text-fg-dim">{fmtDate(d.interpretation.interpretedAt, locale)}</div></div></div>
-          <p className="whitespace-pre-wrap font-display text-xl leading-loose text-night dark:text-pearl">{d.interpretation.text}</p>
+          <p className="whitespace-pre-wrap text-lg leading-[2.1] text-fg md:text-[1.2rem]">{d.interpretation.text}</p>
           <div className="mt-6 border-t border-line pt-5">
             {d.testimonial ? (
               <div className="flex items-center gap-3 text-sm text-fg-muted"><Stars value={d.testimonial.rating} size={16} /> {t('me.detail.rated')}</div>

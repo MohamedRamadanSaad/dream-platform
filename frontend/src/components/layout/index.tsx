@@ -69,9 +69,11 @@ export function CreditsPill() {
   if (!user || isInterpreter(user)) return null
   const n = data?.credits ?? 0
   return (
-    <Link to="/me/packages" className={cn('chip border py-1.5 font-medium transition-colors', n === 0 ? 'border-danger/40 text-danger' : n === 1 ? 'border-warn/50 text-warn' : 'border-gold/60 bg-gold/10 text-gold-deep')}>
+    <Link to="/me/packages" aria-label={t('me.credits', { count: n, n })} title={t('me.credits', { count: n, n })} className={cn('chip whitespace-nowrap border py-1.5 font-medium transition-colors', n === 0 ? 'border-danger/40 text-danger' : n === 1 ? 'border-warn/50 text-warn' : 'border-gold/60 bg-gold/10 text-gold-ink')}>
       <Icon name="star" size={14} active={n > 0} />
-      {t('me.credits', { count: n, n })}
+      {/* phones: just the number, the header has no room for the sentence */}
+      <span className="sm:hidden">{n}</span>
+      <span className="hidden sm:inline">{t('me.credits', { count: n, n })}</span>
     </Link>
   )
 }
@@ -83,8 +85,8 @@ export function PublicHeader() {
   return (
     <header className="relative z-20 mx-auto flex h-20 max-w-7xl items-center justify-between px-5 md:px-8">
       <Link to="/" className="flex flex-col leading-tight">
-        <span className="font-display text-2xl text-gold-soft">{t('interpreter')}</span>
-        <span className="text-[11px] text-fg-dim tracking-wide">{t('brand')}</span>
+        <span className="whitespace-nowrap font-display text-xl text-gold-soft md:text-2xl">{t('interpreter')}</span>
+        <span className="text-[11px] text-fg-dim ltr:tracking-wide">{t('brand')}</span>
       </Link>
       <nav className="hidden md:flex gap-8 text-sm text-pearl/70">
         {nav.map((n) => <a key={n.to} href={n.to} className="hover:text-pearl transition-colors">{n.label}</a>)}
@@ -112,7 +114,7 @@ export function Footer() {
           <div className="text-sm text-pearl/60">{t('tagline')}</div>
         </div>
         <div className="flex flex-col gap-2 text-sm md:items-end">
-          <div className="flex gap-6"><a href={YT} target="_blank" rel="noreferrer" className="text-gold-soft">YouTube</a><Link to="/terms" className="hover:text-pearl">{t('footer.terms')}</Link><Link to="/privacy" className="hover:text-pearl">{t('footer.privacy')}</Link></div>
+          <div className="flex gap-6"><a href={YT} target="_blank" rel="noreferrer" className="text-gold-soft">{t('footer.youtube')}</a><Link to="/terms" className="hover:text-pearl">{t('footer.terms')}</Link><Link to="/privacy" className="hover:text-pearl">{t('footer.privacy')}</Link></div>
           <div className="text-pearl/50">{t('footer.rights', { year: new Date().getFullYear() })}</div>
         </div>
       </div>
@@ -142,21 +144,22 @@ export function AppShell({ items, children, admin }: { items: { to: string; labe
         </div>
       </aside>
       <div className="flex-1 min-w-0">
-        <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-line bg-[color:var(--bg)]/90 px-4 backdrop-blur md:px-8">
-          <Link to="/" className="md:hidden font-display text-xl text-fg">{t('interpreter')}</Link>
+        <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-line bg-bg/90 px-4 backdrop-blur md:px-8">
+          <Link to="/" className="whitespace-nowrap font-display text-lg text-fg md:hidden">{t('interpreter')}</Link>
           <div className="hidden md:block" />
           <div className="flex items-center gap-2 md:gap-3">
             {!admin && <CreditsPill />}
             <YoutubeButton />
             <NotificationBell />
-            <ThemeToggle />
+            {/* theme lives in the profile on phones; the header keeps only what fits */}
+            <div className="hidden md:block"><ThemeToggle /></div>
             <LocaleToggle />
           </div>
         </header>
-        <main className="mx-auto max-w-6xl px-4 py-6 pb-28 md:px-8 md:pb-10">{children}</main>
-        <nav className="fixed bottom-0 inset-x-0 z-30 flex border-t border-line bg-[color:var(--bg)]/95 backdrop-blur md:hidden">
+        <main className="mx-auto max-w-6xl px-4 py-6 pb-[calc(7rem_+_env(safe-area-inset-bottom))] md:px-8 md:pb-10">{children}</main>
+        <nav className="pb-safe fixed bottom-0 inset-x-0 z-30 flex border-t border-line bg-bg/95 backdrop-blur md:hidden">
           {items.slice(0, 5).map((it) => (
-            <NavLink key={it.to} to={it.to} end={it.end} className={({ isActive }) => cn('flex flex-1 flex-col items-center gap-1 py-2 text-[10px]', isActive ? 'text-gold-deep' : 'text-fg-muted')}>
+            <NavLink key={it.to} to={it.to} end={it.end} className={({ isActive }) => cn('flex flex-1 flex-col items-center gap-1 py-2 text-[11px]', isActive ? 'text-gold-ink' : 'text-fg-muted')}>
               {({ isActive }) => <><Icon name={it.icon} size={20} active={isActive} />{it.label}</>}
             </NavLink>
           ))}

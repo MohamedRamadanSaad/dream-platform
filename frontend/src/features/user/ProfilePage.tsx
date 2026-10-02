@@ -54,7 +54,7 @@ export function ProfilePage() {
         <div><Label>{t('me.profile.theme')}</Label><Segmented value={theme} onChange={setTheme} items={[{ value: 'light', label: t('me.profile.light') }, { value: 'dark', label: t('me.profile.dark') }]} /></div>
         <div className="grid grid-cols-2 gap-4 text-sm">
           <div><Label>{t('me.profile.country')}</Label>{user.countryName}</div>
-          <div><Label>{t('me.profile.provider')}</Label>{user.providers.join(', ')}</div>
+          <div><Label>{t('me.profile.provider')}</Label>{user.providers.map((p) => t(`auth.providers.${p}`, { defaultValue: p })).join('، ')}</div>
           <div><Label>{t('me.profile.since')}</Label>{fmtDate(user.createdAt, locale)}</div>
         </div>
         <div className="flex items-center justify-between"><span className="text-xs text-success">{save.isSuccess && `✓ ${t('me.profile.saved')}`}</span><Button loading={save.isPending} onClick={() => save.mutate()}>{t('me.profile.save')}</Button></div>
@@ -67,7 +67,7 @@ export function ProfilePage() {
         {push === 'denied' && <p className="mt-2 text-xs text-danger">{t('me.profile.pushDenied')}</p>}
       </div>
       <div className="card flex items-center justify-between p-6">
-        <div className="min-w-0"><Label>{t('me.profile.email')}</Label><div className="truncate text-sm" dir="ltr">{user.email}</div></div>
+        <div className="min-w-0"><Label>{t('me.profile.signedInAs')}</Label><div className="truncate text-sm" dir="ltr">{user.email}</div></div>
         <button aria-label={t('auth.logout')} title={t('auth.logout')} onClick={() => { clear(); navigate('/') }} className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-line text-fg-muted transition-colors hover:border-danger hover:text-danger"><Icon name="logout" size={20} /></button>
       </div>
       <button className="text-sm text-danger hover:underline" onClick={() => confirm(t('me.profile.deleteConfirm')) && meApi.deleteAccount()}>{t('me.profile.delete')}</button>

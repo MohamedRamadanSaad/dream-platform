@@ -77,7 +77,11 @@
     "endsIn": "Offer ends in",
     "dreams_one": "1 dream",
     "dreams_other": "{{count}} dreams",
-    "validity": "Valid for {{m}} months"
+    "validity": "Valid for {{m}} months",
+    "endsInDH": "Offer ends in {{d}}, {{h}}",
+    "endsInD": "Offer ends in {{d}}",
+    "endsInH": "Offer ends in {{h}}",
+    "endsSoon": "Offer ends in less than an hour"
   },
   "testimonials": {
     "title": "What people say",
@@ -89,7 +93,8 @@
     "rights": "© {{year}} Interpreter Fatema — balanced dream interpretation, deep and realistic",
     "terms": "Terms",
     "privacy": "Privacy",
-    "contact": "Contact"
+    "contact": "Contact",
+    "youtube": "YouTube"
   },
   "auth": {
     "title": "Welcome",
@@ -116,7 +121,12 @@
     "interpreterDomainHint": "Interpreter accounts sign in with the email code only (not Google).",
     "interpreterUseMagic": "This is an interpreter email. Please sign in with the email code.",
     "mockHint": "Test mode: any code will sign you in. Use {{email}} to sign in as the interpreter.",
-    "linkInvalid": "This link is not valid or has expired"
+    "linkInvalid": "This link is not valid or has expired",
+    "providers": {
+      "GOOGLE": "Google",
+      "MAGIC_LINK": "Email code",
+      "APPLE": "Apple"
+    }
   },
   "me": {
     "greeting": "Peace be upon you, {{name}}",
@@ -217,7 +227,9 @@
       "mockProvider": "[ Test copy of the payment provider’s page ]",
       "mockNote": "On the live site, the payment provider’s window shows here. Credits are added only when a signed webhook arrives.",
       "autoSubmit_one": "1 dream will be submitted automatically after payment",
-      "autoSubmit_other": "{{count}} dreams will be submitted automatically after payment"
+      "autoSubmit_other": "{{count}} dreams will be submitted automatically after payment",
+      "methods": "Cards · Apple Pay · Google Pay",
+      "methodsEg": "Cards via Paymob"
     },
     "profile": {
       "title": "Account",
@@ -241,7 +253,8 @@
       "age": "Age",
       "years": "{{n}} years",
       "pushDenied": "Your browser blocked notifications.",
-      "deleteConfirm": "Delete your account and all your data?"
+      "deleteConfirm": "Delete your account and all your data?",
+      "signedInAs": "Signed in as"
     },
     "notifications": {
       "title": "Notifications",
@@ -285,7 +298,9 @@
       "sla": "Due",
       "overdue": "Overdue",
       "left": "left",
-      "open": "Open"
+      "open": "Open",
+      "overdueBy": "{{x}} overdue",
+      "within": "{{x}} left"
     },
     "dream": {
       "ask": "Send a question",
@@ -444,7 +459,11 @@
     "installTitle": "Install the app on your phone",
     "installIos": "In Safari: tap Share → Add to Home Screen",
     "installAndroid": "In the browser menu: Add to Home Screen",
-    "age": "Age"
+    "age": "Age",
+    "dayCount_one": "{{count}} day",
+    "dayCount_other": "{{count}} days",
+    "hourCount_one": "{{count}} hour",
+    "hourCount_other": "{{count}} hours"
   },
   "static": {
     "terms": "Terms and Conditions",
