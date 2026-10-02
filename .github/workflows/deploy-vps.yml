@@ -55,6 +55,17 @@ jobs:
           frontend=$(printf "VITE_GOOGLE_CLIENT_ID=%s\n" "$GOOGLE_CLIENT_ID" \
             | ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "bash /opt/saadat/deploy/ops/setenv.sh /opt/saadat/deploy/.env")
           echo "frontend build settings: $frontend"
+      # Support-mailbox auto-reply: the Hostinger webhook secret lives only in the GitHub secret MAIL_WEBHOOK_SECRET.
+      - name: mail webhook secret
+        env:
+          MAIL_WEBHOOK_SECRET: ${{ secrets.MAIL_WEBHOOK_SECRET }}
+        run: |
+          if [ -z "$MAIL_WEBHOOK_SECRET" ]; then echo "secret MAIL_WEBHOOK_SECRET not set: keeping the value already on the server"; exit 0; fi
+          case "$MAIL_WEBHOOK_SECRET" in *[!A-Za-z0-9._-]*) echo "MAIL_WEBHOOK_SECRET has unexpected characters"; exit 1;; esac
+          result=$(printf "MAIL_WEBHOOK_SECRET=%s\n" "$MAIL_WEBHOOK_SECRET" \
+            | ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "bash /opt/saadat/deploy/ops/setenv.sh /opt/saadat/deploy/backend.env")
+          echo "mail webhook secret: $result"
+          [ "$result" = "updated" ] && ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "touch /opt/saadat/deploy/.recreate-backend" || true
       - name: build & restart
         run: |
           ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} bash -s <<'EOS'
