@@ -1,27 +1,29 @@
-### commit 909eb0d31cf1f2c4a79692b04b2eaca293099d32 run 37060474693 Fri Oct  2 20:27:02 UTC 2026
+### commit 462a197125dfde79eb37d93273684652b86e5602 run 37060780671 Fri Oct  2 20:29:33 UTC 2026
 ## tests
 com.saadat.tracking.service.UserAgentsTest tests=20 failures=0 errors=0
 com.saadat.settings.AdminWaitTimeIntegrationTest tests=2 failures=0 errors=0
 com.saadat.mail.MailThemesIntegrationTest tests=10 failures=0 errors=0
-com.saadat.passkeys.service.PasskeyAddedMailIntegrationTest tests=2 failures=0 errors=0
 com.saadat.security.AccessControlIntegrationTest tests=6 failures=0 errors=0
-com.saadat.passkeys.PasskeysIntegrationTest tests=15 failures=0 errors=0
 com.saadat.mail.MailEventsIntegrationTest tests=7 failures=0 errors=0
 com.saadat.mail.inbound.InboundMailParserTest tests=4 failures=0 errors=0
 com.saadat.auth.RememberMeIntegrationTest tests=9 failures=0 errors=0
+com.saadat.youtube.service.YoutubeChannelIdResolverTest tests=7 failures=0 errors=0
 com.saadat.users.InterpreterBirthDateMigrationTest tests=2 failures=0 errors=0
+com.saadat.common.geo.GeoIpCountryLookupTest tests=5 failures=0 errors=0
 com.saadat.pricing.PromotionAndCouponMathTest tests=10 failures=0 errors=0
 com.saadat.auth.DevicesIntegrationTest tests=12 failures=0 errors=0
 com.saadat.auth.AuthFlowIntegrationTest tests=14 failures=0 errors=0
-com.saadat.passkeys.service.WebAuthnRelyingPartyTest tests=6 failures=0 errors=0
 com.saadat.common.security.JwtServiceTest tests=11 failures=0 errors=0
 com.saadat.pricing.PriceResolverTest tests=8 failures=0 errors=0
 com.saadat.payments.PaymobHmacTest tests=4 failures=0 errors=0
 com.saadat.payments.PaymentFlowIntegrationTest tests=8 failures=0 errors=0
+com.saadat.common.geo.GeoIpCountryIntegrationTest tests=3 failures=0 errors=0
 com.saadat.mail.inbound.SupportAutoReplyWebhookIntegrationTest tests=5 failures=0 errors=0
 com.saadat.youtube.YoutubeUnseenServiceTest tests=5 failures=0 errors=0
 com.saadat.notifications.NotificationsIntegrationTest tests=4 failures=0 errors=0
+com.saadat.common.web.ProxyClientIpTest tests=5 failures=0 errors=0
 com.saadat.youtube.service.YoutubeNewVideoMailIntegrationTest tests=1 failures=0 errors=0
+com.saadat.common.web.CountryResolverTest tests=5 failures=0 errors=0
 com.saadat.tracking.TrackIntegrationTest tests=4 failures=0 errors=0
 com.saadat.admin.analytics.InsightsIntegrationTest tests=2 failures=0 errors=0
 com.saadat.admin.analytics.TrafficIntegrationTest tests=4 failures=0 errors=0
@@ -36,6 +38,7 @@ com.saadat.users.MeControllerIntegrationTest tests=5 failures=0 errors=0
 com.saadat.auth.service.NewSignInMailIntegrationTest tests=5 failures=0 errors=0
 com.saadat.youtube.YoutubeFeedParserTest tests=3 failures=0 errors=0
 com.saadat.dreams.DreamFlowIntegrationTest tests=7 failures=0 errors=0
+com.saadat.youtube.service.YoutubeChannelPageParserTest tests=8 failures=0 errors=0
 ## failures
 ## build.log (errors + tail)
 ...
@@ -54,13 +57,13 @@ Daemon will be stopped at the end of the build
 OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
 > Task :test
 
-20:27:01.610 INFO  [SpringApplicationShutdownHook] [] o.s.o.j.LocalContainerEntityManagerFactoryBean - Closing JPA EntityManagerFactory for persistence unit 'default'
-20:27:01.624 INFO  [SpringApplicationShutdownHook] [] com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated...
-20:27:01.645 INFO  [SpringApplicationShutdownHook] [] com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed.
+20:29:33.152 INFO  [SpringApplicationShutdownHook] [] o.s.o.j.LocalContainerEntityManagerFactoryBean - Closing JPA EntityManagerFactory for persistence unit 'default'
+20:29:33.158 INFO  [SpringApplicationShutdownHook] [] com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated...
+20:29:33.166 INFO  [SpringApplicationShutdownHook] [] com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed.
 
 > Task :check
 > Task :build
-gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/__run-1790972750192.json
+gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/__run-1790972919115.json
 
-BUILD SUCCESSFUL in 1m 16s
+BUILD SUCCESSFUL in 58s
 7 actionable tasks: 7 executed
