@@ -1,6 +1,7 @@
 package com.saadat.common.security;
 
 import com.auth0.jwt.JWT;
+import com.auth0.jwt.JWTCreator;
 import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTVerificationException;
@@ -17,13 +18,16 @@ import org.springframework.stereotype.Service;
 
 /**
  * Issues and verifies HS256 access tokens: {@code sub}=userId, {@code role}, {@code email}, {@code iss}, {@code iat},
- * {@code exp}, {@code jti}. The TTL is passed by the caller (setting {@code auth.access_ttl_minutes}).
+ * {@code exp}, {@code jti} and — for tokens issued at sign-in or refresh — {@code sid} = the refresh-token family
+ * (signed-in device) the token belongs to. The TTL is passed by the caller (setting {@code auth.access_ttl_minutes}).
  */
 @Service
 public class JwtService {
 
     public static final String CLAIM_ROLE = "role";
     public static final String CLAIM_EMAIL = "email";
+    /** Refresh-token family id; JwtAuthFilter makes the token anonymous once that family is signed out. */
+    public static final String CLAIM_SESSION_ID = "sid";
 
     /** Minimum secret length for HS256 (256 bits). */
     public static final int MIN_SECRET_LENGTH = 32;
@@ -49,22 +53,35 @@ public class JwtService {
         this.verifier = verification.build(clock);
     }
 
-    /** Issues an access token valid for {@code ttlMinutes}. */
+    /** Issues an access token valid for {@code ttlMinutes}, without a session ({@code sid}). */
     public String issue(UUID userId, Role role, String email, long ttlMinutes) {
-        return issue(userId, role, email, Duration.ofMinutes(ttlMinutes));
+        return issue(userId, role, email, Duration.ofMinutes(ttlMinutes), null);
+    }
+
+    /** Issues an access token valid for {@code ttlMinutes} for the refresh-token family {@code sessionId}. */
+    public String issue(UUID userId, Role role, String email, long ttlMinutes, UUID sessionId) {
+        return issue(userId, role, email, Duration.ofMinutes(ttlMinutes), sessionId);
     }
 
     public String issue(UUID userId, Role role, String email, Duration ttl) {
+        return issue(userId, role, email, ttl, null);
+    }
+
+    /** {@code sessionId} null = no {@code sid} claim. */
+    public String issue(UUID userId, Role role, String email, Duration ttl, UUID sessionId) {
         Instant now = clock.instant();
-        return JWT.create()
+        JWTCreator.Builder builder = JWT.create()
                 .withIssuer(issuer)
                 .withSubject(userId.toString())
                 .withClaim(CLAIM_ROLE, role.name())
                 .withClaim(CLAIM_EMAIL, email)
                 .withIssuedAt(now)
                 .withExpiresAt(now.plus(ttl))
-                .withJWTId(UUID.randomUUID().toString())
-                .sign(algorithm);
+                .withJWTId(UUID.randomUUID().toString());
+        if (sessionId != null) {
+            builder.withClaim(CLAIM_SESSION_ID, sessionId.toString());
+        }
+        return builder.sign(algorithm);
     }
 
     /** Verifies signature, issuer and expiry; throws {@link InvalidTokenException} on any problem. */
@@ -81,11 +98,13 @@ public class JwtService {
         String subject = jwt.getSubject();
         String roleClaim = jwt.getClaim(CLAIM_ROLE).asString();
         String email = jwt.getClaim(CLAIM_EMAIL).asString();
+        String sessionClaim = jwt.getClaim(CLAIM_SESSION_ID).asString();
         if (subject == null || roleClaim == null) {
             throw new InvalidTokenException("Missing claims");
         }
         try {
-            return new AuthPrincipal(UUID.fromString(subject), email, Role.valueOf(roleClaim));
+            UUID sessionId = sessionClaim == null ? null : UUID.fromString(sessionClaim);
+            return new AuthPrincipal(UUID.fromString(subject), email, Role.valueOf(roleClaim), sessionId);
         } catch (IllegalArgumentException e) {
             throw new InvalidTokenException("Malformed claims", e);
         }

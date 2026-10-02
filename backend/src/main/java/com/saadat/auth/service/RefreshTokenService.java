@@ -20,8 +20,12 @@ import org.springframework.transaction.annotation.Transactional;
 /**
  * Opaque refresh tokens (32 random bytes, SHA-256 stored) with rotation and reuse detection:
  * <ul>
- *   <li>every successful {@link #rotate} revokes the presented token and issues a new one in the same family;</li>
- *   <li>presenting an already-revoked token means it leaked → the whole family is revoked (401).</li>
+ *   <li>a sign-in starts a family (= one signed-in device) in one of two modes: "remember me" (persistent cookie,
+ *       setting auth.refresh_ttl_days) or browser session (session cookie, setting auth.session_ttl_hours);</li>
+ *   <li>every successful {@link #rotate} revokes the presented token and issues a new one in the same family, mode
+ *       and country, expiring one full lifetime of that mode from now (sliding expiry);</li>
+ *   <li>presenting an already-rotated token means it leaked → the whole family is revoked (401 REFRESH_REUSED);
+ *       the newest token of a signed-out family (logout, devices list) is simply invalid (401 REFRESH_INVALID).</li>
  * </ul>
  */
 @Slf4j
@@ -46,19 +50,30 @@ public class RefreshTokenService {
         this.clock = clock;
     }
 
-    /** Lifetime of a refresh token (setting auth.refresh_ttl_days). */
-    public Duration ttl() {
-        return Duration.ofDays(settings.getInt(SettingKeys.AUTH_REFRESH_TTL_DAYS));
+    /**
+     * Lifetime of a family: "remember me" = setting auth.refresh_ttl_days, browser session = setting
+     * auth.session_ttl_hours.
+     */
+    public Duration ttl(boolean persistent) {
+        return persistent
+                ? Duration.ofDays(settings.getInt(SettingKeys.AUTH_REFRESH_TTL_DAYS))
+                : Duration.ofHours(settings.getInt(SettingKeys.AUTH_SESSION_TTL_HOURS));
     }
 
-    /** Starts a new family (a fresh login). */
+    /** Starts a new "remember me" family without a sign-in country. */
     @Transactional
     public IssuedRefreshToken issue(UUID userId, String userAgent) {
-        return issueInFamily(userId, UUID.randomUUID(), userAgent);
+        return issue(userId, userAgent, true, null);
+    }
+
+    /** Starts a new family (a fresh sign-in) in the given mode, remembering the sign-in country. */
+    @Transactional
+    public IssuedRefreshToken issue(UUID userId, String userAgent, boolean persistent, String countryCode) {
+        return issueInFamily(userId, UUID.randomUUID(), userAgent, persistent, countryCode);
     }
 
     /**
-     * Validates and rotates {@code rawToken}. Throws 401 when unknown, expired or revoked; a revoked token
+     * Validates and rotates {@code rawToken}. Throws 401 when unknown, expired or revoked; a rotated (leaked) token
      * additionally revokes its whole family (committed despite the exception).
      */
     @Transactional(noRollbackFor = UnauthorizedException.class)
@@ -75,6 +90,10 @@ public class RefreshTokenService {
         entityManager.refresh(token, LockModeType.PESSIMISTIC_WRITE);
         Instant now = clock.instant();
         if (token.isRevoked()) {
+            if (!repository.existsByFamilyIdAndCreatedAtAfter(token.getFamilyId(), token.getCreatedAt())) {
+                // the newest token of a family that was signed out (logout, devices list): not a leak
+                throw new UnauthorizedException("Refresh token revoked", CODE_INVALID);
+            }
             int revoked = repository.revokeFamily(token.getFamilyId(), now);
             log.warn("Refresh token reuse detected (token {}), family {} revoked ({} active tokens)",
                     LogMask.token(rawToken), token.getFamilyId(), revoked);
@@ -85,7 +104,8 @@ public class RefreshTokenService {
         }
         token.setRevokedAt(now);
         repository.save(token);
-        IssuedRefreshToken next = issueInFamily(token.getUserId(), token.getFamilyId(), userAgent);
+        IssuedRefreshToken next = issueInFamily(token.getUserId(), token.getFamilyId(), userAgent,
+                token.isPersistent(), token.getCountryCode());
         return new Rotation(token.getUserId(), next);
     }
 
@@ -105,9 +125,10 @@ public class RefreshTokenService {
         repository.revokeAllForUser(userId, clock.instant());
     }
 
-    private IssuedRefreshToken issueInFamily(UUID userId, UUID familyId, String userAgent) {
+    private IssuedRefreshToken issueInFamily(UUID userId, UUID familyId, String userAgent, boolean persistent,
+                                             String countryCode) {
         String raw = SecureTokens.randomToken();
-        Duration ttl = ttl();
+        Duration ttl = ttl(persistent);
         Instant now = clock.instant();
         RefreshToken token = new RefreshToken();
         token.setUserId(userId);
@@ -116,8 +137,10 @@ public class RefreshTokenService {
         token.setCreatedAt(now);
         token.setExpiresAt(now.plus(ttl));
         token.setUserAgent(truncate(userAgent));
+        token.setPersistent(persistent);
+        token.setCountryCode(countryCode == null || countryCode.isBlank() ? null : countryCode.trim());
         repository.save(token);
-        return new IssuedRefreshToken(raw, familyId, ttl);
+        return new IssuedRefreshToken(raw, familyId, ttl, persistent);
     }
 
     private static String truncate(String userAgent) {
@@ -127,11 +150,14 @@ public class RefreshTokenService {
         return userAgent.length() > USER_AGENT_MAX ? userAgent.substring(0, USER_AGENT_MAX) : userAgent;
     }
 
-    /** The raw token (goes into the cookie only), its family and lifetime. */
-    public record IssuedRefreshToken(String rawToken, UUID familyId, Duration ttl) {
+    /**
+     * The raw token (goes into the cookie only), its family, lifetime and mode: {@code persistent} = cookie with
+     * Max-Age = {@code ttl}; otherwise a browser-session cookie.
+     */
+    public record IssuedRefreshToken(String rawToken, UUID familyId, Duration ttl, boolean persistent) {
         @Override
         public String toString() {
-            return "IssuedRefreshToken[familyId=" + familyId + "]";
+            return "IssuedRefreshToken[familyId=" + familyId + ", persistent=" + persistent + "]";
         }
     }
 

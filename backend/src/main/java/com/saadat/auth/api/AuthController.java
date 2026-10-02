@@ -8,6 +8,7 @@ import com.saadat.auth.api.AuthDtos.OnboardingRequest;
 import com.saadat.auth.service.AuthService;
 import com.saadat.auth.service.AuthService.LoginContext;
 import com.saadat.auth.service.AuthService.LoginResult;
+import com.saadat.auth.service.RefreshTokenService.IssuedRefreshToken;
 import com.saadat.auth.web.CookieUtil;
 import com.saadat.common.api.ApiPaths;
 import com.saadat.common.domain.Locale;
@@ -25,7 +26,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-/** {@link ApiPaths.Auth} routes. The refresh token travels only in the HttpOnly cookie. */
+/**
+ * {@link ApiPaths.Auth} routes. The refresh token travels only in the HttpOnly cookie: persistent for "remember me"
+ * sign-ins (the default), a browser-session cookie otherwise; a refresh writes the cookie in the family's mode.
+ */
 @RestController
 public class AuthController {
 
@@ -42,7 +46,8 @@ public class AuthController {
     @PostMapping(ApiPaths.Auth.GOOGLE)
     public AuthResponse google(@Valid @RequestBody GoogleLoginRequest body, HttpServletRequest request,
                                HttpServletResponse response) {
-        return withCookie(authService.loginWithGoogle(body.idToken(), context(request)), response);
+        return withCookie(authService.loginWithGoogle(body.idToken(), AuthDtos.rememberMe(body.rememberMe()),
+                context(request)), response);
     }
 
     @PostMapping(ApiPaths.Auth.MAGIC_REQUEST)
@@ -81,7 +86,8 @@ public class AuthController {
     }
 
     private AuthResponse withCookie(LoginResult result, HttpServletResponse response) {
-        cookieUtil.writeRefreshToken(response, result.refreshToken().rawToken(), result.refreshToken().ttl());
+        IssuedRefreshToken token = result.refreshToken();
+        cookieUtil.writeRefreshToken(response, token.rawToken(), token.ttl(), token.persistent());
         return result.response();
     }
 

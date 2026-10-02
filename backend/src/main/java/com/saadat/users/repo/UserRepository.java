@@ -33,6 +33,16 @@ public interface UserRepository extends JpaRepository<User, UUID> {
     @Query("select u from User u where u.id = :id")
     Optional<User> findByIdForUpdate(@Param("id") UUID id);
 
+    /**
+     * Role of an active (non-deleted) account whose refresh-token family {@code familyId} still has an active
+     * (non-revoked, non-expired) token — one query per request with an access token carrying {@code sid}.
+     */
+    @Query("select u.role from User u where u.id = :userId and u.deletedAt is null and exists ("
+            + "select t.id from RefreshToken t where t.familyId = :familyId and t.userId = u.id "
+            + "and t.revokedAt is null and t.expiresAt > :now)")
+    Optional<Role> findActiveRoleInSession(@Param("userId") UUID userId, @Param("familyId") UUID familyId,
+                                           @Param("now") Instant now);
+
     Page<User> findByDeletedAtIsNull(Pageable pageable);
 
     @Query("select u from User u where u.deletedAt is null and ("

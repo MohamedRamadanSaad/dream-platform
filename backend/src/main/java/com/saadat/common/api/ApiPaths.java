@@ -54,6 +54,12 @@ public final class ApiPaths {
         public static final String ORDER = ORDERS + "/{id}";
         /** PDF of all the caller's non-draft dreams with their interpretations. */
         public static final String DREAMS_PDF = ROOT + "/dreams/pdf";
+        /** GET: the caller's signed-in devices (active refresh-token families), most recently active first. */
+        public static final String DEVICES = ROOT + "/devices";
+        /** DELETE: signs that device out (404 when it is not one of the caller's). */
+        public static final String DEVICE = DEVICES + "/{id}";
+        /** POST: signs out every device of the caller except the calling one. */
+        public static final String DEVICES_SIGN_OUT_OTHERS = DEVICES + "/sign-out-others";
 
         private Me() {
         }
