@@ -46,10 +46,17 @@ jobs:
             echo "## tests"; for f in $(find backend/build/test-results -name '*.xml' 2>/dev/null); do grep -o '<testsuite[^>]*' "$f" | sed -E 's/.*name="([^"]+)".*tests="([0-9]+)".*failures="([0-9]+)".*errors="([0-9]+)".*/\1 tests=\2 failures=\3 errors=\4/'; done
             echo "## failures"; grep -l -E '<failure|<error' $(find backend/build/test-results -name '*.xml' 2>/dev/null) 2>/dev/null | while read f; do echo "--- $f"; grep -A12 -E '<failure|<error' "$f" | head -60; done
             echo "## build.log (errors + tail)"; grep -nE "error:|warning: \[|FAILED|Exception in|Caused by" backend/build.log | head -120; echo "..."; tail -n 150 backend/build.log; } > "$S"
+          # sample PDFs written by the tests (visual check of Arabic shaping / RTL) → ci-logs:samples/<file>.pdf
+          mkdir -p /tmp/ci/samples && cp backend/build/samples/*.pdf /tmp/ci/samples/ 2>/dev/null
           git config user.name ci-bot && git config user.email ci-bot@users.noreply.github.com
           git fetch origin ci-logs && git checkout ci-logs || git checkout --orphan ci-logs
           git rm -rfq . 2>/dev/null; cp /tmp/ci/*.txt . && cp "$S" latest-backend.txt
-          git add -A && git commit -qm "ci: backend ${GITHUB_SHA::7}" && git push -f origin ci-logs
+          mkdir -p samples && cp /tmp/ci/samples/*.pdf samples/ 2>/dev/null
+          # stage only the summaries and samples: the .gitignore files are gone on this branch, and build outputs
+          # (backend/build/libs/app.jar is over GitHub's 100 MB file limit) must never be committed
+          git add -A -- ':(glob)*.txt'
+          git add -A -- ':(glob)samples/*.pdf' 2>/dev/null
+          git commit -qm "ci: backend ${GITHUB_SHA::7}" && git push -f origin ci-logs
 
       - name: upload test reports
         if: always()

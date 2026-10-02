@@ -36,6 +36,7 @@ app:
     auth-per-minute: 10000
     dreams-per-minute: 10000
     checkout-per-minute: 10000
+    track-per-minute: 10000
 
 logging:
   level:

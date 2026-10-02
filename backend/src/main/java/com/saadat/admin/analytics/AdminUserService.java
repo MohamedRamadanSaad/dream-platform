@@ -14,6 +14,10 @@ import com.saadat.dreams.api.DreamSummaryDto;
 import com.saadat.dreams.repo.DreamRepository;
 import com.saadat.dreams.repo.TestimonialRepository;
 import com.saadat.dreams.service.DreamMapper;
+import com.saadat.mail.EventMailer;
+import com.saadat.mail.FrontendPaths;
+import com.saadat.mail.MailService;
+import com.saadat.mail.MailTemplates;
 import com.saadat.payments.domain.CreditLedgerEntry;
 import com.saadat.payments.service.OrderQueryService;
 import com.saadat.users.domain.AuthIdentity;
@@ -48,6 +52,7 @@ public class AdminUserService {
     private final OrderQueryService orderQueryService;
     private final DreamMapper dreamMapper;
     private final AuditService auditService;
+    private final EventMailer eventMailer;
     private final Clock clock;
 
     @Transactional(readOnly = true)
@@ -110,6 +115,21 @@ public class AdminUserService {
         after.put("ledgerEntryId", entry.getId());
         auditService.record(actor, "CREDITS_ADJUST", "credit_ledger", userId.toString(), Map.of("balance", before),
                 after);
+        mailCreditsAdjusted(userId, delta, reason, before + delta, entry.getId());
+    }
+
+    /** {@code credits-adjusted} to the user: signed delta, reason, new balance (after commit). */
+    private void mailCreditsAdjusted(UUID userId, int delta, String reason, int balance, UUID entryId) {
+        User user = userRepository.findById(userId).filter(u -> !u.isDeleted()).orElse(null);
+        if (user == null) {
+            return;
+        }
+        Map<String, Object> model = new LinkedHashMap<>();
+        model.put("delta", (delta > 0 ? "+" : "") + delta);
+        model.put("reason", reason);
+        model.put("balance", balance);
+        model.put(MailService.MODEL_LINK, FrontendPaths.ME);
+        eventMailer.toUser(user, MailTemplates.CREDITS_ADJUSTED, model, MailTemplates.CREDITS_ADJUSTED + ":" + entryId);
     }
 
     private static Map<String, Object> notesMap(String notes, List<String> tags) {

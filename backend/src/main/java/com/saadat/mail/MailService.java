@@ -83,9 +83,16 @@ public class MailService {
         return send(null, to, template, locale, model, ref);
     }
 
-    /** Same as {@link #send(String, String, com.saadat.common.domain.Locale, Map, String)}, recording the user id. */
+    /**
+     * Same as {@link #send(String, String, com.saadat.common.domain.Locale, Map, String)}, recording the user id.
+     * Returns {@link EmailStatus#DISABLED} without rendering or logging when the event is switched off.
+     */
     public EmailStatus send(UUID userId, String to, String template, com.saadat.common.domain.Locale locale,
                             Map<String, Object> model, String ref) {
+        if (!isEnabled(template)) {
+            log.debug("E-mail event '{}' is switched off ({})", template, SettingKeys.mailEvent(template));
+            return EmailStatus.DISABLED;
+        }
         final RenderedMail mail;
         try {
             mail = render(template, locale, model);
@@ -120,6 +127,17 @@ public class MailService {
         }
         record(userId, to, template, ref, mail.subject(), EmailStatus.FAILED, null, lastError);
         return EmailStatus.FAILED;
+    }
+
+    /**
+     * Whether the e-mail event is switched on: BOOL setting {@code mail.event.<template>} (missing = on). The
+     * sign-in e-mail ({@link MailTemplates#MAGIC_LINK}) can never be switched off.
+     */
+    public boolean isEnabled(String template) {
+        if (MailTemplates.MAGIC_LINK.equals(template)) {
+            return true;
+        }
+        return settings.getBool(SettingKeys.mailEvent(template), true);
     }
 
     /** Fire-and-forget variant on the async pool (use from request threads). */

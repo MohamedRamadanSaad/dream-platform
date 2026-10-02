@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<!--/* testimonial-received (ar) — all copy from messages mail.testimonial-received.* / mail.label.* / mail.common.*; subject + preheader: mail.testimonial-received.subject/.preheader */-->
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{mail/_layout :: layout('rtl', 'ar', ~{::content})}">
+<head><title>testimonial-received</title></head>
+<body>
+<div th:fragment="content">
+  <p style="margin:0 0 18px 0;font-size:18px;line-height:1.7;font-weight:600;color:#0A1128;"><span th:text="#{mail.common.greeting}">Greeting</span><th:block th:if="${!#strings.isEmpty(name)}"> <span th:text="${name}">…</span></th:block>،</p>
+  <p style="margin:0 0 16px 0;" th:text="#{mail.testimonial-received.line1}">…</p>
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:4px 0 16px 0;border-collapse:collapse;background-color:#FFFFFF;border:1px solid #E6DCC8;border-radius:12px;">
+    <tr th:if="${!#strings.isEmpty(userName)}">
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;" th:text="#{mail.label.user}">Label</td>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;" th:text="${userName}">—</td>
+    </tr>
+    <tr th:if="${rating != null}">
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;" th:text="#{mail.label.rating}">Label</td>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;" dir="ltr" th:text="|${rating} / 5|">—</td>
+    </tr>
+    <tr th:if="${!#strings.isEmpty(comment)}">
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;" th:text="#{mail.label.comment}">Label</td>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;" th:text="${comment}">—</td>
+    </tr>
+  </table>
+  <p style="margin:0 0 16px 0;font-size:14px;line-height:1.8;color:#5B6478;" th:text="#{mail.testimonial-received.line2}">…</p>
+  <table th:replace="~{mail/_layout :: cta(${ctaUrl}, #{mail.testimonial-received.cta})}"></table>
+</div>
+</body>
+</html>

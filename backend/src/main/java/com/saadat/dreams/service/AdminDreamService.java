@@ -24,6 +24,10 @@ import com.saadat.dreams.repo.DreamMessageRepository;
 import com.saadat.dreams.repo.DreamRepository;
 import com.saadat.dreams.repo.InterpretationRepository;
 import com.saadat.dreams.repo.TestimonialRepository;
+import com.saadat.mail.EventMailer;
+import com.saadat.mail.FrontendPaths;
+import com.saadat.mail.MailService;
+import com.saadat.mail.MailTemplates;
 import com.saadat.payments.api.OrderDto;
 import com.saadat.payments.domain.CreditLedgerEntry;
 import com.saadat.payments.domain.Order;
@@ -67,6 +71,7 @@ public class AdminDreamService {
     private final DreamMapper mapper;
     private final DreamNotifier notifier;
     private final DreamService dreamService;
+    private final EventMailer eventMailer;
     private final Clock clock;
 
     // ================================================================== queue & detail
@@ -194,13 +199,31 @@ public class AdminDreamService {
         d.setSlaPausedAt(null);
         dreamRepository.save(d);
 
+        boolean refunded = false;
         if (d.getLedgerEntryId() != null && !ledgerRepository.existsByDreamIdAndReason(dreamId, LedgerReason.REFUND)) {
             UUID orderId = ledgerRepository.findById(d.getLedgerEntryId()).map(CreditLedgerEntry::getOrderId).orElse(null);
             creditService.add(d.getUserId(), 1, LedgerReason.REFUND, orderId, dreamId, reason, actor);
+            refunded = true;
         }
         Map<String, Object> after = statusMap(DreamStatus.CANCELLED);
         after.put("reason", reason);
         auditService.record(actor, "DREAM_CANCEL", "dreams", dreamId.toString(), statusMap(before), after);
+        mailCancelled(d, refunded);
+    }
+
+    /** {@code dream-cancelled} to the owner: reason, refunded credit, new balance (after commit). */
+    private void mailCancelled(Dream d, boolean refunded) {
+        User owner = userRepository.findById(d.getUserId()).filter(u -> !u.isDeleted()).orElse(null);
+        if (owner == null) {
+            return;
+        }
+        Map<String, Object> model = new LinkedHashMap<>();
+        model.put("excerpt", DreamMapper.excerpt(d.getText()));
+        model.put("reason", d.getCancelledReason());
+        model.put("refunded", refunded);
+        model.put("balance", creditService.balance(owner.getId()));
+        model.put(MailService.MODEL_LINK, DreamLinks.user(d.getId()));
+        eventMailer.toUser(owner, MailTemplates.DREAM_CANCELLED, model, MailTemplates.DREAM_CANCELLED + ":" + d.getId());
     }
 
     // ================================================================== testimonials
@@ -229,6 +252,23 @@ public class AdminDreamService {
         testimonialRepository.save(t);
         auditService.record(actor, "TESTIMONIAL_APPROVAL", "testimonials", t.getId().toString(),
                 Map.of("approved", before), Map.of("approved", approved));
+        if (approved && !before) {
+            mailTestimonialApproved(t);
+        }
+    }
+
+    /** {@code testimonial-approved} to the author, once per testimonial (after commit). */
+    private void mailTestimonialApproved(Testimonial t) {
+        User author = userRepository.findById(t.getUserId()).filter(u -> !u.isDeleted()).orElse(null);
+        if (author == null) {
+            return;
+        }
+        Map<String, Object> model = new LinkedHashMap<>();
+        model.put("rating", t.getRating());
+        model.put("comment", t.getComment());
+        model.put(MailService.MODEL_LINK, FrontendPaths.HOME);
+        eventMailer.toUserOnce(author, MailTemplates.TESTIMONIAL_APPROVED, model,
+                MailTemplates.TESTIMONIAL_APPROVED + ":" + t.getId());
     }
 
     // ================================================================== helpers

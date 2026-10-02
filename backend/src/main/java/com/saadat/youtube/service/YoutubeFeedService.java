@@ -12,7 +12,9 @@ import java.nio.charset.StandardCharsets;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import lombok.extern.slf4j.Slf4j;
@@ -32,21 +34,25 @@ public class YoutubeFeedService {
 
     static final long TICK_MINUTES = 5;
     static final String CHANNEL_PLACEHOLDER = "{channelId}";
+    /** Only videos published this recently are announced by e-mail (never the back catalogue). */
+    static final Duration ANNOUNCE_WINDOW = Duration.ofDays(3);
 
     private static final int TITLE_MAX = 500;
     private static final int URL_MAX = 500;
 
     private final YoutubeVideoRepository repository;
     private final SettingsService settings;
+    private final YoutubeVideoMailer videoMailer;
     private final AppProperties.Youtube config;
     private final Clock clock;
     private final RestClient restClient;
     private final AtomicReference<Instant> lastFetchAt = new AtomicReference<>();
 
-    public YoutubeFeedService(YoutubeVideoRepository repository, SettingsService settings, AppProperties properties,
-                              Clock clock) {
+    public YoutubeFeedService(YoutubeVideoRepository repository, SettingsService settings,
+                              YoutubeVideoMailer videoMailer, AppProperties properties, Clock clock) {
         this.repository = repository;
         this.settings = settings;
+        this.videoMailer = videoMailer;
         this.config = properties.getYoutube();
         this.clock = clock;
         SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
@@ -93,10 +99,17 @@ public class YoutubeFeedService {
         return entries.size();
     }
 
+    /**
+     * Upserts the feed entries. Videos that are new to the table, recently published and not part of the very first
+     * import (an empty table = back catalogue) are announced to opted-in users (youtube-new-video).
+     */
     void upsert(List<FeedEntry> entries) {
         Instant now = clock.instant();
+        boolean firstImport = repository.count() == 0;
+        List<YoutubeVideoMailer.NewVideo> fresh = new ArrayList<>();
         for (FeedEntry e : entries) {
-            YoutubeVideo video = repository.findById(e.videoId()).orElseGet(() -> {
+            Optional<YoutubeVideo> existing = repository.findById(e.videoId());
+            YoutubeVideo video = existing.orElseGet(() -> {
                 YoutubeVideo v = new YoutubeVideo();
                 v.setId(e.videoId());
                 return v;
@@ -107,6 +120,14 @@ public class YoutubeFeedService {
             video.setThumbnailUrl(truncate(e.thumbnailUrl(), URL_MAX));
             video.setFetchedAt(now);
             repository.save(video);
+            if (existing.isEmpty() && !firstImport && e.publishedAt() != null
+                    && e.publishedAt().isAfter(now.minus(ANNOUNCE_WINDOW))) {
+                fresh.add(new YoutubeVideoMailer.NewVideo(video.getId(), video.getTitle(), video.getUrl(),
+                        video.getThumbnailUrl()));
+            }
+        }
+        if (!fresh.isEmpty()) {
+            videoMailer.announce(fresh);
         }
     }
 

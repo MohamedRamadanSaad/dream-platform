@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<!--/*
+  PDF report (openhtmltopdf). The output is parsed as XML: keep every tag closed and use numeric entities only.
+  Model (ReportService): lang, dir ('rtl'|'ltr'), rtl, brandName, tagline, site, generated, title, subtitle (name or
+  null), reference (short dream number or null), personGrid (rows of cells already in VISUAL order — tables are not mirrored for RTL), dreams (ReportViews.DreamView).
+  Brand: night #0A1128 band + gold #D4AF37 rule, pearl #F4EFE6 page, navy #16244A text.
+*/-->
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org" th:attr="lang=${lang},dir=${dir}" th:class="${dir}">
+<head>
+<meta charset="UTF-8"/>
+<title th:text="${title}">Report</title>
+<style>
+  @page {
+    size: A4;
+    margin: 27mm 16mm 20mm 16mm;
+    padding-top: 5mm; /* breathing room under the band on every page */
+    background-color: #F4EFE6;
+    @top-left-corner { content: ""; background-color: #0A1128; border-bottom: 1mm solid #D4AF37; }
+    @top-left { content: ""; background-color: #0A1128; border-bottom: 1mm solid #D4AF37; }
+    @top-center { content: element(header); background-color: #0A1128; border-bottom: 1mm solid #D4AF37; vertical-align: middle; }
+    @top-right { content: ""; background-color: #0A1128; border-bottom: 1mm solid #D4AF37; }
+    @top-right-corner { content: ""; background-color: #0A1128; border-bottom: 1mm solid #D4AF37; }
+    @bottom-left { content: element(footerLeft); vertical-align: top; padding-top: 3mm; border-top: 0.3mm solid #E6DCC8; }
+    @bottom-center { content: element(footerCenter); vertical-align: top; padding-top: 3mm; border-top: 0.3mm solid #E6DCC8; }
+    @bottom-right { content: element(footerRight); vertical-align: top; padding-top: 3mm; border-top: 0.3mm solid #E6DCC8; }
+  }
+
+  body { margin: 0; font-family: 'IBM Plex Sans', 'IBM Plex Sans Arabic'; font-size: 10pt; line-height: 1.6; color: #16244A; }
+  .rtl body { font-family: 'IBM Plex Sans Arabic', 'IBM Plex Sans'; }
+
+  .header { position: running(header); text-align: center; }
+  .brand { font-size: 17pt; font-weight: bold; color: #D4AF37; line-height: 1.35; }
+  .tagline { font-size: 8.5pt; color: #F4EFE6; line-height: 1.4; }
+
+  .footer { font-size: 7.5pt; color: #5B6478; line-height: 1.4; }
+  .footer-left { position: running(footerLeft); text-align: left; }
+  .footer-center { position: running(footerCenter); text-align: center; }
+  .footer-right { position: running(footerRight); text-align: right; }
+  .page-no:before { content: counter(page); }
+  .page-total:before { content: counter(pages); }
+
+  .doc-title { font-size: 18pt; font-weight: bold; color: #0A1128; line-height: 1.4; }
+  .doc-sub { font-size: 10pt; color: #5B6478; margin-bottom: 5mm; }
+
+  .section-title { font-size: 11.5pt; font-weight: bold; color: #0A1128; margin: 6mm 0 2.5mm 0; padding-bottom: 1.2mm; border-bottom: 0.5mm solid #D4AF37; page-break-after: avoid; }
+
+  table.card { width: 100%; border-collapse: collapse; background-color: #FFFFFF; border: 0.3mm solid #E6DCC8; }
+  table.card td { padding: 2mm 3mm; border-bottom: 0.2mm solid #F0E9DC; vertical-align: top; font-size: 9.5pt; line-height: 1.5; }
+  table.card tr { page-break-inside: avoid; }
+  td.k { width: 17%; color: #5B6478; }
+  td.v { width: 33%; color: #16244A; font-weight: bold; }
+  .ltr td.k, .ltr td.v { text-align: left; }
+  .rtl td.k, .rtl td.v { text-align: right; }
+
+  .dream { margin-top: 7mm; }
+  .dream-top { page-break-inside: avoid; page-break-after: avoid; } /* heading + details stay together, and with the text */
+  .dream.sep { padding-top: 6mm; border-top: 0.5mm solid #EADBAA; }
+  table.dream-head { width: 100%; border-collapse: collapse; margin-bottom: 2.5mm; page-break-after: avoid; }
+  table.dream-head td { padding: 0; vertical-align: middle; }
+  .dh-title { font-size: 13pt; font-weight: bold; color: #0A1128; }
+  .dh-num { color: #A8872A; }
+  .ltr .dh-title { text-align: left; }
+  .rtl .dh-title { text-align: right; }
+  .ltr .dh-status { text-align: right; }
+  .rtl .dh-status { text-align: left; }
+  .chip { font-size: 8.5pt; font-weight: bold; padding: 1mm 3mm; border-radius: 3mm; background-color: #EEF0F5; color: #16244A; }
+  .st-IN_REVIEW { background-color: #E8EDF8; color: #16244A; }
+  .st-AWAITING_USER_REPLY { background-color: #FBF3DC; color: #7A5E12; }
+  .st-INTERPRETED { background-color: #E5F2E9; color: #1E6B3A; }
+  .st-CANCELLED { background-color: #F7E6E6; color: #8A2B2B; }
+
+  .label { font-size: 9.5pt; font-weight: bold; color: #A8872A; margin: 4.5mm 0 1.5mm 0; page-break-after: avoid; }
+  .text-block { white-space: pre-line; background-color: #FFFFFF; border: 0.3mm solid #E6DCC8; border-radius: 2mm; padding: 3mm 4mm; line-height: 1.75; }
+
+  .msg { margin: 0 0 2mm 0; padding: 2.2mm 3.5mm; border-radius: 2mm; background-color: #FFFFFF; border: 0.3mm solid #E6DCC8; page-break-inside: avoid; }
+  .msg-i { background-color: #FBF6E9; border-color: #EADBAA; }
+  .ltr .msg-i { border-left: 1mm solid #D4AF37; }
+  .rtl .msg-i { border-right: 1mm solid #D4AF37; }
+  .msg-head { font-size: 8.5pt; color: #5B6478; margin-bottom: 0.8mm; }
+  .msg-who { font-weight: bold; color: #0A1128; }
+  .msg-body { white-space: pre-line; line-height: 1.7; }
+
+  .interp { background-color: #FFFFFF; border: 0.4mm solid #EADBAA; border-radius: 2mm; padding: 3.5mm 4.5mm; page-break-inside: avoid; }
+  .ltr .interp { border-left: 1.4mm solid #D4AF37; }
+  .rtl .interp { border-right: 1.4mm solid #D4AF37; }
+  .interp-at { font-size: 8.5pt; color: #5B6478; margin-bottom: 1mm; page-break-after: avoid; }
+  .interp-text { white-space: pre-line; line-height: 1.8; }
+  .muted { color: #5B6478; font-size: 9.5pt; }
+</style>
+</head>
+<body>
+
+<!--/* running elements: must come before the content */-->
+<div class="header">
+  <div class="brand" th:text="${brandName}">Brand</div>
+  <div class="tagline" th:text="${tagline}">Tagline</div>
+</div>
+<div class="footer footer-left">
+  <th:block th:if="${rtl}"><span th:text="${generated}">Generated</span></th:block>
+  <th:block th:unless="${rtl}"><span th:text="${brandName}">Brand</span><span> · </span><span th:text="${site}">site</span></th:block>
+</div>
+<div class="footer footer-center" dir="ltr"><span class="page-no"></span> / <span class="page-total"></span></div>
+<div class="footer footer-right">
+  <th:block th:if="${rtl}"><span th:text="${brandName}">Brand</span><span> · </span><span dir="ltr" th:text="${site}">site</span></th:block>
+  <th:block th:unless="${rtl}"><span th:text="${generated}">Generated</span></th:block>
+</div>
+
+<div class="doc-title" th:text="${title}">Title</div>
+<div class="doc-sub"><span th:if="${subtitle != null}" th:text="${subtitle}">Name</span><span th:if="${subtitle != null and reference != null}"> · </span><span th:if="${reference != null}" dir="ltr" th:text="${'#' + reference}">#00000000</span></div>
+
+<div class="section-title" th:text="#{pdf.section.person}">Personal details</div>
+<table class="card">
+  <tr th:each="cells : ${personGrid}">
+    <td th:each="cell : ${cells}" th:class="${cell.label} ? 'k' : 'v'" dir="auto" th:text="${cell.text}">x</td>
+  </tr>
+</table>
+
+<div class="section-title" th:text="#{pdf.section.dreams}">Dreams</div>
+<div class="muted" th:if="${dreams.isEmpty()}" th:text="#{pdf.empty}">No dreams yet.</div>
+
+<div th:each="dream, it : ${dreams}" class="dream" th:classappend="${it.index > 0} ? 'sep' : ''">
+  <div class="dream-top">
+    <table class="dream-head">
+      <tr>
+        <td class="dh-status" th:if="${rtl}"><span class="chip" th:classappend="${'st-' + dream.statusKey}" th:text="${dream.status}">Status</span></td>
+        <td class="dh-title"><span th:text="#{pdf.dream.title}">Dream</span> <span class="dh-num" dir="ltr" th:text="${'#' + dream.number}">#00000000</span></td>
+        <td class="dh-status" th:unless="${rtl}"><span class="chip" th:classappend="${'st-' + dream.statusKey}" th:text="${dream.status}">Status</span></td>
+      </tr>
+    </table>
+
+    <table class="card">
+      <tr th:each="cells : ${dream.metaGrid}">
+        <td th:each="cell : ${cells}" th:class="${cell.label} ? 'k' : 'v'" dir="auto" th:text="${cell.text}">x</td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="label" th:text="#{pdf.dream.text}">The dream</div>
+  <div class="text-block" dir="auto" th:text="${dream.text}">Dream text</div>
+
+  <th:block th:if="${!dream.messages.isEmpty()}">
+    <div class="label" th:text="#{pdf.dream.messages}">Questions and replies</div>
+    <div th:each="m : ${dream.messages}" class="msg" th:classappend="${m.fromInterpreter} ? 'msg-i' : 'msg-u'">
+      <div class="msg-head"><span class="msg-who" th:text="${m.sender}">Interpreter</span><span> · </span><span th:text="${m.at}">date</span></div>
+      <div class="msg-body" dir="auto" th:text="${m.body}">Message</div>
+    </div>
+  </th:block>
+
+  <th:block th:if="${dream.interpretation != null}">
+    <div class="label" th:text="#{pdf.dream.interpretation}">Interpretation</div>
+    <div class="interp">
+      <div class="interp-at" th:text="${dream.interpretation.at}">date</div>
+      <div class="interp-text" dir="auto" th:text="${dream.interpretation.text}">Interpretation</div>
+    </div>
+  </th:block>
+  <th:block th:if="${dream.interpretation == null and (dream.statusKey == 'IN_REVIEW' or dream.statusKey == 'AWAITING_USER_REPLY')}">
+    <div class="label" th:text="#{pdf.dream.interpretation}">Interpretation</div>
+    <div class="muted" th:text="#{pdf.dream.noInterpretation}">Not written yet.</div>
+  </th:block>
+
+  <th:block th:if="${!dream.paymentGrid.isEmpty()}">
+    <div class="label" th:text="#{pdf.dream.payment}">Payment</div>
+    <table class="card">
+      <tr th:each="cells : ${dream.paymentGrid}">
+        <td th:each="cell : ${cells}" th:class="${cell.label} ? 'k' : 'v'" dir="auto" th:text="${cell.text}">x</td>
+      </tr>
+    </table>
+  </th:block>
+</div>
+
+</body>
+</html>

@@ -5,6 +5,8 @@ import com.saadat.common.domain.DreamStatus;
 import com.saadat.common.domain.Locale;
 import com.saadat.common.error.UnauthorizedException;
 import com.saadat.dreams.repo.DreamRepository;
+import com.saadat.mail.EventMailer;
+import com.saadat.mail.MailTemplates;
 import com.saadat.notifications.repo.NotificationRepository;
 import com.saadat.payments.repo.CreditLedgerRepository;
 import com.saadat.publicapi.WaitTimeView;
@@ -16,6 +18,7 @@ import com.saadat.users.domain.User;
 import com.saadat.users.repo.AuthIdentityRepository;
 import com.saadat.users.repo.UserRepository;
 import java.time.Clock;
+import java.util.Map;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -39,13 +42,14 @@ public class AccountService {
     private final NotificationRepository notificationRepository;
     private final WaitTimeView waitTimeView;
     private final UserDtoMapper mapper;
+    private final EventMailer eventMailer;
     private final Clock clock;
 
     public AccountService(UserRepository userRepository, AuthIdentityRepository identityRepository,
                           RefreshTokenService refreshTokenService, PushSubscriptionService pushSubscriptionService,
                           DreamRepository dreamRepository, CreditLedgerRepository creditLedgerRepository,
                           NotificationRepository notificationRepository, WaitTimeView waitTimeView,
-                          UserDtoMapper mapper, Clock clock) {
+                          UserDtoMapper mapper, EventMailer eventMailer, Clock clock) {
         this.userRepository = userRepository;
         this.identityRepository = identityRepository;
         this.refreshTokenService = refreshTokenService;
@@ -55,6 +59,7 @@ public class AccountService {
         this.notificationRepository = notificationRepository;
         this.waitTimeView = waitTimeView;
         this.mapper = mapper;
+        this.eventMailer = eventMailer;
         this.clock = clock;
     }
 
@@ -101,6 +106,9 @@ public class AccountService {
     @Transactional
     public void delete(UUID userId) {
         User user = requireActive(userId);
+        // captured BEFORE anonymising: the goodbye e-mail goes to the real address once the deletion commits
+        eventMailer.toUser(user, MailTemplates.ACCOUNT_DELETED, Map.of(),
+                MailTemplates.ACCOUNT_DELETED + ":" + user.getId());
         user.setEmail(DELETED_EMAIL_PREFIX + user.getId() + DELETED_EMAIL_DOMAIN);
         user.setName("");
         user.setGender(null);

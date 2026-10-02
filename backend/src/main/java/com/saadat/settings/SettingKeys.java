@@ -71,8 +71,56 @@ public final class SettingKeys {
     public static final String STATS_INTERPRETED_BASE = "stats.interpreted_base";
 
     // ---- scheduling ----
-    /** IANA zone used for daily schedules (digest). */
+    /** IANA zone used for daily schedules (digest) and as the business time zone of analytics/reports. */
     public static final String SCHEDULE_TIME_ZONE = "schedule.time_zone";
+
+    // ---- e-mail events: BOOL mail.event.<template> (V14); missing or true = send. magic-link has no switch ----
+    public static final String MAIL_EVENT_PREFIX = "mail.event.";
+    public static final String MAIL_EVENT_WELCOME = "mail.event.welcome";
+    public static final String MAIL_EVENT_PAYMENT_FAILED = "mail.event.payment-failed";
+    public static final String MAIL_EVENT_DREAM_CANCELLED = "mail.event.dream-cancelled";
+    public static final String MAIL_EVENT_CREDITS_ADJUSTED = "mail.event.credits-adjusted";
+    public static final String MAIL_EVENT_TESTIMONIAL_APPROVED = "mail.event.testimonial-approved";
+    public static final String MAIL_EVENT_ACCOUNT_DELETED = "mail.event.account-deleted";
+    public static final String MAIL_EVENT_NEW_USER = "mail.event.new-user";
+    public static final String MAIL_EVENT_TESTIMONIAL_RECEIVED = "mail.event.testimonial-received";
+    public static final String MAIL_EVENT_DREAM_SUBMITTED = "mail.event.dream-submitted";
+    public static final String MAIL_EVENT_DREAM_RECEIVED = "mail.event.dream-received";
+    public static final String MAIL_EVENT_INTERPRETER_QUESTION = "mail.event.interpreter-question";
+    public static final String MAIL_EVENT_USER_REPLIED = "mail.event.user-replied";
+    public static final String MAIL_EVENT_INTERPRETATION_READY = "mail.event.interpretation-ready";
+    public static final String MAIL_EVENT_PAYMENT_RECEIPT = "mail.event.payment-receipt";
+    public static final String MAIL_EVENT_PAYMENT_SUSPICIOUS = "mail.event.payment-suspicious";
+    public static final String MAIL_EVENT_REPLY_REMINDER = "mail.event.reply-reminder";
+    public static final String MAIL_EVENT_TESTIMONIAL_REQUEST = "mail.event.testimonial-request";
+    public static final String MAIL_EVENT_INTERPRETER_DIGEST = "mail.event.interpreter-digest";
+    public static final String MAIL_EVENT_YOUTUBE_NEW_VIDEO = "mail.event.youtube-new-video";
+
+    /** Every e-mail event switch (one per template except magic-link). */
+    public static final List<String> MAIL_EVENTS = List.of(
+            MAIL_EVENT_WELCOME, MAIL_EVENT_PAYMENT_FAILED, MAIL_EVENT_DREAM_CANCELLED, MAIL_EVENT_CREDITS_ADJUSTED,
+            MAIL_EVENT_TESTIMONIAL_APPROVED, MAIL_EVENT_ACCOUNT_DELETED, MAIL_EVENT_NEW_USER,
+            MAIL_EVENT_TESTIMONIAL_RECEIVED, MAIL_EVENT_DREAM_SUBMITTED, MAIL_EVENT_DREAM_RECEIVED,
+            MAIL_EVENT_INTERPRETER_QUESTION, MAIL_EVENT_USER_REPLIED, MAIL_EVENT_INTERPRETATION_READY,
+            MAIL_EVENT_PAYMENT_RECEIPT, MAIL_EVENT_PAYMENT_SUSPICIOUS, MAIL_EVENT_REPLY_REMINDER,
+            MAIL_EVENT_TESTIMONIAL_REQUEST, MAIL_EVENT_INTERPRETER_DIGEST, MAIL_EVENT_YOUTUBE_NEW_VIDEO);
+
+    /** The switch of an e-mail template: {@code mail.event.<template>}. */
+    public static String mailEvent(String template) {
+        return MAIL_EVENT_PREFIX + template;
+    }
+
+    // ---- insights (GET /admin/analytics/insights) ----
+    /** Dreams in AWAITING_USER_REPLY for longer than N days are reported. */
+    public static final String INSIGHTS_AWAITING_REPLY_DAYS = "insights.awaiting_reply_days";
+    /** Visits up/down by at least N percent vs the same days of last month are reported. */
+    public static final String INSIGHTS_TRAFFIC_CHANGE_PERCENT = "insights.traffic_change_percent";
+    /** An interpretation streak of at least N consecutive days is celebrated. */
+    public static final String INSIGHTS_STREAK_MIN_DAYS = "insights.streak_min_days";
+
+    // ---- reports ----
+    /** Row cap of GET /admin/dreams/export. */
+    public static final String REPORTS_EXCEL_MAX_ROWS = "reports.excel_max_rows";
 
     /** Every key seeded by the migrations. */
     public static final List<String> ALL = List.of(
@@ -88,5 +136,13 @@ public final class SettingKeys {
             PRICING_GLOBAL_CURRENCY, PRICING_DEFAULT_COUNTRY, PRICING_FX_TO_USD,
             YOUTUBE_POLL_MINUTES,
             STATS_SUBSCRIBERS, STATS_VIEWS, STATS_VIDEOS,
-            SCHEDULE_TIME_ZONE);
+            SCHEDULE_TIME_ZONE,
+            MAIL_EVENT_WELCOME, MAIL_EVENT_PAYMENT_FAILED, MAIL_EVENT_DREAM_CANCELLED, MAIL_EVENT_CREDITS_ADJUSTED,
+            MAIL_EVENT_TESTIMONIAL_APPROVED, MAIL_EVENT_ACCOUNT_DELETED, MAIL_EVENT_NEW_USER,
+            MAIL_EVENT_TESTIMONIAL_RECEIVED, MAIL_EVENT_DREAM_SUBMITTED, MAIL_EVENT_DREAM_RECEIVED,
+            MAIL_EVENT_INTERPRETER_QUESTION, MAIL_EVENT_USER_REPLIED, MAIL_EVENT_INTERPRETATION_READY,
+            MAIL_EVENT_PAYMENT_RECEIPT, MAIL_EVENT_PAYMENT_SUSPICIOUS, MAIL_EVENT_REPLY_REMINDER,
+            MAIL_EVENT_TESTIMONIAL_REQUEST, MAIL_EVENT_INTERPRETER_DIGEST, MAIL_EVENT_YOUTUBE_NEW_VIDEO,
+            INSIGHTS_AWAITING_REPLY_DAYS, INSIGHTS_TRAFFIC_CHANGE_PERCENT, INSIGHTS_STREAK_MIN_DAYS,
+            REPORTS_EXCEL_MAX_ROWS);
 }

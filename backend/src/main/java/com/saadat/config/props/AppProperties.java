@@ -193,6 +193,9 @@ public class AppProperties {
         /** Requests per minute per IP on /checkout. */
         @Min(1)
         private int checkoutPerMinute = 5;
+        /** Requests per minute per IP on POST /public/track. */
+        @Min(1)
+        private int trackPerMinute = 60;
         /** Safety valve: bucket map is cleared when it grows beyond this many keys. */
         @Min(100)
         private int maxKeys = 100_000;

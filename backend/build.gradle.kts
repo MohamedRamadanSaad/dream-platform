@@ -55,6 +55,13 @@ dependencies {
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.6.0")
     implementation("io.sentry:sentry-spring-boot-starter-jakarta:7.16.0")
 
+    // Reports: PDF (HTML → PDF with ICU bidi/shaping for Arabic) and Excel (streaming .xlsx)
+    implementation("io.github.openhtmltopdf:openhtmltopdf-pdfbox:1.1.87") {
+        exclude(group = "commons-logging", module = "commons-logging") // spring-jcl provides the API
+    }
+    implementation("io.github.openhtmltopdf:openhtmltopdf-rtl-support:1.1.87")
+    implementation("org.apache.poi:poi-ooxml:5.4.1")
+
     // Lombok
     compileOnly("org.projectlombok:lombok")
     annotationProcessor("org.projectlombok:lombok")

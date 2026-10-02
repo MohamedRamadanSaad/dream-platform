@@ -88,6 +88,15 @@ class MailServiceIntegrationTest extends IntegrationTestBase {
         model.put("videoTitle", "Video");
         model.put("videoUrl", "https://www.youtube.com/watch?v=AAAAAAAAAAA");
         model.put("thumbnailUrl", "https://i1.ytimg.com/vi/AAAAAAAAAAA/hqdefault.jpg");
+        model.put("delta", "+2");
+        model.put("balance", 5);
+        model.put("refunded", true);
+        model.put("excerpt", "A quiet river");
+        model.put("rating", 5);
+        model.put("comment", "Thank you");
+        model.put("countryName", "Egypt");
+        model.put("age", 33);
+        model.put("gender", "Female");
 
         for (String template : MailTemplates.ALL) {
             for (Locale locale : Locale.values()) {
@@ -98,6 +107,32 @@ class MailServiceIntegrationTest extends IntegrationTestBase {
                         .doesNotContain("??");
             }
         }
+    }
+
+    @Test
+    void newEventTemplatesUseTheirCopyFromMessages() {
+        Map<String, Object> model = new HashMap<>();
+        model.put("name", "Sara");
+        model.put("delta", "+2");
+        model.put("reason", "gift");
+        model.put("balance", 7);
+        model.put("link", "/me");
+
+        RenderedMail ar = mailService.render(MailTemplates.CREDITS_ADJUSTED, Locale.AR, model);
+        assertThat(ar.subject()).isEqualTo("تحديث على رصيد رؤاك");
+        assertThat(ar.html()).contains("السلام عليكم").contains("+2").contains("gift").contains(">7<")
+                .contains("الذهاب إلى حسابي").contains(FRONTEND + "/me").doesNotContain("??");
+
+        RenderedMail en = mailService.render(MailTemplates.CREDITS_ADJUSTED, Locale.EN, model);
+        assertThat(en.subject()).isEqualTo("Your dream balance was updated");
+        assertThat(en.html()).contains("Assalamu alaikum").contains("Current balance").contains("Go to my account")
+                .doesNotContain("??");
+    }
+
+    @Test
+    void switchedOffEventIsNotSentAndMagicLinkAlwaysIs() {
+        assertThat(mailService.isEnabled(MailTemplates.MAGIC_LINK)).isTrue();
+        assertThat(mailService.isEnabled(MailTemplates.WELCOME)).isTrue();
     }
 
     @Test
