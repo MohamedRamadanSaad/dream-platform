@@ -17,7 +17,7 @@ export function YoutubeButton({ dark }: { dark?: boolean }) {
   const user = useAuthStore((s) => s.user)
   const qc = useQueryClient()
   const { data } = useQuery({ queryKey: ['youtube', 'unseen'], queryFn: youtubeApi.unseen, enabled: !!user, refetchInterval: 120_000, staleTime: 60_000 })
-  const seen = useMutation({ mutationFn: youtubeApi.seen, onSuccess: () => qc.setQueryData(['youtube', 'unseen'], (old: { count: number; latest: unknown[] } | undefined) => (old ? { ...old, count: 0 } : old)) })
+  const seen = useMutation({ mutationFn: youtubeApi.seen, meta: { toast: false }, onSuccess: () => qc.setQueryData(['youtube', 'unseen'], (old: { count: number; latest: unknown[] } | undefined) => (old ? { ...old, count: 0 } : old)) })
   const count = data?.count ?? 0
   const href = data?.latest?.[0]?.url && count > 0 ? data.latest[0].url : YT
   return (

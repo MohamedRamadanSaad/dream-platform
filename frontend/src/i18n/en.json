@@ -36,7 +36,9 @@
   "waitTime": {
     "label": "Current reply time",
     "range": "{{min}} to {{max}} days",
-    "hours": "{{h}} hours"
+    "hours": "{{h}} hours",
+    "within": "within {{v}}",
+    "between": "within {{min}} to {{max}}"
   },
   "about": {
     "kicker": "Vision & mission",
@@ -375,20 +377,45 @@
         "PERCENT": "Percent (%)",
         "FIXED": "Fixed discount",
         "BONUS": "One extra free dream"
+      },
+      "target": {
+        "label": "Show this offer in",
+        "pick": "Pick one from the list",
+        "search": "Search for a country",
+        "noGroups": "No groups yet. Create one on the prices page.",
+        "noResults": "No results",
+        "scopes": {
+          "GLOBAL": "All countries",
+          "CONTINENT": "A continent",
+          "GROUP": "A country group",
+          "COUNTRY": "One country"
+        },
+        "countries_one": "{{count}} country",
+        "countries_other": "{{count}} countries"
       }
     },
     "waitTime": {
       "title": "Reply time",
-      "lead": "The service never closes. Only the time shown to users changes.",
-      "busy": "Busy mode",
-      "normal": "Normal (hours)",
-      "min": "Minimum (days)",
-      "max": "Maximum (days)",
+      "lead": "Choose the reply time that visitors see on the home page and users see on their dreams page. The service never closes.",
       "msgAr": "Message (Arabic)",
       "msgEn": "Message (English)",
-      "preview": "What users will see",
+      "preview": "How it will look on the home page",
       "save": "Save",
-      "normalPreview": "We will reply within {{n}} hours, God willing"
+      "unit": "Set the time in",
+      "units": {
+        "hours": "Hours",
+        "hoursHint": "e.g. within 24 hours",
+        "days": "Days",
+        "daysHint": "e.g. within 2 to 5 days"
+      },
+      "hours": "Number of hours",
+      "from": "From (days)",
+      "to": "To (days)",
+      "sameHint": "Use the same number twice to show a fixed time, e.g. within 3 days.",
+      "badHours": "Hours must be at least 1.",
+      "badDays": "Enter valid days: at least 1, and “To” must not be less than “From”.",
+      "note": "Extra message for users",
+      "optional": "Optional"
     },
     "users": {
       "title": "Users",
@@ -733,7 +760,13 @@
     "dayCount_one": "{{count}} day",
     "dayCount_other": "{{count}} days",
     "hourCount_one": "{{count}} hour",
-    "hourCount_other": "{{count}} hours"
+    "hourCount_other": "{{count}} hours",
+    "saved": "Saved",
+    "saveFailed": "Could not save. Please try again.",
+    "forbidden": "You are not allowed to do this.",
+    "deleted": "Deleted",
+    "sent": "Sent",
+    "published": "Interpretation published"
   },
   "static": {
     "terms": "Terms and Conditions",

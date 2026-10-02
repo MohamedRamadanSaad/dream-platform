@@ -24,8 +24,8 @@ export function AdminDreamPage() {
   const [text, setText] = useState('')
   const [confirm, setConfirm] = useState(false)
   const inv = () => { qc.invalidateQueries({ queryKey: ['admin'] }); qc.invalidateQueries({ queryKey: ['notifications'] }) }
-  const ask = useMutation({ mutationFn: () => adminApi.ask(id!, question), onSuccess: () => { setQuestion(''); inv() } })
-  const publish = useMutation({ mutationFn: () => adminApi.interpret(id!, { text }), onSuccess: () => { setConfirm(false); inv(); navigate('/admin/dreams') } })
+  const ask = useMutation({ mutationFn: () => adminApi.ask(id!, question), meta: { toast: 'common.sent' }, onSuccess: () => { setQuestion(''); inv() } })
+  const publish = useMutation({ mutationFn: () => adminApi.interpret(id!, { text }), meta: { toast: 'common.published' }, onSuccess: () => { setConfirm(false); inv(); navigate('/admin/dreams') } })
 
   if (q.isLoading) return <div className="space-y-4"><Skeleton className="h-10 w-48" /><Skeleton className="h-48" /><Skeleton className="h-64" /></div>
   if (q.isError || !q.data) return <ErrorBox onRetry={() => q.refetch()} />
@@ -83,9 +83,9 @@ export function AdminDreamPage() {
         <Link to={`/admin/users/${d.user.id}`} className="card card-hover flex items-center gap-3 p-5 text-sm"><span className="text-gold-ink"><Icon name="user" size={22} /></span>{t('admin.dream.user360')} {arrowNext(locale)}</Link>
       </aside>
 
-      <Modal open={confirm} onClose={() => setConfirm(false)} title={t('admin.dream.publish')}>
-        <p className="mb-5 text-sm text-fg-muted">{t('admin.dream.confirm')}</p>
-        <div className="flex justify-end gap-2"><Button variant="ghost" onClick={() => setConfirm(false)}>{t('common.cancel')}</Button><Button loading={publish.isPending} onClick={() => publish.mutate()}>{t('common.confirm')}</Button></div>
+      <Modal open={confirm} onClose={() => setConfirm(false)} title={t('admin.dream.publish')} size="sm"
+        footer={<><Button variant="ghost" onClick={() => setConfirm(false)}>{t('common.cancel')}</Button><Button loading={publish.isPending} onClick={() => publish.mutate()}>{t('common.confirm')}</Button></>}>
+        <p className="text-sm text-fg-muted">{t('admin.dream.confirm')}</p>
       </Modal>
     </PageEnter>
   )

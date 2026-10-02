@@ -40,9 +40,9 @@ export function GeoPricingPage() {
   const [groupModal, setGroupModal] = useState<Partial<CountryGroup> | null>(null)
   const inv = () => qc.invalidateQueries({ queryKey: ['admin'] })
   const saveRule = useMutation({ mutationFn: adminApi.savePriceRule, onSuccess: inv })
-  const delRule = useMutation({ mutationFn: adminApi.deletePriceRule, onSuccess: inv })
+  const delRule = useMutation({ mutationFn: adminApi.deletePriceRule, meta: { toast: 'common.deleted' }, onSuccess: inv })
   const saveGroup = useMutation({ mutationFn: adminApi.saveGroup, onSuccess: () => { setGroupModal(null); inv() } })
-  const delGroup = useMutation({ mutationFn: adminApi.deleteGroup, onSuccess: inv })
+  const delGroup = useMutation({ mutationFn: adminApi.deleteGroup, meta: { toast: 'common.deleted' }, onSuccess: inv })
 
   const cs = countries.data ?? [], gs = groups.data ?? [], rs = rules.data ?? [], ps = (packages.data ?? []).filter((p) => p.active)
   const name = (c: CountryDto) => (locale === 'ar' ? c.nameAr : c.nameEn)
@@ -111,7 +111,8 @@ export function GeoPricingPage() {
         </section>
       </div>
 
-      <Modal open={!!groupModal} onClose={() => setGroupModal(null)} title={groupModal?.id ? t('common.edit') : t('admin.pricing.newGroup')}>
+      <Modal open={!!groupModal} onClose={() => setGroupModal(null)} title={groupModal?.id ? t('common.edit') : t('admin.pricing.newGroup')}
+        footer={<><Button variant="ghost" onClick={() => setGroupModal(null)}>{t('common.cancel')}</Button><Button disabled={!groupModal?.name} loading={saveGroup.isPending} onClick={() => groupModal && saveGroup.mutate(groupModal)}>{t('admin.pricing.save')}</Button></>}>
         {groupModal && (
           <div className="space-y-4">
             <div><Label>{t('admin.pricing.groupName')}</Label><Input value={groupModal.name ?? ''} onChange={(e) => setGroupModal({ ...groupModal, name: e.target.value })} /></div>
@@ -121,7 +122,6 @@ export function GeoPricingPage() {
                   return <label key={c.code} className={cn('flex items-center gap-2 rounded-lg px-2 py-1.5', on && 'bg-gold/10')}><input type="checkbox" checked={!!on} onChange={(e) => setGroupModal({ ...groupModal, countryCodes: e.target.checked ? [...(groupModal.countryCodes ?? []), c.code] : (groupModal.countryCodes ?? []).filter((x) => x !== c.code) })} className="accent-gold" />{FLAG(c.code)} {name(c)}{other && <span className="text-[10px] text-fg-dim">({other})</span>}</label> })}
               </div>
             </div>
-            <div className="flex justify-end gap-2"><Button variant="ghost" onClick={() => setGroupModal(null)}>{t('common.cancel')}</Button><Button disabled={!groupModal.name} loading={saveGroup.isPending} onClick={() => saveGroup.mutate(groupModal)}>{t('admin.pricing.save')}</Button></div>
           </div>
         )}
       </Modal>

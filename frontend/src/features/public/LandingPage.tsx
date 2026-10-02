@@ -14,6 +14,7 @@ import { Kicker, Skeleton, Stars } from '@/components/ui'
 import { Avatar, AvatarStack } from '@/components/ui/Avatar'
 import { fmtNum } from '@/lib/utils'
 import { cn, fmtMoney, countdown } from '@/lib/utils'
+import { replyTimeText } from '@/lib/waitTime'
 import type { PackageDto } from '@/api/types'
 
 const YT = (import.meta.env.VITE_YOUTUBE_URL as string) || 'https://youtube.com/@almoaberafatema'
@@ -111,7 +112,7 @@ function Hero() {
             {wait && (
               <div className="flex items-center gap-2 text-sm text-pearl/60">
                 <span className="h-2 w-2 rounded-full bg-gold animate-[twinkle_2.4s_ease-in-out_infinite] shadow-[0_0_10px_rgba(212,175,55,.9)]" />
-                {t('hero.badges.reply')}: {wait.busy ? t('waitTime.range', { min: wait.minDays, max: wait.maxDays }) : t('waitTime.hours', { h: wait.hours })}
+                {t('hero.badges.reply')}: {replyTimeText(t, wait)}
               </div>
             )}
           </div>

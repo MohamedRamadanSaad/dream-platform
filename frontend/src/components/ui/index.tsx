@@ -1,4 +1,5 @@
-import { forwardRef, type ButtonHTMLAttributes, type HTMLAttributes, type InputHTMLAttributes, type ReactNode, type TextareaHTMLAttributes } from 'react'
+import { forwardRef, useEffect, useId, useRef, type ButtonHTMLAttributes, type HTMLAttributes, type InputHTMLAttributes, type ReactNode, type TextareaHTMLAttributes } from 'react'
+import { createPortal } from 'react-dom'
 import { cva, type VariantProps } from 'class-variance-authority'
 import { cn } from '@/lib/utils'
 import type { DreamStatus, OrderStatus } from '@/api/types'
@@ -72,15 +73,66 @@ export function Segmented<T extends string>({ value, onChange, items, className 
   )
 }
 
-export function Modal({ open, onClose, title, children }: { open: boolean; onClose: () => void; title: string; children: ReactNode }) {
+/**
+ * Dialog rendered in a portal on <body> (page wrappers are GSAP-animated with transform,
+ * which would trap a fixed element and push it under the header). Header and footer stay
+ * pinned; only the body scrolls, so long forms never get cut on short screens.
+ * Phone: bottom sheet. Tablet/desktop: centred card.
+ */
+export function Modal({ open, onClose, title, children, footer, size = 'md' }: { open: boolean; onClose: () => void; title: string; children: ReactNode; footer?: ReactNode; size?: 'sm' | 'md' | 'lg' }) {
+  const { t } = useTranslation()
+  const panelRef = useRef<HTMLDivElement>(null)
+  const titleId = useId()
+  const closeRef = useRef(onClose)
+  closeRef.current = onClose
+
+  useEffect(() => {
+    if (!open) return
+    const prevFocus = document.activeElement as HTMLElement | null
+    const { overflow, paddingInlineEnd } = document.body.style
+    const gap = window.innerWidth - document.documentElement.clientWidth
+    document.body.style.overflow = 'hidden'
+    if (gap > 0) document.body.style.paddingInlineEnd = `${gap}px`
+    const first = panelRef.current?.querySelector<HTMLElement>('input:not([type=hidden]):not([disabled]), select, textarea')
+    ;(first ?? panelRef.current)?.focus({ preventScroll: true })
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') { e.stopPropagation(); closeRef.current() }
+      if (e.key === 'Tab' && panelRef.current) {
+        const f = panelRef.current.querySelectorAll<HTMLElement>('a[href], button:not([disabled]), input:not([disabled]):not([type=hidden]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])')
+        if (!f.length) return
+        const a = f[0], z = f[f.length - 1]
+        if (e.shiftKey && document.activeElement === a) { e.preventDefault(); z.focus() }
+        else if (!e.shiftKey && document.activeElement === z) { e.preventDefault(); a.focus() }
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => {
+      window.removeEventListener('keydown', onKey)
+      document.body.style.overflow = overflow
+      document.body.style.paddingInlineEnd = paddingInlineEnd
+      prevFocus?.focus?.({ preventScroll: true })
+    }
+  }, [open])
+
   if (!open) return null
-  return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-night/60 p-4" onClick={onClose}>
-      <div className="card w-full max-w-lg p-6 shadow-calm" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true">
-        <h3 className="font-display text-2xl mb-4">{title}</h3>
-        {children}
+  return createPortal(
+    <div className="modal-backdrop fixed inset-0 z-[70] flex items-end justify-center bg-night/60 backdrop-blur-[2px] sm:items-center sm:p-6" onMouseDown={(e) => { if (e.target === e.currentTarget) onClose() }}>
+      <div ref={panelRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby={titleId}
+        className={cn('modal-panel card flex w-full flex-col overflow-hidden p-0 shadow-calm outline-none',
+          'max-h-[calc(100dvh-0.75rem)] rounded-b-none pb-[env(safe-area-inset-bottom)] sm:max-h-[min(88dvh,52rem)] sm:rounded-b-xl2 sm:pb-0',
+          size === 'sm' ? 'sm:max-w-md' : size === 'lg' ? 'sm:max-w-2xl' : 'sm:max-w-lg')}>
+        <span aria-hidden="true" className="mx-auto mt-2.5 h-1 w-10 shrink-0 rounded-full bg-line sm:hidden" />
+        <header className="flex shrink-0 items-center justify-between gap-3 border-b border-line px-5 py-4 sm:px-6">
+          <h3 id={titleId} className="min-w-0 truncate font-display text-xl sm:text-2xl">{title}</h3>
+          <button type="button" onClick={onClose} aria-label={t('common.close')} className="-me-2 flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-fg-muted transition-colors hover:bg-surface-2 hover:text-fg">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg>
+          </button>
+        </header>
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 py-5 sm:px-6">{children}</div>
+        {footer && <footer className="flex shrink-0 flex-wrap items-center justify-end gap-2 border-t border-line bg-surface px-5 py-4 sm:px-6">{footer}</footer>}
       </div>
-    </div>
+    </div>,
+    document.body,
   )
 }
 

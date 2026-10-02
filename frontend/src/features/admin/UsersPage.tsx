@@ -97,9 +97,9 @@ export function User360Page() {
           <div className="flex justify-end"><Button size="sm" variant="ghost" loading={saveNotes.isPending} onClick={() => saveNotes.mutate()}>{t('admin.pricing.save')}</Button></div>
         </aside>
       </div>
-      <Modal open={creditModal} onClose={() => setCreditModal(false)} title={t('admin.users.addCredits')}>
-        <div className="space-y-3"><div><Label>{t('admin.packages.credits')}</Label><Input type="number" value={delta} onChange={(e) => setDelta(Number(e.target.value))} /></div><div><Label>{t('admin.users.reason')}</Label><Input value={reason} onChange={(e) => setReason(e.target.value)} /></div>
-          <div className="flex justify-end gap-2"><Button variant="ghost" onClick={() => setCreditModal(false)}>{t('common.cancel')}</Button><Button disabled={!reason || !delta} loading={addCredits.isPending} onClick={() => addCredits.mutate()}>{t('common.confirm')}</Button></div></div>
+      <Modal open={creditModal} onClose={() => setCreditModal(false)} title={t('admin.users.addCredits')} size="sm"
+        footer={<><Button variant="ghost" onClick={() => setCreditModal(false)}>{t('common.cancel')}</Button><Button disabled={!reason || !delta} loading={addCredits.isPending} onClick={() => addCredits.mutate()}>{t('common.confirm')}</Button></>}>
+        <div className="space-y-3"><div><Label>{t('admin.packages.credits')}</Label><Input type="number" value={delta} onChange={(e) => setDelta(Number(e.target.value))} /></div><div><Label>{t('admin.users.reason')}</Label><Input value={reason} onChange={(e) => setReason(e.target.value)} /></div></div>
       </Modal>
     </PageEnter>
   )

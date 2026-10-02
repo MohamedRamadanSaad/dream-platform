@@ -28,8 +28,16 @@ function ExportDialog({ open, onClose }: { open: boolean; onClose: () => void })
   const today = toISODay(new Date())
   const options = [...(countries.data ?? [])].sort((a, b) => (locale === 'ar' ? a.nameAr.localeCompare(b.nameAr, 'ar') : a.nameEn.localeCompare(b.nameEn, 'en')))
   return (
-    <Modal open={open} onClose={onClose} title={t('reports.excelTitle')}>
-      <p className="-mt-2 mb-5 text-sm font-light text-fg-muted">{t('reports.excelLead')}</p>
+    <Modal open={open} onClose={onClose} title={t('reports.excelTitle')}
+      footer={<div className="flex w-full flex-wrap items-center justify-between gap-3">
+        <button type="button" className="py-2 text-xs text-fg-muted hover:text-fg" onClick={() => setF(NO_FILTERS)}>{t('reports.reset')}</button>
+        <div className="flex items-start gap-2">
+          <Button variant="ghost" onClick={onClose}>{t('common.close')}</Button>
+          <DownloadButton variant="gold" size="md" disabled={badRange} label={t('reports.download')}
+            run={() => reportsApi.adminDreamsExcel({ status: f.status || undefined, from: f.from || undefined, to: f.to || undefined, country: f.country || undefined, gender: f.gender || undefined, q: f.q.trim() || undefined })} />
+        </div>
+      </div>}>
+      <p className="mb-5 text-sm font-light text-fg-muted">{t('reports.excelLead')}</p>
       <form className="grid grid-cols-2 gap-3" onSubmit={(e) => e.preventDefault()}>
         <label className="col-span-2"><span className="label">{t('reports.status')}</span>
           <select className="input" value={f.status} onChange={(e) => set({ status: e.target.value as ExportFilters['status'] })}>
@@ -55,14 +63,6 @@ function ExportDialog({ open, onClose }: { open: boolean; onClose: () => void })
         <label className="col-span-2"><span className="label">{t('reports.search')}</span><Input value={f.q} maxLength={200} placeholder={t('reports.searchPlaceholder')} onChange={(e) => set({ q: e.target.value })} /></label>
         {badRange && <p role="alert" className="col-span-2 text-xs text-bad-ink">{t('admin.traffic.badRange')}</p>}
       </form>
-      <div className="mt-6 flex flex-wrap items-start justify-between gap-3">
-        <button type="button" className="py-2 text-xs text-fg-muted hover:text-fg" onClick={() => setF(NO_FILTERS)}>{t('reports.reset')}</button>
-        <div className="flex items-start gap-2">
-          <Button variant="ghost" onClick={onClose}>{t('common.close')}</Button>
-          <DownloadButton variant="gold" size="md" disabled={badRange} label={t('reports.download')}
-            run={() => reportsApi.adminDreamsExcel({ status: f.status || undefined, from: f.from || undefined, to: f.to || undefined, country: f.country || undefined, gender: f.gender || undefined, q: f.q.trim() || undefined })} />
-        </div>
-      </div>
     </Modal>
   )
 }

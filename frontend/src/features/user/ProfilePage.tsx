@@ -39,7 +39,7 @@ export function ProfilePage() {
   const clear = useAuthStore((s) => s.clear)
   const navigate = useNavigate()
   const [push, setPush] = useState<string>(typeof Notification !== 'undefined' && Notification.permission === 'granted' ? 'granted' : '')
-  const save = useMutation({ mutationFn: () => meApi.preferences({ name, gender, locale, birthDate: birthDate || undefined }), onSuccess: setUser })
+  const save = useMutation({ meta: { toast: 'common.saved' }, mutationFn: () => meApi.preferences({ name, gender, locale, birthDate: birthDate || undefined }), onSuccess: setUser })
   const isIos = /iphone|ipad/i.test(navigator.userAgent)
   const standalone = window.matchMedia('(display-mode: standalone)').matches
   return (

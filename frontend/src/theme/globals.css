@@ -103,6 +103,17 @@ body {
 @keyframes shimmer { 0% { transform: translateX(-120%) } 60%, 100% { transform: translateX(120%) } }
 .shimmer::after { content: ''; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(100deg, transparent 30%, rgba(234, 219, 170, .35) 50%, transparent 70%); animation: shimmer 3.2s ease-in-out infinite; }
 
+/* dialogs: soft fade for the veil; the panel rises as a sheet on phones and settles in on desktop */
+@keyframes modal-fade { from { opacity: 0 } }
+@keyframes modal-rise { from { transform: translateY(24px); opacity: .6 } }
+@keyframes modal-settle { from { transform: translateY(8px) scale(.98); opacity: 0 } }
+.modal-backdrop { animation: modal-fade .2s ease-out; }
+.modal-panel { animation: modal-rise .32s cubic-bezier(.2,.8,.2,1); }
+@media (min-width: 640px) { .modal-panel { animation-name: modal-settle; } }
+
+@keyframes toast-in { from { transform: translateY(12px); opacity: 0 } }
+.toast-in { animation: toast-in .28s cubic-bezier(.2,.8,.2,1); }
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
 }

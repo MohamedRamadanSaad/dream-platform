@@ -10,6 +10,7 @@ import { Icon } from '@/components/icons/Icon'
 import { PageEnter, StaggerGroup } from '@/components/motion'
 import { arrowNext, cn, fmtDate, timeAgo } from '@/lib/utils'
 import type { DreamStatus, DreamSummary } from '@/api/types'
+import { replyTimeText } from '@/lib/waitTime'
 import { ApiError } from '@/api/client'
 
 type Tab = 'DRAFT' | 'IN_REVIEW' | 'AWAITING_USER_REPLY' | 'INTERPRETED'
@@ -80,7 +81,7 @@ export function UserDreamsPage() {
       {dash.data?.waitTime && (
         <div className="card mb-6 flex items-center gap-3 p-4 text-sm">
           <span className="pulse-ring h-2 w-2 shrink-0 rounded-full bg-gold" />
-          <span className="font-light text-fg-muted">{dash.data.waitTime.message}</span>
+          <span className="font-light text-fg-muted">{t('hero.badges.reply')}: <span className="font-medium text-fg">{replyTimeText(t, dash.data.waitTime)}</span>{dash.data.waitTime.message.trim() && <> · {dash.data.waitTime.message}</>}</span>
         </div>
       )}
 

@@ -25,8 +25,8 @@ export const db = {
 
   waitTime: {
     busy: true, normalHours: 48, busyMinDays: 2, busyMaxDays: 3,
-    messageAr: 'نظراً لكثرة الرؤى، يستغرق التعبير حالياً من يومين إلى ثلاثة أيام، لنمنح كل رؤيا حقها من الدراسة المتعمقة وتحليل الرموز.',
-    messageEn: 'Due to high demand, interpretations currently take two to three days so every dream gets the deep study it deserves.',
+    messageAr: 'نمنح كل رؤيا حقها من الدراسة المتأنية وتحليل الرموز.',
+    messageEn: 'Every dream gets the careful study it deserves.',
     autoResetAt: null,
   } as T.WaitTimeSettings,
 
