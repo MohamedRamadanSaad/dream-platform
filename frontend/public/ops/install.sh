@@ -43,7 +43,9 @@ FRONTEND_URL=https://$DOMAIN
 API_URL=https://$DOMAIN/api
 JWT_SECRET=$(openssl rand -base64 48 | tr -d '\n')
 GOOGLE_CLIENT_ID=
-INTERPRETER_EMAILS=$ACME_EMAIL
+# Extra interpreter e-mails (comma-separated). Leave empty: any e-mail on the site domain is the interpreter;
+# never put a personal address here, it would get the dashboard.
+INTERPRETER_EMAILS=
 PAYMENTS_MOCK=true
 PAYMOB_API_KEY=
 PAYMOB_INTEGRATION_ID=

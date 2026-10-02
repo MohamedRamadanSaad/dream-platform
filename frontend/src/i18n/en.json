@@ -761,6 +761,10 @@
         "support-auto-reply": {
           "label": "Support auto-reply",
           "desc": "To anyone who writes to the support e-mail: “We received your message and will reply within 2 working days.” Once a day per sender."
+        },
+        "new-sign-in": {
+          "label": "Sign-in from a new device",
+          "desc": "To the user or to you, when the account is signed in from a device or browser not used before, with a link to review devices."
         }
       },
       "toSupport": "Replies to support e-mails",
