@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.saadat.admin.analytics.InsightsIntegrationTest" tests="2" skipped="0" failures="0" errors="0" timestamp="2026-10-02T07:32:59.165Z" hostname="runnervm8df0l" time="0.33">
+  <properties/>
+  <testcase name="overdueDreamProducesAWarningAndMyActivityIsComplete()" classname="com.saadat.admin.analytics.InsightsIntegrationTest" time="0.295"/>
+  <testcase name="textsFollowTheRequestedLanguage()" classname="com.saadat.admin.analytics.InsightsIntegrationTest" time="0.033"/>
+  <system-out><![CDATA[07:32:59.148 INFO  [Test worker] [] o.s.t.c.s.AnnotationConfigContextLoaderUtils - Could not detect default configuration classes for test class [com.saadat.admin.analytics.InsightsIntegrationTest]: InsightsIntegrationTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+07:32:59.161 INFO  [Test worker] [] o.s.b.t.c.SpringBootTestContextBootstrapper - Found @SpringBootConfiguration com.saadat.SaadatApplication for test class com.saadat.admin.analytics.InsightsIntegrationTest
+07:32:59.349 DEBUG [async-4] [] c.saadat.push.service.WebPushSender - Web push not configured — skipping push to user 95155bdb-0b95-47bc-9430-bb4a53ed1e6c
+07:32:59.349 DEBUG [async-3] [] c.saadat.push.service.WebPushSender - Web push not configured — skipping push to user 2f243d1f-62d7-4e98-8a77-8e9793ec31e1
+07:32:59.350 DEBUG [async-2] [] c.saadat.push.service.WebPushSender - Web push not configured — skipping push to user 1a373b98-9b28-4b06-9558-db96956419e5
+07:32:59.350 DEBUG [async-1] [] c.saadat.push.service.WebPushSender - Web push not configured — skipping push to user 92876e95-66e6-40ad-905a-f6617bf89774
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

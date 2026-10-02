@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<!--/* account-deleted (ar) — all copy from messages mail.account-deleted.* / mail.label.* / mail.common.*; subject + preheader: mail.account-deleted.subject/.preheader */-->
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{mail/_layout :: layout('rtl', 'ar', ~{::content})}">
+<head><title>account-deleted</title></head>
+<body>
+<div th:fragment="content">
+  <p style="margin:0 0 18px 0;font-size:18px;line-height:1.7;font-weight:600;color:#0A1128;"><span th:text="#{mail.common.greeting}">Greeting</span><th:block th:if="${!#strings.isEmpty(name)}"> <span th:text="${name}">…</span></th:block>،</p>
+  <p style="margin:0 0 16px 0;" th:text="#{mail.account-deleted.line1}">…</p>
+  <p style="margin:0 0 16px 0;font-size:14px;line-height:1.8;color:#5B6478;" th:text="#{mail.account-deleted.line2}">…</p>
+</div>
+</body>
+</html>

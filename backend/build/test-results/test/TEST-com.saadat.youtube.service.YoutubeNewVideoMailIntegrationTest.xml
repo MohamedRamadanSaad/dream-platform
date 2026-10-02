@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.saadat.youtube.service.YoutubeNewVideoMailIntegrationTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2026-10-02T07:33:07.322Z" hostname="runnervm8df0l" time="0.144">
+  <properties/>
+  <testcase name="aNewVideoIsMailedToOptedInUsersOnly()" classname="com.saadat.youtube.service.YoutubeNewVideoMailIntegrationTest" time="0.144"/>
+  <system-out><![CDATA[07:33:07.283 INFO  [Test worker] [] o.s.t.c.s.AnnotationConfigContextLoaderUtils - Could not detect default configuration classes for test class [com.saadat.youtube.service.YoutubeNewVideoMailIntegrationTest]: YoutubeNewVideoMailIntegrationTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+07:33:07.314 INFO  [Test worker] [] o.s.b.t.c.SpringBootTestContextBootstrapper - Found @SpringBootConfiguration com.saadat.SaadatApplication for test class com.saadat.youtube.service.YoutubeNewVideoMailIntegrationTest
+07:33:07.365 INFO  [async-4] [] com.saadat.mail.MailService - SMTP not configured — e-mail 'youtube-new-video' to p***@example.com (subject: New video: A new video):
+<!DOCTYPE html>
+
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="x-apple-disable-message-reformatting">
+  <meta name="color-scheme" content="light">
+  <meta name="supported-color-schemes" content="light">
+  <title>New video: A new video</title>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;600&amp;display=swap" rel="stylesheet">
+  <style>
+    body, table, td, p, a, div, span, strong { font-family: 'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif; }
+    a { color: #0A1128; }
+    @media only screen and (max-width: 620px) {
+      .container { width: 100% !important; }
+      .px { padding-left: 20px !important; padding-right: 20px !important; }
+    }
+  </style>
+</head>
+<body style="margin:0;padding:0;background-color:#F4EFE6;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;" dir="ltr">
+<div style="display:none;max-height:0;max-width:0;overflow:hidden;mso-hide:all;font-size:1px;line-height:1px;color:#F4EFE6;opacity:0;">A new video is now on the channel.</div>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#F4EFE6;border-collapse:collapse;" dir="ltr">
+  <tr>
+    <td align="center" style="padding:24px 12px;">
+      <table role="presentation" class="container" width="600" cellpadding="0" cellspacing="0" border="0"
+             style="width:600px;max-width:600px;border-collapse:separate;border:1px solid #E6DCC8;border-radius:16px;overflow:hidden;background-color:#F4EFE6;">
+        <!-- header band -->
+        <tr>
+          <td align="center" class="px" style="background-color:#0A1128;padding:28px 32px 22px 32px;">
+            <div style="font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:22px;line-height:1.4;font-weight:600;color:#D4AF37;">Saadat Al-Darain</div>
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" style="margin:12px auto 10px auto;">
+              <tr><td width="72" height="2" style="width:72px;height:2px;line-height:2px;font-size:0;background-color:#D4AF37;">&nbsp;</td></tr>
+            </table>
+            <div style="font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:13px;line-height:1.6;color:#F4EFE6;">Dream interpretation with clarity and depth</div>
+          </td>
+        </tr>
+        <!-- content -->
+        <tr>
+          <td class="px" style="padding:32px 36px 28px 36px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:16px;line-height:1.9;color:#0A1128;background-color:#F4EFE6;" dir="ltr" align="left">
+            <div>
+  <p style="margin:0 0 18px 0;font-size:18px;line-height:1.7;font-weight:600;color:#0A1128;">Assalamu alaikum <span>Sara Ahmed</span>,</p>
+  <p style="margin:0 0 16px 0;">A new video is now on the channel:</p>
+  <p style="margin:0 0 18px 0;font-size:18px;line-height:1.7;font-weight:600;color:#0A1128;">A new video</p>
+  
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
+       style="margin:28px 0 8px 0;border-collapse:collapse;">
+  <tr>
+    <td align="center">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center">
+        <tr>
+          <td align="center" bgcolor="#D4AF37" style="border-radius:999px;background-color:#D4AF37;">
+            <a href="https://www.youtube.com/watch?v=newcb552245" target="_blank"
+               style="display:inline-block;padding:14px 38px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:16px;line-height:1.2;font-weight:600;color:#0A1128;text-decoration:none;border-radius:999px;">Watch the video</a>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+  <tr>
+    <td align="center" style="padding-top:14px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:12px;line-height:1.6;color:#5B6478;">
+      <span>If the button does not work, copy this link into your browser:</span><br>
+      <a href="https://www.youtube.com/watch?v=newcb552245" dir="ltr" style="color:#5B6478;word-break:break-all;">https://www.youtube.com/watch?v=newcb552245</a>
+    </td>
+  </tr>
+</table>
+</div>
+          </td>
+        </tr>
+        <!-- footer -->
+        <tr>
+          <td align="center" class="px" style="background-color:#0A1128;padding:24px 32px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:13px;line-height:1.8;color:#F4EFE6;">
+            <a href="https://youtube.com/@almoaberafatema" style="color:#D4AF37;text-decoration:none;font-weight:600;">Watch the channel on YouTube</a>
+            <div style="margin-top:6px;">
+              <span>Questions? Write to</span>
+              <a href="mailto:support@saadatu-aldarein.com" style="color:#D4AF37;text-decoration:none;">support@saadatu-aldarein.com</a>
+            </div>
+            <div style="margin-top:12px;font-size:12px;line-height:1.7;color:#AEB4C2;">You received this message because it concerns your account with us.</div>
+            <div style="margin-top:6px;font-size:12px;color:#AEB4C2;">&copy; <span>2026</span> <span>Saadat Al-Darain</span></div>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
+</body>
+</html>
+
+07:33:07.378 INFO  [async-4] [] com.saadat.mail.MailService - SMTP not configured — e-mail 'youtube-new-video' to y***@example.com (subject: مقطع جديد: A new video):
+<!DOCTYPE html>
+
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="x-apple-disable-message-reformatting">
+  <meta name="color-scheme" content="light">
+  <meta name="supported-color-schemes" content="light">
+  <title>مقطع جديد: A new video</title>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;600&amp;display=swap" rel="stylesheet">
+  <style>
+    body, table, td, p, a, div, span, strong { font-family: 'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif; }
+    a { color: #0A1128; }
+    @media only screen and (max-width: 620px) {
+      .container { width: 100% !important; }
+      .px { padding-left: 20px !important; padding-right: 20px !important; }
+    }
+  </style>
+</head>
+<body style="margin:0;padding:0;background-color:#F4EFE6;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;" dir="rtl">
+<div style="display:none;max-height:0;max-width:0;overflow:hidden;mso-hide:all;font-size:1px;line-height:1px;color:#F4EFE6;opacity:0;">نُشر مقطع جديد على القناة.</div>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#F4EFE6;border-collapse:collapse;" dir="rtl">
+  <tr>
+    <td align="center" style="padding:24px 12px;">
+      <table role="presentation" class="container" width="600" cellpadding="0" cellspacing="0" border="0"
+             style="width:600px;max-width:600px;border-collapse:separate;border:1px solid #E6DCC8;border-radius:16px;overflow:hidden;background-color:#F4EFE6;">
+        <!-- header band -->
+        <tr>
+          <td align="center" class="px" style="background-color:#0A1128;padding:28px 32px 22px 32px;">
+            <div style="font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:22px;line-height:1.4;font-weight:600;color:#D4AF37;">إلى سعادة الدارين</div>
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" style="margin:12px auto 10px auto;">
+              <tr><td width="72" height="2" style="width:72px;height:2px;line-height:2px;font-size:0;background-color:#D4AF37;">&nbsp;</td></tr>
+            </table>
+            <div style="font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:13px;line-height:1.6;color:#F4EFE6;">تفسير الرؤى بوضوح وعمق نحو سعادة الدارين</div>
+          </td>
+        </tr>
+        <!-- content -->
+        <tr>
+          <td class="px" style="padding:32px 36px 28px 36px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:16px;line-height:1.9;color:#0A1128;background-color:#F4EFE6;" dir="rtl" align="right">
+            <div>
+  <p style="margin:0 0 18px 0;font-size:18px;line-height:1.7;font-weight:600;color:#0A1128;">السلام عليكم <span>yt-optin</span>،</p>
+  <p style="margin:0 0 16px 0;">نُشر مقطع جديد على القناة:</p>
+  <p style="margin:0 0 18px 0;font-size:18px;line-height:1.7;font-weight:600;color:#0A1128;">A new video</p>
+  
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
+       style="margin:28px 0 8px 0;border-collapse:collapse;">
+  <tr>
+    <td align="center">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center">
+        <tr>
+          <td align="center" bgcolor="#D4AF37" style="border-radius:999px;background-color:#D4AF37;">
+            <a href="https://www.youtube.com/watch?v=newcb552245" target="_blank"
+               style="display:inline-block;padding:14px 38px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:16px;line-height:1.2;font-weight:600;color:#0A1128;text-decoration:none;border-radius:999px;">مشاهدة المقطع</a>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+  <tr>
+    <td align="center" style="padding-top:14px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:12px;line-height:1.6;color:#5B6478;">
+      <span>إذا لم يعمل الزر، انسخ هذا الرابط في المتصفح:</span><br>
+      <a href="https://www.youtube.com/watch?v=newcb552245" dir="ltr" style="color:#5B6478;word-break:break-all;">https://www.youtube.com/watch?v=newcb552245</a>
+    </td>
+  </tr>
+</table>
+</div>
+          </td>
+        </tr>
+        <!-- footer -->
+        <tr>
+          <td align="center" class="px" style="background-color:#0A1128;padding:24px 32px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:13px;line-height:1.8;color:#F4EFE6;">
+            <a href="https://youtube.com/@almoaberafatema" style="color:#D4AF37;text-decoration:none;font-weight:600;">شاهد القناة على يوتيوب</a>
+            <div style="margin-top:6px;">
+              <span>للتواصل معنا:</span>
+              <a href="mailto:support@saadatu-aldarein.com" style="color:#D4AF37;text-decoration:none;">support@saadatu-aldarein.com</a>
+            </div>
+            <div style="margin-top:12px;font-size:12px;line-height:1.7;color:#AEB4C2;">وصلتك هذه الرسالة لأنها تخص حسابك لدينا.</div>
+            <div style="margin-top:6px;font-size:12px;color:#AEB4C2;">&copy; <span>2026</span> <span>إلى سعادة الدارين</span></div>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
+</body>
+</html>
+
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>
