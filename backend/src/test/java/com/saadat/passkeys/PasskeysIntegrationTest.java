@@ -29,8 +29,12 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.Callable;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.system.CapturedOutput;
+import org.springframework.boot.test.system.OutputCaptureExtension;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MvcResult;
@@ -43,12 +47,21 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
  * (refresh cookie, device sid, remember me, role sync, new-sign-in alert), the passkey-added e-mail, and every way a
  * sign-in must fail with 401 PASSKEY_INVALID.
  */
+@ExtendWith(OutputCaptureExtension.class)
 class PasskeysIntegrationTest extends SessionTestBase {
 
     /** app.frontend-url of application-test.yml: RP ID "localhost", the only allowed origin. */
     private static final String ORIGIN = "http://localhost:5173";
     private static final String PHISHING_ORIGIN = "https://saadatu-aldarein.example.com";
     private static final String INTERPRETER_DOMAIN = "@saadatu-aldarein.com";
+
+    // the generic problem details, and the reasons PasskeyService logs
+    private static final String SIGN_IN_FAILED = "Passkey sign-in failed";
+    private static final String REGISTRATION_FAILED = "The passkey could not be added";
+    private static final String UNUSABLE_SIGN_IN = "unknown, used or expired request";
+    private static final String UNUSABLE_REGISTRATION = "unknown, used, expired or foreign request";
+    private static final String UNKNOWN_CREDENTIAL = "unknown credential";
+    private static final String FOREIGN_USER_HANDLE = "user handle does not match";
 
     @Autowired
     PasskeyRepository passkeyRepository;
@@ -205,7 +218,7 @@ class PasskeysIntegrationTest extends SessionTestBase {
     }
 
     @Test
-    void listsAndRemovesOwnPasskeysOnly() throws Exception {
+    void listsAndRemovesOwnPasskeysOnly(CapturedOutput output) throws Exception {
         SignIn mine = signIn(uniqueEmail("passkey-mine"), CHROME_WINDOWS, "EG", null);
         SignIn theirs = signIn(uniqueEmail("passkey-theirs"), FIREFOX_LINUX, "SA", null);
         TestPasskeyDevice laptop = new TestPasskeyDevice(ORIGIN);
@@ -238,13 +251,15 @@ class PasskeysIntegrationTest extends SessionTestBase {
         assertThat(left.size()).isEqualTo(1);
         assertThat(left.get(0).get("id").asText()).isEqualTo(second.get("id").asText());
         // a removed passkey no longer signs in
-        expectInvalidSignIn(signInBody(laptop, null));
+        expectInvalidSignIn(signInBody(laptop, null), output, UNKNOWN_CREDENTIAL);
     }
 
     // ------------------------------------------------------------------ refused sign-ins and registrations
+    // (each one asserts the reason the server logged, so it fails for the intended check, while the client always
+    // gets the same generic problem)
 
     @Test
-    void aChallengeWorksOnceAndOnlyForItsPurpose() throws Exception {
+    void aChallengeWorksOnceAndOnlyForItsPurpose(CapturedOutput output) throws Exception {
         String email = uniqueEmail("passkey-once");
         SignIn session = signIn(email, CHROME_WINDOWS, "EG", null);
         UUID userId = userRepository.findByEmailIgnoreCase(email).orElseThrow().getId();
@@ -254,60 +269,60 @@ class PasskeysIntegrationTest extends SessionTestBase {
         Map<String, Object> credential = device.create(options.get("publicKey").toString());
 
         postRegistration(session.bearer(), requestId, credential, null, CHROME_WINDOWS).andExpect(status().isCreated());
-        postRegistration(session.bearer(), requestId, credential, null, CHROME_WINDOWS)
-                .andExpect(status().isUnprocessableEntity())
-                .andExpect(jsonPath("$.code").value(PasskeyService.CODE_INVALID));
+        expectInvalidRegistration(output, UNUSABLE_REGISTRATION,
+                () -> postRegistration(session.bearer(), requestId, credential, null, CHROME_WINDOWS));
         assertThat(passkeyRepository.countByUserId(userId)).isEqualTo(1);
 
         Map<String, Object> body = signInBody(device, null);
         verify(body, CHROME_WINDOWS).andExpect(status().isOk());
-        expectInvalidSignIn(body); // replayed
+        expectInvalidSignIn(body, output, UNUSABLE_SIGN_IN); // replayed
 
         // a registration requestId cannot sign in, a sign-in requestId cannot register
         Map<String, Object> wrongPurpose = signInBody(device, null);
         wrongPurpose.put("requestId", registrationOptions(session.bearer()).get("requestId").asText());
-        expectInvalidSignIn(wrongPurpose);
+        expectInvalidSignIn(wrongPurpose, output, UNUSABLE_SIGN_IN);
         JsonNode registration = registrationOptions(session.bearer());
         Map<String, Object> other = new TestPasskeyDevice(ORIGIN).create(registration.get("publicKey").toString());
-        postRegistration(session.bearer(), signInOptions().get("requestId").asText(), other, null, CHROME_WINDOWS)
-                .andExpect(status().isUnprocessableEntity())
-                .andExpect(jsonPath("$.code").value(PasskeyService.CODE_INVALID));
-        // another account's registration requestId cannot be used either
+        String signInRequestId = signInOptions().get("requestId").asText();
+        expectInvalidRegistration(output, UNUSABLE_REGISTRATION,
+                () -> postRegistration(session.bearer(), signInRequestId, other, null, CHROME_WINDOWS));
+        // another account's registration requestId cannot be used either, and stays usable by its owner
         SignIn stranger = signIn(uniqueEmail("passkey-once-stranger"), CHROME_WINDOWS, "EG", null);
-        postRegistration(stranger.bearer(), registration.get("requestId").asText(), other, null, CHROME_WINDOWS)
-                .andExpect(status().isUnprocessableEntity())
-                .andExpect(jsonPath("$.code").value(PasskeyService.CODE_INVALID));
+        String registrationRequestId = registration.get("requestId").asText();
+        expectInvalidRegistration(output, UNUSABLE_REGISTRATION,
+                () -> postRegistration(stranger.bearer(), registrationRequestId, other, null, CHROME_WINDOWS));
+        postRegistration(session.bearer(), registrationRequestId, other, null, CHROME_WINDOWS)
+                .andExpect(status().isCreated());
     }
 
     @Test
-    void anExpiredChallengeIsRefused() throws Exception {
+    void anExpiredChallengeIsRefused(CapturedOutput output) throws Exception {
         SignIn session = signIn(uniqueEmail("passkey-expired"), CHROME_WINDOWS, "EG", null);
         TestPasskeyDevice device = new TestPasskeyDevice(ORIGIN);
         addedPasskey(session.bearer(), device);
 
         Map<String, Object> body = signInBody(device, null);
         expire((String) body.get("requestId"));
-        expectInvalidSignIn(body);
+        expectInvalidSignIn(body, output, UNUSABLE_SIGN_IN);
 
         JsonNode options = registrationOptions(session.bearer());
+        String requestId = options.get("requestId").asText();
         Map<String, Object> credential = new TestPasskeyDevice(ORIGIN).create(options.get("publicKey").toString());
-        expire(options.get("requestId").asText());
-        postRegistration(session.bearer(), options.get("requestId").asText(), credential, null, CHROME_WINDOWS)
-                .andExpect(status().isUnprocessableEntity())
-                .andExpect(jsonPath("$.code").value(PasskeyService.CODE_INVALID));
+        expire(requestId);
+        expectInvalidRegistration(output, UNUSABLE_REGISTRATION,
+                () -> postRegistration(session.bearer(), requestId, credential, null, CHROME_WINDOWS));
     }
 
     @Test
-    void aPhishingOriginIsRefused() throws Exception {
+    void aPhishingOriginIsRefused(CapturedOutput output) throws Exception {
         SignIn session = signIn(uniqueEmail("passkey-origin"), CHROME_WINDOWS, "EG", null);
         TestPasskeyDevice device = new TestPasskeyDevice(ORIGIN);
         addedPasskey(session.bearer(), device);
 
         device.useOrigin(PHISHING_ORIGIN);
-        expectInvalidSignIn(signInBody(device, null));
-        addPasskey(session.bearer(), new TestPasskeyDevice(PHISHING_ORIGIN), null, CHROME_WINDOWS)
-                .andExpect(status().isUnprocessableEntity())
-                .andExpect(jsonPath("$.code").value(PasskeyService.CODE_INVALID));
+        expectInvalidSignIn(signInBody(device, null), output, "BadOriginException");
+        expectInvalidRegistration(output, "BadOriginException",
+                () -> addPasskey(session.bearer(), new TestPasskeyDevice(PHISHING_ORIGIN), null, CHROME_WINDOWS));
 
         // back on the real site the passkey still works
         device.useOrigin(ORIGIN);
@@ -315,7 +330,7 @@ class PasskeysIntegrationTest extends SessionTestBase {
     }
 
     @Test
-    void aTamperedSignatureOrAnotherUsersHandleIsRefused() throws Exception {
+    void aTamperedSignatureOrAnotherUsersHandleIsRefused(CapturedOutput output) throws Exception {
         SignIn session = signIn(uniqueEmail("passkey-tampered"), CHROME_WINDOWS, "EG", null);
         TestPasskeyDevice device = new TestPasskeyDevice(ORIGIN);
         addedPasskey(session.bearer(), device);
@@ -325,29 +340,29 @@ class PasskeysIntegrationTest extends SessionTestBase {
         byte[] signature = Base64.getUrlDecoder().decode((String) response.get("signature"));
         signature[signature.length - 1] ^= 0x01;
         response.put("signature", TestPasskeyDevice.base64url(signature));
-        expectInvalidSignIn(tampered);
+        expectInvalidSignIn(tampered, output, "BadSignatureException");
 
         Map<String, Object> foreignHandle = signInBody(device, null);
         User other = createUser("passkey-other-handle", Role.USER);
         response(foreignHandle).put("userHandle", TestPasskeyDevice.base64url(PasskeyService.userHandle(other.getId())));
-        expectInvalidSignIn(foreignHandle);
+        expectInvalidSignIn(foreignHandle, output, FOREIGN_USER_HANDLE);
 
         Map<String, Object> noHandle = signInBody(device, null);
         response(noHandle).put("userHandle", null);
-        expectInvalidSignIn(noHandle);
+        expectInvalidSignIn(noHandle, output, FOREIGN_USER_HANDLE);
     }
 
     @Test
-    void anUnknownPasskeyIsRefused() throws Exception {
+    void anUnknownPasskeyIsRefused(CapturedOutput output) throws Exception {
         SignIn session = signIn(uniqueEmail("passkey-unknown"), CHROME_WINDOWS, "EG", null);
         // created on the device but never sent to the server
         TestPasskeyDevice stranger = new TestPasskeyDevice(ORIGIN);
         stranger.create(registrationOptions(session.bearer()).get("publicKey").toString());
-        expectInvalidSignIn(signInBody(stranger, null));
+        expectInvalidSignIn(signInBody(stranger, null), output, UNKNOWN_CREDENTIAL);
     }
 
     @Test
-    void aSignatureCounterThatDoesNotGrowIsRefused() throws Exception {
+    void aSignatureCounterThatDoesNotGrowIsRefused(CapturedOutput output) throws Exception {
         SignIn session = signIn(uniqueEmail("passkey-counter"), CHROME_WINDOWS, "EG", null);
         TestPasskeyDevice key = new TestPasskeyDevice(ORIGIN);
         UUID id = UUID.fromString(addedPasskey(session.bearer(), key).get("id").asText());
@@ -355,7 +370,7 @@ class PasskeysIntegrationTest extends SessionTestBase {
         assertThat(passkeyRepository.findById(id).orElseThrow().getSignCount()).isEqualTo(2);
 
         key.freezeCounter(); // presents 2 again, like a cloned key
-        expectInvalidSignIn(signInBody(key, null));
+        expectInvalidSignIn(signInBody(key, null), output, "MaliciousCounterValueException");
         assertThat(passkeyRepository.findById(id).orElseThrow().getSignCount()).isEqualTo(2);
 
         // passkeys without a counter (always 0, e.g. synced ones) keep working
@@ -366,24 +381,29 @@ class PasskeysIntegrationTest extends SessionTestBase {
     }
 
     @Test
-    void malformedSignInsAreRefusedTheSameWay() throws Exception {
+    void malformedSignInsAreRefusedTheSameWay(CapturedOutput output) throws Exception {
         Map<String, Object> noRequest = new LinkedHashMap<>();
         noRequest.put("credential", Map.of("id", "abc"));
-        expectInvalidSignIn(noRequest);
+        expectInvalidSignIn(noRequest, output, UNUSABLE_SIGN_IN);
 
         Map<String, Object> notAnObject = new LinkedHashMap<>();
         notAnObject.put("requestId", signInOptions().get("requestId").asText());
         notAnObject.put("credential", "nope");
-        expectInvalidSignIn(notAnObject);
+        expectInvalidSignIn(notAnObject, output, "the credential is not a JSON object");
+
+        Map<String, Object> garbage = new LinkedHashMap<>();
+        garbage.put("requestId", signInOptions().get("requestId").asText());
+        garbage.put("credential", Map.of("id", "abc", "response", Map.of()));
+        expectInvalidSignIn(garbage, output, "unreadable response");
 
         Map<String, Object> badRequestId = new LinkedHashMap<>();
         badRequestId.put("requestId", "not-a-uuid");
         badRequestId.put("credential", Map.of());
-        expectInvalidSignIn(badRequestId);
+        expectInvalidSignIn(badRequestId, output, UNUSABLE_SIGN_IN);
     }
 
     @Test
-    void deletingTheAccountDeletesItsPasskeys() throws Exception {
+    void deletingTheAccountDeletesItsPasskeys(CapturedOutput output) throws Exception {
         String email = uniqueEmail("passkey-delete");
         SignIn session = signIn(email, CHROME_WINDOWS, "EG", null);
         UUID userId = userRepository.findByEmailIgnoreCase(email).orElseThrow().getId();
@@ -395,7 +415,7 @@ class PasskeysIntegrationTest extends SessionTestBase {
                 .andExpect(status().isNoContent());
 
         assertThat(passkeyRepository.countByUserId(userId)).isZero();
-        expectInvalidSignIn(signInBody(device, null));
+        expectInvalidSignIn(signInBody(device, null), output, UNKNOWN_CREDENTIAL);
     }
 
     @Test
@@ -510,11 +530,28 @@ class PasskeysIntegrationTest extends SessionTestBase {
         return mvc.perform(request);
     }
 
-    private void expectInvalidSignIn(Map<String, Object> body) throws Exception {
+    /**
+     * 401 PASSKEY_INVALID with the same generic problem whatever failed, while the server log names {@code reason}.
+     */
+    private void expectInvalidSignIn(Map<String, Object> body, CapturedOutput output, String reason) throws Exception {
+        int from = output.getOut().length();
         verify(body, CHROME_WINDOWS)
                 .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.status").value(401))
                 .andExpect(jsonPath("$.code").value(PasskeyService.CODE_INVALID))
-                .andExpect(jsonPath("$.status").value(401));
+                .andExpect(jsonPath("$.detail").value(SIGN_IN_FAILED));
+        assertThat(output.getOut().substring(from)).contains("Passkey sign-in rejected: ").contains(reason);
+    }
+
+    /** 422 PASSKEY_INVALID (the caller stays signed in) with a generic detail; the server log names {@code reason}. */
+    private void expectInvalidRegistration(CapturedOutput output, String reason, Callable<ResultActions> call)
+            throws Exception {
+        int from = output.getOut().length();
+        call.call()
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(jsonPath("$.code").value(PasskeyService.CODE_INVALID))
+                .andExpect(jsonPath("$.detail").value(REGISTRATION_FAILED));
+        assertThat(output.getOut().substring(from)).contains("Passkey registration rejected: ").contains(reason);
     }
 
     @SuppressWarnings("unchecked")
