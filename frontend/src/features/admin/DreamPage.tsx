@@ -10,7 +10,7 @@ import { Icon } from '@/components/icons/Icon'
 import { Avatar } from '@/components/ui/Avatar'
 import { PageEnter } from '@/components/motion'
 import { Conversation } from '@/features/user/DreamDetailPage'
-import { SlaChip } from './QueuePage'
+import { PausedChip, SlaChip } from './QueuePage'
 import { arrowBack, arrowNext, fmtDate, fmtMoney } from '@/lib/utils'
 
 export function AdminDreamPage() {
@@ -39,7 +39,7 @@ export function AdminDreamPage() {
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h1 className="flex items-center gap-3 font-display text-3xl"><Avatar name={d.user.name || d.user.email} size={40} />{d.user.name} <span className="text-base text-fg-dim">· {t(d.gender === 'FEMALE' ? 'auth.female' : 'auth.male')}{d.user.age != null && <> · {t('me.profile.years', { n: d.user.age })}</>} · {d.user.countryCode}</span></h1>
           <div className="flex flex-wrap items-center gap-2">
-            <StatusBadge status={d.status} />{open && d.expectedBy && <SlaChip deadline={d.expectedBy} overdue={new Date(d.expectedBy) < new Date()} />}
+            <StatusBadge status={d.status} audience="interpreter" />{d.status === 'AWAITING_USER_REPLY' ? <PausedChip /> : open && d.expectedBy && <SlaChip deadline={d.expectedBy} overdue={new Date(d.expectedBy) < new Date()} />}
             <DownloadButton label={t('reports.pdf')} run={() => reportsApi.adminDreamPdf(d.id)} />
           </div>
         </div>

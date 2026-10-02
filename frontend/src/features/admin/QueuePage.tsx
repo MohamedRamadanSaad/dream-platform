@@ -15,7 +15,7 @@ type Tab = 'IN_REVIEW' | 'AWAITING_USER_REPLY' | 'INTERPRETED' | 'CANCELLED'
 
 interface ExportFilters { status: '' | Tab; from: string; to: string; country: string; gender: '' | Gender; q: string }
 const NO_FILTERS: ExportFilters = { status: '', from: '', to: '', country: '', gender: '', q: '' }
-const STATUS_LABEL: Record<Tab, string> = { IN_REVIEW: 'me.status.IN_REVIEW', AWAITING_USER_REPLY: 'admin.dashboard.awaiting', INTERPRETED: 'me.status.INTERPRETED', CANCELLED: 'me.status.CANCELLED' }
+const STATUS_LABEL: Record<Tab, string> = { IN_REVIEW: 'admin.status.IN_REVIEW', AWAITING_USER_REPLY: 'admin.status.AWAITING_USER_REPLY', INTERPRETED: 'admin.status.INTERPRETED', CANCELLED: 'admin.status.CANCELLED' }
 
 /** "Export to Excel": choose filters, then download GET /admin/dreams/export (one row per dream). */
 function ExportDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
@@ -67,6 +67,12 @@ function ExportDialog({ open, onClose }: { open: boolean; onClose: () => void })
   )
 }
 
+/** While the user owes a reply the reply-time clock is stopped, so no countdown is shown. */
+export function PausedChip() {
+  const { t } = useTranslation()
+  return <span className="chip bg-surface-2 text-fg-muted"><span className="h-1.5 w-1.5 rounded-full bg-current" />{t('admin.dream.timerPaused')}</span>
+}
+
 export function SlaChip({ deadline, overdue }: { deadline: string; overdue: boolean }) {
   const { t } = useTranslation()
   const h = hoursLeft(deadline)
@@ -92,8 +98,8 @@ export function AdminQueuePage() {
       </div>
       <ExportDialog open={exportOpen} onClose={() => setExportOpen(false)} />
       <Tabs value={tab} onChange={(v) => setParams({ status: v })} items={[
-        { value: 'IN_REVIEW', label: t('me.status.IN_REVIEW') }, { value: 'AWAITING_USER_REPLY', label: t('admin.dashboard.awaiting') },
-        { value: 'INTERPRETED', label: t('me.status.INTERPRETED') }, { value: 'CANCELLED', label: t('me.status.CANCELLED') },
+        { value: 'IN_REVIEW', label: t('admin.status.IN_REVIEW') }, { value: 'AWAITING_USER_REPLY', label: t('admin.status.AWAITING_USER_REPLY') },
+        { value: 'INTERPRETED', label: t('admin.status.INTERPRETED') }, { value: 'CANCELLED', label: t('admin.status.CANCELLED') },
       ]} />
       <div className="mt-6">
         {q.isLoading ? <div className="space-y-3">{[1, 2, 3].map((i) => <Skeleton key={i} className="h-24" />)}</div>
@@ -103,12 +109,12 @@ export function AdminQueuePage() {
             {q.data.items.map((r) => (
               <Link key={r.id} to={`/admin/dreams/${r.id}`} className={cn('card card-hover flex flex-col gap-3 p-5 md:flex-row md:items-center', r.overdue && 'border-danger/40')}>
                 <div className="min-w-0 flex-1">
-                  <div className="mb-1 flex flex-wrap items-center gap-2 text-sm"><span className="font-medium">{r.userName}</span><span className="text-fg-dim">· {r.countryCode} · {t(r.gender === 'FEMALE' ? 'auth.female' : 'auth.male')}</span><StatusBadge status={r.status} /></div>
+                  <div className="mb-1 flex flex-wrap items-center gap-2 text-sm"><span className="font-medium">{r.userName}</span><span className="text-fg-dim">· {r.countryCode} · {t(r.gender === 'FEMALE' ? 'auth.female' : 'auth.male')}</span><StatusBadge status={r.status} audience="interpreter" /></div>
                   <p className="line-clamp-2 text-sm font-light text-fg-muted">{r.excerpt}</p>
                 </div>
                 <div className="flex items-center gap-3 text-xs text-fg-dim md:flex-col md:items-end">
                   <span>{t('admin.queue.submitted')} {fmtDate(r.submittedAt, locale, true)}</span>
-                  {r.status !== 'INTERPRETED' && r.status !== 'CANCELLED' && <SlaChip deadline={r.slaDeadline} overdue={r.overdue} />}
+                  {r.status === 'AWAITING_USER_REPLY' ? <PausedChip /> : r.status !== 'INTERPRETED' && r.status !== 'CANCELLED' && <SlaChip deadline={r.slaDeadline} overdue={r.overdue} />}
                 </div>
               </Link>
             ))}
