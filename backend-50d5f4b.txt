@@ -1,7 +1,8 @@
-### commit dc0b2786a41e44e414033791289aca3a13126294 run 37010741781 Fri Oct  2 13:07:05 UTC 2026
+### commit 50d5f4b01f4887f40d3fd0aabacb57f7e93cc709 run 37014056971 Fri Oct  2 13:37:06 UTC 2026
 ## tests
 com.saadat.settings.AdminWaitTimeIntegrationTest tests=2 failures=0 errors=0
 com.saadat.mail.MailThemesIntegrationTest tests=10 failures=0 errors=0
+com.saadat.security.AccessControlIntegrationTest tests=6 failures=0 errors=0
 com.saadat.mail.MailEventsIntegrationTest tests=7 failures=0 errors=0
 com.saadat.mail.inbound.InboundMailParserTest tests=4 failures=0 errors=0
 com.saadat.pricing.PromotionAndCouponMathTest tests=10 failures=0 errors=0
@@ -45,13 +46,13 @@ Daemon will be stopped at the end of the build
 OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
 > Task :test
 
-13:07:04.284 INFO  [SpringApplicationShutdownHook] [] o.s.o.j.LocalContainerEntityManagerFactoryBean - Closing JPA EntityManagerFactory for persistence unit 'default'
-13:07:04.293 INFO  [SpringApplicationShutdownHook] [] com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated...
-13:07:04.314 INFO  [SpringApplicationShutdownHook] [] com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed.
+13:37:05.968 INFO  [SpringApplicationShutdownHook] [] o.s.o.j.LocalContainerEntityManagerFactoryBean - Closing JPA EntityManagerFactory for persistence unit 'default'
+13:37:05.971 INFO  [SpringApplicationShutdownHook] [] com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated...
+13:37:05.982 INFO  [SpringApplicationShutdownHook] [] com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed.
 
 > Task :check
 > Task :build
-gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/__run-1790946371261.json
+gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/__run-1790948178634.json
 
-BUILD SUCCESSFUL in 58s
+BUILD SUCCESSFUL in 52s
 7 actionable tasks: 7 executed
