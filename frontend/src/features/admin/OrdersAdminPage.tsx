@@ -10,8 +10,13 @@ export function OrdersAdminPage() {
   const { t } = useTranslation()
   const locale = useAuthStore((s) => s.locale)
   const q = useQuery({ queryKey: ['admin', 'orders'], queryFn: () => adminApi.orders(0, 100) })
-  const exportCsv = () => {
-    const rows = q.data?.items ?? []
+  const exportCsv = async () => {
+    const rows = []
+    for (let page = 0; ; page++) {
+      const res = await adminApi.orders(page, 100)
+      rows.push(...res.items)
+      if (res.items.length === 0 || rows.length >= res.total) break
+    }
     const csv = ['id,user,package,amount,currency,status,provider,ref,country,createdAt,paidAt', ...rows.map((o) => [o.id, o.userName, o.packageName, o.amount, o.currency, o.status, o.provider, o.providerRef ?? '', o.countryCode, o.createdAt, o.paidAt ?? ''].map((x) => `"${String(x).replace(/"/g, '""')}"`).join(','))].join('\n')
     const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob(['﻿' + csv], { type: 'text/csv' })); a.download = 'orders.csv'; a.click()
   }
