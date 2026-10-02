@@ -666,7 +666,10 @@
         "courses": "الدورات",
         "terms": "الشروط",
         "privacy": "الخصوصية"
-      }
+      },
+      "pageRange": "{{from}} إلى {{to}} من {{total}}",
+      "prevPage": "الصفحة السابقة",
+      "nextPage": "الصفحة التالية"
     },
     "records": {
       "title": "الأرقام القياسية",

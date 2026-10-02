@@ -648,7 +648,10 @@
         "courses": "Courses",
         "terms": "Terms",
         "privacy": "Privacy"
-      }
+      },
+      "pageRange": "{{from}}–{{to}} of {{total}}",
+      "prevPage": "Previous page",
+      "nextPage": "Next page"
     },
     "records": {
       "title": "Score records",

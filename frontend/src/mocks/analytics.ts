@@ -154,7 +154,7 @@ export function buildTraffic(q: URLSearchParams, locale: string): T.TrafficRepor
     .map((d) => ({ device: d.key, views: d.views }))
   const referrers = split(current.views, REFERRER_SHARE, `${from}r`).map((r) => ({ host: r.key, views: r.views }))
 
-  return { from, to, compareFrom, compareTo, current, previous, daily, hourly, topPages: topPages.slice(0, 10), topCountries, devices, referrers, records: records(today) }
+  return { from, to, compareFrom, compareTo, current, previous, daily, hourly, topPages: topPages.slice(0, 50), topCountries, devices, referrers, records: records(today) }
 }
 
 // ---------------------------------------------------------------- insights

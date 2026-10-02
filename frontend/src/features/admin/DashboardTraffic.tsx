@@ -10,7 +10,7 @@ import { Icon, type IconName } from '@/components/icons/Icon'
 import { StaggerGroup } from '@/components/motion'
 import { addDays, cn, flagEmoji, fmtDay, fmtDayRange, fmtNum, fmtPct, parseDay, toISODay } from '@/lib/utils'
 import type { DeviceType, TrafficKpis, TrafficQuery, TrafficReport } from '@/api/types'
-import { BarList, DeltaChip, LegendKey, Panel, SectionHeader } from './DashboardParts'
+import { PagedBarList, DeltaChip, LegendKey, Panel, SectionHeader } from './DashboardParts'
 import { DailyChart, HourlyBars } from './DashboardCharts'
 import { RecordsBoard } from './DashboardRecords'
 
@@ -232,7 +232,7 @@ export function TrafficSection() {
             <div className="grid items-start gap-4 lg:grid-cols-2">
               <StaggerGroup className="space-y-4" stagger={0.08}>
                 <Panel title={t('admin.traffic.topPages')}>
-                  <BarList empty={t('admin.traffic.noData')} rows={r.topPages.map((p) => {
+                  <PagedBarList label={t('admin.traffic.topPages')} empty={t('admin.traffic.noData')} rows={r.topPages.map((p) => {
                     const name = pageName(p.path)
                     return {
                       key: p.path, value: p.views, valueText: fmtNum(p.views, locale), sub: t('admin.traffic.visitorsN', { n: fmtNum(p.visitors, locale) }),
@@ -244,13 +244,13 @@ export function TrafficSection() {
               </StaggerGroup>
               <StaggerGroup className="space-y-4" stagger={0.08}>
                 <Panel title={t('admin.traffic.topCountries')}>
-                  <BarList empty={t('admin.traffic.noData')} rows={r.topCountries.map((c) => ({
+                  <PagedBarList label={t('admin.traffic.topCountries')} empty={t('admin.traffic.noData')} rows={r.topCountries.map((c) => ({
                     key: c.countryCode, value: c.views, valueText: fmtNum(c.views, locale), sub: t('admin.traffic.visitorsN', { n: fmtNum(c.visitors, locale) }),
                     label: <><span aria-hidden="true" className="me-2">{flagEmoji(c.countryCode)}</span>{c.countryName}</>,
                   }))} />
                 </Panel>
                 <Panel title={t('admin.traffic.referrers')}>
-                  <BarList empty={t('admin.traffic.noData')} rows={r.referrers.map((x) => ({
+                  <PagedBarList label={t('admin.traffic.referrers')} empty={t('admin.traffic.noData')} rows={r.referrers.map((x) => ({
                     key: x.host || '(direct)', value: x.views, valueText: fmtNum(x.views, locale),
                     label: x.host ? <span dir="ltr">{x.host}</span> : t('admin.traffic.direct'),
                   }))} />

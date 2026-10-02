@@ -53,7 +53,7 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class TrafficService {
 
-    static final int TOP_PAGES = 10;
+    static final int TOP_PAGES = 50; // the dashboard pages through them 5 at a time
     static final int TOP_COUNTRIES = 10;
     static final int TOP_REFERRERS = 8;
     static final int HOURS_PER_DAY = 24;
