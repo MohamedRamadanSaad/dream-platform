@@ -37,6 +37,19 @@ jobs:
                 rm -f "$new"')
           echo "mail settings: $result"
           [ "$result" = "updated" ] && echo "changed=true" >> "$GITHUB_OUTPUT" || true
+      # Support-mailbox auto-reply: the Hostinger webhook secret lives only in the GitHub secret MAIL_WEBHOOK_SECRET.
+      - name: mail webhook secret
+        env:
+          MAIL_WEBHOOK_SECRET: ${{ secrets.MAIL_WEBHOOK_SECRET }}
+        run: |
+          if [ -z "$MAIL_WEBHOOK_SECRET" ]; then echo "secret MAIL_WEBHOOK_SECRET not set: support auto-reply stays off"; exit 0; fi
+          case "$MAIL_WEBHOOK_SECRET" in *[!A-Za-z0-9._-]*) echo "MAIL_WEBHOOK_SECRET has unexpected characters"; exit 1;; esac
+          result=$(printf "MAIL_WEBHOOK_SECRET=%s\n" "$MAIL_WEBHOOK_SECRET" \
+            | ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} 'f=/opt/saadat/deploy/backend.env; new=$(mktemp)
+                grep -vE "^MAIL_WEBHOOK_SECRET=" "$f" > "$new"; cat >> "$new"
+                if cmp -s "$new" "$f"; then echo unchanged; else cat "$new" > "$f"; touch /opt/saadat/deploy/.recreate-backend; echo updated; fi
+                rm -f "$new"')
+          echo "mail webhook secret: $result"
       - name: build & restart
         run: |
           ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} bash -s <<'EOS'
