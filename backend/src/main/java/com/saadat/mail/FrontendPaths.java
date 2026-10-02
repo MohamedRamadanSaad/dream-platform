@@ -15,9 +15,18 @@ public final class FrontendPaths {
     public static final String MY_PAYMENTS = "/me/payments";
     public static final String NEW_DREAM = "/me/new";
     public static final String PACKAGES = "/me/packages";
+    public static final String ME_PROFILE = "/me/profile";
+    /** Anchor of the devices section of both profile pages (user and interpreter). */
+    public static final String DEVICES_ANCHOR = "#devices";
+    /** The user's devices list (new sign-in e-mail). */
+    public static final String MY_DEVICES = ME_PROFILE + DEVICES_ANCHOR;
 
     /** Prefix of every interpreter route (page views under it are never tracked). */
     public static final String ADMIN_ROOT = "/admin";
+    /** The interpreter's own profile page (personal data, language/theme, devices, sign-out). */
+    public static final String ADMIN_PROFILE = "/admin/profile";
+    /** The interpreter's devices list (new sign-in e-mail). */
+    public static final String ADMIN_DEVICES = ADMIN_PROFILE + DEVICES_ANCHOR;
     public static final String ADMIN_DREAMS = "/admin/dreams";
     public static final String ADMIN_USERS = "/admin/users";
     /** The interpreter's queue as named by the analytics contract (insight links). */
@@ -42,5 +51,10 @@ public final class FrontendPaths {
     /** {@code /admin/users/{id}} */
     public static String adminUser(Object userId) {
         return ADMIN_USERS + "/" + userId;
+    }
+
+    /** The devices list of the account's own profile page: {@code /admin/profile#devices} or {@code /me/profile#devices}. */
+    public static String devices(boolean interpreter) {
+        return interpreter ? ADMIN_DEVICES : MY_DEVICES;
     }
 }

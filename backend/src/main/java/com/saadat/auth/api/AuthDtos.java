@@ -18,6 +18,11 @@ public final class AuthDtos {
     private AuthDtos() {
     }
 
+    /** "Remember me" of a sign-in request: a missing value means true (docs/SESSIONS_PROFILE_CONTRACT.md §1). */
+    public static boolean rememberMe(Boolean value) {
+        return value == null || value;
+    }
+
     public record AuthResponse(String accessToken, long expiresIn, UserDto user) {
         @Override
         public String toString() {
@@ -25,17 +30,19 @@ public final class AuthDtos {
         }
     }
 
-    public record GoogleLoginRequest(@NotBlank String idToken) {
+    /** {@code rememberMe}: missing = true (persistent cookie); false = browser-session cookie. */
+    public record GoogleLoginRequest(@NotBlank String idToken, Boolean rememberMe) {
     }
 
     public record MagicRequest(@NotBlank @Email @Size(max = 320) String email) {
     }
 
-    /** Either {@code token} or {@code email}+{@code code}. */
+    /** Either {@code token} or {@code email}+{@code code}; {@code rememberMe} as in {@link GoogleLoginRequest}. */
     public record MagicVerifyRequest(
             @Size(max = 256) String token,
             @Email @Size(max = 320) String email,
-            @Size(max = 16) String code) {
+            @Size(max = 16) String code,
+            Boolean rememberMe) {
     }
 
     public record OnboardingRequest(

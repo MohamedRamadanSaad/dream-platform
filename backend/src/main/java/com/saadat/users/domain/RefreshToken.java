@@ -15,7 +15,8 @@ import lombok.Setter;
 
 /**
  * Row of {@code refresh_tokens}. The raw token (32 random bytes) only lives in the {@code rt} cookie; the DB
- * keeps its SHA-256. Rotation keeps the {@code familyId}; reuse of a revoked token revokes the whole family.
+ * keeps its SHA-256. Rotation keeps the {@code familyId} (one family = one signed-in device), the sign-in mode
+ * ({@code persistent}) and the sign-in country; reuse of a revoked token revokes the whole family.
  */
 @Getter
 @Setter
@@ -45,6 +46,17 @@ public class RefreshToken {
 
     @Column(name = "user_agent", length = 512)
     private String userAgent;
+
+    /**
+     * "Remember me": true = persistent cookie and lifetime auth.refresh_ttl_days; false = browser-session cookie and
+     * lifetime auth.session_ttl_hours. Copied on rotation.
+     */
+    @Column(name = "persistent", nullable = false)
+    private boolean persistent = true;
+
+    /** Country of the family's sign-in (copied on rotation); null when unknown. */
+    @Column(name = "country_code", columnDefinition = "char(2)")
+    private String countryCode;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;

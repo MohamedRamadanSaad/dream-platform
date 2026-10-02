@@ -116,6 +116,13 @@ public class MailSamples {
                 m.put("gender", en ? "Male" : "ذكر");
                 m.put("link", FrontendPaths.adminUser(SAMPLE_USER_ID));
             }
+            case MailTemplates.NEW_SIGN_IN -> {
+                m.put("device", "Chrome · Windows");
+                m.put("deviceType", en ? "Computer" : "حاسوب");
+                m.put("countryName", en ? "Saudi Arabia" : "السعودية");
+                m.put("signedInAt", now);
+                m.put("link", FrontendPaths.MY_DEVICES);
+            }
             default -> {
                 // account-deleted, support-auto-reply: name only (or nothing)
             }

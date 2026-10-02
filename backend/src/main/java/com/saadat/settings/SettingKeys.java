@@ -41,7 +41,12 @@ public final class SettingKeys {
     // ---- auth ----
     public static final String AUTH_MAGIC_TTL_MINUTES = "auth.magic_ttl_minutes";
     public static final String AUTH_ACCESS_TTL_MINUTES = "auth.access_ttl_minutes";
+    /** Lifetime of a "remember me" sign-in (persistent cookie), renewed on every refresh. */
     public static final String AUTH_REFRESH_TTL_DAYS = "auth.refresh_ttl_days";
+    /** Lifetime of a sign-in without "remember me" (browser-session cookie), renewed on every refresh (V18). */
+    public static final String AUTH_SESSION_TTL_HOURS = "auth.session_ttl_hours";
+    /** New sign-in e-mail: a browser + system used to sign in during the last N days is a known device (V18). */
+    public static final String AUTH_KNOWN_DEVICE_DAYS = "auth.known_device_days";
 
     // ---- orders ----
     public static final String ORDERS_EXPIRE_MINUTES = "orders.expire_minutes";
@@ -97,6 +102,8 @@ public final class SettingKeys {
     public static final String MAIL_EVENT_YOUTUBE_NEW_VIDEO = "mail.event.youtube-new-video";
     /** Automatic reply to e-mails received by the support mailbox (V16). */
     public static final String MAIL_EVENT_SUPPORT_AUTO_REPLY = "mail.event.support-auto-reply";
+    /** Security alert to the user after a sign-in from a new device (V18). */
+    public static final String MAIL_EVENT_NEW_SIGN_IN = "mail.event.new-sign-in";
 
     /** Every e-mail event switch (one per template except magic-link). */
     public static final List<String> MAIL_EVENTS = List.of(
@@ -106,7 +113,7 @@ public final class SettingKeys {
             MAIL_EVENT_INTERPRETER_QUESTION, MAIL_EVENT_USER_REPLIED, MAIL_EVENT_INTERPRETATION_READY,
             MAIL_EVENT_PAYMENT_RECEIPT, MAIL_EVENT_PAYMENT_SUSPICIOUS, MAIL_EVENT_REPLY_REMINDER,
             MAIL_EVENT_TESTIMONIAL_REQUEST, MAIL_EVENT_INTERPRETER_DIGEST, MAIL_EVENT_YOUTUBE_NEW_VIDEO,
-            MAIL_EVENT_SUPPORT_AUTO_REPLY);
+            MAIL_EVENT_SUPPORT_AUTO_REPLY, MAIL_EVENT_NEW_SIGN_IN);
 
     /** The switch of an e-mail template: {@code mail.event.<template>}. */
     public static String mailEvent(String template) {
@@ -147,7 +154,8 @@ public final class SettingKeys {
             WAIT_AUTO_RESET_AT,
             DREAMS_MIN_CHARS, DREAMS_MAX_CHARS, DREAMS_DRAFT_LIMIT, DREAMS_REPLY_REMINDER_HOURS,
             DREAMS_TESTIMONIAL_REQUEST_DAYS,
-            AUTH_MAGIC_TTL_MINUTES, AUTH_ACCESS_TTL_MINUTES, AUTH_REFRESH_TTL_DAYS,
+            AUTH_MAGIC_TTL_MINUTES, AUTH_ACCESS_TTL_MINUTES, AUTH_REFRESH_TTL_DAYS, AUTH_SESSION_TTL_HOURS,
+            AUTH_KNOWN_DEVICE_DAYS,
             ORDERS_EXPIRE_MINUTES,
             INTERPRETER_EMAILS, INTERPRETER_DIGEST_HOUR,
             PRICING_GLOBAL_CURRENCY, PRICING_DEFAULT_COUNTRY, PRICING_FX_TO_USD,
@@ -160,7 +168,8 @@ public final class SettingKeys {
             MAIL_EVENT_INTERPRETER_QUESTION, MAIL_EVENT_USER_REPLIED, MAIL_EVENT_INTERPRETATION_READY,
             MAIL_EVENT_PAYMENT_RECEIPT, MAIL_EVENT_PAYMENT_SUSPICIOUS, MAIL_EVENT_REPLY_REMINDER,
             MAIL_EVENT_TESTIMONIAL_REQUEST, MAIL_EVENT_INTERPRETER_DIGEST, MAIL_EVENT_YOUTUBE_NEW_VIDEO,
-            MAIL_EVENT_SUPPORT_AUTO_REPLY, MAIL_THEME_DEFAULT, MAIL_ASSETS_BASE_URL, MAIL_AUTO_REPLY_COOLDOWN_HOURS,
+            MAIL_EVENT_SUPPORT_AUTO_REPLY, MAIL_EVENT_NEW_SIGN_IN,
+            MAIL_THEME_DEFAULT, MAIL_ASSETS_BASE_URL, MAIL_AUTO_REPLY_COOLDOWN_HOURS,
             INSIGHTS_AWAITING_REPLY_DAYS, INSIGHTS_TRAFFIC_CHANGE_PERCENT, INSIGHTS_STREAK_MIN_DAYS,
             REPORTS_EXCEL_MAX_ROWS);
 }

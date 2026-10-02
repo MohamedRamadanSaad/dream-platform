@@ -2,6 +2,7 @@ package com.saadat.auth.service;
 
 import com.saadat.config.props.AppProperties;
 
+import com.saadat.auth.api.AuthDtos;
 import com.saadat.auth.api.AuthDtos.AuthResponse;
 import com.saadat.auth.api.AuthDtos.MagicVerifyRequest;
 import com.saadat.auth.api.AuthDtos.OnboardingRequest;
@@ -48,6 +49,10 @@ import org.springframework.transaction.annotation.Transactional;
  * Login flows (Google, magic link), refresh, logout and onboarding. Every successful login/refresh:
  * upserts the user, links the identity, stores the country (first time only), records a user_sessions row,
  * updates last_login_at and sets the role from the interpreter rules (see {@link #expectedRole(String)}).
+ *
+ * <p>A login starts a refresh-token family (= a signed-in device) in the requested "remember me" mode and issues an
+ * access token carrying that family as {@code sid}; a login from a browser + system the account did not use recently
+ * sends the {@code new-sign-in} e-mail ({@link DeviceService}). A refresh keeps the family, its mode and its country.
  */
 @Slf4j
 @Service
@@ -74,12 +79,14 @@ public class AuthService {
     private final AppProperties appProperties;
     private final EventMailer eventMailer;
     private final MessageText messageText;
+    private final DeviceService deviceService;
 
     public AuthService(UserRepository userRepository, AuthIdentityRepository identityRepository,
                        UserSessionRepository sessionRepository, GoogleTokenVerifier googleTokenVerifier,
                        MagicLinkService magicLinkService, RefreshTokenService refreshTokenService,
                        JwtService jwtService, SettingsService settings, UserDtoMapper userDtoMapper, Clock clock,
-                       AppProperties appProperties, EventMailer eventMailer, MessageText messageText) {
+                       AppProperties appProperties, EventMailer eventMailer, MessageText messageText,
+                       DeviceService deviceService) {
         this.userRepository = userRepository;
         this.identityRepository = identityRepository;
         this.sessionRepository = sessionRepository;
@@ -93,12 +100,14 @@ public class AuthService {
         this.appProperties = appProperties;
         this.eventMailer = eventMailer;
         this.messageText = messageText;
+        this.deviceService = deviceService;
     }
 
     // ------------------------------------------------------------------ flows
 
+    /** {@code rememberMe}: persistent cookie + auth.refresh_ttl_days, else session cookie + auth.session_ttl_hours. */
     @Transactional
-    public LoginResult loginWithGoogle(String idToken, LoginContext ctx) {
+    public LoginResult loginWithGoogle(String idToken, boolean rememberMe, LoginContext ctx) {
         GoogleIdentity identity = googleTokenVerifier.verify(idToken);
         if (!identity.emailVerified() || identity.email() == null || identity.email().isBlank()) {
             throw new UnauthorizedException("Google e-mail is not verified", CODE_EMAIL_NOT_VERIFIED);
@@ -116,7 +125,7 @@ public class AuthService {
         if (user == null) {
             user = findOrCreate(identity.email(), identity.name(), ctx);
         }
-        return complete(user, AuthProvider.GOOGLE, identity.subject(), ctx);
+        return complete(user, AuthProvider.GOOGLE, identity.subject(), rememberMe, ctx);
     }
 
     /** Always succeeds from the caller's point of view (the endpoint answers 204). */
@@ -140,9 +149,10 @@ public class AuthService {
             throw new UnauthorizedException("Provide a token or an e-mail and code", MagicLinkService.CODE_INVALID);
         }
         User user = findOrCreate(email, null, ctx);
-        return complete(user, AuthProvider.MAGIC_LINK, email, ctx);
+        return complete(user, AuthProvider.MAGIC_LINK, email, AuthDtos.rememberMe(request.rememberMe()), ctx);
     }
 
+    /** Rotates the refresh token: same family (device), same "remember me" mode, expiry slides forward. */
     @Transactional(noRollbackFor = UnauthorizedException.class)
     public LoginResult refresh(String rawRefreshToken, LoginContext ctx) {
         Rotation rotation = refreshTokenService.rotate(rawRefreshToken, ctx.userAgent());
@@ -153,7 +163,7 @@ public class AuthService {
         }
         Instant now = clock.instant();
         touch(user, ctx, now);
-        return new LoginResult(response(user), rotation.next());
+        return new LoginResult(response(user, rotation.next().familyId()), rotation.next());
     }
 
     public void logout(String rawRefreshToken) {
@@ -220,16 +230,26 @@ public class AuthService {
         return userRepository.save(user);
     }
 
-    private LoginResult complete(User user, AuthProvider provider, String subject, LoginContext ctx) {
+    private LoginResult complete(User user, AuthProvider provider, String subject, boolean rememberMe,
+                                 LoginContext ctx) {
         Instant now = clock.instant();
         linkIdentity(user, provider, subject, now);
-        touch(user, ctx, now);
-        IssuedRefreshToken refreshToken = refreshTokenService.issue(user.getId(), ctx.userAgent());
-        return new LoginResult(response(user), refreshToken);
+        String sessionCountry = touch(user, ctx, now);
+        // decided before the new family exists, so the new sign-in never matches itself
+        boolean newDevice = deviceService.isNewDevice(user.getId(), ctx.userAgent(), now);
+        IssuedRefreshToken refreshToken =
+                refreshTokenService.issue(user.getId(), ctx.userAgent(), rememberMe, sessionCountry);
+        if (newDevice) {
+            deviceService.mailNewSignIn(user, ctx.userAgent(), sessionCountry, now, refreshToken.familyId());
+        }
+        return new LoginResult(response(user, refreshToken.familyId()), refreshToken);
     }
 
-    /** Country (first time), interpreter role, last_login_at, user_sessions row. */
-    private void touch(User user, LoginContext ctx, Instant now) {
+    /**
+     * Country (first time), interpreter role, last_login_at, user_sessions row. Returns the country of this session
+     * (the detected one, or the user's stored country when only the configured default is known).
+     */
+    private String touch(User user, LoginContext ctx, Instant now) {
         ResolvedCountry resolved = ctx.country();
         if (user.getCountryCode() == null && resolved != null) {
             user.setCountryCode(resolved.countryCode());
@@ -252,6 +272,7 @@ public class AuthService {
         session.setUserAgent(truncate(ctx.userAgent(), USER_AGENT_MAX));
         session.setStartedAt(now);
         sessionRepository.save(session);
+        return session.getCountryCode();
     }
 
     private void linkIdentity(User user, AuthProvider provider, String subject, Instant now) {
@@ -322,9 +343,10 @@ public class AuthService {
         return false;
     }
 
-    private AuthResponse response(User user) {
+    /** The JSON body: an access token for the refresh-token family {@code sessionId} (claim {@code sid}). */
+    private AuthResponse response(User user, UUID sessionId) {
         int ttlMinutes = settings.getInt(SettingKeys.AUTH_ACCESS_TTL_MINUTES);
-        String token = jwtService.issue(user.getId(), user.getRole(), user.getEmail(), ttlMinutes);
+        String token = jwtService.issue(user.getId(), user.getRole(), user.getEmail(), ttlMinutes, sessionId);
         return new AuthResponse(token, ttlMinutes * 60L, userDtoMapper.toDto(user));
     }
 

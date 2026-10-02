@@ -17,11 +17,13 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 /**
- * Reads {@code Authorization: Bearer <jwt>}; when valid AND the account still exists, puts an {@link AuthPrincipal}
- * with authority {@code ROLE_<role>} into the security context. The role is the one stored in the database now
- * ({@link AccountRoleLookup}), never the role written in the token, so revoking a role or deleting an account takes
- * effect on the next request. Invalid/missing tokens and deleted accounts leave the request anonymous — the
- * authorization rules in SecurityConfig then decide (401 for protected routes).
+ * Reads {@code Authorization: Bearer <jwt>}; when valid AND the account still exists AND the token's device
+ * ({@code sid} = refresh-token family) is still signed in, puts an {@link AuthPrincipal} with authority
+ * {@code ROLE_<role>} into the security context. The role is the one stored in the database now
+ * ({@link AccountRoleLookup}, one query that also checks the family), never the role written in the token, so
+ * revoking a role, deleting an account or signing a device out takes effect on the next request. Invalid/missing
+ * tokens, deleted accounts and signed-out devices leave the request anonymous — the authorization rules in
+ * SecurityConfig then decide (401 for protected routes). Tokens without {@code sid} skip the device check.
  *
  * <p>Not a Spring bean on purpose (would otherwise be auto-registered as a servlet filter as well);
  * it is instantiated by SecurityConfig.
@@ -48,9 +50,12 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         if (header != null && header.regionMatches(true, 0, BEARER_PREFIX, 0, BEARER_PREFIX.length())) {
             String token = header.substring(BEARER_PREFIX.length()).trim();
             Optional<AuthPrincipal> verified = jwtService.tryVerify(token);
-            Optional<Role> currentRole = verified.flatMap(v -> accountRoleLookup.currentRole(v.userId()));
+            Optional<Role> currentRole =
+                    verified.flatMap(t -> accountRoleLookup.currentRole(t.userId(), t.sessionId()));
             if (verified.isPresent() && currentRole.isPresent()) {
-                AuthPrincipal p = new AuthPrincipal(verified.get().userId(), verified.get().email(), currentRole.get());
+                AuthPrincipal fromToken = verified.get();
+                AuthPrincipal p = new AuthPrincipal(fromToken.userId(), fromToken.email(), currentRole.get(),
+                        fromToken.sessionId());
                 UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
                         p, null, List.of(new SimpleGrantedAuthority(ROLE_PREFIX + p.role().name())));
                 SecurityContext context = SecurityContextHolder.createEmptyContext();

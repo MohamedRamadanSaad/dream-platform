@@ -11,7 +11,8 @@ import org.springframework.stereotype.Component;
 
 /**
  * The refresh-token cookie ({@code app.auth.refresh-cookie-*}): HttpOnly, Secure (except local),
- * SameSite, scoped to the /api/auth path.
+ * SameSite, scoped to the /api/auth path. "Remember me" sign-ins get a persistent cookie (Max-Age = the family's
+ * lifetime); the others a browser-session cookie (no Max-Age / Expires) that the browser drops when it closes.
  */
 @Component
 public class CookieUtil {
@@ -36,21 +37,27 @@ public class CookieUtil {
         return null;
     }
 
-    public void writeRefreshToken(HttpServletResponse response, String rawToken, Duration maxAge) {
-        response.addHeader(HttpHeaders.SET_COOKIE, build(rawToken, maxAge).toString());
+    /**
+     * Writes the refresh token: {@code persistent} = cookie kept for {@code ttl} (Max-Age); otherwise a
+     * browser-session cookie without Max-Age.
+     */
+    public void writeRefreshToken(HttpServletResponse response, String rawToken, Duration ttl, boolean persistent) {
+        ResponseCookie.ResponseCookieBuilder cookie = builder(rawToken);
+        if (persistent) {
+            cookie.maxAge(ttl);
+        }
+        response.addHeader(HttpHeaders.SET_COOKIE, cookie.build().toString());
     }
 
     public void clearRefreshToken(HttpServletResponse response) {
-        response.addHeader(HttpHeaders.SET_COOKIE, build("", Duration.ZERO).toString());
+        response.addHeader(HttpHeaders.SET_COOKIE, builder("").maxAge(Duration.ZERO).build().toString());
     }
 
-    private ResponseCookie build(String value, Duration maxAge) {
+    private ResponseCookie.ResponseCookieBuilder builder(String value) {
         return ResponseCookie.from(config.getRefreshCookieName(), value)
                 .httpOnly(true)
                 .secure(config.isRefreshCookieSecure())
                 .sameSite(config.getRefreshCookieSameSite())
-                .path(config.getRefreshCookiePath())
-                .maxAge(maxAge)
-                .build();
+                .path(config.getRefreshCookiePath());
     }
 }

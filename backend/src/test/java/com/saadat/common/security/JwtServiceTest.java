@@ -48,6 +48,35 @@ class JwtServiceTest {
     }
 
     @Test
+    void sessionIdRoundTripsAsSid() {
+        JwtService jwt = service(T0);
+        UUID sessionId = UUID.randomUUID();
+
+        String token = jwt.issue(UUID.randomUUID(), Role.USER, "a@b.c", 15, sessionId);
+
+        assertThat(jwt.verify(token).sessionId()).isEqualTo(sessionId);
+        assertThat(JWT.decode(token).getClaim(JwtService.CLAIM_SESSION_ID).asString()).isEqualTo(sessionId.toString());
+        // tokens issued without a session carry no sid
+        String old = jwt.issue(UUID.randomUUID(), Role.USER, "a@b.c", 15);
+        assertThat(jwt.verify(old).sessionId()).isNull();
+        assertThat(JWT.decode(old).getClaim(JwtService.CLAIM_SESSION_ID).asString()).isNull();
+    }
+
+    @Test
+    void malformedSidIsRejected() {
+        String token = JWT.create()
+                .withIssuer("saadat-api")
+                .withSubject(UUID.randomUUID().toString())
+                .withClaim(JwtService.CLAIM_ROLE, "USER")
+                .withClaim(JwtService.CLAIM_SESSION_ID, "not-a-uuid")
+                .withIssuedAt(T0)
+                .withExpiresAt(T0.plus(Duration.ofMinutes(15)))
+                .sign(Algorithm.HMAC256(SECRET.getBytes(StandardCharsets.UTF_8)));
+
+        assertThatThrownBy(() -> service(T0).verify(token)).isInstanceOf(InvalidTokenException.class);
+    }
+
+    @Test
     void expiredTokenIsRejected() {
         String token = service(T0).issue(UUID.randomUUID(), Role.USER, "a@b.c", 15);
 
