@@ -11,7 +11,10 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
 
-/** GET /public/catalog — prices for the caller's country (stored user country, else CF-IPCountry). */
+/**
+ * GET /public/catalog — prices for the caller's country: the stored user country, else the request's country
+ * ({@link com.saadat.common.web.CountryResolver}: CF-IPCountry, GeoIP, default).
+ */
 @RestController
 @RequiredArgsConstructor
 public class PublicCatalogController {

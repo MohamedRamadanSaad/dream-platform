@@ -36,8 +36,8 @@ public class YoutubeChannelIdResolver {
 
     static final int MAX_REDIRECTS = 5;
 
-    private static final String USER_AGENT =
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36";
+    private static final String USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+            + "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36";
     /** Answers YouTube's cookie-consent interstitial (served to some regions) so the channel page itself comes back. */
     private static final String CONSENT_COOKIE = "SOCS=CAI";
 
@@ -160,7 +160,8 @@ public class YoutubeChannelIdResolver {
                         .orElseThrow(() -> new IOException("HTTP " + status + " without Location"));
                 URI next = uri.resolve(location);
                 if (allowedPage(next) == null) {
-                    throw new IOException("redirected outside " + config.getChannelPageDomain() + ": " + next.getHost());
+                    throw new IOException("redirected outside " + config.getChannelPageDomain() + ": "
+                            + next.getHost());
                 }
                 uri = next;
                 continue;

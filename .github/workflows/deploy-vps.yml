@@ -2,6 +2,9 @@ name: deploy-vps
 on:
   push: { branches: [main] }
   workflow_dispatch:
+  # Monthly run (03:17 UTC on the 3rd): refreshes the GeoIP database below; DB-IP publishes a new file each month.
+  schedule:
+    - cron: '17 3 3 * *'
 concurrency: { group: deploy-vps, cancel-in-progress: false }
 jobs:
   deploy:
@@ -55,6 +58,115 @@ jobs:
           frontend=$(printf "VITE_GOOGLE_CLIENT_ID=%s\n" "$GOOGLE_CLIENT_ID" \
             | ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "bash /opt/saadat/deploy/ops/setenv.sh /opt/saadat/deploy/.env")
           echo "frontend build settings: $frontend"
+      # Visitor country without Cloudflare: DB-IP "IP to Country Lite" (free, CC BY 4.0, one file per month). Downloaded
+      # here (this month, else last month), checked (gzip OK, not empty, MaxMind DB metadata present) and copied to
+      # /opt/saadat/geoip/dbip-country-lite.mmdb only when it changed (atomic rename). Compose mounts that folder
+      # read-only into the backend (GEOIP_DB_PATH), which reloads a changed file by itself: no restart needed.
+      # A failed download only warns; the server keeps the file it has.
+      - name: geoip database
+        env:
+          GEOIP_URL_PREFIX: https://download.db-ip.com/free/dbip-country-lite-
+        run: |
+          remote="${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}"
+          # the backend container user must be able to read it, whatever the SSH session umask is
+          if ! ssh "$remote" 'mkdir -p /opt/saadat/geoip && chmod 755 /opt/saadat/geoip'; then
+            echo "::warning::cannot create /opt/saadat/geoip on the server: GeoIP database not updated"; exit 0
+          fi
+          work=$(mktemp -d)
+          marker=$(printf '\xab\xcd\xefMaxMind.com')
+          month=""
+          for m in "$(date -u +%Y-%m)" "$(date -u -d "$(date -u +%Y-%m-15) -1 month" +%Y-%m)"; do
+            rm -f "$work/db.mmdb.gz" "$work/db.mmdb" "$work/tail.bin"
+            if curl -fsSL --retry 3 --retry-delay 10 --connect-timeout 20 --max-time 300 \
+                -o "$work/db.mmdb.gz" "${GEOIP_URL_PREFIX}${m}.mmdb.gz" \
+              && gzip -t "$work/db.mmdb.gz" \
+              && gunzip -c "$work/db.mmdb.gz" > "$work/db.mmdb" \
+              && [ -s "$work/db.mmdb" ] \
+              && tail -c 131072 "$work/db.mmdb" > "$work/tail.bin" \
+              && LC_ALL=C grep -qaF "$marker" "$work/tail.bin"; then
+              month=$m
+              break
+            fi
+            echo "GeoIP database for $m: not available or not valid"
+          done
+          if [ -z "$month" ]; then
+            echo "::warning::GeoIP database could not be downloaded; the server keeps its current file"; exit 0
+          fi
+          sum=$(sha256sum "$work/db.mmdb" | cut -d' ' -f1)
+          current=$(ssh "$remote" "sha256sum /opt/saadat/geoip/dbip-country-lite.mmdb 2>/dev/null | cut -d' ' -f1")
+          if [ "$sum" = "$current" ]; then
+            echo "GeoIP database $month already on the server"; exit 0
+          fi
+          # upload compressed, unpack next to the live file, compare checksums, then rename over it (atomic)
+          uploaded=$(ssh "$remote" "cd /opt/saadat/geoip && gunzip -c > .dbip-country-lite.mmdb.tmp \
+            && sha256sum .dbip-country-lite.mmdb.tmp | cut -d' ' -f1" < "$work/db.mmdb.gz" || true)
+          if [ "$uploaded" != "$sum" ] || ! ssh "$remote" "cd /opt/saadat/geoip && chmod 644 .dbip-country-lite.mmdb.tmp \
+            && mv -f .dbip-country-lite.mmdb.tmp dbip-country-lite.mmdb"; then
+            ssh "$remote" 'rm -f /opt/saadat/geoip/.dbip-country-lite.mmdb.tmp' || true
+            echo "::warning::GeoIP upload failed; the server keeps its current file"; exit 0
+          fi
+          echo "GeoIP database $month installed ($(du -h "$work/db.mmdb" | cut -f1), sha256 $sum)"
+      # Web push: the VAPID key pair is generated ON THE SERVER the first time (deploy/ops/vapid-keys.sh, openssl
+      # P-256) and never replaced; the private key stays in backend.env on the VPS and is never printed. The frontend
+      # reads the public key at runtime from GET /api/public/push-key.
+      - name: push notification keys
+        env:
+          VAPID_CONTACT: ${{ vars.SMTP_USERNAME || 'support@saadatu-aldarein.com' }}
+        run: |
+          if ! [[ "$VAPID_CONTACT" =~ ^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+$ ]]; then
+            echo "::warning::push keys skipped: '$VAPID_CONTACT' is not a plain e-mail address"; exit 0
+          fi
+          # shellcheck disable=SC2029  # the validated contact is passed as an argument of the remote command
+          if result=$(ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "bash /opt/saadat/deploy/ops/vapid-keys.sh $VAPID_CONTACT"); then
+            echo "push keys: $result"   # generated <public key> | subject-set | exists
+          else
+            echo "::warning::push keys could not be generated on the server (web push stays off)"
+          fi
+      # Paymob (Egypt, EGP): the four values come from GitHub secrets of the same names and are written to backend.env
+      # (stdin only). Real payments start (PAYMENTS_MOCK=false) only when all four are set AND the repository variable
+      # PAYMENTS_LIVE is "true"; otherwise the current mock setting is left as it is.
+      - name: paymob settings
+        env:
+          PAYMOB_API_KEY: ${{ secrets.PAYMOB_API_KEY }}
+          PAYMOB_INTEGRATION_ID: ${{ secrets.PAYMOB_INTEGRATION_ID }}
+          PAYMOB_IFRAME_ID: ${{ secrets.PAYMOB_IFRAME_ID }}
+          PAYMOB_HMAC_SECRET: ${{ secrets.PAYMOB_HMAC_SECRET }}
+          PAYMENTS_LIVE: ${{ vars.PAYMENTS_LIVE || 'false' }}
+        run: |
+          lines=""
+          count=0
+          for name in PAYMOB_API_KEY PAYMOB_INTEGRATION_ID PAYMOB_IFRAME_ID PAYMOB_HMAC_SECRET; do
+            value=${!name}
+            value="${value#"${value%%[![:space:]]*}"}"   # trim (pasted secrets often end with a newline)
+            value="${value%"${value##*[![:space:]]}"}"
+            [ -z "$value" ] && continue
+            case "$value" in *"'"*|*[[:space:]]*)
+              echo "::warning::secret $name must not contain quotes or spaces: Paymob settings not changed"; exit 0;;
+            esac
+            if [ "$name" = PAYMOB_INTEGRATION_ID ] || [ "$name" = PAYMOB_IFRAME_ID ]; then
+              case "$value" in *[!0-9]*) echo "::warning::secret $name must be a number: Paymob settings not changed"; exit 0;; esac
+            fi
+            lines+="$name='$value'"$'\n'
+            count=$((count + 1))
+          done
+          live=no
+          if [ "$PAYMENTS_LIVE" = "true" ]; then
+            if [ "$count" -eq 4 ]; then
+              lines+="PAYMENTS_MOCK=false"$'\n'
+              live=yes
+            else
+              echo "::warning::PAYMENTS_LIVE is true but only $count of the 4 PAYMOB_* secrets are set: payment mode not changed"
+            fi
+          fi
+          if [ -z "$lines" ]; then
+            echo "no PAYMOB_* secrets: payment settings not changed"; exit 0
+          fi
+          result=$(printf '%s' "$lines" \
+            | ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "bash /opt/saadat/deploy/ops/setenv.sh /opt/saadat/deploy/backend.env")
+          echo "paymob settings: $result ($count of 4 secrets set; PAYMENTS_MOCK=false written: $live)"
+          if [ "$result" = "updated" ]; then
+            ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "touch /opt/saadat/deploy/.recreate-backend"
+          fi
       - name: build & restart
         run: |
           ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} bash -s <<'EOS'

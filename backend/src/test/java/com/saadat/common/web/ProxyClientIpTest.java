@@ -36,7 +36,8 @@ class ProxyClientIpTest {
 
     @Test
     void filterWrappersThatRewriteTheAddressAreIgnored() {
-        // ForwardedHeaderFilter rewrites getRemoteAddr() from a client-supplied "Forwarded: for=…" and hides the header
+        // ForwardedHeaderFilter rewrites getRemoteAddr() from a client-supplied "Forwarded: for=…"
+        // and hides the X-Forwarded-For header
         HttpServletRequest wrapped = new HttpServletRequestWrapper(fromProxy("203.0.113.7")) {
             @Override
             public String getRemoteAddr() {

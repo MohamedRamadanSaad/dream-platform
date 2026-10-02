@@ -24,6 +24,8 @@ import org.springframework.mock.web.MockHttpServletRequest;
 /** Order: CF-IPCountry → X-Country (mock only) → GeoIP of the client address → pricing.default_country. */
 class CountryResolverTest {
 
+    private static final ResolvedCountry DEFAULT = new ResolvedCountry("SA", CountrySource.DEFAULT);
+
     private final SettingsService settings = mock(SettingsService.class);
     private final AppProperties properties = new AppProperties();
     private final IpCountryLookup lookup = mock(IpCountryLookup.class);
@@ -33,8 +35,8 @@ class CountryResolverTest {
     @BeforeEach
     void setUp() {
         when(settings.getString(SettingKeys.PRICING_DEFAULT_COUNTRY, null)).thenReturn("SA");
-        when(lookup.countryCode(any(InetAddress.class)))
-                .thenAnswer(call -> Optional.ofNullable(database.get(call.<InetAddress>getArgument(0).getHostAddress())));
+        when(lookup.countryCode(any(InetAddress.class))).thenAnswer(
+                call -> Optional.ofNullable(database.get(call.<InetAddress>getArgument(0).getHostAddress())));
         database.put("203.0.113.7", "EG");
     }
 
@@ -54,11 +56,10 @@ class CountryResolverTest {
 
     @Test
     void unknownOrPseudoCountriesFallBackToTheDefault() {
-        assertThat(resolver.resolve(viaProxy("198.51.100.9"))).isEqualTo(new ResolvedCountry("SA", CountrySource.DEFAULT));
+        assertThat(resolver.resolve(viaProxy("198.51.100.9"))).isEqualTo(DEFAULT);
         for (String code : new String[] {"ZZ", "XX", "T1", "E1", "EGY", ""}) {
             database.put("198.51.100.9", code);
-            assertThat(resolver.resolve(viaProxy("198.51.100.9"))).as(code)
-                    .isEqualTo(new ResolvedCountry("SA", CountrySource.DEFAULT));
+            assertThat(resolver.resolve(viaProxy("198.51.100.9"))).as(code).isEqualTo(DEFAULT);
         }
         database.put("198.51.100.9", "jo");
         assertThat(resolver.resolve(viaProxy("198.51.100.9"))).isEqualTo(new ResolvedCountry("JO", CountrySource.IP));
@@ -66,8 +67,8 @@ class CountryResolverTest {
 
     @Test
     void privateAddressesAreNeverLookedUp() {
-        assertThat(resolver.resolve(viaProxy("10.0.0.7"))).isEqualTo(new ResolvedCountry("SA", CountrySource.DEFAULT));
-        assertThat(resolver.resolve(new MockHttpServletRequest())).isEqualTo(new ResolvedCountry("SA", CountrySource.DEFAULT));
+        assertThat(resolver.resolve(viaProxy("10.0.0.7"))).isEqualTo(DEFAULT);
+        assertThat(resolver.resolve(new MockHttpServletRequest())).isEqualTo(DEFAULT);
         verify(lookup, never()).countryCode(any());
     }
 

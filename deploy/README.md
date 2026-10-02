@@ -8,9 +8,11 @@ One-time (you):
 2. GitHub repo → Settings → Secrets and variables → Actions: **Secrets** `VPS_HOST`, `VPS_USER` (= `deploy`), `VPS_SSH_KEY`;
    **Variable** `VPS_ENABLED` = `true` (the workflow is skipped until this exists).
 3. Cloudflare DNS: `A` records `@` and `www` → VPS IP, proxy ON (orange). SSL/TLS mode: **Full (strict)**.
-4. Fill the empty values in `/opt/saadat/deploy/backend.env` (SMTP, Google, VAPID, Paymob) when available — see docs/PROJECT_KNOWLEDGE.md.
+4. Nothing to fill by hand in `/opt/saadat/deploy/backend.env`: the deploy writes SMTP and Google settings, generates
+   the web-push (VAPID) keys on the server, and writes Paymob from GitHub secrets — see docs/PROJECT_KNOWLEDGE.md.
 
-Every push to `main` then: syncs sources → builds images on the VPS → restarts → smoke-tests https://DOMAIN.
+Every push to `main` (and a monthly run on the 3rd) then: syncs sources → settings into the env files → GeoIP database
+(`/opt/saadat/geoip`) → push keys → Paymob → builds images on the VPS → restarts → smoke-tests https://DOMAIN.
 
 
 Ops:

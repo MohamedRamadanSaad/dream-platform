@@ -48,6 +48,11 @@ services:
       DB_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-dreams}
       DB_USERNAME: ${POSTGRES_USER:-dreams}
       DB_PASSWORD: ${POSTGRES_PASSWORD}
+      # Visitor country without Cloudflare: DB-IP "IP to Country Lite", refreshed by deploy-vps.yml (monthly).
+      # A missing file = no lookups (CF-IPCountry, else setting pricing.default_country).
+      GEOIP_DB_PATH: /geoip/dbip-country-lite.mmdb
+    volumes:
+      - /opt/saadat/geoip:/geoip:ro
     depends_on:
       postgres: { condition: service_healthy }
     expose: ["8080"]
