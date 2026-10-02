@@ -103,6 +103,55 @@ export interface OnboardingRequest {
   acceptedTerms: true
 }
 
+// ---------- Passkeys: fingerprint / face sign-in (docs/PASSKEYS_CONTRACT.md) ----------
+// Options and credentials travel in the standard WebAuthn JSON forms (binary fields are base64url strings).
+
+/** POST /me/passkeys/registration/options — the challenge is single use and expires (setting auth.passkey_challenge_ttl_seconds). */
+export interface PasskeyRegistrationOptions {
+  requestId: string
+  publicKey: PublicKeyCredentialCreationOptionsJSON
+}
+/** POST /auth/passkey/options — empty allowCredentials: the device offers its own passkeys. */
+export interface PasskeySignInOptions {
+  requestId: string
+  publicKey: PublicKeyCredentialRequestOptionsJSON
+}
+interface PasskeyCredentialJSON {
+  id: string
+  rawId: string
+  type: string
+  authenticatorAttachment?: string
+  clientExtensionResults: Record<string, unknown>
+}
+/** A new passkey, as `credential.toJSON()` gives it (only the fields the contract names). */
+export interface RegistrationCredentialJSON extends PasskeyCredentialJSON {
+  response: { clientDataJSON: string; attestationObject: string; transports: string[] }
+}
+/** A passkey sign-in, as `credential.toJSON()` gives it. */
+export interface AuthenticationCredentialJSON extends PasskeyCredentialJSON {
+  response: { clientDataJSON: string; authenticatorData: string; signature: string; userHandle?: string }
+}
+/** POST /me/passkeys/registration → 201 PasskeyDto. A missing label becomes "<browser> · <os>" on the server. */
+export interface PasskeyRegistrationRequest {
+  requestId: string
+  credential: RegistrationCredentialJSON
+  label?: string
+}
+/** POST /auth/passkey/verify → AuthResponse (+ refresh cookie), like /auth/magic/verify. 401 code PASSKEY_INVALID. */
+export interface PasskeyVerifyRequest {
+  requestId: string
+  credential: AuthenticationCredentialJSON
+  /** Missing = true. */
+  rememberMe?: boolean
+}
+/** GET /me/passkeys — newest first. */
+export interface PasskeyDto {
+  id: string
+  label: string
+  createdAt: string
+  lastUsedAt: string | null
+}
+
 // ---------- Public ----------
 export interface WaitTime {
   busy: boolean
@@ -142,6 +191,10 @@ export interface PublicStats {
   videos: string
   /** Historical base + INTERPRETED dreams on the platform. */
   interpreted: number
+}
+/** GET /public/push-key — the VAPID public key (base64url); empty when push is not configured on the server. */
+export interface PushKey {
+  publicKey: string | null
 }
 
 // ---------- Dreams ----------

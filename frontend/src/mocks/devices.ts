@@ -1,5 +1,6 @@
 // Mock "devices" = the caller's active sign-in sessions (refresh-token families), as GET /me/devices returns them.
 import type * as T from '@/api/types'
+import { parseUserAgent } from '@/lib/userAgent'
 import { db, helpers, uid } from './data'
 
 interface MockDevice {
@@ -33,28 +34,6 @@ const devices: MockDevice[] = []
 const seeded = new Set<string>()
 /** userId → the session of this browser (the mock has no `sid` claim: one browser, one current session). */
 const currentOf: Record<string, string> = {}
-
-/** Browser, OS and device type from a User-Agent — the same small rules as the backend parser. */
-export function parseUserAgent(ua: string): Pick<MockDevice, 'browser' | 'os' | 'deviceType'> {
-  const browser = /SamsungBrowser/i.test(ua) ? 'Samsung Internet'
-    : /OPR\/|Opera/i.test(ua) ? 'Opera'
-    : /Edg(e|A|iOS)?\//i.test(ua) ? 'Edge'
-    : /Firefox|FxiOS/i.test(ua) ? 'Firefox'
-    : /Chrome|CriOS|Chromium/i.test(ua) ? 'Chrome'
-    : /Safari/i.test(ua) ? 'Safari'
-    : 'Other'
-  const os = /iPad/i.test(ua) ? 'iPadOS'
-    : /iPhone|iPod/i.test(ua) ? 'iOS'
-    : /Android/i.test(ua) ? 'Android'
-    : /Windows/i.test(ua) ? 'Windows'
-    : /Mac OS X|Macintosh/i.test(ua) ? 'macOS'
-    : /Linux|X11|CrOS/i.test(ua) ? 'Linux'
-    : 'Other'
-  const deviceType: T.DeviceType = /iPad|Tablet/i.test(ua) || (/Android/i.test(ua) && !/Mobile/i.test(ua)) ? 'TABLET'
-    : /Mobi|iPhone|iPod|Android/i.test(ua) ? 'MOBILE'
-    : 'DESKTOP'
-  return { browser, os, deviceType }
-}
 
 function seedOthers(user: T.UserDto) {
   if (seeded.has(user.id)) return
