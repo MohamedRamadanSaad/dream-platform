@@ -123,6 +123,11 @@ public class MailSamples {
                 m.put("signedInAt", now);
                 m.put("link", FrontendPaths.MY_DEVICES);
             }
+            case MailTemplates.PASSKEY_ADDED -> {
+                m.put("passkey", "Chrome · Windows");
+                m.put("addedAt", now);
+                m.put("link", FrontendPaths.MY_PASSKEYS);
+            }
             default -> {
                 // account-deleted, support-auto-reply: name only (or nothing)
             }

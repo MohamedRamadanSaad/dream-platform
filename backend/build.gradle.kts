@@ -42,6 +42,12 @@ dependencies {
     implementation("com.auth0:java-jwt:4.4.0")
     implementation("com.google.api-client:google-api-client:2.7.0")
 
+    // Passkeys (WebAuthn verification, Apache-2.0). webauthn4j runs on Jackson 3 (tools.jackson.*, next to Spring's
+    // Jackson 2), which keeps using the 2.x annotations jar at 2.22; this explicit version beats Boot 3.3's managed
+    // 2.17 (annotations are backward compatible, Spring's Jackson 2 databind works with them unchanged).
+    implementation("com.webauthn4j:webauthn4j-core:0.31.11.RELEASE")
+    implementation("com.fasterxml.jackson.core:jackson-annotations:2.22")
+
     // Rate limiting
     implementation("com.bucket4j:bucket4j_jdk17-core:8.14.0")
 
@@ -78,6 +84,8 @@ dependencies {
     testImplementation("org.testcontainers:postgresql:1.20.3")
     testImplementation("org.testcontainers:junit-jupiter:1.20.3")
     testImplementation("com.icegreen:greenmail-junit5:2.1.0")
+    // emulated authenticators (real keys and signatures) for the passkey tests
+    testImplementation("com.webauthn4j:webauthn4j-test:0.31.11.RELEASE")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 

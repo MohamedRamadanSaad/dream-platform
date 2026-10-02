@@ -54,6 +54,7 @@ CI: `.github/workflows/backend.yml`. Docker image: `docker build -t saadat-backe
 | `common.domain` | shared enums (`Role`, `DreamStatus`, `Currency`, `Locale`, …) |
 | `settings` | `app_settings`, `SettingsService`, admin controller |
 | `users`, `pricing`, `payments`, `dreams`, `notifications`, `youtube` | `domain` (entities) + `repo` (Spring Data) — services/controllers added per feature |
+| `passkeys` | fingerprint / face sign-in (WebAuthn via webauthn4j, docs/PASSKEYS_CONTRACT.md): `WebAuthnRelyingParty` (RP ID + origins from `FRONTEND_URL`, overridable by `PASSKEY_RP_ID` / `PASSKEY_ORIGINS`), single-use challenges, `/me/passkeys/**`, `/auth/passkey/**` |
 | `config` | Jackson, async pool, OpenAPI, clock, JSON log layout |
 
 Conventions: controllers map `ApiPaths` constants directly (no literal paths); DTOs are records matching `types.ts`;

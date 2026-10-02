@@ -25,6 +25,10 @@ public final class ApiPaths {
         public static final String LOGOUT = ROOT + "/logout";
         /** Requires an access token (the only authenticated route under /auth). */
         public static final String ONBOARDING = ROOT + "/onboarding";
+        /** POST: WebAuthn request options for a passkey sign-in (docs/PASSKEYS_CONTRACT.md). */
+        public static final String PASSKEY_OPTIONS = ROOT + "/passkey/options";
+        /** POST: signs in with a passkey; AuthResponse + refresh cookie like {@link #MAGIC_VERIFY}. */
+        public static final String PASSKEY_VERIFY = ROOT + "/passkey/verify";
 
         private Auth() {
         }
@@ -60,6 +64,14 @@ public final class ApiPaths {
         public static final String DEVICE = DEVICES + "/{id}";
         /** POST: signs out every device of the caller except the calling one. */
         public static final String DEVICES_SIGN_OUT_OTHERS = DEVICES + "/sign-out-others";
+        /** GET: the caller's passkeys, newest first (docs/PASSKEYS_CONTRACT.md). */
+        public static final String PASSKEYS = ROOT + "/passkeys";
+        /** DELETE: removes one of the caller's passkeys (404 when it is not one of the caller's). */
+        public static final String PASSKEY = PASSKEYS + "/{id}";
+        /** POST: WebAuthn creation options for a new passkey of the caller. */
+        public static final String PASSKEY_REGISTRATION_OPTIONS = PASSKEYS + "/registration/options";
+        /** POST: verifies and stores the new passkey (201). */
+        public static final String PASSKEY_REGISTRATION = PASSKEYS + "/registration";
 
         private Me() {
         }

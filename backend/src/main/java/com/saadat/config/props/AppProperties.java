@@ -57,6 +57,9 @@ public class AppProperties {
     @Valid
     private Async async = new Async();
 
+    @Valid
+    private Passkeys passkeys = new Passkeys();
+
     @Getter
     @Setter
     public static class Auth {
@@ -223,6 +226,16 @@ public class AppProperties {
         private int maxPoolSize = 16;
         @Min(0)
         private int queueCapacity = 500;
+    }
+
+    /** Passkeys (WebAuthn) relying party; both default to {@link #frontendUrl}. */
+    @Getter
+    @Setter
+    public static class Passkeys {
+        /** Relying-party ID (env PASSKEY_RP_ID); blank = the host of frontend-url, e.g. saadatu-aldarein.com. */
+        private String rpId = "";
+        /** Allowed origins (env PASSKEY_ORIGINS, comma-separated); empty = the origin of frontend-url. */
+        private List<String> origins = new ArrayList<>();
     }
 
     private static boolean notBlank(String s) {

@@ -46,9 +46,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Login flows (Google, magic link), refresh, logout and onboarding. Every successful login/refresh:
+ * Login flows (Google, magic link, passkey), refresh, logout and onboarding. Every successful login/refresh:
  * upserts the user, links the identity, stores the country (first time only), records a user_sessions row,
  * updates last_login_at and sets the role from the interpreter rules (see {@link #expectedRole(String)}).
+ * A passkey sign-in ({@link #loginWithPasskey}) is the same path without an auth_identities row: the passkey row
+ * (verified by PasskeyService) is its identity.
  *
  * <p>A login starts a refresh-token family (= a signed-in device) in the requested "remember me" mode and issues an
  * access token carrying that family as {@code sid}; a login from a browser + system the account did not use recently
@@ -152,6 +154,16 @@ public class AuthService {
         return complete(user, AuthProvider.MAGIC_LINK, email, AuthDtos.rememberMe(request.rememberMe()), ctx);
     }
 
+    /**
+     * Completes a passkey sign-in (docs/PASSKEYS_CONTRACT.md): {@code user} (active) owns the passkey that
+     * PasskeyService has just verified. Same as every sign-in: role sync, country, user_sessions, a new device family
+     * in the "remember me" mode, the new-sign-in alert and the access token with {@code sid}.
+     */
+    @Transactional
+    public LoginResult loginWithPasskey(User user, boolean rememberMe, LoginContext ctx) {
+        return complete(user, null, null, rememberMe, ctx);
+    }
+
     /** Rotates the refresh token: same family (device), same "remember me" mode, expiry slides forward. */
     @Transactional(noRollbackFor = UnauthorizedException.class)
     public LoginResult refresh(String rawRefreshToken, LoginContext ctx) {
@@ -230,10 +242,13 @@ public class AuthService {
         return userRepository.save(user);
     }
 
+    /** {@code provider} null = no identity to link (passkey sign-in). */
     private LoginResult complete(User user, AuthProvider provider, String subject, boolean rememberMe,
                                  LoginContext ctx) {
         Instant now = clock.instant();
-        linkIdentity(user, provider, subject, now);
+        if (provider != null) {
+            linkIdentity(user, provider, subject, now);
+        }
         String sessionCountry = touch(user, ctx, now);
         // decided before the new family exists, so the new sign-in never matches itself
         boolean newDevice = deviceService.isNewDevice(user.getId(), ctx.userAgent(), now);

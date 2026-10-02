@@ -20,6 +20,10 @@ public final class FrontendPaths {
     public static final String DEVICES_ANCHOR = "#devices";
     /** The user's devices list (new sign-in e-mail). */
     public static final String MY_DEVICES = ME_PROFILE + DEVICES_ANCHOR;
+    /** Anchor of the passkeys section of both profile pages (user and interpreter). */
+    public static final String PASSKEYS_ANCHOR = "#passkeys";
+    /** The user's passkeys (passkey-added e-mail). */
+    public static final String MY_PASSKEYS = ME_PROFILE + PASSKEYS_ANCHOR;
 
     /** Prefix of every interpreter route (page views under it are never tracked). */
     public static final String ADMIN_ROOT = "/admin";
@@ -27,6 +31,8 @@ public final class FrontendPaths {
     public static final String ADMIN_PROFILE = "/admin/profile";
     /** The interpreter's devices list (new sign-in e-mail). */
     public static final String ADMIN_DEVICES = ADMIN_PROFILE + DEVICES_ANCHOR;
+    /** The interpreter's passkeys (passkey-added e-mail). */
+    public static final String ADMIN_PASSKEYS = ADMIN_PROFILE + PASSKEYS_ANCHOR;
     public static final String ADMIN_DREAMS = "/admin/dreams";
     public static final String ADMIN_USERS = "/admin/users";
     /** The interpreter's queue as named by the analytics contract (insight links). */
@@ -56,5 +62,10 @@ public final class FrontendPaths {
     /** The devices list of the account's own profile page: {@code /admin/profile#devices} or {@code /me/profile#devices}. */
     public static String devices(boolean interpreter) {
         return interpreter ? ADMIN_DEVICES : MY_DEVICES;
+    }
+
+    /** The passkeys of the account's own profile page: {@code /admin/profile#passkeys} or {@code /me/profile#passkeys}. */
+    public static String passkeys(boolean interpreter) {
+        return interpreter ? ADMIN_PASSKEYS : MY_PASSKEYS;
     }
 }

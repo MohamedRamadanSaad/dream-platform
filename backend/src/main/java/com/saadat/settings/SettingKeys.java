@@ -47,6 +47,8 @@ public final class SettingKeys {
     public static final String AUTH_SESSION_TTL_HOURS = "auth.session_ttl_hours";
     /** New sign-in e-mail: a browser + system used to sign in during the last N days is a known device (V18). */
     public static final String AUTH_KNOWN_DEVICE_DAYS = "auth.known_device_days";
+    /** Passkeys: a registration or sign-in challenge is valid for N seconds and usable once (V20). */
+    public static final String AUTH_PASSKEY_CHALLENGE_TTL_SECONDS = "auth.passkey_challenge_ttl_seconds";
 
     // ---- orders ----
     public static final String ORDERS_EXPIRE_MINUTES = "orders.expire_minutes";
@@ -104,6 +106,8 @@ public final class SettingKeys {
     public static final String MAIL_EVENT_SUPPORT_AUTO_REPLY = "mail.event.support-auto-reply";
     /** Security alert to the user after a sign-in from a new device (V18). */
     public static final String MAIL_EVENT_NEW_SIGN_IN = "mail.event.new-sign-in";
+    /** Security notice to the account owner after a passkey was added (V20). */
+    public static final String MAIL_EVENT_PASSKEY_ADDED = "mail.event.passkey-added";
 
     /** Every e-mail event switch (one per template except magic-link). */
     public static final List<String> MAIL_EVENTS = List.of(
@@ -113,7 +117,8 @@ public final class SettingKeys {
             MAIL_EVENT_INTERPRETER_QUESTION, MAIL_EVENT_USER_REPLIED, MAIL_EVENT_INTERPRETATION_READY,
             MAIL_EVENT_PAYMENT_RECEIPT, MAIL_EVENT_PAYMENT_SUSPICIOUS, MAIL_EVENT_REPLY_REMINDER,
             MAIL_EVENT_TESTIMONIAL_REQUEST, MAIL_EVENT_INTERPRETER_DIGEST, MAIL_EVENT_YOUTUBE_NEW_VIDEO,
-            MAIL_EVENT_SUPPORT_AUTO_REPLY, MAIL_EVENT_NEW_SIGN_IN);
+            MAIL_EVENT_SUPPORT_AUTO_REPLY, MAIL_EVENT_NEW_SIGN_IN,
+            MAIL_EVENT_PASSKEY_ADDED);
 
     /** The switch of an e-mail template: {@code mail.event.<template>}. */
     public static String mailEvent(String template) {
@@ -156,6 +161,7 @@ public final class SettingKeys {
             DREAMS_TESTIMONIAL_REQUEST_DAYS,
             AUTH_MAGIC_TTL_MINUTES, AUTH_ACCESS_TTL_MINUTES, AUTH_REFRESH_TTL_DAYS, AUTH_SESSION_TTL_HOURS,
             AUTH_KNOWN_DEVICE_DAYS,
+            AUTH_PASSKEY_CHALLENGE_TTL_SECONDS,
             ORDERS_EXPIRE_MINUTES,
             INTERPRETER_EMAILS, INTERPRETER_DIGEST_HOUR,
             PRICING_GLOBAL_CURRENCY, PRICING_DEFAULT_COUNTRY, PRICING_FX_TO_USD,
@@ -169,6 +175,7 @@ public final class SettingKeys {
             MAIL_EVENT_PAYMENT_RECEIPT, MAIL_EVENT_PAYMENT_SUSPICIOUS, MAIL_EVENT_REPLY_REMINDER,
             MAIL_EVENT_TESTIMONIAL_REQUEST, MAIL_EVENT_INTERPRETER_DIGEST, MAIL_EVENT_YOUTUBE_NEW_VIDEO,
             MAIL_EVENT_SUPPORT_AUTO_REPLY, MAIL_EVENT_NEW_SIGN_IN,
+            MAIL_EVENT_PASSKEY_ADDED,
             MAIL_THEME_DEFAULT, MAIL_ASSETS_BASE_URL, MAIL_AUTO_REPLY_COOLDOWN_HOURS,
             INSIGHTS_AWAITING_REPLY_DAYS, INSIGHTS_TRAFFIC_CHANGE_PERCENT, INSIGHTS_STREAK_MIN_DAYS,
             REPORTS_EXCEL_MAX_ROWS);
