@@ -1,6 +1,5 @@
 package com.saadat.reports.pdf;
 
-import com.openhtmltopdf.bidi.support.ICUBidiReorderer;
 import com.openhtmltopdf.bidi.support.ICUBidiSplitter;
 import com.openhtmltopdf.extend.FSSupplier;
 import com.openhtmltopdf.outputdevice.helper.BaseRendererBuilder;
@@ -21,11 +20,12 @@ import org.thymeleaf.context.Context;
 /**
  * Renders a Thymeleaf XHTML template ({@code templates/pdf/...}) to PDF with openhtmltopdf (PDFBox).
  *
- * <p>Arabic: PDFBox does not apply OpenType GSUB, so letters are joined by ICU shaping into Arabic Presentation
- * Forms (rtl-support: {@link ICUBidiSplitter} + {@link ICUBidiReorderer}); the embedded IBM Plex Sans Arabic has
- * glyphs for U+FB50–U+FDFF / U+FE70–U+FEFF. Latin text uses IBM Plex Sans; openhtmltopdf falls back per glyph
- * along the CSS font-family list. The bidi splitter/reorderer is always on (Arabic text can appear in English
- * documents); only the default direction follows the locale.
+ * <p>Arabic: PDFBox does not apply OpenType GSUB/GPOS, so letters are joined by ICU shaping into Arabic
+ * Presentation Forms (rtl-support: {@link ICUBidiSplitter} + {@link ArabicPdfReorderer}, which also leaves out
+ * diacritics the engine cannot position); the embedded IBM Plex Sans Arabic has glyphs for U+FB50–U+FDFF /
+ * U+FE70–U+FEFF. Latin text uses IBM Plex Sans; openhtmltopdf falls back per glyph along the CSS font-family list.
+ * The bidi splitter/reorderer is always on (Arabic text can appear in English documents); only the default
+ * direction follows the locale.
  *
  * <p>The template output is parsed as XML: templates must be well-formed and user text must pass
  * {@link #clean(String)} (removes characters XML 1.0 forbids).
@@ -61,7 +61,7 @@ public class PdfRenderer {
         PdfRendererBuilder builder = new PdfRendererBuilder();
         builder.useFastMode();
         builder.useUnicodeBidiSplitter(new ICUBidiSplitter.ICUBidiSplitterFactory());
-        builder.useUnicodeBidiReorderer(new ICUBidiReorderer());
+        builder.useUnicodeBidiReorderer(new ArabicPdfReorderer());
         builder.defaultTextDirection(loc == Locale.AR
                 ? BaseRendererBuilder.TextDirection.RTL : BaseRendererBuilder.TextDirection.LTR);
         font(builder, arabicRegular, FAMILY_ARABIC, REGULAR);

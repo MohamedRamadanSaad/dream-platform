@@ -13,6 +13,7 @@
   @page {
     size: A4;
     margin: 27mm 16mm 20mm 16mm;
+    padding-top: 5mm; /* breathing room under the band on every page */
     background-color: #F4EFE6;
     @top-left-corner { content: ""; background-color: #0A1128; border-bottom: 1mm solid #D4AF37; }
     @top-left { content: ""; background-color: #0A1128; border-bottom: 1mm solid #D4AF37; }
@@ -78,10 +79,10 @@
   .msg-who { font-weight: bold; color: #0A1128; }
   .msg-body { white-space: pre-line; line-height: 1.7; }
 
-  .interp { background-color: #FFFFFF; border: 0.4mm solid #EADBAA; border-radius: 2mm; padding: 3.5mm 4.5mm; }
+  .interp { background-color: #FFFFFF; border: 0.4mm solid #EADBAA; border-radius: 2mm; padding: 3.5mm 4.5mm; page-break-inside: avoid; }
   .ltr .interp { border-left: 1.4mm solid #D4AF37; }
   .rtl .interp { border-right: 1.4mm solid #D4AF37; }
-  .interp-at { font-size: 8.5pt; color: #5B6478; margin-bottom: 1mm; }
+  .interp-at { font-size: 8.5pt; color: #5B6478; margin-bottom: 1mm; page-break-after: avoid; }
   .interp-text { white-space: pre-line; line-height: 1.8; }
   .muted { color: #5B6478; font-size: 9.5pt; }
 </style>

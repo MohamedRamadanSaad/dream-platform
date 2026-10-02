@@ -17,6 +17,7 @@ import com.saadat.credits.service.CreditService;
 import com.saadat.dreams.repo.DreamRepository;
 import com.saadat.dreams.service.DreamService;
 import com.saadat.users.domain.User;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -24,6 +25,9 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import org.apache.pdfbox.Loader;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.text.PDFTextStripper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -45,7 +49,8 @@ class ReportsIntegrationTest extends IntegrationTestBase {
             + "وفي آخر الرؤيا وجدت خاتماً من ذهب فيه 3 فصوص خضراء، وكان الجو مضيئاً كأنه وقت الفجر.";
     private static final String QUESTION_AR = "هل كانت السفينة تتحرك أم كانت راسية على الشاطئ؟ وكم كان عمرك تقريباً في الرؤيا؟";
     private static final String REPLY_AR = "كانت راسية ثم تحركت ببطء، وكنت في عمري الحالي تقريباً 32 سنة.";
-    private static final String INTERPRETATION_AR = "رؤيا مبشرة بإذن الله. البحر الهادئ يدل على طمأنينة النفس، والسفينة "
+    private static final String INTERPRETATION_AR = "رؤيا مبشرة بإذن الله، وقد قال تعالى: ﴿ إِنِّي رَأَيْتُ أَحَدَ عَشَرَ "
+            + "كَوْكَبًا وَالشَّمْسَ وَالْقَمَرَ رَأَيْتُهُمْ لِي سَاجِدِينَ ﴾. البحر الهادئ يدل على طمأنينة النفس، والسفينة "
             + "البيضاء نجاة وخير قادم، وصعودك مع أهلك اجتماع على الخير. والخاتم الذهبي بفصوصه الثلاثة قد يشير إلى نعمة "
             + "تتجدد عليك في ثلاثة أبواب من الرزق، والفجر بداية مرحلة جديدة أوضح من سابقتها.\n"
             + "نسأل الله أن يجعلها خيراً لك، والله أعلم.";
@@ -100,7 +105,17 @@ class ReportsIntegrationTest extends IntegrationTestBase {
                 .contains("filename=\"dream-" + shortId + ".pdf\"")
                 .contains("filename*=UTF-8''dream-" + shortId + ".pdf");
         assertPdf(dreamPdf);
+        assertThat(text(dreamPdf)).as("the interpreter sees the e-mail and the order").contains("@").contains("MOCK-");
         save("dream-ar.pdf", dreamPdf);
+
+        // the owner's copy of the same dream: no e-mail, no payment reference
+        MvcResult ownPdf = mvc.perform(get(ApiPaths.Dreams.ROOT + "/" + paid + "/pdf")
+                        .header(HttpHeaders.AUTHORIZATION, bearer(user)))
+                .andExpect(status().isOk())
+                .andReturn();
+        assertPdf(ownPdf);
+        assertThat(text(ownPdf)).doesNotContain("@").doesNotContain("MOCK-");
+        save("my-dream-ar.pdf", ownPdf);
 
         MvcResult userPdf = mvc.perform(get(ApiPaths.Admin.USERS + "/" + user.getId() + "/pdf")
                         .header(HttpHeaders.AUTHORIZATION, bearer(interpreter))
@@ -154,8 +169,7 @@ class ReportsIntegrationTest extends IntegrationTestBase {
                 .andReturn();
         assertPdf(own);
         save("dream-en.pdf", own);
-        assertThat(new String(own.getResponse().getContentAsByteArray(), StandardCharsets.ISO_8859_1))
-                .doesNotContain(user.getEmail());
+        assertThat(text(own)).contains("Sara Ahmed").doesNotContain("@");
 
         MvcResult all = mvc.perform(get(ApiPaths.Me.DREAMS_PDF)
                         .header(HttpHeaders.AUTHORIZATION, bearer(user))
@@ -238,6 +252,13 @@ class ReportsIntegrationTest extends IntegrationTestBase {
         byte[] bytes = result.getResponse().getContentAsByteArray();
         assertThat(bytes.length).isGreaterThan(1000);
         assertThat(new String(bytes, 0, 5, StandardCharsets.US_ASCII)).isEqualTo("%PDF-");
+    }
+
+    /** The visible text of a PDF (PDFBox text extraction). */
+    private static String text(MvcResult result) throws IOException {
+        try (PDDocument doc = Loader.loadPDF(result.getResponse().getContentAsByteArray())) {
+            return new PDFTextStripper().getText(doc);
+        }
     }
 
     private static void save(String name, MvcResult result) throws Exception {

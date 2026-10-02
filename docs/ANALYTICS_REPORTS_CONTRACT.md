@@ -126,6 +126,9 @@ Each event is toggleable by a BOOL setting `mail.event.<template>` (default true
   The product has one interpreter, so `myActivity` counts every interpretation.
 - **PDF file names**: dream → `dream-<first 8 chars of id>.pdf`, user → `user-<first 8>.pdf`, `/me/dreams/pdf` →
   `dreams-YYYY-MM-DD.pdf`. CORS exposes `Content-Disposition`.
+- **PDF Arabic text** is printed without diacritics (tashkeel: harakat, tanween, shadda, Quranic signs): the PDF engine
+  cannot position combining marks, so they would float beside or collide with the letters. Letters, words and order
+  are unchanged; the stored texts keep their marks.
 - **Excel**: `gender` filters (and shows) the dream's gender; rows are newest submission first; row cap
   `reports.excel_max_rows` (50000).
 - **E-mail switches**: BOOL settings `mail.event.<template>` for every template except `magic-link` (always sent);
