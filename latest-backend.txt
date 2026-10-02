@@ -1,4 +1,4 @@
-### commit dc0b2786a41e44e414033791289aca3a13126294 run 37009801138 Fri Oct  2 12:58:24 UTC 2026
+### commit dc0b2786a41e44e414033791289aca3a13126294 run 37010741781 Fri Oct  2 13:07:05 UTC 2026
 ## tests
 com.saadat.settings.AdminWaitTimeIntegrationTest tests=2 failures=0 errors=0
 com.saadat.mail.MailThemesIntegrationTest tests=10 failures=0 errors=0
@@ -45,13 +45,13 @@ Daemon will be stopped at the end of the build
 OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
 > Task :test
 
-12:58:24.085 INFO  [SpringApplicationShutdownHook] [] o.s.o.j.LocalContainerEntityManagerFactoryBean - Closing JPA EntityManagerFactory for persistence unit 'default'
-12:58:24.089 INFO  [SpringApplicationShutdownHook] [] com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated...
-12:58:24.098 INFO  [SpringApplicationShutdownHook] [] com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed.
+13:07:04.284 INFO  [SpringApplicationShutdownHook] [] o.s.o.j.LocalContainerEntityManagerFactoryBean - Closing JPA EntityManagerFactory for persistence unit 'default'
+13:07:04.293 INFO  [SpringApplicationShutdownHook] [] com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated...
+13:07:04.314 INFO  [SpringApplicationShutdownHook] [] com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed.
 
 > Task :check
 > Task :build
-gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/__run-1790945852286.json
+gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/__run-1790946371261.json
 
-BUILD SUCCESSFUL in 57s
+BUILD SUCCESSFUL in 58s
 7 actionable tasks: 7 executed
