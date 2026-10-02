@@ -37,6 +37,19 @@ jobs:
                 rm -f "$new"')
           echo "mail settings: $result"
           [ "$result" = "updated" ] && echo "changed=true" >> "$GITHUB_OUTPUT" || true
+      # Google sign-in: the OAuth web client ID is public (it ships in the frontend bundle). Backend verifies ID tokens
+      # against it (GOOGLE_CLIENT_ID); the frontend gets it at build time (VITE_GOOGLE_CLIENT_ID).
+      - name: google sign-in settings
+        env:
+          GOOGLE_CLIENT_ID: ${{ vars.GOOGLE_CLIENT_ID || '957021915232-jaan66ks1mq88nj60add9gbjlc7jsb0g.apps.googleusercontent.com' }}
+        run: |
+          ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "GID='$GOOGLE_CLIENT_ID' bash -s" <<'EOS'
+            cd /opt/saadat/deploy
+            setkv() { if grep -qx "$2=$3" "$1"; then return 1; fi; t=$(mktemp); grep -v "^$2=" "$1" > "$t"; echo "$2=$3" >> "$t"; cat "$t" > "$1"; rm -f "$t"; }
+            if setkv backend.env GOOGLE_CLIENT_ID "$GID"; then touch .recreate-backend; echo "backend: google client id updated"; fi
+            if setkv .env VITE_GOOGLE_CLIENT_ID "$GID"; then echo "frontend: google client id updated (rebuild)"; fi
+            echo "google sign-in settings ok"
+          EOS
       - name: build & restart
         run: |
           ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} bash -s <<'EOS'
