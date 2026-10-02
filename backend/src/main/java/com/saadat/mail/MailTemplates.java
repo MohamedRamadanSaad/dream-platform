@@ -35,6 +35,8 @@ import java.util.List;
  *       (Arabic then English) with the same content in both locale files; no call-to-action</li>
  *   <li>{@link #NEW_SIGN_IN}: name, device ("Chrome · Windows"), deviceType (localized), countryName, signedInAt,
  *       link (the devices list of the account's profile page)</li>
+ *   <li>{@link #PASSKEY_ADDED}: name, passkey (its label, e.g. "Chrome · Windows"), addedAt, link (the passkeys
+ *       section of the account's profile page)</li>
  * </ul>
  *
  * <p>Each template's header/footer theme comes from STRING setting {@code mail.theme.<name>} (see
@@ -65,12 +67,15 @@ public final class MailTemplates {
     public static final String SUPPORT_AUTO_REPLY = "support-auto-reply";
     /** Security alert after a sign-in from a browser + system the account did not use recently. */
     public static final String NEW_SIGN_IN = "new-sign-in";
+    /** Security notice after a passkey (fingerprint / face sign-in) was added to the account. */
+    public static final String PASSKEY_ADDED = "passkey-added";
 
     public static final List<String> ALL = List.of(
             MAGIC_LINK, DREAM_RECEIVED, INTERPRETER_QUESTION, USER_REPLIED, INTERPRETATION_READY,
             PAYMENT_RECEIPT, PAYMENT_SUSPICIOUS, REPLY_REMINDER, TESTIMONIAL_REQUEST, INTERPRETER_DIGEST,
             DREAM_SUBMITTED, YOUTUBE_NEW_VIDEO, WELCOME, PAYMENT_FAILED, DREAM_CANCELLED, CREDITS_ADJUSTED,
-            TESTIMONIAL_APPROVED, ACCOUNT_DELETED, NEW_USER, TESTIMONIAL_RECEIVED, SUPPORT_AUTO_REPLY, NEW_SIGN_IN);
+            TESTIMONIAL_APPROVED, ACCOUNT_DELETED, NEW_USER, TESTIMONIAL_RECEIVED, SUPPORT_AUTO_REPLY, NEW_SIGN_IN,
+            PASSKEY_ADDED);
 
     private MailTemplates() {
     }

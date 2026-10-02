@@ -8,6 +8,7 @@ import com.saadat.dreams.repo.DreamRepository;
 import com.saadat.mail.EventMailer;
 import com.saadat.mail.MailTemplates;
 import com.saadat.notifications.repo.NotificationRepository;
+import com.saadat.passkeys.repo.PasskeyRepository;
 import com.saadat.payments.repo.CreditLedgerRepository;
 import com.saadat.publicapi.WaitTimeView;
 import com.saadat.push.service.PushSubscriptionService;
@@ -44,12 +45,15 @@ public class AccountService {
     private final UserDtoMapper mapper;
     private final EventMailer eventMailer;
     private final Clock clock;
+    private final PasskeyRepository passkeyRepository;
 
     public AccountService(UserRepository userRepository, AuthIdentityRepository identityRepository,
                           RefreshTokenService refreshTokenService, PushSubscriptionService pushSubscriptionService,
                           DreamRepository dreamRepository, CreditLedgerRepository creditLedgerRepository,
                           NotificationRepository notificationRepository, WaitTimeView waitTimeView,
-                          UserDtoMapper mapper, EventMailer eventMailer, Clock clock) {
+                          UserDtoMapper mapper, EventMailer eventMailer, Clock clock,
+                          PasskeyRepository passkeyRepository) {
+        this.passkeyRepository = passkeyRepository;
         this.userRepository = userRepository;
         this.identityRepository = identityRepository;
         this.refreshTokenService = refreshTokenService;
@@ -100,8 +104,8 @@ public class AccountService {
 
     /**
      * Soft delete: e-mail anonymised, name cleared, tokens revoked, identities unlinked (so the Google account
-     * or e-mail can sign up again as a new account), push subscriptions removed. Dreams/orders are kept
-     * for accounting but are no longer linked to any personal data.
+     * or e-mail can sign up again as a new account), passkeys deleted, push subscriptions removed. Dreams/orders are
+     * kept for accounting but are no longer linked to any personal data.
      */
     @Transactional
     public void delete(UUID userId) {
@@ -116,9 +120,10 @@ public class AccountService {
         user.setDeletedAt(clock.instant());
         userRepository.save(user);
         identityRepository.deleteAll(identityRepository.findByUserId(userId));
+        int passkeys = passkeyRepository.deleteAllOfUser(userId);
         refreshTokenService.revokeAll(userId);
         pushSubscriptionService.removeAll(userId);
-        log.info("Account {} deleted", userId);
+        log.info("Account {} deleted ({} passkeys removed)", userId, passkeys);
     }
 
     @Transactional(readOnly = true)

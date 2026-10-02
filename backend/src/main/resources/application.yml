@@ -148,6 +148,9 @@ app:
     core-pool-size: 4
     max-pool-size: 16
     queue-capacity: 500
+  passkeys:
+    rp-id: ${PASSKEY_RP_ID:}
+    origins: ${PASSKEY_ORIGINS:}
 
 logging:
   level:

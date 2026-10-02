@@ -16,6 +16,9 @@ import com.saadat.common.error.UnauthorizedException;
 import com.saadat.common.security.AuthPrincipal;
 import com.saadat.common.web.ClientIp;
 import com.saadat.common.web.CountryResolver;
+import com.saadat.passkeys.api.PasskeyDtos.PasskeySignInRequest;
+import com.saadat.passkeys.api.PasskeyDtos.SignInOptionsResponse;
+import com.saadat.passkeys.service.PasskeyService;
 import com.saadat.users.api.UserDto;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -36,11 +39,14 @@ public class AuthController {
     private final AuthService authService;
     private final CookieUtil cookieUtil;
     private final CountryResolver countryResolver;
+    private final PasskeyService passkeyService;
 
-    public AuthController(AuthService authService, CookieUtil cookieUtil, CountryResolver countryResolver) {
+    public AuthController(AuthService authService, CookieUtil cookieUtil, CountryResolver countryResolver,
+                          PasskeyService passkeyService) {
         this.authService = authService;
         this.cookieUtil = cookieUtil;
         this.countryResolver = countryResolver;
+        this.passkeyService = passkeyService;
     }
 
     @PostMapping(ApiPaths.Auth.GOOGLE)
@@ -60,6 +66,19 @@ public class AuthController {
     public AuthResponse magicVerify(@Valid @RequestBody MagicVerifyRequest body, HttpServletRequest request,
                                     HttpServletResponse response) {
         return withCookie(authService.verifyMagicLink(body, context(request)), response);
+    }
+
+    /** WebAuthn request options for a passkey sign-in (docs/PASSKEYS_CONTRACT.md). */
+    @PostMapping(ApiPaths.Auth.PASSKEY_OPTIONS)
+    public SignInOptionsResponse passkeyOptions() {
+        return passkeyService.signInOptions();
+    }
+
+    /** Passkey sign-in: same response and refresh cookie as {@link #magicVerify}; 401 PASSKEY_INVALID on failure. */
+    @PostMapping(ApiPaths.Auth.PASSKEY_VERIFY)
+    public AuthResponse passkeyVerify(@RequestBody PasskeySignInRequest body, HttpServletRequest request,
+                                      HttpServletResponse response) {
+        return withCookie(passkeyService.signIn(body, context(request)), response);
     }
 
     @PostMapping(ApiPaths.Auth.REFRESH)
