@@ -8,6 +8,7 @@ gsap.registerPlugin(MorphSVGPlugin)
 
 export type IconName = 'moon' | 'star' | 'scroll' | 'wallet' | 'user' | 'bell' | 'plus' | 'logout' | 'play' | 'chat' | 'chart' | 'globe' | 'gift' | 'clock' | 'check' | 'search' | 'settings' | 'sun' | 'youtube' | 'sparkle' | 'book' | 'quote' | 'shield' | 'heart'
   | 'download' | 'mail' | 'alert' | 'info' | 'bulb' | 'trophy' | 'eye' | 'flame' | 'filter' | 'menu' | 'link' | 'phone' | 'calendar'
+  | 'tablet' | 'desktop' | 'account'
 
 interface Shape { before: string; after: string; fill?: boolean; extra?: JSX.Element }
 
@@ -50,6 +51,10 @@ const shapes: Record<IconName, Shape> = {
   link: { before: 'M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1', after: 'M9.5 14.5a4.5 4.5 0 0 0 6.4 0l2.6-2.6a4.5 4.5 0 0 0-6.4-6.4l-.9.9M14.5 9.5a4.5 4.5 0 0 0-6.4 0l-2.6 2.6a4.5 4.5 0 0 0 6.4 6.4l.9-.9' },
   phone: { before: 'M7.5 3h9a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1h-9a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1zM11 18h2', after: 'M8 2.5h8A1.5 1.5 0 0 1 17.5 4v16a1.5 1.5 0 0 1-1.5 1.5H8A1.5 1.5 0 0 1 6.5 20V4A1.5 1.5 0 0 1 8 2.5zM10.5 18.5h3' },
   calendar: { before: 'M4 6h16v14H4zM4 10h16M8 3.5v4M16 3.5v4', after: 'M4 6h16v14H4zM4 10h16M8 3v4.5M16 3v4.5M8 14h3' },
+  tablet: { before: 'M5.5 3h13A1.5 1.5 0 0 1 20 4.5v15a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 19.5v-15A1.5 1.5 0 0 1 5.5 3zM11 18h2', after: 'M5 2.5h14A1.5 1.5 0 0 1 20.5 4v16a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 20V4A1.5 1.5 0 0 1 5 2.5zM10.5 18.5h3' },
+  desktop: { before: 'M3.5 4.5h17v11h-17zM9 20h6M12 15.5V20', after: 'M3 4h18v12H3zM8.5 20.5h7M12 16v4.5' },
+  // a person inside a circle: "my account" (the plain person is the users list)
+  account: { before: 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM12 12.5a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM6.4 18.3c1.3-1.8 3.3-2.8 5.6-2.8s4.3 1 5.6 2.8', after: 'M12 21.5a9.5 9.5 0 1 0 0-19 9.5 9.5 0 0 0 0 19zM12 13a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zM6 18.6c1.4-2 3.5-3.1 6-3.1s4.6 1.1 6 3.1' },
 }
 
 interface Props extends Omit<SVGProps<SVGSVGElement>, 'name'> {
@@ -58,9 +63,16 @@ interface Props extends Omit<SVGProps<SVGSVGElement>, 'name'> {
   /** external hover control (parent card); otherwise self hover */
   active?: boolean
   strokeWidth?: number
+  /** Mirror in right-to-left pages (icons that point somewhere, e.g. "logout"). */
+  flipRtl?: boolean
 }
 
-export function Icon({ name, size = 22, active, strokeWidth = 1.5, className, ...rest }: Props) {
+export function Icon({ flipRtl, ...props }: Props) {
+  // the wrapper flips: GSAP owns the svg's own transform (hover scale)
+  return flipRtl ? <span className="inline-flex rtl:-scale-x-100"><MorphIcon {...props} /></span> : <MorphIcon {...props} />
+}
+
+function MorphIcon({ name, size = 22, active, strokeWidth = 1.5, className, ...rest }: Omit<Props, 'flipRtl'>) {
   const ref = useRef<SVGPathElement>(null)
   const svgRef = useRef<SVGSVGElement>(null)
   const shape = shapes[name]

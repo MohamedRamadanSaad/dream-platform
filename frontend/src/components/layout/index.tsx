@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
-import { Link, NavLink, matchPath, useLocation, useNavigate } from 'react-router-dom'
+import { Link, NavLink, matchPath, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useAuthStore, isInterpreter } from '@/app/auth-store'
+import { useSignOut } from '@/app/session'
 import { applyLocale } from '@/i18n'
 import { Icon, type IconName } from '@/components/icons/Icon'
 import { cn } from '@/lib/utils'
@@ -30,12 +31,13 @@ export function YoutubeButton({ dark }: { dark?: boolean }) {
 }
 
 export function LocaleToggle({ dark }: { dark?: boolean }) {
+  const { t } = useTranslation()
   const locale = useAuthStore((s) => s.locale)
   const setLocale = useAuthStore((s) => s.setLocale)
   const next = locale === 'ar' ? 'en' : 'ar'
   return (
     <button onClick={() => { setLocale(next); applyLocale(next) }} className={cn('text-sm', dark ? 'text-gold-soft/80 hover:text-gold-soft' : 'text-fg-muted hover:text-fg')} aria-label="language">
-      {next === 'ar' ? 'العربية' : 'English'}
+      {next === 'ar' ? t('common.langAr') : t('common.langEn')}
     </button>
   )
 }
@@ -125,10 +127,10 @@ export function Footer() {
 
 export function AppShell({ items, children, admin }: { items: { to: string; label: string; icon: IconName; end?: boolean }[]; children: React.ReactNode; admin?: boolean }) {
   const { t } = useTranslation()
-  const navigate = useNavigate()
   const { pathname } = useLocation()
-  const clear = useAuthStore((s) => s.clear)
+  const { signOut, pending: signingOut } = useSignOut()
   const user = useAuthStore((s) => s.user)
+  const profile = admin ? '/admin/profile' : '/me/profile'
   // phones: the admin has more pages than the bottom bar holds — the rest open from a "More" sheet
   const overflow = !!admin && items.length > 5
   const primary = overflow ? items.slice(0, 4) : items.slice(0, 5)
@@ -154,8 +156,11 @@ export function AppShell({ items, children, admin }: { items: { to: string; labe
           ))}
         </nav>
         <div className="mt-auto border-t border-navy pt-4 text-sm">
-          <div className="flex items-center gap-3 px-3 pb-3"><Avatar name={user?.name || user?.email} size={34} /><div className="min-w-0"><div className="truncate text-pearl">{user?.name}</div><div className="truncate text-xs text-pearl/50" dir="ltr">{user?.email}</div></div></div>
-          <button onClick={() => { clear(); navigate('/') }} className="flex items-center gap-3 rounded-xl px-3 py-2 text-pearl/60 hover:text-danger"><Icon name="logout" size={18} />{t('auth.logout')}</button>
+          <Link to={profile} title={t(admin ? 'admin.nav.profile' : 'me.nav.profile')} className="mb-1 flex items-center gap-3 rounded-xl px-3 py-2 transition-colors hover:bg-navy/60">
+            <Avatar name={user?.name || user?.email} size={34} />
+            <div className="min-w-0"><div className="truncate text-pearl">{user?.name}</div><div className="truncate text-xs text-pearl/50" dir="ltr">{user?.email}</div></div>
+          </Link>
+          <button type="button" disabled={signingOut} onClick={() => void signOut()} className="flex items-center gap-3 rounded-xl px-3 py-2 text-pearl/60 hover:text-danger disabled:opacity-50"><Icon name="logout" size={18} flipRtl />{t('auth.logout')}</button>
         </div>
       </aside>
       <div className="flex-1 min-w-0">
@@ -169,6 +174,12 @@ export function AppShell({ items, children, admin }: { items: { to: string; labe
             {/* theme lives in the profile on phones; the header keeps only what fits */}
             <div className="hidden md:block"><ThemeToggle /></div>
             <LocaleToggle />
+            {/* the interpreter's account page sits in the "More" sheet on phones: the avatar is the short way there */}
+            {admin && (
+              <Link to={profile} aria-label={t('admin.nav.profile')} title={t('admin.nav.profile')} className="rounded-full transition-transform hover:-translate-y-0.5">
+                <Avatar name={user?.name || user?.email} size={36} />
+              </Link>
+            )}
           </div>
         </header>
         <main className="mx-auto max-w-6xl px-4 py-6 pb-[calc(7rem_+_env(safe-area-inset-bottom))] md:px-8 md:pb-10">{children}</main>

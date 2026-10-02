@@ -5,6 +5,7 @@ import { db, resolvePrice, applyPromotion, balanceOf, toSummary, toDetail, uid, 
 import { buildInsights, buildTraffic, deviceOf } from './analytics'
 import { attachment, dreamsCsv, tinyPdf } from './reports'
 import { defaultThemeKey, isMailTemplate, isMailTheme, mailPreviewHtml, mailTemplateRow, mailTemplateRows, mailThemes } from './mail'
+import { endSession, listDevices, removeDevice, removeOtherDevices, startSession } from './devices'
 
 const BASE = (import.meta.env.VITE_API_URL as string) || ''
 const u = (p: string) => `${BASE}${p}`
@@ -53,10 +54,17 @@ const waitTimePublic = (locale: string): T.WaitTime => {
 }
 const ageOf = (d: string) => Math.floor((Date.now() - new Date(d).getTime()) / (365.25 * 864e5))
 const countryOf = (req: Request) => currentUser(req)?.countryCode ?? 'SA' // server would read CF-IPCountry
+// a page cannot set the User-Agent header itself: the mock reads the browser's own
+const uaOf = (req: Request) => req.headers.get('user-agent') ?? navigator.userAgent
 
 export const handlers = [
   // ---------- auth ----------
-  http.post(u('/auth/google'), wrap(async () => HttpResponse.json(session(db.users[0])))),
+  http.post(u('/auth/google'), wrap(async ({ request }) => {
+    const body = (await request.json().catch(() => ({}))) as T.GoogleLoginRequest
+    const user = db.users[0]
+    startSession(user, uaOf(request), body.rememberMe ?? true)
+    return HttpResponse.json(session(user))
+  })),
   http.post(u('/auth/magic/request'), wrap(async () => new HttpResponse(null, { status: 204 }))),
   http.post(u('/auth/magic/verify'), wrap(async ({ request }) => {
     const body = (await request.json()) as T.MagicVerifyRequest
@@ -69,10 +77,15 @@ export const handlers = [
     if (!user) user = db.users[0]
     // rule: any e-mail on the site domain is an interpreter account (backend: setting interpreter.email_domain)
     if (email && email.endsWith(INTERPRETER_DOMAIN)) user.role = 'INTERPRETER'
+    startSession(user, uaOf(request), body.rememberMe ?? true)
     return HttpResponse.json(session(user))
   })),
   http.post(u('/auth/refresh'), wrap(async () => problem(401, 'Unauthenticated'))),
-  http.post(u('/auth/logout'), wrap(async () => new HttpResponse(null, { status: 204 }))),
+  http.post(u('/auth/logout'), wrap(async ({ request }) => {
+    const me = currentUser(request)
+    if (me) endSession(me.id)
+    return new HttpResponse(null, { status: 204 })
+  })),
   http.post(u('/auth/onboarding'), wrap(async ({ request }) => {
     const me = requireUser(request)
     const b = (await request.json()) as T.OnboardingRequest
@@ -110,6 +123,11 @@ export const handlers = [
 
   // ---------- me ----------
   http.get(u('/me'), wrap(async ({ request }) => HttpResponse.json(requireUser(request)))),
+  // the preview keeps the demo account: deleting only ends this session (the server anonymises the account)
+  http.delete(u('/me'), wrap(async ({ request }) => {
+    endSession(requireUser(request).id)
+    return new HttpResponse(null, { status: 204 })
+  })),
   http.get(u('/me/dashboard'), wrap(async ({ request }) => {
     const me = requireUser(request)
     const mine = db.dreams.filter((d) => d.userId === me.id)
@@ -129,6 +147,16 @@ export const handlers = [
     const b = (await request.json()) as T.PreferencesRequest
     Object.assign(me, b, b.birthDate ? { age: ageOf(b.birthDate) } : {})
     return HttpResponse.json(me)
+  })),
+  // devices = the caller's active sign-in sessions (docs/SESSIONS_PROFILE_CONTRACT.md §2)
+  http.get(u('/me/devices'), wrap(async ({ request }) => HttpResponse.json(listDevices(requireUser(request), uaOf(request), lang(request))))),
+  http.post(u('/me/devices/sign-out-others'), wrap(async ({ request }) => {
+    removeOtherDevices(requireUser(request).id)
+    return new HttpResponse(null, { status: 204 })
+  })),
+  http.delete(u('/me/devices/:id'), wrap(async ({ request, params }) => {
+    const me = requireUser(request)
+    return removeDevice(me.id, String(params.id)) ? new HttpResponse(null, { status: 204 }) : problem(404, 'Not found')
   })),
   http.get(u('/me/credits'), wrap(async ({ request }) => {
     const me = requireUser(request)

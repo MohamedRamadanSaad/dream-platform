@@ -4,6 +4,7 @@ import { MutationCache, QueryClient, QueryClientProvider } from '@tanstack/react
 import { RouterProvider } from 'react-router-dom'
 import { router } from './app/router'
 import { useAuthStore } from './app/auth-store'
+import { restoreSession } from './app/session'
 import { applyLocale, setLocaleChangeListener } from './i18n'
 import './i18n'
 import './theme/globals.css'
@@ -41,7 +42,8 @@ function Root() {
   return <RouterProvider router={router} />
 }
 
-startMocks().then(() => {
+// a session signed in without "Keep me signed in" is checked before the first render (see restoreSession)
+startMocks().then(() => restoreSession().catch(() => undefined)).then(() => {
   createRoot(document.getElementById('root')!).render(
     <StrictMode>
       <QueryClientProvider client={qc}><Root /><Toaster /></QueryClientProvider>

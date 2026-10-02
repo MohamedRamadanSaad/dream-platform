@@ -61,6 +61,8 @@ export interface AuthResponse {
 }
 export interface GoogleLoginRequest {
   idToken: string
+  /** "Keep me signed in on this device"; missing = true (docs/SESSIONS_PROFILE_CONTRACT.md §1). */
+  rememberMe?: boolean
 }
 export interface MagicRequest {
   email: string
@@ -69,6 +71,30 @@ export interface MagicVerifyRequest {
   token?: string
   email?: string
   code?: string
+  /** Missing = true. */
+  rememberMe?: boolean
+}
+
+/** GET /me/devices — one active refresh-token family of the caller, most recently active first. */
+export interface DeviceDto {
+  /** Family id. */
+  id: string
+  /** "Chrome", "Safari", "Edge", "Firefox", "Samsung Internet", "Opera", "Other". */
+  browser: string
+  /** "Windows", "macOS", "iOS", "iPadOS", "Android", "Linux", "Other". */
+  os: string
+  deviceType: DeviceType
+  countryCode: string | null
+  /** Localized by Accept-Language. */
+  countryName: string | null
+  /** First token of the family. */
+  signedInAt: string
+  /** Newest token of the family. */
+  lastActiveAt: string
+  /** This is the device making the request. */
+  current: boolean
+  /** Signed in with "Keep me signed in". */
+  persistent: boolean
 }
 export interface OnboardingRequest {
   name: string

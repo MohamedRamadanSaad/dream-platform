@@ -38,6 +38,9 @@ export function apiUrl(path: string, query?: Query) {
 
 let refreshing: Promise<boolean> | null = null
 
+/** New access token from the refresh cookie (one call at a time); true when the session is still alive. */
+export const refreshSession = () => refreshToken()
+
 async function refreshToken(): Promise<boolean> {
   if (!refreshing) {
     refreshing = (async () => {

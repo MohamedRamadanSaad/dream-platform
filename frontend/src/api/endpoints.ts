@@ -27,6 +27,12 @@ export const meApi = {
   credits: () => http.get<T.CreditsSummary>('/me/credits'),
   orders: (page = 0, size = 20) => http.get<T.Page<T.OrderDto>>('/me/orders', { page, size }),
   deleteAccount: () => http.delete<void>('/me'),
+  /** Devices signed in to this account (docs/SESSIONS_PROFILE_CONTRACT.md §2). */
+  devices: () => http.get<T.DeviceDto[]>('/me/devices'),
+  /** Signs one device out (404 when it is not the caller's). */
+  signOutDevice: (id: string) => http.delete<void>(`/me/devices/${encodeURIComponent(id)}`),
+  /** Signs out every device except this one. */
+  signOutOtherDevices: () => http.post<void>('/me/devices/sign-out-others'),
 }
 
 export const dreamsApi = {

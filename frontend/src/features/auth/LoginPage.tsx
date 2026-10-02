@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react'
+import { useEffect, useId, useRef, useState, type FormEvent } from 'react'
 import { useNavigate, useSearchParams, Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useMutation } from '@tanstack/react-query'
@@ -6,6 +6,7 @@ import { GoogleLogin, GoogleOAuthProvider } from '@react-oauth/google'
 import { INTERPRETER_DOMAIN } from '@/lib/utils'
 import { authApi } from '@/api/endpoints'
 import { useAuthStore, isInterpreter } from '@/app/auth-store'
+import { readRememberMe, saveRememberMe } from '@/app/session'
 import { NightSky } from '@/components/motion/NightSky'
 import { PageEnter } from '@/components/motion'
 import { Button, Input, Label } from '@/components/ui'
@@ -21,12 +22,28 @@ function useFinishLogin() {
   const navigate = useNavigate()
   const [params] = useSearchParams()
   const setSession = useAuthStore((s) => s.setSession)
-  return (r: AuthResponse) => {
-    setSession(r.accessToken, r.user)
+  return (r: AuthResponse, remember: boolean) => {
+    setSession(r.accessToken, r.user, remember)
     const next = params.get('next')
     if (!r.user.onboarded) navigate(`/onboarding${next ? `?next=${encodeURIComponent(next)}` : ''}`)
     else navigate(next || (isInterpreter(r.user) ? '/admin' : '/me'))
   }
+}
+
+/** "Keep me signed in on this device" — ticked by default; the hint warns against it on a shared device. */
+function RememberMe({ checked, onChange }: { checked: boolean; onChange: (v: boolean) => void }) {
+  const { t } = useTranslation()
+  const hintId = useId()
+  return (
+    <label className="mt-5 flex cursor-pointer items-start gap-3 border-t border-line pt-4">
+      <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} aria-describedby={hintId}
+        className="mt-0.5 h-[18px] w-[18px] shrink-0 cursor-pointer accent-gold" />
+      <span className="min-w-0 leading-snug">
+        <span className="block text-sm text-fg">{t('auth.rememberMe')}</span>
+        <span id={hintId} className="mt-1 block text-xs text-fg-muted">{t('auth.rememberMeHint')}</span>
+      </span>
+    </label>
+  )
 }
 
 export default function LoginPage() {
@@ -36,14 +53,17 @@ export default function LoginPage() {
   const [code, setCode] = useState('')
   const [sent, setSent] = useState(false)
   const [err, setErr] = useState<string | null>(null)
+  const [remember, setRemember] = useState(readRememberMe)
+  const choose = (v: boolean) => { setRemember(v); saveRememberMe(v) }
 
-  const google = useMutation({ mutationFn: authApi.google, onSuccess: finish, onError: (e) => setErr((e as ApiError).message) })
+  const google = useMutation({ mutationFn: authApi.google, onSuccess: (r, v) => finish(r, v.rememberMe ?? true), onError: (e) => setErr((e as ApiError).message) })
   const magic = useMutation({ mutationFn: authApi.magicRequest, onSuccess: () => setSent(true), onError: (e) => setErr((e as ApiError).message) })
-  const verify = useMutation({ mutationFn: authApi.magicVerify, onSuccess: finish, onError: (e) => setErr((e as ApiError).message) })
+  const verify = useMutation({ mutationFn: authApi.magicVerify, onSuccess: (r, v) => finish(r, v.rememberMe ?? true), onError: (e) => setErr((e as ApiError).message) })
 
   const isInterpreterEmail = email.trim().toLowerCase().endsWith(INTERPRETER_DOMAIN)
-  const submitEmail = (e: FormEvent) => { e.preventDefault(); setErr(null); magic.mutate({ email: email.trim().toLowerCase() }) }
-  const submitCode = (e: FormEvent) => { e.preventDefault(); setErr(null); verify.mutate({ email: email.trim().toLowerCase(), code }) }
+  // the link in the e-mail opens a new page: it reads the choice saved here (see MagicCallbackPage)
+  const submitEmail = (e: FormEvent) => { e.preventDefault(); setErr(null); saveRememberMe(remember); magic.mutate({ email: email.trim().toLowerCase() }) }
+  const submitCode = (e: FormEvent) => { e.preventDefault(); setErr(null); verify.mutate({ email: email.trim().toLowerCase(), code, rememberMe: remember }) }
 
   return (
     <div className="relative min-h-screen bg-night text-pearl">
@@ -58,10 +78,10 @@ export default function LoginPage() {
             <p className="rounded-xl border border-gold/40 bg-gold/10 p-3 text-center text-xs text-gold-ink">{t('auth.interpreterDomainHint')}</p>
           ) : GOOGLE_ID && !MOCKS ? (
             <GoogleOAuthProvider clientId={GOOGLE_ID}>
-              <div className="flex justify-center"><GoogleLogin onSuccess={(c) => c.credential && google.mutate({ idToken: c.credential })} onError={() => setErr(t('common.error'))} shape="pill" width="320" /></div>
+              <div className="flex justify-center"><GoogleLogin onSuccess={(c) => c.credential && google.mutate({ idToken: c.credential, rememberMe: remember })} onError={() => setErr(t('common.error'))} shape="pill" width="320" /></div>
             </GoogleOAuthProvider>
           ) : (
-            <Button variant="ghost" className="w-full bg-white text-[#222] border-[#e5e5e5]" loading={google.isPending} onClick={() => google.mutate({ idToken: 'mock' })}>
+            <Button variant="ghost" className="w-full bg-white text-[#222] border-[#e5e5e5]" loading={google.isPending} onClick={() => google.mutate({ idToken: 'mock', rememberMe: remember })}>
               <GoogleG /> {t('auth.google')}
             </Button>
           )}
@@ -82,6 +102,7 @@ export default function LoginPage() {
               {MOCKS && <p className="text-[11px] text-fg-dim">{t('auth.mockHint', { email: 'fatema@saadatu-aldarein.com' })}</p>}
             </form>
           )}
+          <RememberMe checked={remember} onChange={choose} />
           {err && <p className="mt-4 text-center text-sm text-danger">{err}</p>}
         </div>
       </PageEnter>
@@ -89,9 +110,10 @@ export default function LoginPage() {
   )
 }
 
-function GoogleG() {
+/** Google's four-colour "G" (the sign-in button and the profile's sign-in methods). */
+export function GoogleG({ size = 18 }: { size?: number }) {
   return (
-    <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
+    <svg width={size} height={size} viewBox="0 0 24 24" aria-hidden="true">
       <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
       <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
       <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
@@ -138,8 +160,15 @@ export function MagicCallbackPage() {
   const { t } = useTranslation()
   const [params] = useSearchParams()
   const finish = useFinishLogin()
-  const m = useMutation({ mutationFn: authApi.magicVerify, onSuccess: finish })
+  const m = useMutation({ mutationFn: authApi.magicVerify, onSuccess: (r, v) => finish(r, v.rememberMe ?? true) })
   const token = params.get('token')
-  if (token && m.isIdle) m.mutate({ token })
+  const started = useRef(false)
+  useEffect(() => {
+    // once per page: the link is single-use (React's dev double effects must not spend it twice)
+    if (!token || started.current) return
+    started.current = true
+    // the "Keep me signed in" choice saved on the login page before the link was requested (default: yes)
+    m.mutate({ token, rememberMe: readRememberMe() })
+  }, [token, m])
   return <div className="flex min-h-screen items-center justify-center bg-night text-pearl">{m.isError ? t('auth.linkInvalid') : '…'}</div>
 }

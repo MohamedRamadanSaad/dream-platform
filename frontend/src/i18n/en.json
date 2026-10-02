@@ -128,7 +128,9 @@
       "GOOGLE": "Google",
       "MAGIC_LINK": "Email code",
       "APPLE": "Apple"
-    }
+    },
+    "rememberMe": "Keep me signed in on this device",
+    "rememberMeHint": "Don't tick this on a shared device."
   },
   "me": {
     "greeting": "Peace be upon you, {{name}}",
@@ -256,7 +258,60 @@
       "years": "{{n}} years",
       "pushDenied": "Your browser blocked notifications.",
       "deleteConfirm": "Delete your account and all your data?",
-      "signedInAs": "Signed in as"
+      "signedInAs": "Signed in as",
+      "personal": "Personal details",
+      "signInTitle": "How you sign in",
+      "noPasswords": "No passwords here. You sign in with Google or with a code sent to your email.",
+      "noPasswordsInterpreter": "No passwords here. You sign in with a code sent to your email.",
+      "interpreterRole": "Interpreter account",
+      "deleteBody": "Your account and your personal data will be removed, and you will be signed out on every device. This cannot be undone.",
+      "deleteYes": "Delete my account",
+      "deleted": "Your account was deleted"
+    },
+    "devices": {
+      "title": "Devices",
+      "lead": "Where your account is signed in now.",
+      "count_one": "{{count}} device",
+      "count_other": "{{count}} devices",
+      "thisDevice": "This device",
+      "browserOn": "{{browser}} on {{os}}",
+      "signedIn": "Signed in {{when}}",
+      "lastActive": "Last active {{when}}",
+      "activeNow": "Active now",
+      "remembered": "Stays signed in",
+      "notRemembered": "Signs out when the browser closes",
+      "unknownPlace": "Unknown place",
+      "signOut": "Sign out this device",
+      "signedOut": "The device was signed out",
+      "signOutOthers": "Sign out all other devices",
+      "othersTitle": "Sign out other devices?",
+      "othersBody": "You stay signed in on this device. The other devices will need to sign in again.",
+      "othersYes": "Sign them out",
+      "othersDone": "All other devices were signed out",
+      "onlyThis": "Only this device is signed in.",
+      "types": {
+        "MOBILE": "Phone",
+        "TABLET": "Tablet",
+        "DESKTOP": "Computer"
+      },
+      "browsers": {
+        "Chrome": "Chrome",
+        "Safari": "Safari",
+        "Edge": "Edge",
+        "Firefox": "Firefox",
+        "Samsung Internet": "Samsung Internet",
+        "Opera": "Opera",
+        "Other": "A browser"
+      },
+      "os": {
+        "Windows": "Windows",
+        "macOS": "macOS",
+        "iOS": "iOS",
+        "iPadOS": "iPadOS",
+        "Android": "Android",
+        "Linux": "Linux",
+        "Other": "another system"
+      }
     },
     "notifications": {
       "title": "Notifications",
@@ -275,7 +330,8 @@
       "testimonials": "Reviews",
       "orders": "Payments",
       "emails": "E-mails",
-      "more": "More"
+      "more": "More",
+      "profile": "My account"
     },
     "dashboard": {
       "title": "Interpreter dashboard",
@@ -766,7 +822,9 @@
     "forbidden": "You are not allowed to do this.",
     "deleted": "Deleted",
     "sent": "Sent",
-    "published": "Interpretation published"
+    "published": "Interpretation published",
+    "langAr": "العربية",
+    "langEn": "English"
   },
   "static": {
     "terms": "Terms and Conditions",

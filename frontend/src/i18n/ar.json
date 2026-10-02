@@ -131,7 +131,9 @@
       "GOOGLE": "جوجل",
       "MAGIC_LINK": "رمز البريد",
       "APPLE": "أبل"
-    }
+    },
+    "rememberMe": "تذكرني على هذا الجهاز",
+    "rememberMeHint": "لا تفعّله على جهاز يستخدمه غيرك."
   },
   "me": {
     "greeting": "السلام عليكم، {{name}}",
@@ -258,7 +260,64 @@
       "years": "{{n}} سنة",
       "pushDenied": "تم رفض الإذن من المتصفح.",
       "deleteConfirm": "حذف حسابي وبياناتي؟",
-      "signedInAs": "الحساب الحالي"
+      "signedInAs": "الحساب الحالي",
+      "personal": "بياناتي الشخصية",
+      "signInTitle": "طريقة الدخول إلى حسابك",
+      "noPasswords": "لا كلمات مرور هنا: تدخل بحساب جوجل أو برمز يصلك على بريدك.",
+      "noPasswordsInterpreter": "لا كلمات مرور هنا: تدخلين برمز يصلك على بريدك.",
+      "interpreterRole": "حساب المعبّرة",
+      "deleteBody": "سيُحذف حسابك وبياناتك الشخصية، ويُسجَّل خروجك من كل الأجهزة. لا يمكن التراجع عن ذلك.",
+      "deleteYes": "احذف حسابي",
+      "deleted": "تم حذف حسابك"
+    },
+    "devices": {
+      "title": "الأجهزة",
+      "lead": "الأجهزة التي حسابك مفتوح عليها الآن.",
+      "count_zero": "لا أجهزة",
+      "count_one": "جهاز واحد",
+      "count_two": "جهازان",
+      "count_few": "{{count}} أجهزة",
+      "count_many": "{{count}} جهازاً",
+      "count_other": "{{count}} جهاز",
+      "thisDevice": "هذا الجهاز",
+      "browserOn": "{{browser}} على {{os}}",
+      "signedIn": "سُجّل الدخول {{when}}",
+      "lastActive": "آخر نشاط {{when}}",
+      "activeNow": "نشط الآن",
+      "remembered": "يبقى الدخول محفوظاً",
+      "notRemembered": "يخرج عند إغلاق المتصفح",
+      "unknownPlace": "مكان غير معروف",
+      "signOut": "تسجيل خروج هذا الجهاز",
+      "signedOut": "تم تسجيل خروج الجهاز",
+      "signOutOthers": "تسجيل الخروج من كل الأجهزة الأخرى",
+      "othersTitle": "تسجيل خروج الأجهزة الأخرى؟",
+      "othersBody": "يبقى دخولك على هذا الجهاز، وتحتاج الأجهزة الأخرى إلى تسجيل الدخول من جديد.",
+      "othersYes": "سجّل خروجها",
+      "othersDone": "تم تسجيل الخروج من كل الأجهزة الأخرى",
+      "onlyThis": "هذا الجهاز وحده مسجّل الدخول الآن.",
+      "types": {
+        "MOBILE": "هاتف",
+        "TABLET": "جهاز لوحي",
+        "DESKTOP": "كمبيوتر"
+      },
+      "browsers": {
+        "Chrome": "كروم",
+        "Safari": "سفاري",
+        "Edge": "إيدج",
+        "Firefox": "فايرفوكس",
+        "Samsung Internet": "سامسونج إنترنت",
+        "Opera": "أوبرا",
+        "Other": "متصفح"
+      },
+      "os": {
+        "Windows": "ويندوز",
+        "macOS": "ماك",
+        "iOS": "آيفون",
+        "iPadOS": "آيباد",
+        "Android": "أندرويد",
+        "Linux": "لينكس",
+        "Other": "نظام آخر"
+      }
     },
     "notifications": {
       "title": "الإشعارات",
@@ -277,7 +336,8 @@
       "testimonials": "التقييمات",
       "orders": "المدفوعات",
       "emails": "الرسائل البريدية",
-      "more": "المزيد"
+      "more": "المزيد",
+      "profile": "حسابي"
     },
     "dashboard": {
       "title": "لوحة المعبّرة",
@@ -792,7 +852,9 @@
     "forbidden": "ليست لديك صلاحية لهذا الإجراء.",
     "deleted": "تم الحذف",
     "sent": "تم الإرسال",
-    "published": "تم نشر التفسير"
+    "published": "تم نشر التفسير",
+    "langAr": "العربية",
+    "langEn": "English"
   },
   "static": {
     "terms": "الشروط والأحكام",

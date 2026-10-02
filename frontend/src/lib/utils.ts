@@ -78,6 +78,15 @@ export function pctChange(current: number, previous: number): number | null {
 }
 /** Country code → flag emoji ("SA" → 🇸🇦). */
 export const flagEmoji = (cc: string) => cc.toUpperCase().replace(/[A-Z]/g, (c) => String.fromCodePoint(127397 + c.charCodeAt(0)))
+/** Country name in the page language ("EG" → "Egypt" / "مصر"); `fallback` when the browser cannot name it. */
+export function regionName(cc: string | null | undefined, locale: string, fallback?: string | null): string | null {
+  if (!cc) return fallback ?? null
+  try {
+    return new Intl.DisplayNames([locale === 'ar' ? 'ar' : 'en'], { type: 'region' }).of(cc.toUpperCase()) ?? fallback ?? cc
+  } catch {
+    return fallback ?? cc
+  }
+}
 
 export function hoursLeft(iso: string) {
   return (new Date(iso).getTime() - Date.now()) / 36e5
