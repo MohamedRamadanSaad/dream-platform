@@ -1,0 +1,42 @@
+<!doctype html><html><head><meta charset="utf-8"><style>html,body{margin:0;background:#000}</style></head><body>
+<svg id="s" xmlns="http://www.w3.org/2000/svg"></svg>
+<script>
+const P=new URLSearchParams(location.search);const kind=P.get('kind'),theme=P.get('theme'),part=P.get('part');
+const W=1200,H=part==='header'?360:300;const s=document.getElementById('s');s.setAttribute('width',W);s.setAttribute('height',H);
+const NS='http://www.w3.org/2000/svg';let seed={'crescent-night':7,'full-moon':11,'dawn-glow':23,'golden-midnight':41}[theme]+(part==='footer'?100:0);
+const r=()=>(seed=(seed*16807)%2147483647)/2147483647;
+const add=(t,a,p=s)=>{const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);p.appendChild(e);return e};
+const T={
+ 'crescent-night':{bg:[['0','#24386b'],['.4','#16244a'],['1','#0a1128']],cx:.82,cy:.25,star:['#f4efe6','#f4efe6','#d4af37'],moon:'crescent',mx:1040,my:110,mr:66,met:2,horizon:null},
+ 'full-moon':{bg:[['0','#1c2a55'],['.45','#0e1733'],['1','#070d1f']],cx:.84,cy:.3,star:['#f4efe6','#cfd8ff','#f4efe6'],moon:'full',mx:1050,my:120,mr:70,met:2,horizon:null},
+ 'dawn-glow':{bg:[['0','#2a3566'],['.55','#1b2347'],['1','#141a38']],cx:.5,cy:.0,star:['#fff8e8','#f4efe6','#e8c77a'],moon:'crescent',mx:160,my:100,mr:52,met:1,horizon:'#c9962b'},
+ 'golden-midnight':{bg:[['0','#1a1a2a'],['.45','#0b0d18'],['1','#05070f']],cx:.15,cy:.25,star:['#d4af37','#e9cf7a','#f4efe6'],moon:'crescent',mx:150,my:115,mr:68,met:3,horizon:null,goldMet:true}
+}[theme];
+const defs=add('defs',{});
+defs.innerHTML=`<radialGradient id="bg" cx="${T.cx}" cy="${T.cy}" r="1.1">${T.bg.map(([o,c])=>`<stop offset="${o}" stop-color="${c}"/>`).join('')}</radialGradient>
+<radialGradient id="glow"><stop offset="0" stop-color="#fff6dc" stop-opacity=".5"/><stop offset=".45" stop-color="#d4af37" stop-opacity=".13"/><stop offset="1" stop-color="#d4af37" stop-opacity="0"/></radialGradient>
+<radialGradient id="sglow"><stop offset="0" stop-color="#fff" stop-opacity=".55"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>
+<radialGradient id="moon" cx=".38" cy=".36"><stop offset="0" stop-color="#fffaf0"/><stop offset=".7" stop-color="#f4e9cf"/><stop offset="1" stop-color="#dcc690"/></radialGradient>
+<linearGradient id="hor" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${T.horizon||'#000'}" stop-opacity="0"/><stop offset="1" stop-color="${T.horizon||'#000'}" stop-opacity=".55"/></linearGradient>
+<linearGradient id="met" x1="0" x2="1"><stop offset="0" stop-color="${T.goldMet?'#d4af37':'#f4efe6'}" stop-opacity="0"/><stop offset="1" stop-color="${T.goldMet?'#ffe9a8':'#ffffff'}" stop-opacity=".95"/></linearGradient>
+<mask id="cres2"><rect width="${W}" height="${H}" fill="white"/><circle cx="${T.mx-T.mr*.55}" cy="${T.my-T.mr*.25}" r="${T.mr*.92}" fill="#555"/></mask><mask id="cres"><rect width="${W}" height="${H}" fill="white"/><circle cx="${T.mx-T.mr*.55}" cy="${T.my-T.mr*.25}" r="${T.mr*.92}" fill="black"/></mask>`;
+add('rect',{width:W,height:H,fill:'url(#bg)'});
+if(T.horizon) add('rect',{y:H*.45,width:W,height:H*.55,fill:'url(#hor)'});
+// keep center text area calmer
+const calm=(x,y)=>part==='header'?(x>330&&x<870&&y>120&&y<280):(x>250&&x<950&&y>60&&y<250);
+for(let i=0;i<(part==='header'?260:200);i++){const x=r()*W,y=r()*H;add('circle',{cx:x,cy:y,r:r()*1.3+.3,fill:T.star[i%3],opacity:(calm(x,y)?.35:1)*(r()*.5+.12)})}
+const star=(x,y,R,o,c)=>{const p=[];for(let i=0;i<8;i++){const a=Math.PI/4*i-Math.PI/2,rr=i%2?R*.27:R;p.push((x+Math.cos(a)*rr).toFixed(1)+','+(y+Math.sin(a)*rr).toFixed(1))}
+ add('circle',{cx:x,cy:y,r:R*1.9,fill:'url(#sglow)',opacity:o*.35});add('polygon',{points:p.join(' '),fill:c,opacity:o})};
+const nearMoon=(x,y)=>part==='header'&&Math.hypot(x-T.mx,y-T.my)<T.mr*1.7;
+let n=0,N=part==='header'?44:34;while(n<N){const x=r()*W,y=r()*H;if(nearMoon(x,y))continue;const c=calm(x,y);if(c&&r()<.75)continue;n++;
+ star(x,y,c?2.5+r()*2:(r()<.16?9+r()*6:3+r()*4.5),c?.45:r()*.45+.5,T.star[Math.floor(r()*3)])}
+if(part==='header'){
+ const met=(x,y,l,ang,o)=>{const g=add('g',{transform:`translate(${x},${y}) rotate(${ang})`,opacity:o});add('rect',{x:-l,y:-1.2,width:l,height:2.4,rx:1.2,fill:'url(#met)'},g);add('circle',{r:2.6,fill:'#fff'},g);add('circle',{r:9,fill:'url(#sglow)'},g)};
+ const spots=T.mx>600?[[360,70,190,150,.95],[150,250,120,150,.7],[640,40,110,150,.6]]:[[880,80,190,30,.95],[1080,250,130,30,.7],[600,45,110,30,.6]];
+ spots.slice(0,T.met).forEach(a=>met(...a));
+ add('circle',T.moon==='full'?{cx:T.mx,cy:T.my,r:T.mr*2.6,fill:'url(#glow)'}:{cx:T.mx+T.mr*.45,cy:T.my+T.mr*.2,r:T.mr*1.9,fill:'url(#glow)',opacity:.8});
+ if(T.moon==='full'){add('circle',{cx:T.mx,cy:T.my,r:T.mr,fill:'url(#moon)'});
+  [[-.3,-.2,.18],[.25,.15,.22],[-.05,.38,.12],[.35,-.3,.1],[-.4,.25,.09]].forEach(([dx,dy,rr])=>add('circle',{cx:T.mx+dx*T.mr,cy:T.my+dy*T.mr,r:rr*T.mr,fill:'#cdb57e',opacity:.35}));}
+ else{add('circle',{cx:T.mx,cy:T.my,r:T.mr,fill:theme==='golden-midnight'?'#e8c96a':'url(#moon)',mask:'url(#cres)'})}
+}
+</script></body></html>
