@@ -43,7 +43,7 @@ class MailThemesIntegrationTest extends IntegrationTestBase {
     @Test
     void registryHasTheFourThemesAndEveryTemplateHasASeededThemeSetting() {
         assertThat(mailThemes.all()).extracting(MailTheme::key)
-                .containsExactly("crescent-night", "full-moon", "dawn-glow", "golden-midnight");
+                .containsExactly("crescent-night", "rose-dawn", "sea-breeze", "lavender-night", "desert-dusk", "emerald-night", "winter-sky", "calm-morning");
         assertThat(mailThemes.defaultKey()).isEqualTo("crescent-night");
         assertThat(settingsService.getString(SettingKeys.MAIL_THEME_DEFAULT)).isEqualTo("crescent-night");
         for (String template : MailTemplates.ALL) {
@@ -56,19 +56,19 @@ class MailThemesIntegrationTest extends IntegrationTestBase {
     void themeResolutionFollowsTemplateThenDefaultThenRegistry() {
         String key = SettingKeys.mailTheme(MailTemplates.WELCOME);
         try {
-            settingsService.put(key, "dawn-glow", null);
-            assertThat(mailThemeService.resolve(MailTemplates.WELCOME).key()).isEqualTo("dawn-glow");
+            settingsService.put(key, "rose-dawn", null);
+            assertThat(mailThemeService.resolve(MailTemplates.WELCOME).key()).isEqualTo("rose-dawn");
 
             settingsService.put(key, "no-such-theme", null);
-            settingsService.put(SettingKeys.MAIL_THEME_DEFAULT, "full-moon", null);
-            assertThat(mailThemeService.resolve(MailTemplates.WELCOME).key()).isEqualTo("full-moon");
+            settingsService.put(SettingKeys.MAIL_THEME_DEFAULT, "sea-breeze", null);
+            assertThat(mailThemeService.resolve(MailTemplates.WELCOME).key()).isEqualTo("sea-breeze");
 
             settingsService.put(SettingKeys.MAIL_THEME_DEFAULT, "also-unknown", null);
             assertThat(mailThemeService.resolve(MailTemplates.WELCOME).key()).isEqualTo("crescent-night");
 
             // a preview override wins when it is a known theme
-            assertThat(mailThemeService.resolve(MailTemplates.WELCOME, "golden-midnight").key())
-                    .isEqualTo("golden-midnight");
+            assertThat(mailThemeService.resolve(MailTemplates.WELCOME, "emerald-night").key())
+                    .isEqualTo("emerald-night");
             assertThat(mailThemeService.resolve(MailTemplates.WELCOME, "nope").key()).isEqualTo("crescent-night");
         } finally {
             settingsService.put(key, "", null);
@@ -80,11 +80,11 @@ class MailThemesIntegrationTest extends IntegrationTestBase {
     void renderedMailUsesTheThemeColoursImagesAndFooterLinks() {
         String key = SettingKeys.mailTheme(MailTemplates.WELCOME);
         try {
-            settingsService.put(key, "dawn-glow", null);
+            settingsService.put(key, "rose-dawn", null);
             RenderedMail ar = mailService.render(MailTemplates.WELCOME, Locale.AR, Map.of("name", "Sara", "link", "/me"));
             assertThat(ar.html())
-                    .contains(FRONTEND + "/email/themes/dawn-glow/header.jpg")
-                    .contains(FRONTEND + "/email/themes/dawn-glow/footer.jpg")
+                    .contains(FRONTEND + "/email/themes/rose-dawn/header.jpg")
+                    .contains(FRONTEND + "/email/themes/rose-dawn/footer.jpg")
                     .contains("#1B2347")             // pageBg
                     .contains("#FBF7EF")             // cardBg
                     .contains("#C9962B")             // accent (brand + button)
@@ -161,7 +161,7 @@ class MailThemesIntegrationTest extends IntegrationTestBase {
         String auth = bearer(interpreter);
         try {
             mvc.perform(put(ApiPaths.Admin.MAIL_TEMPLATES + "/no-such-template/theme").header(HttpHeaders.AUTHORIZATION, auth)
-                            .contentType(MediaType.APPLICATION_JSON).content("{\"theme\":\"full-moon\"}"))
+                            .contentType(MediaType.APPLICATION_JSON).content("{\"theme\":\"sea-breeze\"}"))
                     .andExpect(status().isBadRequest())
                     .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON))
                     .andExpect(jsonPath("$.code").value("UNKNOWN_TEMPLATE"));
@@ -172,12 +172,12 @@ class MailThemesIntegrationTest extends IntegrationTestBase {
                     .andExpect(jsonPath("$.code").value("UNKNOWN_THEME"));
 
             mvc.perform(put(ApiPaths.Admin.MAIL_TEMPLATES + "/welcome/theme").header(HttpHeaders.AUTHORIZATION, auth)
-                            .contentType(MediaType.APPLICATION_JSON).content("{\"theme\":\"full-moon\"}"))
+                            .contentType(MediaType.APPLICATION_JSON).content("{\"theme\":\"sea-breeze\"}"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.template").value("welcome"))
-                    .andExpect(jsonPath("$.theme").value("full-moon"))
+                    .andExpect(jsonPath("$.theme").value("sea-breeze"))
                     .andExpect(jsonPath("$.inherited").value(false));
-            assertThat(settingsService.getString(SettingKeys.mailTheme(MailTemplates.WELCOME))).isEqualTo("full-moon");
+            assertThat(settingsService.getString(SettingKeys.mailTheme(MailTemplates.WELCOME))).isEqualTo("sea-breeze");
 
             // blank = follow the default again
             mvc.perform(put(ApiPaths.Admin.MAIL_TEMPLATES + "/welcome/theme").header(HttpHeaders.AUTHORIZATION, auth)
@@ -192,10 +192,10 @@ class MailThemesIntegrationTest extends IntegrationTestBase {
                     .andExpect(jsonPath("$.code").value("UNKNOWN_THEME"));
 
             mvc.perform(put(ApiPaths.Admin.MAIL_THEME_DEFAULT).header(HttpHeaders.AUTHORIZATION, auth)
-                            .contentType(MediaType.APPLICATION_JSON).content("{\"theme\":\"golden-midnight\"}"))
+                            .contentType(MediaType.APPLICATION_JSON).content("{\"theme\":\"emerald-night\"}"))
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.theme").value("golden-midnight"));
-            assertThat(mailThemeService.resolve(MailTemplates.WELCOME).key()).isEqualTo("golden-midnight");
+                    .andExpect(jsonPath("$.theme").value("emerald-night"));
+            assertThat(mailThemeService.resolve(MailTemplates.WELCOME).key()).isEqualTo("emerald-night");
         } finally {
             settingsService.put(SettingKeys.mailTheme(MailTemplates.WELCOME), "", null);
             settingsService.put(SettingKeys.MAIL_THEME_DEFAULT, "crescent-night", null);
@@ -209,14 +209,14 @@ class MailThemesIntegrationTest extends IntegrationTestBase {
         MvcResult en = mvc.perform(get(ApiPaths.Admin.MAIL_PREVIEW).header(HttpHeaders.AUTHORIZATION, bearer(interpreter))
                         .accept(MediaType.TEXT_HTML)
                         .param("template", MailTemplates.DREAM_RECEIVED)
-                        .param("theme", "full-moon")
+                        .param("theme", "sea-breeze")
                         .param("locale", "en"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.TEXT_HTML))
                 .andReturn();
         String enHtml = en.getResponse().getContentAsString(StandardCharsets.UTF_8);
         assertThat(enHtml)
-                .contains(FRONTEND + "/email/themes/full-moon/header.jpg")
+                .contains(FRONTEND + "/email/themes/sea-breeze/header.jpg")
                 .contains("#070D1F")
                 .contains("Watch our latest videos on our YouTube channel")
                 .contains("Ahmed")
