@@ -47,7 +47,7 @@ import org.springframework.transaction.annotation.Transactional;
 /**
  * Login flows (Google, magic link), refresh, logout and onboarding. Every successful login/refresh:
  * upserts the user, links the identity, stores the country (first time only), records a user_sessions row,
- * updates last_login_at and grants INTERPRETER when the e-mail is in setting {@code interpreter.emails}.
+ * updates last_login_at and sets the role from the interpreter rules (see {@link #expectedRole(String)}).
  */
 @Slf4j
 @Service
@@ -235,9 +235,12 @@ public class AuthService {
             user.setCountryCode(resolved.countryCode());
             user.setCountrySource(resolved.source());
         }
-        if (user.getRole() != Role.INTERPRETER && isInterpreterEmail(user.getEmail())) {
-            log.info("Granting INTERPRETER role to {}", LogMask.email(user.getEmail()));
-            user.setRole(Role.INTERPRETER);
+        // The role follows the rules on every sign-in, both ways: an e-mail removed from the interpreter rules
+        // loses the INTERPRETER role instead of keeping it forever.
+        Role expected = expectedRole(user.getEmail());
+        if (user.getRole() != expected) {
+            log.warn("Role of {} changed {} -> {}", LogMask.email(user.getEmail()), user.getRole(), expected);
+            user.setRole(expected);
         }
         user.setLastLoginAt(now);
         userRepository.save(user);
@@ -290,7 +293,13 @@ public class AuthService {
         return email.trim().toLowerCase().endsWith("@" + domain);
     }
 
-    private boolean isInterpreterEmail(String email) {
+    /** INTERPRETER when the e-mail matches the interpreter rules (domain, setting list, bootstrap env), else USER. */
+    public Role expectedRole(String email) {
+        return isInterpreterEmail(email) ? Role.INTERPRETER : Role.USER;
+    }
+
+    /** Interpreter rules: e-mail on interpreter.email_domain, in setting interpreter.emails, or in INTERPRETER_EMAILS. */
+    public boolean isInterpreterEmail(String email) {
         if (email == null) {
             return false;
         }

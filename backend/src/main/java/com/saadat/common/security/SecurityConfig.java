@@ -50,9 +50,10 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http,
                                                    JwtService jwtService,
+                                                   AccountRoleLookup accountRoleLookup,
                                                    AppProperties properties,
                                                    ObjectMapper objectMapper) throws Exception {
-        JwtAuthFilter jwtAuthFilter = new JwtAuthFilter(jwtService);
+        JwtAuthFilter jwtAuthFilter = new JwtAuthFilter(jwtService, accountRoleLookup);
         RateLimitFilter rateLimitFilter = new RateLimitFilter(properties, objectMapper);
 
         http

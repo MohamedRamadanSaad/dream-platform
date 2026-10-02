@@ -1,5 +1,9 @@
+import { useEffect } from 'react'
 import { createBrowserRouter, Navigate, Outlet, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { useQuery } from '@tanstack/react-query'
+import { meApi } from '@/api/endpoints'
+import { Skeleton } from '@/components/ui'
 import { useAuthStore, isInterpreter } from './auth-store'
 import { AppShell } from '@/components/layout'
 import LandingPage from '@/features/public/LandingPage'
@@ -36,13 +40,26 @@ function QueueAlias() {
   return <Navigate to={`/admin/dreams${search}`} replace />
 }
 
+/**
+ * Route guard. The user saved in the browser is only a cache: the server's answer (GET /me, role read from the
+ * database) decides. Interpreter pages never render before the server confirms the INTERPRETER role, so typing an
+ * /admin URL or editing local storage cannot open them (the API refuses non-interpreters with 403 anyway).
+ */
 function RequireAuth({ role }: { role?: 'USER' | 'INTERPRETER' }) {
   const user = useAuthStore((s) => s.user)
+  const setUser = useAuthStore((s) => s.setUser)
   const loc = useLocation()
+  const me = useQuery({ queryKey: ['me', 'guard'], queryFn: meApi.get, enabled: !!user, staleTime: 30_000, retry: false })
+  useEffect(() => { if (me.data) setUser(me.data) }, [me.data, setUser])
   if (!user) return <Navigate to={`/login?next=${encodeURIComponent(loc.pathname + loc.search)}`} replace />
-  if (!user.onboarded && loc.pathname !== '/onboarding') return <Navigate to="/onboarding" replace />
-  if (role === 'INTERPRETER' && !isInterpreter(user)) return <Navigate to="/me" replace />
-  if (role === 'USER' && isInterpreter(user)) return <Navigate to="/admin" replace />
+  if (role === 'INTERPRETER') {
+    if (me.isError) return <Navigate to="/me" replace />
+    if (!me.data) return <div className="mx-auto max-w-6xl space-y-4 px-4 py-10"><Skeleton className="h-10 w-1/3" /><Skeleton className="h-64" /></div>
+    if (!isInterpreter(me.data)) return <Navigate to="/me" replace />
+  }
+  const current = me.data ?? user
+  if (!current.onboarded && loc.pathname !== '/onboarding') return <Navigate to="/onboarding" replace />
+  if (role === 'USER' && isInterpreter(current)) return <Navigate to="/admin" replace />
   return <Outlet />
 }
 

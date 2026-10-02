@@ -39,16 +39,20 @@ jobs:
           [ "$result" = "updated" ] && echo "changed=true" >> "$GITHUB_OUTPUT" || true
       # Google sign-in: the OAuth web client ID is public (it ships in the frontend bundle). Backend verifies ID tokens
       # against it (GOOGLE_CLIENT_ID); the frontend gets it at build time (VITE_GOOGLE_CLIENT_ID).
-      - name: google sign-in settings
+      # Access: INTERPRETER_EMAILS (extra interpreter e-mails) comes only from the repository variable of the same
+      # name — empty by default, so only addresses on the site domain get the dashboard.
+      - name: google sign-in and access settings
         env:
           GOOGLE_CLIENT_ID: ${{ vars.GOOGLE_CLIENT_ID || '957021915232-jaan66ks1mq88nj60add9gbjlc7jsb0g.apps.googleusercontent.com' }}
+          INTERPRETER_EMAILS: ${{ vars.INTERPRETER_EMAILS || '' }}
         run: |
-          ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "GID='$GOOGLE_CLIENT_ID' bash -s" <<'EOS'
+          ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "GID='$GOOGLE_CLIENT_ID' IEM='$INTERPRETER_EMAILS' bash -s" <<'EOS'
             cd /opt/saadat/deploy
             setkv() { if grep -qx "$2=$3" "$1"; then return 1; fi; t=$(mktemp); grep -v "^$2=" "$1" > "$t"; echo "$2=$3" >> "$t"; cat "$t" > "$1"; rm -f "$t"; }
             if setkv backend.env GOOGLE_CLIENT_ID "$GID"; then touch .recreate-backend; echo "backend: google client id updated"; fi
             if setkv .env VITE_GOOGLE_CLIENT_ID "$GID"; then echo "frontend: google client id updated (rebuild)"; fi
-            echo "google sign-in settings ok"
+            if setkv backend.env INTERPRETER_EMAILS "$IEM"; then touch .recreate-backend; echo "backend: interpreter e-mails updated"; fi
+            echo "google sign-in and access settings ok"
           EOS
       - name: build & restart
         run: |
