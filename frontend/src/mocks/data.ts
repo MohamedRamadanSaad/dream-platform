@@ -151,6 +151,12 @@ export const db = {
     { id: 'd7', userId: 'u2', gender: 'MALE', status: 'IN_REVIEW', createdAt: daysAgo(4), submittedAt: daysAgo(3, 4), interpretedAt: null, expectedBy: daysAgo(0, 4), text: 'رأيت أنني أركب فرساً أبيض في صحراء واسعة ثم ظهرت واحة.', messages: [], interpretation: null, testimonial: null, credit: { ledgerEntryId: 'x', orderId: 'x' } },
     { id: 'd8', userId: 'u3', gender: 'FEMALE', status: 'IN_REVIEW', createdAt: daysAgo(1), submittedAt: daysAgo(0, 9), interpretedAt: null, expectedBy: daysAhead(2), text: 'I saw myself planting an olive tree in my grandmother\'s garden and it grew instantly.', messages: [], interpretation: null, testimonial: null, credit: { ledgerEntryId: 'x', orderId: 'o5' } },
     { id: 'd9', userId: 'u4', gender: 'FEMALE', status: 'IN_REVIEW', createdAt: daysAgo(2), submittedAt: daysAgo(2), interpretedAt: null, expectedBy: daysAhead(1), text: 'رأيت أمي المتوفاة تعطيني رغيف خبز ساخن وتقول: كُلي ولا تخافي.', messages: [], interpretation: null, testimonial: null, credit: { ledgerEntryId: 'x', orderId: 'o4' } },
+    {
+      id: 'd10', userId: 'u4', gender: 'FEMALE', status: 'AWAITING_USER_REPLY', createdAt: daysAgo(6), submittedAt: daysAgo(5), interpretedAt: null, expectedBy: daysAgo(2),
+      text: 'رأيت أنني أفتح نافذة بيتنا فيدخل منها نور أبيض كثير، ثم أسمع صوت أبي يناديني باسمي.',
+      messages: [{ id: 'm2', senderRole: 'INTERPRETER', body: 'هل والدك على قيد الحياة؟ وهل كان النور في الليل أم في النهار؟', createdAt: daysAgo(4), readAt: null }],
+      interpretation: null, testimonial: null, credit: { ledgerEntryId: 'x', orderId: 'o4' },
+    },
   ] as (Omit<T.DreamDetail, 'excerpt' | 'unreadMessages'> & { userId: string })[],
 
   notifications: [
@@ -172,6 +178,26 @@ export const db = {
   ],
 
   userNotes: {} as Record<string, { notes: string; tags: string[] }>,
+
+  /** POST /public/track hits (the mock traffic report adds them to today's numbers). */
+  pageViews: [] as { path: string; referrer: string | null; sessionId: string; device: T.DeviceType; countryCode: string; at: string }[],
+
+  /** app_settings as the admin settings API returns it (string values; BOOL = 'true' / 'false'). */
+  settings: {} as T.SettingsMap,
+}
+
+/** Toggleable e-mail events — setting key `mail.event.<template>` (default true). */
+export const MAIL_EVENTS = [
+  'welcome', 'payment-failed', 'dream-cancelled', 'credits-adjusted', 'testimonial-approved', 'account-deleted', 'new-user',
+  'testimonial-received', 'dream-submitted', 'dream-received', 'interpreter-question', 'user-replied', 'interpretation-ready',
+  'payment-receipt', 'payment-suspicious', 'reply-reminder', 'testimonial-request', 'interpreter-digest', 'youtube-new-video',
+] as const
+db.settings = {
+  ...Object.fromEntries(MAIL_EVENTS.map((e) => [`mail.event.${e}`, 'true'])),
+  'brand.support_email': 'support@saadatu-aldarein.com',
+  'dreams.reply_reminder_hours': '48',
+  'interpreter.digest_hour': '9',
+  'schedule.time_zone': 'Africa/Cairo',
 }
 
 export const helpers = { now, daysAgo, daysAhead }

@@ -2,9 +2,10 @@ import { useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { dreamsApi, meApi } from '@/api/endpoints'
+import { dreamsApi, meApi, reportsApi } from '@/api/endpoints'
 import { useAuthStore } from '@/app/auth-store'
 import { Button, Empty, ErrorBox, Skeleton, StatusBadge, Tabs } from '@/components/ui'
+import { DownloadButton } from '@/components/ui/DownloadButton'
 import { Icon } from '@/components/icons/Icon'
 import { PageEnter, StaggerGroup } from '@/components/motion'
 import { arrowNext, cn, fmtDate, timeAgo } from '@/lib/utils'
@@ -92,6 +93,10 @@ export function UserDreamsPage() {
       )}
 
       <Tabs value={tab} onChange={(v) => { setTab(v); setSelected([]) }} items={tabs} />
+
+      {tab === 'INTERPRETED' && items.length > 0 && (
+        <div className="mt-4 flex justify-end"><DownloadButton label={t('reports.allMyDreams')} run={reportsApi.myDreamsPdf} /></div>
+      )}
 
       <div className="mt-6">
         {list.isLoading ? (

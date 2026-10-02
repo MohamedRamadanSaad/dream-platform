@@ -22,6 +22,19 @@ import { WaitTimePage } from '@/features/admin/WaitTimePage'
 import { UsersPage, User360Page } from '@/features/admin/UsersPage'
 import { TestimonialsAdminPage } from '@/features/admin/TestimonialsAdminPage'
 import { OrdersAdminPage } from '@/features/admin/OrdersAdminPage'
+import { EmailSettingsPage } from '@/features/admin/EmailSettingsPage'
+import { usePageTracking } from './usePageTracking'
+
+/** Root of every route: page-view tracking lives here so each pathname change is counted once. */
+function RootShell() {
+  usePageTracking()
+  return <Outlet />
+}
+
+function QueueAlias() {
+  const { search } = useLocation()
+  return <Navigate to={`/admin/dreams${search}`} replace />
+}
 
 function RequireAuth({ role }: { role?: 'USER' | 'INTERPRETER' }) {
   const user = useAuthStore((s) => s.user)
@@ -60,12 +73,13 @@ function AdminLayout() {
       { to: '/admin/wait-time', label: t('admin.nav.waitTime'), icon: 'clock' },
       { to: '/admin/testimonials', label: t('admin.nav.testimonials'), icon: 'quote' },
       { to: '/admin/orders', label: t('admin.nav.orders'), icon: 'wallet' },
+      { to: '/admin/emails', label: t('admin.nav.emails'), icon: 'mail' },
       { to: '/admin/notifications', label: t('me.nav.notifications'), icon: 'bell' },
     ]}><Outlet /></AppShell>
   )
 }
 
-export const router = createBrowserRouter([
+export const router = createBrowserRouter([{ element: <RootShell />, children: [
   { path: '/', element: <LandingPage /> },
   { path: '/login', element: <LoginPage /> },
   { path: '/auth/callback', element: <MagicCallbackPage /> },
@@ -107,9 +121,12 @@ export const router = createBrowserRouter([
         { path: 'users/:id', element: <User360Page /> },
         { path: 'testimonials', element: <TestimonialsAdminPage /> },
         { path: 'orders', element: <OrdersAdminPage /> },
+        { path: 'emails', element: <EmailSettingsPage /> },
         { path: 'notifications', element: <NotificationsPage /> },
+        // server-side insight links point at /admin/queue — the queue lives at /admin/dreams
+        { path: 'queue', element: <QueueAlias /> },
       ],
     }],
   },
   { path: '*', element: <Navigate to="/" replace /> },
-])
+] }])

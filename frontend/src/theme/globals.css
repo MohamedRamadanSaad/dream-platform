@@ -25,6 +25,19 @@
   --fg: 30 58 95;
   --fg-muted: 90 107 136;
   --fg-dim: 138 148 171;
+
+  /* charts (validated for contrast + colour-blind separation on --surface) */
+  --viz-line: #a8872a;          /* current period: gold, deepened for contrast on pearl */
+  --viz-prev: #5a6b88;          /* previous period: de-emphasised slate, drawn dashed */
+  --viz-bar: rgba(90, 107, 136, .3);
+  --viz-1: #a8872a;             /* categorical: gold · blue · aqua */
+  --viz-2: #2a78d6;
+  --viz-3: #1baf7a;
+  --viz-grid: #e9e1d0;
+  --ok-ink: #2e7d5b;
+  --bad-ink: #b5442d;
+  --info-ink: #3b6ea8;
+  color-scheme: light;
 }
 .dark {
   --bg: 7 12 31;
@@ -39,6 +52,18 @@
   --warn: 230 167 90;
   --danger: 239 138 114;
   --info: 138 180 232;
+
+  --viz-line: #d4af37;
+  --viz-prev: #8b95b0;
+  --viz-bar: rgba(139, 149, 176, .32);
+  --viz-1: #ad8d2b;
+  --viz-2: #3987e5;
+  --viz-3: #199e70;
+  --viz-grid: #1d2a52;
+  --ok-ink: #6fcf9f;
+  --bad-ink: #ee8a74;
+  --info-ink: #8fb3e0;
+  color-scheme: dark; /* native date pickers, selects and scrollbars follow the theme */
 }
 
 html { scroll-behavior: smooth; }
@@ -74,6 +99,9 @@ body {
 @keyframes twinkle { 0%,100%{opacity:.25} 50%{opacity:1} }
 @keyframes pulse-ring { 0%,100%{box-shadow:0 0 0 0 rgba(212,175,55,.55)} 50%{box-shadow:0 0 0 7px rgba(212,175,55,0)} }
 .pulse-ring { animation: pulse-ring 3.2s ease-in-out infinite; }
+/* a soft light sweeping across a badge (records board: "best month ever") */
+@keyframes shimmer { 0% { transform: translateX(-120%) } 60%, 100% { transform: translateX(120%) } }
+.shimmer::after { content: ''; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(100deg, transparent 30%, rgba(234, 219, 170, .35) 50%, transparent 70%); animation: shimmer 3.2s ease-in-out infinite; }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }

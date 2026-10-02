@@ -2,9 +2,10 @@ import { useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { dreamsApi } from '@/api/endpoints'
+import { dreamsApi, reportsApi } from '@/api/endpoints'
 import { useAuthStore } from '@/app/auth-store'
 import { Button, ErrorBox, Label, Skeleton, Stars, StatusBadge, Textarea } from '@/components/ui'
+import { DownloadButton } from '@/components/ui/DownloadButton'
 import { Icon } from '@/components/icons/Icon'
 import { PageEnter } from '@/components/motion'
 import { arrowBack, cn, fmtDate } from '@/lib/utils'
@@ -63,7 +64,13 @@ export function DreamDetailPage() {
   return (
     <PageEnter className="mx-auto max-w-3xl space-y-5">
       <Link to="/me" className="text-sm text-fg-muted hover:text-fg">{arrowBack(locale)} {t('common.back')}</Link>
-      <div className="flex items-center justify-between"><h1 className="font-display text-3xl">{t('me.detail.title')}</h1><StatusBadge status={d.status} /></div>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h1 className="font-display text-3xl">{t('me.detail.title')}</h1>
+        <div className="flex flex-wrap items-center gap-2">
+          <StatusBadge status={d.status} />
+          {d.status !== 'DRAFT' && <DownloadButton label={t('reports.pdf')} run={() => reportsApi.dreamPdf(d.id)} />}
+        </div>
+      </div>
       {d.status !== 'DRAFT' && <div className="card p-5"><Stepper status={d.status} /></div>}
 
       <div className="card p-6">

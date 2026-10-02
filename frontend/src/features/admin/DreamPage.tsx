@@ -2,9 +2,10 @@ import { useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { adminApi } from '@/api/endpoints'
+import { adminApi, reportsApi } from '@/api/endpoints'
 import { useAuthStore } from '@/app/auth-store'
 import { Button, ErrorBox, Label, Modal, Skeleton, Stars, StatusBadge, Textarea } from '@/components/ui'
+import { DownloadButton } from '@/components/ui/DownloadButton'
 import { Icon } from '@/components/icons/Icon'
 import { Avatar } from '@/components/ui/Avatar'
 import { PageEnter } from '@/components/motion'
@@ -37,7 +38,10 @@ export function AdminDreamPage() {
         <Link to="/admin/dreams" className="text-sm text-fg-muted">{arrowBack(locale)} {t('common.back')}</Link>
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h1 className="flex items-center gap-3 font-display text-3xl"><Avatar name={d.user.name || d.user.email} size={40} />{d.user.name} <span className="text-base text-fg-dim">· {t(d.gender === 'FEMALE' ? 'auth.female' : 'auth.male')}{d.user.age != null && <> · {t('me.profile.years', { n: d.user.age })}</>} · {d.user.countryCode}</span></h1>
-          <div className="flex items-center gap-2"><StatusBadge status={d.status} />{open && d.expectedBy && <SlaChip deadline={d.expectedBy} overdue={new Date(d.expectedBy) < new Date()} />}</div>
+          <div className="flex flex-wrap items-center gap-2">
+            <StatusBadge status={d.status} />{open && d.expectedBy && <SlaChip deadline={d.expectedBy} overdue={new Date(d.expectedBy) < new Date()} />}
+            <DownloadButton label={t('reports.pdf')} run={() => reportsApi.adminDreamPdf(d.id)} />
+          </div>
         </div>
         <div className="card p-6"><Label>{t('me.detail.dream')}</Label><p className="whitespace-pre-wrap text-lg leading-loose">{d.text}</p><div className="mt-3 text-xs text-fg-dim">{d.submittedAt && fmtDate(d.submittedAt, locale, true)}</div></div>
 

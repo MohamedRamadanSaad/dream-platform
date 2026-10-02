@@ -1,5 +1,5 @@
 // Typed endpoint functions — one per route in the contract. Screens import from here only.
-import { http } from './client'
+import { download, http, postQuietly } from './client'
 import type * as T from './types'
 
 export const authApi = {
@@ -16,6 +16,8 @@ export const publicApi = {
   waitTime: () => http.get<T.WaitTime>('/public/wait-time'),
   testimonials: () => http.get<{ items: T.Testimonial[] }>('/public/testimonials'),
   stats: () => http.get<T.PublicStats>('/public/stats'),
+  /** Page-view hit — fire-and-forget (see usePageTracking). */
+  track: (body: T.TrackRequest) => postQuietly('/public/track', body),
 }
 
 export const meApi = {
@@ -109,4 +111,19 @@ export const adminApi = {
   testimonials: (approved?: boolean) => http.get<T.Page<T.AdminTestimonialRow>>('/admin/testimonials', { approved }),
   setTestimonial: (id: string, approved: boolean) => http.patch<void>(`/admin/testimonials/${id}`, { approved }),
   orders: (page = 0, size = 20) => http.get<T.Page<T.OrderDto & { userName: string }>>('/admin/orders', { page, size }),
+
+  traffic: (q: T.TrafficQuery = {}) => http.get<T.TrafficReport>('/admin/analytics/traffic', q),
+  insights: () => http.get<T.InsightsResponse>('/admin/analytics/insights'),
+  settings: () => http.get<T.SettingsMap>('/admin/settings'),
+  /** Partial update — send only the keys that changed. */
+  saveSettings: (changes: T.SettingsMap) => http.put<T.SettingsMap>('/admin/settings', changes),
+}
+
+/** Binary reports (PDF / Excel): fetched with the Bearer token and saved under the server's file name. */
+export const reportsApi = {
+  adminDreamPdf: (id: string) => download(`/admin/dreams/${id}/pdf`),
+  adminUserPdf: (id: string) => download(`/admin/users/${id}/pdf`),
+  adminDreamsExcel: (q: T.DreamsExportQuery) => download('/admin/dreams/export', q),
+  dreamPdf: (id: string) => download(`/dreams/${id}/pdf`),
+  myDreamsPdf: () => download('/me/dreams/pdf'),
 }

@@ -64,10 +64,13 @@ export function parseStat(raw: string): { full: number; compact: string; sign: s
  * Counts up through the FULL number with digit grouping (0 → 1,000,000), then collapses to the compact
  * label ("1M+") once it lands — so a million reads like a million, not like a one.
  */
-export function CountUp({ to, suffix = '', compact, className }: { to: number; suffix?: string; compact?: string; className?: string }) {
+const enDigits = (v: number) => Math.round(v).toLocaleString('en-US')
+
+export function CountUp({ to, suffix = '', compact, className, format = enDigits }: { to: number; suffix?: string; compact?: string; className?: string; /** digit grouping per locale; defaults to en-US */ format?: (n: number) => string }) {
   const ref = useRef<HTMLSpanElement>(null)
-  const fmt = (v: number) => Math.round(v).toLocaleString('en-US')
-  const final = `${compact ?? fmt(to)}${suffix}`
+  const fmtRef = useRef(format)
+  fmtRef.current = format
+  const final = `${compact ?? format(to)}${suffix}`
   useEffect(() => {
     const el = ref.current
     if (!el) return
@@ -75,12 +78,17 @@ export function CountUp({ to, suffix = '', compact, className }: { to: number; s
     const o = { v: 0 }
     const dur = to >= 1e6 ? 3.2 : to >= 1e3 ? 2.4 : 1.8
     const ctx = gsap.context(() => {
-      gsap.timeline({ scrollTrigger: { trigger: el, start: 'top 90%', once: true } })
-        .to(o, { v: to, duration: dur, ease: 'power3.out', onUpdate: () => { el.textContent = `${fmt(o.v)}${suffix}` } })
-        .to(el, { opacity: 0.2, scale: 0.94, duration: 0.18, ease: 'power1.in', onComplete: () => { el.textContent = final } })
-        .to(el, { opacity: 1, scale: 1, duration: 0.35, ease: 'back.out(2)' })
+      const tl = gsap.timeline({ scrollTrigger: { trigger: el, start: 'top 90%', once: true } })
+        .to(o, { v: to, duration: dur, ease: 'power3.out', onUpdate: () => { el.textContent = `${fmtRef.current(Math.round(o.v))}${suffix}` } })
+      // the compact label (1M+) lands with a small pop; a full number simply settles
+      if (compact) {
+        tl.to(el, { opacity: 0.2, scale: 0.94, duration: 0.18, ease: 'power1.in', onComplete: () => { el.textContent = final } })
+          .to(el, { opacity: 1, scale: 1, duration: 0.35, ease: 'back.out(2)' })
+      } else {
+        tl.call(() => { el.textContent = final })
+      }
     }, el)
     return () => ctx.revert()
-  }, [to, suffix, final])
-  return <span ref={ref} className={cn('inline-block tabular-nums', className)}>0{suffix}</span>
+  }, [to, suffix, final, compact])
+  return <span ref={ref} className={cn('inline-block tabular-nums', className)}>{format(0)}{suffix}</span>
 }

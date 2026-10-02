@@ -395,3 +395,92 @@ export interface AdminTestimonialRow {
 
 export interface YoutubeVideoDto { id: string; title: string; url: string; publishedAt: string; thumbnailUrl: string | null }
 export interface YoutubeUnseen { count: number; latest: YoutubeVideoDto[] }
+
+// ---------- Analytics, insights, reports & e-mail events (docs/ANALYTICS_REPORTS_CONTRACT.md) ----------
+export type DeviceType = 'MOBILE' | 'TABLET' | 'DESKTOP'
+
+/** POST /public/track — one call per route change; path without query (max 255). */
+export interface TrackRequest {
+  path: string
+  referrer?: string | null
+  sessionId: string
+}
+
+/** GET /admin/analytics/traffic — every param optional; default range = this calendar month up to today. */
+export type TrafficQuery = {
+  from?: string
+  to?: string
+  country?: string
+  device?: DeviceType
+  path?: string
+}
+export interface TrafficKpis {
+  views: number
+  visitors: number
+  signups: number
+  dreams: number
+  paidOrders: number
+  /** paidOrders / visitors * 100, one decimal. */
+  conversionRate: number
+}
+export interface TrafficReport {
+  from: string
+  to: string
+  compareFrom: string
+  compareTo: string
+  current: TrafficKpis
+  previous: TrafficKpis
+  daily: { date: string; views: number; visitors: number; previousViews: number }[]
+  hourly: { hour: number; views: number; dreams: number }[]
+  topPages: { path: string; views: number; visitors: number }[]
+  topCountries: { countryCode: string; countryName: string; views: number; visitors: number }[]
+  devices: { device: DeviceType; views: number }[]
+  /** host '' = direct. */
+  referrers: { host: string; views: number }[]
+  records: {
+    bestDay: { date: string; views: number } | null
+    /** month = YYYY-MM */
+    bestMonth: { month: string; views: number } | null
+    totalViews: number
+    totalVisitors: number
+    /** Rank of the current month by views among all months (1 = best ever). */
+    thisMonthRank: number | null
+  }
+}
+
+export type InsightKind = 'SUCCESS' | 'INFO' | 'TIP' | 'WARNING'
+export interface Insight {
+  id: string
+  kind: InsightKind
+  title: string
+  body: string
+  /** Frontend route, e.g. '/admin/queue'. */
+  link: string | null
+}
+export interface MyActivity {
+  interpretedThisMonth: number
+  interpretedLastMonth: number
+  avgResponseHours: number
+  slaHours: number
+  onTimeRate: number
+  myBusiestHours: number[]
+  usersPeakHours: number[]
+  streakDays: number
+}
+export interface InsightsResponse {
+  items: Insight[]
+  myActivity: MyActivity
+}
+
+/** GET/PUT /admin/settings — raw key/value map (BOOL values are 'true' / 'false'). PUT sends only changed keys. */
+export type SettingsMap = Record<string, string>
+
+/** GET /admin/dreams/export — `from/to` filter the submitted date; `q` searches name, e-mail and dream text. */
+export type DreamsExportQuery = {
+  status?: DreamStatus
+  from?: string
+  to?: string
+  country?: string
+  gender?: Gender
+  q?: string
+}

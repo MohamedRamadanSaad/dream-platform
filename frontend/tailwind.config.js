@@ -18,6 +18,11 @@ export default {
         warn: 'rgb(var(--warn) / <alpha-value>)',
         danger: 'rgb(var(--danger) / <alpha-value>)',
         info: 'rgb(var(--info) / <alpha-value>)',
+        // readable status text on either theme + chart colours (full colour values, no opacity modifiers)
+        'ok-ink': 'var(--ok-ink)',
+        'bad-ink': 'var(--bad-ink)',
+        'info-ink': 'var(--info-ink)',
+        viz: { line: 'var(--viz-line)', prev: 'var(--viz-prev)', bar: 'var(--viz-bar)', 1: 'var(--viz-1)', 2: 'var(--viz-2)', 3: 'var(--viz-3)', grid: 'var(--viz-grid)' },
       },
       fontFamily: {
         display: ['"IBM Plex Sans Arabic"', '"IBM Plex Sans"', 'system-ui', 'sans-serif'],
