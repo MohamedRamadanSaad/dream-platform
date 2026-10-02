@@ -10,13 +10,20 @@ import com.saadat.auth.service.RefreshTokenService.IssuedRefreshToken;
 import com.saadat.auth.service.RefreshTokenService.Rotation;
 import com.saadat.common.domain.AuthProvider;
 import com.saadat.common.domain.CountrySource;
+import com.saadat.common.domain.Gender;
 import com.saadat.common.domain.Locale;
 import com.saadat.common.domain.Role;
 import com.saadat.common.error.ConflictException;
 import com.saadat.common.error.UnauthorizedException;
 import com.saadat.common.security.JwtService;
+import com.saadat.common.util.Ages;
 import com.saadat.common.web.CountryResolver.ResolvedCountry;
 import com.saadat.common.web.LogMask;
+import com.saadat.mail.EventMailer;
+import com.saadat.mail.FrontendPaths;
+import com.saadat.mail.MailService;
+import com.saadat.mail.MailTemplates;
+import com.saadat.mail.MessageText;
 import com.saadat.settings.SettingKeys;
 import com.saadat.settings.SettingsService;
 import com.saadat.users.api.UserDto;
@@ -29,6 +36,8 @@ import com.saadat.users.repo.UserSessionRepository;
 import com.saadat.users.service.UserDtoMapper;
 import java.time.Clock;
 import java.time.Instant;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
@@ -63,12 +72,14 @@ public class AuthService {
     private final UserDtoMapper userDtoMapper;
     private final Clock clock;
     private final AppProperties appProperties;
+    private final EventMailer eventMailer;
+    private final MessageText messageText;
 
     public AuthService(UserRepository userRepository, AuthIdentityRepository identityRepository,
                        UserSessionRepository sessionRepository, GoogleTokenVerifier googleTokenVerifier,
                        MagicLinkService magicLinkService, RefreshTokenService refreshTokenService,
                        JwtService jwtService, SettingsService settings, UserDtoMapper userDtoMapper, Clock clock,
-                       AppProperties appProperties) {
+                       AppProperties appProperties, EventMailer eventMailer, MessageText messageText) {
         this.userRepository = userRepository;
         this.identityRepository = identityRepository;
         this.sessionRepository = sessionRepository;
@@ -80,6 +91,8 @@ public class AuthService {
         this.userDtoMapper = userDtoMapper;
         this.clock = clock;
         this.appProperties = appProperties;
+        this.eventMailer = eventMailer;
+        this.messageText = messageText;
     }
 
     // ------------------------------------------------------------------ flows
@@ -152,12 +165,39 @@ public class AuthService {
         User user = userRepository.findById(userId)
                 .filter(u -> !u.isDeleted())
                 .orElseThrow(() -> new UnauthorizedException("Account unavailable", CODE_ACCOUNT_UNAVAILABLE));
+        boolean firstTime = !user.isOnboarded();
         user.setName(request.name().trim());
         user.setGender(request.gender());
         user.setBirthDate(request.birthDate());
         user.setOnboarded(true);
         userRepository.save(user);
+        if (firstTime) {
+            mailOnboarded(user);
+        }
         return userDtoMapper.toDto(user);
+    }
+
+    /** {@code welcome} to the user and {@code new-user} (name, country, age) to the interpreter(s), after commit. */
+    private void mailOnboarded(User user) {
+        UUID id = user.getId();
+        Map<String, Object> welcome = new LinkedHashMap<>();
+        welcome.put(MailService.MODEL_LINK, FrontendPaths.NEW_DREAM);
+        eventMailer.toUser(user, MailTemplates.WELCOME, welcome, MailTemplates.WELCOME + ":" + id);
+
+        String userName = user.getName();
+        String countryCode = user.getCountryCode();
+        Integer age = Ages.of(user.getBirthDate(), clock);
+        Gender gender = user.getGender();
+        eventMailer.toInterpreters(MailTemplates.NEW_USER, MailTemplates.NEW_USER + ":" + id, locale -> {
+            Map<String, Object> model = new LinkedHashMap<>();
+            model.put("userName", userName);
+            model.put("countryName", userDtoMapper.countryName(countryCode, locale));
+            model.put("age", age);
+            model.put("gender", gender == null ? null
+                    : messageText.get("report.gender." + gender.name(), locale, Map.of()));
+            model.put(MailService.MODEL_LINK, FrontendPaths.adminUser(id));
+            return model;
+        });
     }
 
     // ------------------------------------------------------------------ internals

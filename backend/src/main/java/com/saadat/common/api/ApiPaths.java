@@ -38,6 +38,8 @@ public final class ApiPaths {
         public static final String TESTIMONIALS = ROOT + "/testimonials";
         public static final String STATS = ROOT + "/stats";
         public static final String PUSH_KEY = ROOT + "/push-key";
+        /** POST page-view tracking (token optional). */
+        public static final String TRACK = ROOT + "/track";
 
         private Public() {
         }
@@ -50,6 +52,8 @@ public final class ApiPaths {
         public static final String CREDITS = ROOT + "/credits";
         public static final String ORDERS = ROOT + "/orders";
         public static final String ORDER = ORDERS + "/{id}";
+        /** PDF of all the caller's non-draft dreams with their interpretations. */
+        public static final String DREAMS_PDF = ROOT + "/dreams/pdf";
 
         private Me() {
         }
@@ -61,6 +65,8 @@ public final class ApiPaths {
         public static final String SUBMIT = ROOT + "/submit";
         public static final String MESSAGES = BY_ID + "/messages";
         public static final String TESTIMONIAL = BY_ID + "/testimonial";
+        /** PDF of one of the caller's own non-draft dreams. */
+        public static final String PDF = BY_ID + "/pdf";
 
         private Dreams() {
         }
@@ -107,12 +113,17 @@ public final class ApiPaths {
         public static final String ANALYTICS_SUMMARY = ROOT + "/analytics/summary";
         public static final String ANALYTICS_COUNTRIES = ROOT + "/analytics/countries";
         public static final String ANALYTICS_USERS = ROOT + "/analytics/users";
+        public static final String ANALYTICS_TRAFFIC = ROOT + "/analytics/traffic";
+        public static final String ANALYTICS_INSIGHTS = ROOT + "/analytics/insights";
 
         public static final String DREAMS = ROOT + "/dreams";
+        /** Excel (.xlsx) export of the non-draft dreams matching the filters. */
+        public static final String DREAMS_EXPORT = DREAMS + "/export";
         public static final String DREAM = DREAMS + "/{id}";
         public static final String DREAM_MESSAGES = DREAM + "/messages";
         public static final String DREAM_INTERPRETATION = DREAM + "/interpretation";
         public static final String DREAM_CANCEL = DREAM + "/cancel";
+        public static final String DREAM_PDF = DREAM + "/pdf";
 
         public static final String WAIT_TIME = ROOT + "/wait-time";
         public static final String SETTINGS = ROOT + "/settings";
@@ -137,6 +148,7 @@ public final class ApiPaths {
         public static final String USER = USERS + "/{id}";
         public static final String USER_NOTES = USER + "/notes";
         public static final String USER_CREDITS = USER + "/credits";
+        public static final String USER_PDF = USER + "/pdf";
 
         public static final String TESTIMONIALS = ROOT + "/testimonials";
         public static final String TESTIMONIAL = TESTIMONIALS + "/{id}";

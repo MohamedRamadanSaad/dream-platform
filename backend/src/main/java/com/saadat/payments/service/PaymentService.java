@@ -16,6 +16,7 @@ import com.saadat.common.tx.AfterCommit;
 import com.saadat.common.web.CountryResolver.ResolvedCountry;
 import com.saadat.credits.service.CreditService;
 import com.saadat.dreams.service.DreamService;
+import com.saadat.mail.EventMailer;
 import com.saadat.mail.FrontendPaths;
 import com.saadat.mail.MailService;
 import com.saadat.mail.MailTemplates;
@@ -75,7 +76,9 @@ public class PaymentService {
 
     public static final String MAIL_RECEIPT = MailTemplates.PAYMENT_RECEIPT;
     public static final String MAIL_SUSPICIOUS = MailTemplates.PAYMENT_SUSPICIOUS;
+    public static final String MAIL_FAILED = MailTemplates.PAYMENT_FAILED;
     public static final String LINK_PAYMENTS = FrontendPaths.MY_PAYMENTS;
+    public static final String LINK_PACKAGES = FrontendPaths.PACKAGES;
     public static final String LINK_ADMIN_ORDERS = "/admin/orders";
     static final String INTENT_DREAM_IDS = "dreamIds";
 
@@ -99,6 +102,7 @@ public class PaymentService {
     private final NotificationService notificationService;
     private final InterpreterDirectory interpreterDirectory;
     private final MailService mailService;
+    private final EventMailer eventMailer;
     private final AuditService auditService;
     private final SettingsService settingsService;
     private final AfterCommit afterCommit;
@@ -226,6 +230,7 @@ public class PaymentService {
             order.setFailureReason(REASON_PROVIDER_FAILED);
             order.setProviderTxnId(event.providerTxnId());
             orderRepository.save(order);
+            mailFailed(order);
             return ConfirmOutcome.FAILED;
         }
 
@@ -297,6 +302,21 @@ public class PaymentService {
     }
 
     // ================================================================== side effects (after commit)
+
+    /** {@code payment-failed} to the payer (once per order), queued after commit. */
+    private void mailFailed(Order order) {
+        User user = userRepository.findById(order.getUserId()).orElse(null);
+        if (user == null || user.isDeleted()) {
+            return;
+        }
+        Map<String, Object> model = new LinkedHashMap<>();
+        model.put("orderRef", order.getId().toString());
+        model.put("packageName", order.getPackageNameSnapshot());
+        model.put("amount", order.getAmount());
+        model.put("currency", order.getCurrency().name());
+        model.put(MailService.MODEL_LINK, LINK_PACKAGES);
+        eventMailer.toUserOnce(user, MAIL_FAILED, model, MAIL_FAILED + ":" + order.getId());
+    }
 
     private void notifyPaid(UUID orderId) {
         Order order = orderRepository.findById(orderId).orElseThrow();

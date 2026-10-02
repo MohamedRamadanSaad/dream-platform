@@ -5,6 +5,7 @@ import com.saadat.common.security.JwtService;
 import com.saadat.users.domain.User;
 import com.saadat.users.repo.UserRepository;
 import java.util.UUID;
+import java.util.function.BooleanSupplier;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -74,5 +75,21 @@ public abstract class IntegrationTestBase {
 
     protected String bearer(UUID userId, Role role, String email) {
         return "Bearer " + jwtService.issue(userId, role, email, 15);
+    }
+
+    /** Polls {@code condition} (e.g. an e-mail written by the async pool) for up to 15 seconds. */
+    protected static void awaitTrue(String what, BooleanSupplier condition) {
+        long deadline = System.currentTimeMillis() + 15_000;
+        while (!condition.getAsBoolean()) {
+            if (System.currentTimeMillis() > deadline) {
+                throw new AssertionError("Timed out waiting for: " + what);
+            }
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw new AssertionError("Interrupted while waiting for: " + what, e);
+            }
+        }
     }
 }

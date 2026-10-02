@@ -5,5 +5,7 @@ public enum EmailStatus {
     QUEUED,
     SENT,
     FAILED,
-    LOGGED
+    LOGGED,
+    /** Never stored: returned by MailService when the event's {@code mail.event.<template>} switch is off. */
+    DISABLED
 }

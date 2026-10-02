@@ -141,6 +141,7 @@ app:
     auth-per-minute: 10
     dreams-per-minute: 30
     checkout-per-minute: 5
+    track-per-minute: 60
     max-keys: 100000
   async:
     core-pool-size: 4
@@ -152,3 +153,7 @@ logging:
     root: INFO
     com.saadat: ${LOG_LEVEL_APP:INFO}
     org.hibernate.SQL: WARN
+    # PDF engine (java.util.logging, bridged): only problems
+    com.openhtmltopdf: WARN
+    org.apache.pdfbox: WARN
+    org.apache.fontbox: WARN

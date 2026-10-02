@@ -31,6 +31,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
  *   <li>{@code /auth/**}: {@code app.rate-limit.auth-per-minute} per IP</li>
  *   <li>{@code POST /dreams}: {@code app.rate-limit.dreams-per-minute} per user (IP when anonymous)</li>
  *   <li>{@code /checkout}: {@code app.rate-limit.checkout-per-minute} per IP</li>
+ *   <li>{@code POST /public/track}: {@code app.rate-limit.track-per-minute} per IP</li>
  * </ul>
  * Runs after {@link JwtAuthFilter} so the user id is available. Instantiated by SecurityConfig (not a bean).
  * Single-instance only: with several replicas, move buckets to a shared store.
@@ -71,6 +72,9 @@ public class RateLimitFilter extends OncePerRequestFilter {
                     .orElseGet(() -> "ip:" + ClientIp.resolve(request));
             key = "dreams:" + who;
             capacity = config.getDreamsPerMinute();
+        } else if (path.equals(ApiPaths.Public.TRACK) && HttpMethod.POST.matches(request.getMethod())) {
+            key = "track:" + ClientIp.resolve(request);
+            capacity = config.getTrackPerMinute();
         }
 
         if (key == null) {

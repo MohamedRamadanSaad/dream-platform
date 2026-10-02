@@ -23,16 +23,23 @@ import com.saadat.dreams.domain.Testimonial;
 import com.saadat.dreams.repo.DreamMessageRepository;
 import com.saadat.dreams.repo.DreamRepository;
 import com.saadat.dreams.repo.TestimonialRepository;
+import com.saadat.mail.EventMailer;
+import com.saadat.mail.FrontendPaths;
+import com.saadat.mail.MailService;
+import com.saadat.mail.MailTemplates;
 import com.saadat.payments.domain.CreditLedgerEntry;
 import com.saadat.payments.domain.Order;
 import com.saadat.payments.repo.OrderRepository;
 import com.saadat.settings.SettingKeys;
 import com.saadat.settings.SettingsService;
+import com.saadat.users.domain.User;
+import com.saadat.users.repo.UserRepository;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -66,6 +73,8 @@ public class DreamService {
     private final SettingsService settingsService;
     private final DreamMapper mapper;
     private final DreamNotifier notifier;
+    private final UserRepository userRepository;
+    private final EventMailer eventMailer;
     private final Clock clock;
 
     // ================================================================== drafts
@@ -256,6 +265,20 @@ public class DreamService {
         t.setApproved(false);
         t.setCreatedAt(clock.instant());
         testimonialRepository.save(t);
+
+        // testimonial-received to the interpreter(s): it waits for approval
+        String userName = userRepository.findById(userId).map(User::getName).orElse("");
+        int rating = t.getRating();
+        String comment = t.getComment();
+        String ref = MailTemplates.TESTIMONIAL_RECEIVED + ":" + t.getId();
+        eventMailer.toInterpreters(MailTemplates.TESTIMONIAL_RECEIVED, ref, locale -> {
+            Map<String, Object> model = new LinkedHashMap<>();
+            model.put("userName", userName);
+            model.put("rating", rating);
+            model.put("comment", comment);
+            model.put(MailService.MODEL_LINK, FrontendPaths.ADMIN_TESTIMONIALS);
+            return model;
+        });
     }
 
     // ================================================================== helpers

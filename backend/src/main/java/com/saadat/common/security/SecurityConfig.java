@@ -100,7 +100,9 @@ public class SecurityConfig {
         config.setAllowedOrigins(new ArrayList<>(origins));
         config.setAllowedMethods(ALLOWED_METHODS);
         config.setAllowedHeaders(List.of("*"));
-        config.setExposedHeaders(List.of(RequestIdFilter.HEADER, HttpHeaders.RETRY_AFTER, HttpHeaders.LOCATION));
+        // Content-Disposition: the SPA reads the file name of PDF/Excel downloads
+        config.setExposedHeaders(List.of(RequestIdFilter.HEADER, HttpHeaders.RETRY_AFTER, HttpHeaders.LOCATION,
+                HttpHeaders.CONTENT_DISPOSITION));
         config.setAllowCredentials(true); // refresh-token cookie
         config.setMaxAge(CORS_MAX_AGE_SECONDS);
 

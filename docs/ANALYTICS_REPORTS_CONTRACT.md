@@ -106,3 +106,27 @@ New:
 | `testimonial-received` | interpreter(s) | a user submits a testimonial (awaiting approval) |
 
 Each event is toggleable by a BOOL setting `mail.event.<template>` (default true), editable from `/admin/settings`.
+
+## Backend clarifications (implementation notes, no field changes)
+
+- **Business time zone** = setting `schedule.time_zone` (the one the jobs use). All `date`/`hour`/`month` buckets use it.
+- **Tracking**: `path` is validated (non-blank, ≤ 255, starts with `/`) → 400 otherwise; a query string / trailing `/`
+  is stripped before storing. `sessionId` ≤ 100 chars. Referrers from the site itself count as direct (`''`), the host
+  is stored without `www.`. When only the configured default country is known (no Cloudflare header), the signed-in
+  user's stored country is used, else none (such views are left out of `topCountries`).
+- **Traffic**: `from > to` → 422 `INVALID_RANGE`; a range is at most 366 days; unknown `device` / malformed `country`
+  → 422. `devices` always lists the three devices (most views first). `records` are all-time and unfiltered.
+  `signups` counts accounts with role USER.
+- **Insights**: insight ids = rule names (`overdue`, `awaiting-reply`, `busy-on`, `busy-off`, `testimonials-pending`,
+  `traffic-up`, `traffic-down`, `peak-hours`, `youtube-time`, `country-price`, `fast-response`, `streak`,
+  `interpreted-up`). The overdue link is `/admin/queue` as written above — the SPA queue route today is `/admin/dreams`,
+  so the frontend should map/redirect `/admin/queue`. "Visits" in the traffic rule = visitors (distinct sessions),
+  this month's days 1..today vs the same day numbers of last month (skipped when last month had none). Thresholds are
+  settings: `insights.awaiting_reply_days` (3), `insights.traffic_change_percent` (10), `insights.streak_min_days` (3).
+  The product has one interpreter, so `myActivity` counts every interpretation.
+- **PDF file names**: dream → `dream-<first 8 chars of id>.pdf`, user → `user-<first 8>.pdf`, `/me/dreams/pdf` →
+  `dreams-YYYY-MM-DD.pdf`. CORS exposes `Content-Disposition`.
+- **Excel**: `gender` filters (and shows) the dream's gender; rows are newest submission first; row cap
+  `reports.excel_max_rows` (50000).
+- **E-mail switches**: BOOL settings `mail.event.<template>` for every template except `magic-link` (always sent);
+  `youtube-new-video` goes to users with `marketingOptIn = true` for newly published videos only.
