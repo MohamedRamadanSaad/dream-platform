@@ -258,7 +258,9 @@
       "waitTime": "Reply time",
       "users": "Users",
       "testimonials": "Reviews",
-      "orders": "Payments"
+      "orders": "Payments",
+      "emails": "E-mails",
+      "more": "More"
     },
     "dashboard": {
       "title": "Interpreter dashboard",
@@ -276,7 +278,10 @@
         "30d": "30 days",
         "1y": "Year",
         "all": "All"
-      }
+      },
+      "lead": "Your day at a glance.",
+      "topTitle": "Top countries",
+      "topLead": "Where visits, dreams and payments come from."
     },
     "queue": {
       "title": "Dreams",
@@ -422,6 +427,236 @@
       "status": "Status",
       "provider": "Provider",
       "date": "Date"
+    },
+    "insights": {
+      "title": "Recommendations for you",
+      "lead": "Short tips based on your dreams, your visitors and your reviews.",
+      "kind": {
+        "WARNING": "Needs attention",
+        "TIP": "Tip",
+        "SUCCESS": "Good news",
+        "INFO": "Good to know"
+      },
+      "open": "Open",
+      "links": {
+        "queue": "Open the dreams",
+        "waitTime": "Change the reply time",
+        "testimonials": "See the reviews",
+        "pricing": "Check the prices",
+        "users": "Open the users"
+      },
+      "showMore": "Show {{n}} more",
+      "showLess": "Show less",
+      "empty": "All is calm. There is nothing to suggest right now."
+    },
+    "activity": {
+      "title": "Your activity",
+      "lead": "How you are doing, compared with what you promise.",
+      "interpreted": "Interpreted this month",
+      "lastMonth": "Last month: {{n}}",
+      "moreThanLast": "More than last month ({{n}})",
+      "avgReply": "Average reply time",
+      "hours_one": "{{n}} hour",
+      "hours_other": "{{n}} hours",
+      "promised": "promised: {{v}}",
+      "replyFast": "Very fast",
+      "replyOk": "On time",
+      "replySlow": "Slower than promised",
+      "onTime": "Replied on time",
+      "onTimeHint": "Replied before the promised time, in the last 30 days.",
+      "streak": "Days in a row",
+      "streakDays_one": "day",
+      "streakDays_other": "days",
+      "streakHint": "With at least one interpretation each day.",
+      "streakNone": "No streak right now. One interpretation today starts a new one.",
+      "hoursTitle": "Your hours and your visitors’ hours",
+      "hoursLead": "When you interpret while visitors are online, your replies feel faster.",
+      "mine": "When you interpret most",
+      "users": "When visitors are most active",
+      "mineAt": "You interpret most at {{hours}}.",
+      "usersAt": "Visitors are most active at {{hours}}."
+    },
+    "traffic": {
+      "title": "Visits",
+      "lead": "Every page view on the site, compared with the period before.",
+      "rangeLabel": "Period",
+      "range": {
+        "month": "This month",
+        "7d": "Last 7 days",
+        "30d": "Last 30 days",
+        "3m": "Last 3 months",
+        "custom": "Custom"
+      },
+      "from": "From",
+      "to": "To",
+      "badRange": "The start date must be on or before the end date.",
+      "allCountries": "All countries",
+      "allDevices": "All devices",
+      "allPages": "All pages",
+      "deviceLabel": "Device",
+      "pageLabel": "Page",
+      "clear": "Clear filters",
+      "comparedWith": "compared with {{range}}",
+      "kpi": {
+        "views": "Page views",
+        "visitors": "Visitors",
+        "signups": "New accounts",
+        "dreams": "Dreams sent",
+        "paidOrders": "Paid orders",
+        "conversionRate": "Visitors who paid"
+      },
+      "before": "Before: {{v}}",
+      "new": "New",
+      "changeUp": "Up {{pct}} from the period before",
+      "changeDown": "Down {{pct}} from the period before",
+      "changeFlat": "Same as the period before",
+      "daily": "Views per day",
+      "current": "This period",
+      "previous": "Period before",
+      "chartLabel": "Views per day: {{total}} views in {{days}} days. Use the arrow keys to read each day.",
+      "viewsWord": "views",
+      "visitorsN": "{{n}} visitors",
+      "showTable": "Show the numbers as a table",
+      "date": "Day",
+      "noData": "No visits in this period yet.",
+      "hourly": "Views by hour",
+      "busiest": "Busiest hours",
+      "hourTip": "{{views}} views · {{dreams}} dreams",
+      "topPages": "Top pages",
+      "topCountries": "Top countries",
+      "devices": "Devices",
+      "referrers": "Where visitors come from",
+      "direct": "Direct visits",
+      "device": {
+        "MOBILE": "Phone",
+        "TABLET": "Tablet",
+        "DESKTOP": "Computer"
+      },
+      "page": {
+        "home": "Home page",
+        "login": "Sign in",
+        "onboarding": "Last step of sign-up",
+        "callback": "Sign-in link",
+        "myDreams": "My dreams",
+        "newDream": "New dream",
+        "dreamEdit": "Editing a dream",
+        "dreamDetail": "A dream’s page",
+        "packages": "Packages",
+        "checkout": "Payment",
+        "payments": "Payments",
+        "profile": "Account",
+        "notifications": "Notifications",
+        "myCourses": "My courses",
+        "courses": "Courses",
+        "terms": "Terms",
+        "privacy": "Privacy"
+      }
+    },
+    "records": {
+      "title": "Score records",
+      "lead": "The site’s best moments since it opened.",
+      "empty": "Records appear after the first visits.",
+      "bestDay": "Best day ever",
+      "bestMonth": "Best month ever",
+      "totalViews": "All page views",
+      "totalVisitors": "All visitors",
+      "sinceStart": "since the site opened",
+      "rankBest": "This is the best month ever!",
+      "rank": "This month is <b>#{{n}}</b> of all months"
+    },
+    "emails": {
+      "title": "E-mail notifications",
+      "lead": "Choose which e-mails the site sends. A switched-off e-mail is not sent to anyone. Sign-in e-mails are always sent.",
+      "toUser": "E-mails to users",
+      "toUserLead": "Sent to the person who sent the dream or made the payment.",
+      "toYou": "E-mails to you",
+      "toYouLead": "Sent to the interpreter accounts.",
+      "onCount": "{{on}} of {{all}} on",
+      "changed": "Changed",
+      "unsaved_one": "1 change is not saved yet",
+      "unsaved_other": "{{n}} changes are not saved yet",
+      "save": "Save",
+      "discard": "Undo",
+      "saved": "Saved.",
+      "empty": "No e-mail settings were found.",
+      "events": {
+        "welcome": {
+          "label": "Welcome",
+          "desc": "To the user, right after they finish creating their account."
+        },
+        "dream-received": {
+          "label": "Dream received",
+          "desc": "To the user, when their dream arrives, with the expected reply time."
+        },
+        "interpreter-question": {
+          "label": "Your question",
+          "desc": "To the user, when you ask them about their dream."
+        },
+        "reply-reminder": {
+          "label": "Reply reminder",
+          "desc": "To the user, when they have not answered your question after a while."
+        },
+        "interpretation-ready": {
+          "label": "Interpretation ready",
+          "desc": "To the user, when you publish the interpretation."
+        },
+        "testimonial-request": {
+          "label": "Review request",
+          "desc": "To the user, a few days after the interpretation, asking for a review."
+        },
+        "testimonial-approved": {
+          "label": "Review approved",
+          "desc": "To the user, when you approve their review."
+        },
+        "payment-receipt": {
+          "label": "Payment receipt",
+          "desc": "To the user, after a successful payment."
+        },
+        "payment-failed": {
+          "label": "Payment failed",
+          "desc": "To the user, when their payment does not go through."
+        },
+        "credits-adjusted": {
+          "label": "Credits changed",
+          "desc": "To the user, when you add or remove credits by hand."
+        },
+        "dream-cancelled": {
+          "label": "Dream cancelled",
+          "desc": "To the user, when you cancel their dream. The credit is given back."
+        },
+        "youtube-new-video": {
+          "label": "New video",
+          "desc": "To users, when a new video is published on the channel."
+        },
+        "account-deleted": {
+          "label": "Account deleted",
+          "desc": "To the user, when they delete their account."
+        },
+        "dream-submitted": {
+          "label": "New dream",
+          "desc": "To you, when a user sends a new dream."
+        },
+        "user-replied": {
+          "label": "User replied",
+          "desc": "To you, when a user answers your question."
+        },
+        "new-user": {
+          "label": "New user",
+          "desc": "To you, when someone finishes creating an account."
+        },
+        "testimonial-received": {
+          "label": "New review",
+          "desc": "To you, when a user sends a review that needs your approval."
+        },
+        "payment-suspicious": {
+          "label": "Suspicious payment",
+          "desc": "To you, when a payment does not match and needs a check."
+        },
+        "interpreter-digest": {
+          "label": "Daily summary",
+          "desc": "To you, once a day: the dreams that are waiting and the ones that are late."
+        }
+      }
     }
   },
   "common": {
@@ -458,5 +693,26 @@
     "c2": "True happiness: being close to Allah",
     "lessons_one": "1 lesson",
     "lessons_other": "{{count}} lessons"
+  },
+  "reports": {
+    "pdf": "Download PDF",
+    "allMyDreams": "Download all my dreams (PDF)",
+    "excel": "Export to Excel",
+    "excelTitle": "Export dreams to Excel",
+    "excelLead": "Choose what to include. Leave a field empty to include everything.",
+    "status": "Status",
+    "anyStatus": "All statuses",
+    "from": "Sent from",
+    "to": "Sent until",
+    "anyCountry": "All countries",
+    "gender": "Gender",
+    "anyGender": "Everyone",
+    "search": "Search",
+    "searchPlaceholder": "Name, e-mail or words from the dream",
+    "reset": "Clear all",
+    "download": "Download",
+    "preparing": "Preparing the file…",
+    "failed": "The file could not be downloaded. Please try again.",
+    "notFound": "This file is not available."
   }
 }

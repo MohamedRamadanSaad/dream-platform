@@ -96,6 +96,16 @@ export function Stars({ value, onChange, size = 22 }: { value: number; onChange?
   )
 }
 
+/** Accessible on/off switch (role="switch"); the knob moves to the reading end when on. */
+export function Switch({ checked, onChange, label, disabled }: { checked: boolean; onChange: (v: boolean) => void; label: string; disabled?: boolean }) {
+  return (
+    <button type="button" role="switch" aria-checked={checked} aria-label={label} disabled={disabled} onClick={() => onChange(!checked)}
+      className={cn('relative h-7 w-12 shrink-0 rounded-full transition-colors duration-300 disabled:opacity-40', checked ? 'bg-gold' : 'bg-surface-2 ring-1 ring-inset ring-line')}>
+      <span className={cn('absolute top-1 h-5 w-5 rounded-full bg-white shadow transition-all duration-300', checked ? 'start-6' : 'start-1')} />
+    </button>
+  )
+}
+
 export function Stat({ label, value, tone, icon }: { label: string; value: ReactNode; tone?: 'gold' | 'danger' | 'night'; icon?: ReactNode }) {
   return (
     <div className={cn('card p-5 flex items-center justify-between gap-3', tone === 'gold' && 'border-gold/50', tone === 'danger' && 'border-danger/30 bg-danger/5', tone === 'night' && 'bg-night text-pearl border-navy')}>

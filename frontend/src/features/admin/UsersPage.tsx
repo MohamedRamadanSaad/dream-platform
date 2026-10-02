@@ -2,9 +2,10 @@ import { useState } from 'react'
 import { Link, useParams, useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { adminApi } from '@/api/endpoints'
+import { adminApi, reportsApi } from '@/api/endpoints'
 import { useAuthStore } from '@/app/auth-store'
 import { Button, Empty, ErrorBox, Input, Label, Modal, Segmented, Skeleton, Stars, StatusBadge, Tabs, Textarea } from '@/components/ui'
+import { DownloadButton } from '@/components/ui/DownloadButton'
 import { Icon } from '@/components/icons/Icon'
 import { Avatar } from '@/components/ui/Avatar'
 import { PageEnter, StaggerGroup } from '@/components/motion'
@@ -72,7 +73,10 @@ export function User360Page() {
         <div className="flex items-start gap-4"><Avatar name={u.name || u.email} size={56} /><div><h1 className="font-display text-4xl">{u.name || u.email}</h1><div className="text-sm text-fg-muted" dir="ltr">{u.email}</div>
           <div className="mt-2 flex flex-wrap gap-2 text-xs text-fg-dim"><span>{u.countryCode}</span><span>· {u.gender ? t(u.gender === 'FEMALE' ? 'auth.female' : 'auth.male') : '—'}</span>{u.age != null && <span>· {t('me.profile.years', { n: u.age })}</span>}<span>· {u.locale}</span><span>· {u.providers.join(', ')}</span><span>· {t('admin.users.since')} {fmtDate(u.createdAt, locale)}</span></div>
           {u.tags.length > 0 && <div className="mt-2 flex gap-1.5">{u.tags.map((x) => <span key={x} className="chip bg-gold/10 text-gold-deep">{x}</span>)}</div>}</div></div>
-        <Button size="sm" onClick={() => setCreditModal(true)}><Icon name="plus" size={14} />{t('admin.users.addCredits')}</Button>
+        <div className="flex flex-wrap items-start gap-2">
+          <DownloadButton label={t('reports.pdf')} run={() => reportsApi.adminUserPdf(u.id)} />
+          <Button size="sm" onClick={() => setCreditModal(true)}><Icon name="plus" size={14} />{t('admin.users.addCredits')}</Button>
+        </div>
       </div>
       <StaggerGroup className="grid grid-cols-2 gap-3 md:grid-cols-5" stagger={0.05}>
         {[[t('admin.users.credits'), fmtNum(u.credits.balance, locale)], [t('admin.users.visits'), fmtNum(u.visits, locale)], [t('admin.users.dreams'), fmtNum(u.dreams, locale)], [t('admin.users.drafts'), fmtNum(u.drafts, locale)], [t('admin.users.paid'), fmtMoney(Math.round(u.totalPaidBase), 'USD', locale)]].map(([l, v]) => <div key={l} className="card p-4"><div className="text-xs text-fg-muted">{l}</div><div className="font-display text-2xl">{v}</div></div>)}

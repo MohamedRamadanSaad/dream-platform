@@ -1,8 +1,9 @@
-import { Link, NavLink, useNavigate } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { Link, NavLink, matchPath, useLocation, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useAuthStore, isInterpreter } from '@/app/auth-store'
 import { applyLocale } from '@/i18n'
-import { Icon } from '@/components/icons/Icon'
+import { Icon, type IconName } from '@/components/icons/Icon'
 import { cn } from '@/lib/utils'
 import { Avatar } from '@/components/ui/Avatar'
 import { useQuery } from '@tanstack/react-query'
@@ -120,11 +121,25 @@ export function Footer() {
   )
 }
 
-export function AppShell({ items, children, admin }: { items: { to: string; label: string; icon: Parameters<typeof Icon>[0]['name']; end?: boolean }[]; children: React.ReactNode; admin?: boolean }) {
+export function AppShell({ items, children, admin }: { items: { to: string; label: string; icon: IconName; end?: boolean }[]; children: React.ReactNode; admin?: boolean }) {
   const { t } = useTranslation()
   const navigate = useNavigate()
+  const { pathname } = useLocation()
   const clear = useAuthStore((s) => s.clear)
   const user = useAuthStore((s) => s.user)
+  // phones: the admin has more pages than the bottom bar holds — the rest open from a "More" sheet
+  const overflow = !!admin && items.length > 5
+  const primary = overflow ? items.slice(0, 4) : items.slice(0, 5)
+  const rest = overflow ? items.slice(4) : []
+  const restActive = rest.some((it) => matchPath({ path: it.to, end: !!it.end }, pathname))
+  const [moreOpen, setMoreOpen] = useState(false)
+  useEffect(() => setMoreOpen(false), [pathname])
+  useEffect(() => {
+    if (!moreOpen) return
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setMoreOpen(false) }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [moreOpen])
   return (
     <div className="min-h-screen md:flex">
       <aside className="hidden md:flex md:w-64 md:flex-col bg-night text-pearl sticky top-0 h-screen p-5">
@@ -142,7 +157,7 @@ export function AppShell({ items, children, admin }: { items: { to: string; labe
         </div>
       </aside>
       <div className="flex-1 min-w-0">
-        <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-line bg-[color:var(--bg)]/90 px-4 backdrop-blur md:px-8">
+        <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-line bg-[color:color-mix(in_srgb,var(--bg)_90%,transparent)] px-4 backdrop-blur md:px-8">
           <Link to="/" className="md:hidden font-display text-xl text-fg">{t('interpreter')}</Link>
           <div className="hidden md:block" />
           <div className="flex items-center gap-2 md:gap-3">
@@ -154,13 +169,33 @@ export function AppShell({ items, children, admin }: { items: { to: string; labe
           </div>
         </header>
         <main className="mx-auto max-w-6xl px-4 py-6 pb-28 md:px-8 md:pb-10">{children}</main>
-        <nav className="fixed bottom-0 inset-x-0 z-30 flex border-t border-line bg-[color:var(--bg)]/95 backdrop-blur md:hidden">
-          {items.slice(0, 5).map((it) => (
+        <nav className="fixed bottom-0 inset-x-0 z-30 flex border-t border-line bg-[color:color-mix(in_srgb,var(--bg)_95%,transparent)] backdrop-blur md:hidden">
+          {primary.map((it) => (
             <NavLink key={it.to} to={it.to} end={it.end} className={({ isActive }) => cn('flex flex-1 flex-col items-center gap-1 py-2 text-[10px]', isActive ? 'text-gold-deep' : 'text-fg-muted')}>
               {({ isActive }) => <><Icon name={it.icon} size={20} active={isActive} />{it.label}</>}
             </NavLink>
           ))}
+          {overflow && (
+            <button type="button" onClick={() => setMoreOpen((v) => !v)} aria-expanded={moreOpen} aria-controls="more-sheet"
+              className={cn('flex flex-1 flex-col items-center gap-1 py-2 text-[10px]', restActive || moreOpen ? 'text-gold-deep' : 'text-fg-muted')}>
+              <Icon name="menu" size={20} active={moreOpen || restActive} />{t('admin.nav.more')}
+            </button>
+          )}
         </nav>
+        {overflow && moreOpen && (
+          <>
+            <div aria-hidden="true" className="fixed inset-0 z-20 bg-night/40 md:hidden" onClick={() => setMoreOpen(false)} />
+            <div id="more-sheet" role="dialog" aria-label={t('admin.nav.more')} className="fixed inset-x-3 bottom-[4.75rem] z-40 rounded-xl2 border border-line bg-surface p-2 shadow-calm md:hidden">
+              <div className="grid grid-cols-3 gap-1">
+                {rest.map((it) => (
+                  <NavLink key={it.to} to={it.to} end={it.end} className={({ isActive }) => cn('flex flex-col items-center gap-1.5 rounded-xl px-2 py-3 text-center text-[11px] leading-tight transition-colors', isActive ? 'bg-gold/10 text-gold-deep' : 'text-fg-muted hover:bg-surface-2')}>
+                    {({ isActive }) => <><Icon name={it.icon} size={20} active={isActive} />{it.label}</>}
+                  </NavLink>
+                ))}
+              </div>
+            </div>
+          </>
+        )}
       </div>
     </div>
   )

@@ -2,9 +2,19 @@ import { http, HttpResponse, delay } from 'msw'
 import type * as T from '@/api/types'
 import { INTERPRETER_DOMAIN } from '@/lib/utils'
 import { db, resolvePrice, applyPromotion, balanceOf, toSummary, toDetail, uid, helpers, ytVideos, ytSeen } from './data'
+import { buildInsights, buildTraffic, deviceOf } from './analytics'
+import { attachment, dreamsCsv, tinyPdf } from './reports'
 
 const BASE = (import.meta.env.VITE_API_URL as string) || ''
 const u = (p: string) => `${BASE}${p}`
+const lang = (req: Request) => req.headers.get('accept-language') ?? 'ar'
+
+// the preview API is cross-origin: let the page read the file name of a download
+const EXPOSE = { 'Access-Control-Expose-Headers': 'Content-Disposition' }
+const pdfResponse = (lines: string[], name: string, asciiName?: string) =>
+  new HttpResponse(tinyPdf([...lines, '', 'Preview file (mock data). The live site sends the full branded PDF.']), {
+    headers: { 'Content-Type': 'application/pdf', 'Content-Disposition': attachment(name, asciiName), ...EXPOSE },
+  })
 
 const problem = (status: number, title: string, detail?: string, extra: Partial<T.ApiProblem> = {}) =>
   HttpResponse.json({ type: `https://api.saadatu-aldarein.com/errors/${title.toLowerCase().replace(/\s+/g, '-')}`, title, status, detail, ...extra }, { status })
@@ -88,6 +98,14 @@ export const handlers = [
     { id: 't3', name: 'Sara', rating: 4, comment: 'Calm, deep and honest. No exaggeration at all.', date: helpers.daysAgo(50) },
   ] }))),
   http.get(u('/public/stats'), wrap(async () => HttpResponse.json({ subscribers: '50K+', views: '1M+', videos: '230+', interpreted: 2000 + db.dreams.filter((d) => d.status === 'INTERPRETED').length } satisfies T.PublicStats))),
+  http.post(u('/public/track'), wrap(async ({ request }) => {
+    const b = (await request.json().catch(() => null)) as T.TrackRequest | null
+    if (!b?.path || !b.sessionId) return problem(400, 'Validation failed')
+    if (!b.path.startsWith('/admin')) {
+      db.pageViews.push({ path: b.path.slice(0, 255), referrer: b.referrer ?? null, sessionId: b.sessionId, device: deviceOf(request.headers.get('user-agent') ?? navigator.userAgent), countryCode: countryOf(request), at: helpers.now() })
+    }
+    return new HttpResponse(null, { status: 204 })
+  })),
 
   // ---------- me ----------
   http.get(u('/me'), wrap(async ({ request }) => HttpResponse.json(requireUser(request)))),
@@ -208,6 +226,17 @@ export const handlers = [
     d.testimonial = { rating: b.rating, comment: b.comment, approved: false }
     return new HttpResponse(null, { status: 201 })
   })),
+  http.get(u('/dreams/:id/pdf'), wrap(async ({ request, params }) => {
+    const me = requireUser(request)
+    const d = db.dreams.find((x) => x.id === params.id && x.userId === me.id && x.status !== 'DRAFT')
+    if (!d) return problem(404, 'Not found')
+    return pdfResponse(['Saadat Al-Darain - your dream', `Dream ${d.id} - ${d.status}`], `dream-${d.id}.pdf`)
+  })),
+  http.get(u('/me/dreams/pdf'), wrap(async ({ request }) => {
+    const me = requireUser(request)
+    const mine = db.dreams.filter((d) => d.userId === me.id && d.status !== 'DRAFT')
+    return pdfResponse(['Saadat Al-Darain - all my dreams', `${mine.length} dreams`], 'my-dreams.pdf')
+  })),
 
   // ---------- checkout ----------
   http.post(u('/checkout'), wrap(async ({ request }) => {
@@ -293,12 +322,13 @@ export const handlers = [
   http.get(u('/admin/analytics/countries'), wrap(async ({ request }) => {
     requireAdmin(request)
     const q = new URL(request.url).searchParams
+    const en = lang(request).startsWith('en')
     const stat = (cc: string): T.CountryStat => {
       const c = db.countries.find((x) => x.code === cc)
       const users = db.users.filter((x) => x.countryCode === cc && x.role === 'USER')
       const dreams = db.dreams.filter((d) => users.some((x) => x.id === d.userId) && d.status !== 'DRAFT').length
       const rev = db.orders.filter((o) => o.countryCode === cc && o.status === 'SUCCESS').reduce((a, o) => a + (o.currency === 'SAR' ? o.amount * 3.75 : o.currency === 'EGP' ? o.amount * 0.021 : o.amount), 0)
-      return { countryCode: cc, countryName: c?.nameAr ?? cc, visits: db.visits.filter((v) => v.countryCode === cc).reduce((a, v) => a + v.count, 0), dreams: dreams + (cc === 'EG' ? 38 : cc === 'SA' ? 27 : cc === 'AE' ? 6 : cc === 'MA' ? 4 : cc === 'DE' ? 3 : 1), revenueBase: Math.round(rev + (cc === 'EG' ? 620 : cc === 'SA' ? 910 : cc === 'AE' ? 190 : cc === 'MA' ? 60 : cc === 'DE' ? 70 : 15)), users: users.length + (cc === 'EG' ? 210 : cc === 'SA' ? 160 : 20) }
+      return { countryCode: cc, countryName: (en ? c?.nameEn : c?.nameAr) ?? cc, visits: db.visits.filter((v) => v.countryCode === cc).reduce((a, v) => a + v.count, 0), dreams: dreams + (cc === 'EG' ? 38 : cc === 'SA' ? 27 : cc === 'AE' ? 6 : cc === 'MA' ? 4 : cc === 'DE' ? 3 : 1), revenueBase: Math.round(rev + (cc === 'EG' ? 620 : cc === 'SA' ? 910 : cc === 'AE' ? 190 : cc === 'MA' ? 60 : cc === 'DE' ? 70 : 15)), users: users.length + (cc === 'EG' ? 210 : cc === 'SA' ? 160 : 20) }
     }
     const codes = [...new Set(db.visits.map((v) => v.countryCode))]
     const stats = codes.map(stat)
@@ -309,6 +339,47 @@ export const handlers = [
       topRevenue: [...stats].sort((a, b) => b.revenueBase - a.revenueBase).slice(0, 8),
     }
     return HttpResponse.json(r)
+  })),
+  http.get(u('/admin/analytics/traffic'), wrap(async ({ request }) => {
+    requireAdmin(request)
+    const r = buildTraffic(new URL(request.url).searchParams, lang(request))
+    return r ? HttpResponse.json(r) : problem(400, 'Validation failed', 'from/to must be YYYY-MM-DD and from <= to')
+  })),
+  http.get(u('/admin/analytics/insights'), wrap(async ({ request }) => {
+    requireAdmin(request)
+    return HttpResponse.json(buildInsights(lang(request)))
+  })),
+  // must stay above /admin/dreams/:id
+  http.get(u('/admin/dreams/export'), wrap(async ({ request }) => {
+    requireAdmin(request)
+    const csv = dreamsCsv(new URL(request.url).searchParams, lang(request))
+    return new HttpResponse(csv, { headers: { 'Content-Type': 'text/csv; charset=utf-8', 'Content-Disposition': attachment('dreams.csv'), ...EXPOSE } })
+  })),
+  http.get(u('/admin/dreams/:id/pdf'), wrap(async ({ request, params }) => {
+    requireAdmin(request)
+    const d = db.dreams.find((x) => x.id === params.id && x.status !== 'DRAFT')
+    if (!d) return problem(404, 'Not found')
+    return pdfResponse(['Saadat Al-Darain - dream report', `Dream ${d.id} - ${d.status}`, `${d.messages.length} messages`], `dream-${d.id}.pdf`)
+  })),
+  http.get(u('/admin/users/:id/pdf'), wrap(async ({ request, params }) => {
+    requireAdmin(request)
+    const usr = db.users.find((x) => x.id === params.id)
+    if (!usr) return problem(404, 'Not found')
+    const dreams = db.dreams.filter((d) => d.userId === usr.id && d.status !== 'DRAFT')
+    return pdfResponse(['Saadat Al-Darain - user report', `User ${usr.id} - ${dreams.length} dreams`], `user-${usr.name || usr.id}.pdf`, `user-${usr.id}.pdf`)
+  })),
+  http.get(u('/admin/settings'), wrap(async ({ request }) => { requireAdmin(request); return HttpResponse.json(db.settings) })),
+  http.put(u('/admin/settings'), wrap(async ({ request }) => {
+    requireAdmin(request)
+    const body = (await request.json()) as T.SettingsMap
+    const errors: Record<string, string[]> = {}
+    for (const [k, v] of Object.entries(body)) {
+      if (!(k in db.settings)) errors[k] = ['unknown setting']
+      else if (k.startsWith('mail.event.') && v !== 'true' && v !== 'false') errors[k] = ['must be true or false']
+    }
+    if (Object.keys(errors).length) return problem(422, 'Validation failed', undefined, { errors })
+    Object.assign(db.settings, body)
+    return HttpResponse.json(db.settings)
   })),
   http.get(u('/admin/dreams'), wrap(async ({ request }) => {
     requireAdmin(request)

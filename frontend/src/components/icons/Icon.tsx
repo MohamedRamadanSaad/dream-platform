@@ -6,7 +6,8 @@ import { MorphSVGPlugin } from 'gsap/MorphSVGPlugin'
 
 gsap.registerPlugin(MorphSVGPlugin)
 
-type IconName = 'moon' | 'star' | 'scroll' | 'wallet' | 'user' | 'bell' | 'plus' | 'logout' | 'play' | 'chat' | 'chart' | 'globe' | 'gift' | 'clock' | 'check' | 'search' | 'settings' | 'sun' | 'youtube' | 'sparkle' | 'book' | 'quote' | 'shield' | 'heart'
+export type IconName = 'moon' | 'star' | 'scroll' | 'wallet' | 'user' | 'bell' | 'plus' | 'logout' | 'play' | 'chat' | 'chart' | 'globe' | 'gift' | 'clock' | 'check' | 'search' | 'settings' | 'sun' | 'youtube' | 'sparkle' | 'book' | 'quote' | 'shield' | 'heart'
+  | 'download' | 'mail' | 'alert' | 'info' | 'bulb' | 'trophy' | 'eye' | 'flame' | 'filter' | 'menu' | 'link' | 'phone' | 'calendar'
 
 interface Shape { before: string; after: string; fill?: boolean; extra?: JSX.Element }
 
@@ -35,6 +36,19 @@ const shapes: Record<IconName, Shape> = {
   quote: { before: 'M4 6h7v7H6l-2 3zM13 6h7v7h-5l-2 3z', after: 'M4 5h7v8H6l-2 4zM13 5h7v8h-5l-2 4z' },
   shield: { before: 'M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z', after: 'M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6zM9 12l2 2 4-4' },
   heart: { before: 'M12 20s-7-4.5-7-10a4 4 0 0 1 7-2.5A4 4 0 0 1 19 10c0 5.5-7 10-7 10z', after: 'M12 21s-8-5-8-11a4.5 4.5 0 0 1 8-3 4.5 4.5 0 0 1 8 3c0 6-8 11-8 11z', fill: true },
+  download: { before: 'M12 4v11M7.5 10.5L12 15l4.5-4.5M5 20h14', after: 'M12 3v13M7 11.5l5 5 5-5M4 20.5h16' },
+  mail: { before: 'M3.5 6h17v12h-17zM3.5 7l8.5 6.5L20.5 7', after: 'M3.5 6h17v12h-17zM3.5 6l8.5 7.5L20.5 6' },
+  alert: { before: 'M12 3.5l9.5 16.5h-19zM12 10v4.5M12 17.5v.5', after: 'M12 3l10 17.5H2zM12 9.5v5M12 17.5v.5' },
+  info: { before: 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM12 11v5.5M12 7.5v.5', after: 'M12 21.5a9.5 9.5 0 1 0 0-19 9.5 9.5 0 0 0 0 19zM12 10.5v6M12 7v.5' },
+  bulb: { before: 'M9.5 18h5M10.5 21h3M12 3a6 6 0 0 0-3.6 10.8c.7.6 1.1 1.3 1.1 2.2h5c0-.9.4-1.6 1.1-2.2A6 6 0 0 0 12 3z', after: 'M9.5 18h5M10.5 21h3M12 2.5a6.5 6.5 0 0 0-3.9 11.7c.7.6 1.1 1.2 1.1 1.8h5.6c0-.6.4-1.2 1.1-1.8A6.5 6.5 0 0 0 12 2.5z' },
+  trophy: { before: 'M8 4h8v5a4 4 0 0 1-8 0zM8 6H5.5a2.5 2.5 0 0 0 2.6 3.5M16 6h2.5a2.5 2.5 0 0 1-2.6 3.5M12 13v4M8.5 20.5h7M9.5 17h5v3.5h-5z', after: 'M7.5 3.5h9V9a4.5 4.5 0 0 1-9 0zM7.5 5.5h-3a3 3 0 0 0 3.2 4.3M16.5 5.5h3a3 3 0 0 1-3.2 4.3M12 13.5V17M8 20.5h8M9.5 17h5v3.5h-5z' },
+  eye: { before: 'M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12zM12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z', after: 'M2.5 12S6 6.5 12 6.5 21.5 12 21.5 12 18 17.5 12 17.5 2.5 12 2.5 12zM12 14a2 2 0 1 0 0-4 2 2 0 0 0 0 4z' },
+  flame: { before: 'M12 3c.8 3.6 5 5.4 5 10.2a5 5 0 0 1-10 0c0-2.4 1.3-3.9 2.4-4.9.2 1.8 1 2.9 2.2 3.4C11.2 9.2 10.8 6 12 3z', after: 'M12 2.5c1.2 3.8 5.5 5.2 5.5 10.7a5.5 5.5 0 0 1-11 0c0-2.7 1.4-4.4 2.6-5.4.3 2 1.2 3.2 2.4 3.6C11 9 10.5 5.5 12 2.5z' },
+  filter: { before: 'M4 7h16M7 12h10M10 17h4', after: 'M4 6.5h16M6.5 12h11M9.5 17.5h5' },
+  menu: { before: 'M4 7h16M4 12h16M4 17h16', after: 'M4 7h16M8 12h12M12 17h8' },
+  link: { before: 'M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1', after: 'M9.5 14.5a4.5 4.5 0 0 0 6.4 0l2.6-2.6a4.5 4.5 0 0 0-6.4-6.4l-.9.9M14.5 9.5a4.5 4.5 0 0 0-6.4 0l-2.6 2.6a4.5 4.5 0 0 0 6.4 6.4l.9-.9' },
+  phone: { before: 'M7.5 3h9a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1h-9a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1zM11 18h2', after: 'M8 2.5h8A1.5 1.5 0 0 1 17.5 4v16a1.5 1.5 0 0 1-1.5 1.5H8A1.5 1.5 0 0 1 6.5 20V4A1.5 1.5 0 0 1 8 2.5zM10.5 18.5h3' },
+  calendar: { before: 'M4 6h16v14H4zM4 10h16M8 3.5v4M16 3.5v4', after: 'M4 6h16v14H4zM4 10h16M8 3v4.5M16 3v4.5M8 14h3' },
 }
 
 interface Props extends Omit<SVGProps<SVGSVGElement>, 'name'> {

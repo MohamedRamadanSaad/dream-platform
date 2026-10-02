@@ -1,14 +1,71 @@
+import { useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useQuery } from '@tanstack/react-query'
-import { adminApi } from '@/api/endpoints'
+import { adminApi, reportsApi } from '@/api/endpoints'
 import { useAuthStore } from '@/app/auth-store'
-import { Empty, ErrorBox, Skeleton, StatusBadge, Tabs } from '@/components/ui'
+import { Button, Empty, ErrorBox, Input, Modal, Skeleton, StatusBadge, Tabs } from '@/components/ui'
+import { DownloadButton } from '@/components/ui/DownloadButton'
+import { Icon } from '@/components/icons/Icon'
 import { PageEnter, StaggerGroup } from '@/components/motion'
-import { cn, fmtDate, hoursLeft } from '@/lib/utils'
-import type { DreamStatus } from '@/api/types'
+import { cn, flagEmoji, fmtDate, hoursLeft, toISODay } from '@/lib/utils'
+import type { DreamStatus, Gender } from '@/api/types'
 
 type Tab = 'IN_REVIEW' | 'AWAITING_USER_REPLY' | 'INTERPRETED' | 'CANCELLED'
+
+interface ExportFilters { status: '' | Tab; from: string; to: string; country: string; gender: '' | Gender; q: string }
+const NO_FILTERS: ExportFilters = { status: '', from: '', to: '', country: '', gender: '', q: '' }
+const STATUS_LABEL: Record<Tab, string> = { IN_REVIEW: 'me.status.IN_REVIEW', AWAITING_USER_REPLY: 'admin.dashboard.awaiting', INTERPRETED: 'me.status.INTERPRETED', CANCELLED: 'me.status.CANCELLED' }
+
+/** "Export to Excel": choose filters, then download GET /admin/dreams/export (one row per dream). */
+function ExportDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const { t } = useTranslation()
+  const locale = useAuthStore((s) => s.locale)
+  const [f, setF] = useState<ExportFilters>(NO_FILTERS)
+  const countries = useQuery({ queryKey: ['admin', 'countries-list'], queryFn: adminApi.countries_list, staleTime: 10 * 60_000, enabled: open })
+  const set = (patch: Partial<ExportFilters>) => setF((x) => ({ ...x, ...patch }))
+  const badRange = !!f.from && !!f.to && f.from > f.to
+  const today = toISODay(new Date())
+  const options = [...(countries.data ?? [])].sort((a, b) => (locale === 'ar' ? a.nameAr.localeCompare(b.nameAr, 'ar') : a.nameEn.localeCompare(b.nameEn, 'en')))
+  return (
+    <Modal open={open} onClose={onClose} title={t('reports.excelTitle')}>
+      <p className="-mt-2 mb-5 text-sm font-light text-fg-muted">{t('reports.excelLead')}</p>
+      <form className="grid grid-cols-2 gap-3" onSubmit={(e) => e.preventDefault()}>
+        <label className="col-span-2"><span className="label">{t('reports.status')}</span>
+          <select className="input" value={f.status} onChange={(e) => set({ status: e.target.value as ExportFilters['status'] })}>
+            <option value="">{t('reports.anyStatus')}</option>
+            {(Object.keys(STATUS_LABEL) as Tab[]).map((s) => <option key={s} value={s}>{t(STATUS_LABEL[s])}</option>)}
+          </select>
+        </label>
+        <label className="min-w-0"><span className="label">{t('reports.from')}</span><Input type="date" dir="ltr" value={f.from} max={f.to || today} onChange={(e) => set({ from: e.target.value })} /></label>
+        <label className="min-w-0"><span className="label">{t('reports.to')}</span><Input type="date" dir="ltr" value={f.to} min={f.from || undefined} max={today} onChange={(e) => set({ to: e.target.value })} /></label>
+        <label className="min-w-0"><span className="label">{t('common.country')}</span>
+          <select className="input" value={f.country} onChange={(e) => set({ country: e.target.value })}>
+            <option value="">{t('reports.anyCountry')}</option>
+            {options.map((c) => <option key={c.code} value={c.code}>{flagEmoji(c.code)} {locale === 'ar' ? c.nameAr : c.nameEn}</option>)}
+          </select>
+        </label>
+        <label className="min-w-0"><span className="label">{t('reports.gender')}</span>
+          <select className="input" value={f.gender} onChange={(e) => set({ gender: e.target.value as ExportFilters['gender'] })}>
+            <option value="">{t('reports.anyGender')}</option>
+            <option value="FEMALE">{t('auth.female')}</option>
+            <option value="MALE">{t('auth.male')}</option>
+          </select>
+        </label>
+        <label className="col-span-2"><span className="label">{t('reports.search')}</span><Input value={f.q} maxLength={200} placeholder={t('reports.searchPlaceholder')} onChange={(e) => set({ q: e.target.value })} /></label>
+        {badRange && <p role="alert" className="col-span-2 text-xs text-bad-ink">{t('admin.traffic.badRange')}</p>}
+      </form>
+      <div className="mt-6 flex flex-wrap items-start justify-between gap-3">
+        <button type="button" className="py-2 text-xs text-fg-muted hover:text-fg" onClick={() => setF(NO_FILTERS)}>{t('reports.reset')}</button>
+        <div className="flex items-start gap-2">
+          <Button variant="ghost" onClick={onClose}>{t('common.close')}</Button>
+          <DownloadButton variant="gold" size="md" disabled={badRange} label={t('reports.download')}
+            run={() => reportsApi.adminDreamsExcel({ status: f.status || undefined, from: f.from || undefined, to: f.to || undefined, country: f.country || undefined, gender: f.gender || undefined, q: f.q.trim() || undefined })} />
+        </div>
+      </div>
+    </Modal>
+  )
+}
 
 export function SlaChip({ deadline, overdue }: { deadline: string; overdue: boolean }) {
   const { t } = useTranslation()
@@ -24,11 +81,16 @@ export function AdminQueuePage() {
   const [params, setParams] = useSearchParams()
   const tab = (params.get('status') as Tab) || 'IN_REVIEW'
   const q = useQuery({ queryKey: ['admin', 'dreams', tab], queryFn: () => adminApi.dreams(tab as DreamStatus, 0, 50) })
+  const [exportOpen, setExportOpen] = useState(false)
   return (
     <PageEnter>
-      <h1 className="mb-6 font-display text-4xl">{t('admin.queue.title')}</h1>
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+        <h1 className="font-display text-4xl">{t('admin.queue.title')}</h1>
+        <Button variant="ghost" size="sm" onClick={() => setExportOpen(true)} aria-haspopup="dialog"><Icon name="download" size={15} />{t('reports.excel')}</Button>
+      </div>
+      <ExportDialog open={exportOpen} onClose={() => setExportOpen(false)} />
       <Tabs value={tab} onChange={(v) => setParams({ status: v })} items={[
-        { value: 'IN_REVIEW', label: t('me.status.IN_REVIEW') }, { value: 'AWAITING_USER_REPLY', label: t('me.status.AWAITING_USER_REPLY') },
+        { value: 'IN_REVIEW', label: t('me.status.IN_REVIEW') }, { value: 'AWAITING_USER_REPLY', label: t('admin.dashboard.awaiting') },
         { value: 'INTERPRETED', label: t('me.status.INTERPRETED') }, { value: 'CANCELLED', label: t('me.status.CANCELLED') },
       ]} />
       <div className="mt-6">
