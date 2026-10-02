@@ -1,5 +1,5 @@
 // Typed endpoint functions — one per route in the contract. Screens import from here only.
-import { download, http, postQuietly } from './client'
+import { download, getText, http, postQuietly } from './client'
 import type * as T from './types'
 
 export const authApi = {
@@ -117,6 +117,15 @@ export const adminApi = {
   settings: () => http.get<T.SettingsMap>('/admin/settings'),
   /** Partial update — send only the keys that changed. */
   saveSettings: (changes: T.SettingsMap) => http.put<T.SettingsMap>('/admin/settings', changes),
+
+  /** E-mail look: themes, each template's theme, the default theme and an HTML preview with sample data. */
+  mailThemes: () => http.get<T.MailThemeDto[]>('/admin/mail/themes'),
+  mailTemplates: () => http.get<T.MailTemplateRow[]>('/admin/mail/templates'),
+  /** Blank theme = the template follows the default theme again. */
+  setMailTemplateTheme: (template: string, theme: string) =>
+    http.put<T.MailTemplateRow>(`/admin/mail/templates/${encodeURIComponent(template)}/theme`, { theme } satisfies T.MailThemeRequest),
+  setMailDefaultTheme: (theme: string) => http.put<T.MailThemeRequest>('/admin/mail/theme-default', { theme } satisfies T.MailThemeRequest),
+  mailPreview: (q: T.MailPreviewQuery) => getText('/admin/mail/preview', { ...q }),
 }
 
 /** Binary reports (PDF / Excel): fetched with the Bearer token and saved under the server's file name. */

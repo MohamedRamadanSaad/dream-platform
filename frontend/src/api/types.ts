@@ -475,6 +475,38 @@ export interface InsightsResponse {
 /** GET/PUT /admin/settings — raw key/value map (BOOL values are 'true' / 'false'). PUT sends only changed keys. */
 export type SettingsMap = Record<string, string>
 
+/** GET /admin/mail/themes — one e-mail theme (header/footer images + colours). Image URLs are absolute. */
+export interface MailThemeDto {
+  key: string
+  nameAr: string
+  nameEn: string
+  headerImageUrl: string
+  footerImageUrl: string
+  pageBg: string
+  cardBg: string
+  accent: string
+  /** This is the current default theme (setting `mail.theme.default`). */
+  usedByDefault: boolean
+}
+
+/**
+ * GET /admin/mail/templates — one e-mail template. `theme` is the effective theme key; `inherited` = it has no
+ * theme of its own and follows the default; `switchable` = false for the sign-in e-mail (always sent).
+ */
+export interface MailTemplateRow {
+  template: string
+  theme: string
+  inherited: boolean
+  enabled: boolean
+  switchable: boolean
+}
+
+/** PUT /admin/mail/templates/{template}/theme and /admin/mail/theme-default. Blank theme on a template = follow the default. */
+export interface MailThemeRequest { theme: string }
+
+/** GET /admin/mail/preview (text/html). */
+export interface MailPreviewQuery { template: string; theme?: string; locale: Locale }
+
 /** GET /admin/dreams/export — `from/to` filter the submitted date; `q` searches name, e-mail and dream text. */
 export type DreamsExportQuery = {
   status?: DreamStatus

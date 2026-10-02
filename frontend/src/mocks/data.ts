@@ -191,9 +191,26 @@ export const MAIL_EVENTS = [
   'welcome', 'payment-failed', 'dream-cancelled', 'credits-adjusted', 'testimonial-approved', 'account-deleted', 'new-user',
   'testimonial-received', 'dream-submitted', 'dream-received', 'interpreter-question', 'user-replied', 'interpretation-ready',
   'payment-receipt', 'payment-suspicious', 'reply-reminder', 'testimonial-request', 'interpreter-digest', 'youtube-new-video',
+  'support-auto-reply',
 ] as const
+
+/** Every e-mail template (GET /admin/mail/templates); magic-link has no on/off switch. */
+export const MAIL_TEMPLATES = ['magic-link', ...MAIL_EVENTS] as const
+
+/** The e-mail theme registry (backend classpath mail/themes.json). Image paths are on the site. */
+export const MAIL_THEMES: Omit<T.MailThemeDto, 'headerImageUrl' | 'footerImageUrl' | 'usedByDefault'>[] = [
+  { key: 'crescent-night', nameAr: 'ليلة الهلال', nameEn: 'Crescent night', pageBg: '#0A1128', cardBg: '#F4EFE6', accent: '#D4AF37' },
+  { key: 'full-moon', nameAr: 'البدر', nameEn: 'Full moon', pageBg: '#070D1F', cardBg: '#F4EFE6', accent: '#D4AF37' },
+  { key: 'dawn-glow', nameAr: 'نور الفجر', nameEn: 'Dawn light', pageBg: '#1B2347', cardBg: '#FBF7EF', accent: '#C9962B' },
+  { key: 'golden-midnight', nameAr: 'منتصف الليل الذهبي', nameEn: 'Golden midnight', pageBg: '#05070F', cardBg: '#F4EFE6', accent: '#D4AF37' },
+]
+
 db.settings = {
   ...Object.fromEntries(MAIL_EVENTS.map((e) => [`mail.event.${e}`, 'true'])),
+  ...Object.fromEntries(MAIL_TEMPLATES.map((e) => [`mail.theme.${e}`, ''])),
+  'mail.theme.default': 'crescent-night',
+  'mail.assets_base_url': '',
+  'mail.auto_reply_cooldown_hours': '24',
   'brand.support_email': 'support@saadatu-aldarein.com',
   'dreams.reply_reminder_hours': '48',
   'interpreter.digest_hour': '9',

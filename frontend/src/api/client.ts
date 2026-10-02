@@ -95,6 +95,13 @@ export async function request<T>(method: Method, path: string, opts: RequestOpti
   return (isJson ? await res.json() : null) as T
 }
 
+/** GET that returns the body as text (e.g. the text/html e-mail preview); errors still throw ApiError. */
+export async function getText(path: string, query?: Query, accept = 'text/html, application/problem+json'): Promise<string> {
+  const res = await send('GET', path, { query }, accept)
+  if (!res.ok) throw new ApiError(await problemOf(res))
+  return res.text()
+}
+
 export const http = {
   get: <T>(path: string, query?: Query) => request<T>('GET', path, { query }),
   post: <T>(path: string, body?: unknown) => request<T>('POST', path, { body }),

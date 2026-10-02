@@ -4,6 +4,7 @@ import { INTERPRETER_DOMAIN } from '@/lib/utils'
 import { db, resolvePrice, applyPromotion, balanceOf, toSummary, toDetail, uid, helpers, ytVideos, ytSeen } from './data'
 import { buildInsights, buildTraffic, deviceOf } from './analytics'
 import { attachment, dreamsCsv, tinyPdf } from './reports'
+import { defaultThemeKey, isMailTemplate, isMailTheme, mailPreviewHtml, mailTemplateRow, mailTemplateRows, mailThemes } from './mail'
 
 const BASE = (import.meta.env.VITE_API_URL as string) || ''
 const u = (p: string) => `${BASE}${p}`
@@ -380,6 +381,35 @@ export const handlers = [
     if (Object.keys(errors).length) return problem(422, 'Validation failed', undefined, { errors })
     Object.assign(db.settings, body)
     return HttpResponse.json(db.settings)
+  })),
+  // e-mail look (themes per template, default theme, HTML preview)
+  http.get(u('/admin/mail/themes'), wrap(async ({ request }) => { requireAdmin(request); return HttpResponse.json(mailThemes()) })),
+  http.get(u('/admin/mail/templates'), wrap(async ({ request }) => { requireAdmin(request); return HttpResponse.json(mailTemplateRows()) })),
+  http.put(u('/admin/mail/templates/:template/theme'), wrap(async ({ request, params }) => {
+    requireAdmin(request)
+    const template = String(params.template)
+    const theme = String(((await request.json()) as T.MailThemeRequest)?.theme ?? '').trim()
+    if (!isMailTemplate(template)) return problem(400, 'Bad Request', `Unknown e-mail template: ${template}`, { code: 'UNKNOWN_TEMPLATE' })
+    if (theme && !isMailTheme(theme)) return problem(400, 'Bad Request', `Unknown e-mail theme: ${theme}`, { code: 'UNKNOWN_THEME' })
+    db.settings[`mail.theme.${template}`] = theme
+    return HttpResponse.json(mailTemplateRow(template))
+  })),
+  http.put(u('/admin/mail/theme-default'), wrap(async ({ request }) => {
+    requireAdmin(request)
+    const theme = String(((await request.json()) as T.MailThemeRequest)?.theme ?? '').trim()
+    if (!isMailTheme(theme)) return problem(400, 'Bad Request', `Unknown e-mail theme: ${theme}`, { code: 'UNKNOWN_THEME' })
+    db.settings['mail.theme.default'] = theme
+    return HttpResponse.json({ theme: defaultThemeKey() } satisfies T.MailThemeRequest)
+  })),
+  http.get(u('/admin/mail/preview'), wrap(async ({ request }) => {
+    requireAdmin(request)
+    const q = new URL(request.url).searchParams
+    const template = q.get('template') ?? ''
+    const theme = q.get('theme')
+    if (!isMailTemplate(template)) return problem(400, 'Bad Request', `Unknown e-mail template: ${template}`, { code: 'UNKNOWN_TEMPLATE' })
+    if (theme && !isMailTheme(theme)) return problem(400, 'Bad Request', `Unknown e-mail theme: ${theme}`, { code: 'UNKNOWN_THEME' })
+    const locale: T.Locale = q.get('locale') === 'en' ? 'en' : 'ar'
+    return new HttpResponse(mailPreviewHtml(template, theme, locale), { headers: { 'Content-Type': 'text/html; charset=utf-8' } })
   })),
   http.get(u('/admin/dreams'), wrap(async ({ request }) => {
     requireAdmin(request)

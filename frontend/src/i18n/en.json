@@ -670,7 +670,42 @@
         "interpreter-digest": {
           "label": "Daily summary",
           "desc": "To you, once a day: the dreams that are waiting and the ones that are late."
+        },
+        "magic-link": {
+          "label": "Sign-in code",
+          "desc": "To the user, when they ask to sign in. It cannot be switched off."
+        },
+        "support-auto-reply": {
+          "label": "Support auto-reply",
+          "desc": "To anyone who writes to the support e-mail: “We received your message and will reply within 2 working days.” Once a day per sender."
         }
+      },
+      "toSupport": "Replies to support e-mails",
+      "toSupportLead": "Sent to anyone who writes to the support e-mail.",
+      "alwaysOn": "Always sent",
+      "themes": {
+        "title": "E-mail design",
+        "lead": "Each e-mail has a design: a picture at the top, a picture at the bottom and colours. The text does not change.",
+        "defaultLabel": "Main design",
+        "defaultHint": "Used by every e-mail that has no design of its own.",
+        "defaultTag": "Main",
+        "current": "Design:",
+        "followsDefault": "main design",
+        "useDefault": "Use the main design",
+        "pick": "Choose the design of “{{name}}”",
+        "saved": "Saved"
+      },
+      "preview": {
+        "button": "Preview",
+        "open": "Preview “{{name}}”",
+        "title": "Preview: {{name}}",
+        "lead": "With sample data, as it arrives in the inbox.",
+        "close": "Close",
+        "language": "Language",
+        "ar": "Arabic",
+        "en": "English",
+        "theme": "Design in the preview",
+        "frame": "Preview of “{{name}}”"
       }
     }
   },
