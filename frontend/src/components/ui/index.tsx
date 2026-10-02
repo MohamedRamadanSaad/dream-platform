@@ -36,9 +36,10 @@ const statusColor: Record<DreamStatus | OrderStatus, string> = {
   DRAFT: 'bg-surface-2 text-fg-muted', IN_REVIEW: 'bg-info/10 text-info', AWAITING_USER_REPLY: 'bg-danger/10 text-danger', INTERPRETED: 'bg-success/10 text-success', CANCELLED: 'bg-surface-2 text-fg-dim',
   INITIATED: 'bg-warn/10 text-warn', SUCCESS: 'bg-success/10 text-success', FAILED: 'bg-danger/10 text-danger', EXPIRED: 'bg-surface-2 text-fg-dim', REFUNDED: 'bg-info/10 text-info', SUSPICIOUS: 'bg-warn/10 text-warn',
 }
-export function StatusBadge({ status, kind = 'dream' }: { status: DreamStatus | OrderStatus; kind?: 'dream' | 'order' }) {
+/** `interpreter` words a dream's status from the interpreter's side ("waiting for the user's reply" instead of "waiting for your reply"). */
+export function StatusBadge({ status, kind = 'dream', audience = 'user' }: { status: DreamStatus | OrderStatus; kind?: 'dream' | 'order'; audience?: 'user' | 'interpreter' }) {
   const { t } = useTranslation()
-  return <span className={cn('chip font-medium', statusColor[status])}><span className="h-1.5 w-1.5 rounded-full bg-current" />{t(kind === 'dream' ? `me.status.${status}` : `me.orderStatus.${status}`)}</span>
+  return <span className={cn('chip font-medium', statusColor[status])}><span className="h-1.5 w-1.5 rounded-full bg-current" />{t(kind === 'order' ? `me.orderStatus.${status}` : audience === 'interpreter' ? `admin.status.${status}` : `me.status.${status}`)}</span>
 }
 
 export function Skeleton({ className }: { className?: string }) { return <div className={cn('animate-pulse rounded-xl bg-surface-2', className)} /> }

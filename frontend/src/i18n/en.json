@@ -382,7 +382,7 @@
     "dashboard": {
       "title": "Interpreter dashboard",
       "inReview": "In review",
-      "awaiting": "Waiting for reply",
+      "awaiting": "Waiting for the user's reply",
       "overdue": "Overdue",
       "today": "Interpreted today",
       "avg": "Average reply time (hours)",
@@ -426,7 +426,8 @@
       "user360": "User profile",
       "awaitingNote": "Waiting for the user to reply. The timer is paused.",
       "amount": "Amount",
-      "noOrder": "Manual credit (no purchase)"
+      "noOrder": "Manual credit (no purchase)",
+      "timerPaused": "Timer paused"
     },
     "pricing": {
       "title": "Prices by country",
@@ -847,6 +848,13 @@
         "theme": "Design in the preview",
         "frame": "Preview of “{{name}}”"
       }
+    },
+    "status": {
+      "DRAFT": "Draft (not sent)",
+      "IN_REVIEW": "Waiting for your interpretation",
+      "AWAITING_USER_REPLY": "Waiting for the user's reply",
+      "INTERPRETED": "Interpreted",
+      "CANCELLED": "Cancelled"
     }
   },
   "common": {
