@@ -192,7 +192,7 @@ export const MAIL_EVENTS = [
   'welcome', 'payment-failed', 'dream-cancelled', 'credits-adjusted', 'testimonial-approved', 'account-deleted', 'new-user',
   'testimonial-received', 'dream-submitted', 'dream-received', 'interpreter-question', 'user-replied', 'interpretation-ready',
   'payment-receipt', 'payment-suspicious', 'reply-reminder', 'testimonial-request', 'interpreter-digest', 'youtube-new-video',
-  'support-auto-reply',
+  'support-auto-reply', 'new-sign-in', 'passkey-added',
 ] as const
 
 /** Every e-mail template (GET /admin/mail/templates); magic-link has no on/off switch. */

@@ -8,7 +8,7 @@ gsap.registerPlugin(MorphSVGPlugin)
 
 export type IconName = 'moon' | 'star' | 'scroll' | 'wallet' | 'user' | 'bell' | 'plus' | 'logout' | 'play' | 'chat' | 'chart' | 'globe' | 'gift' | 'clock' | 'check' | 'search' | 'settings' | 'sun' | 'youtube' | 'sparkle' | 'book' | 'quote' | 'shield' | 'heart'
   | 'download' | 'mail' | 'alert' | 'info' | 'bulb' | 'trophy' | 'eye' | 'flame' | 'filter' | 'menu' | 'link' | 'phone' | 'calendar'
-  | 'tablet' | 'desktop' | 'account'
+  | 'tablet' | 'desktop' | 'account' | 'passkey' | 'trash'
 
 interface Shape { before: string; after: string; fill?: boolean; extra?: JSX.Element }
 
@@ -55,6 +55,10 @@ const shapes: Record<IconName, Shape> = {
   desktop: { before: 'M3.5 4.5h17v11h-17zM9 20h6M12 15.5V20', after: 'M3 4h18v12H3zM8.5 20.5h7M12 16v4.5' },
   // a person inside a circle: "my account" (the plain person is the users list)
   account: { before: 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM12 12.5a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM6.4 18.3c1.3-1.8 3.3-2.8 5.6-2.8s4.3 1 5.6 2.8', after: 'M12 21.5a9.5 9.5 0 1 0 0-19 9.5 9.5 0 0 0 0 19zM12 13a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zM6 18.6c1.4-2 3.5-3.1 6-3.1s4.6 1.1 6 3.1' },
+  // fingerprint / face sign-in: a fingerprint that becomes a face in its scan frame
+  passkey: { before: 'M6.4 4.9A9 9 0 0 1 20.2 8.6M3.6 9.4a9 9 0 0 1 1.1-2.4M3.3 15.4c.5-1.1.8-2.4.8-3.6M20.9 11.2c.1 2.2-.1 4.4-.6 6.4M6.7 19.2c.9-1.9 1.4-4.3 1.4-6.8a3.9 3.9 0 0 1 7.8 0c0 .8 0 1.7-.1 2.5M15.5 18.3c-.3 1.1-.6 2.1-1.1 3.1M12 12.4v.9c0 3.1-.6 5.9-1.9 8.3', after: 'M4 8.5v-2A2.5 2.5 0 0 1 6.5 4h2M15.5 4h2A2.5 2.5 0 0 1 20 6.5v2M20 15.5v2a2.5 2.5 0 0 1-2.5 2.5h-2M8.5 20h-2A2.5 2.5 0 0 1 4 17.5v-2M9 9.5v1.5M15 9.5v1.5M12.5 9.5V13h-1M9.2 15.6c1.6 1.3 4 1.3 5.6 0' },
+  // the lid lifts on hover
+  trash: { before: 'M4.5 6.5h15M9.5 6.5v-2h5v2M6.5 6.5l.8 12.6a1.5 1.5 0 0 0 1.5 1.4h6.4a1.5 1.5 0 0 0 1.5-1.4l.8-12.6M10 10.5v6M14 10.5v6', after: 'M4.8 5.3l14.5-2.6M9.7 4.3l-.3-1.8 4.9-.9.3 1.8M6.5 7.5l.8 11.6a1.5 1.5 0 0 0 1.5 1.4h6.4a1.5 1.5 0 0 0 1.5-1.4l.8-11.6M10 11v5.5M14 11v5.5' },
 }
 
 interface Props extends Omit<SVGProps<SVGSVGElement>, 'name'> {

@@ -9,6 +9,9 @@ export const authApi = {
   refresh: () => http.post<T.AuthResponse>('/auth/refresh'),
   logout: () => http.post<void>('/auth/logout'),
   onboarding: (body: T.OnboardingRequest) => http.post<T.UserDto>('/auth/onboarding', body),
+  /** Fingerprint / face sign-in (docs/PASSKEYS_CONTRACT.md): a fresh challenge, then the signed answer. */
+  passkeyOptions: () => http.post<T.PasskeySignInOptions>('/auth/passkey/options'),
+  passkeyVerify: (body: T.PasskeyVerifyRequest) => http.post<T.AuthResponse>('/auth/passkey/verify', body),
 }
 
 export const publicApi = {
@@ -16,6 +19,8 @@ export const publicApi = {
   waitTime: () => http.get<T.WaitTime>('/public/wait-time'),
   testimonials: () => http.get<{ items: T.Testimonial[] }>('/public/testimonials'),
   stats: () => http.get<T.PublicStats>('/public/stats'),
+  /** Web Push key read at run time, so a new key needs no new build. */
+  pushKey: () => http.get<T.PushKey>('/public/push-key'),
   /** Page-view hit — fire-and-forget (see usePageTracking). */
   track: (body: T.TrackRequest) => postQuietly('/public/track', body),
 }
@@ -33,6 +38,12 @@ export const meApi = {
   signOutDevice: (id: string) => http.delete<void>(`/me/devices/${encodeURIComponent(id)}`),
   /** Signs out every device except this one. */
   signOutOtherDevices: () => http.post<void>('/me/devices/sign-out-others'),
+  /** Fingerprint / face sign-ins of this account (docs/PASSKEYS_CONTRACT.md), newest first. */
+  passkeys: () => http.get<T.PasskeyDto[]>('/me/passkeys'),
+  passkeyRegistrationOptions: () => http.post<T.PasskeyRegistrationOptions>('/me/passkeys/registration/options'),
+  addPasskey: (body: T.PasskeyRegistrationRequest) => http.post<T.PasskeyDto>('/me/passkeys/registration', body),
+  /** 404 when it is not the caller's. */
+  removePasskey: (id: string) => http.delete<void>(`/me/passkeys/${encodeURIComponent(id)}`),
 }
 
 export const dreamsApi = {

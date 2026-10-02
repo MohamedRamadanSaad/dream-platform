@@ -78,13 +78,16 @@ export function Segmented<T extends string>({ value, onChange, items, className 
  * which would trap a fixed element and push it under the header). Header and footer stay
  * pinned; only the body scrolls, so long forms never get cut on short screens.
  * Phone: bottom sheet. Tablet/desktop: centred card.
+ * `focusField={false}`: focus the dialog itself, not its first field (no phone keyboard over a one-tap dialog).
  */
-export function Modal({ open, onClose, title, children, footer, size = 'md' }: { open: boolean; onClose: () => void; title: string; children: ReactNode; footer?: ReactNode; size?: 'sm' | 'md' | 'lg' }) {
+export function Modal({ open, onClose, title, children, footer, size = 'md', focusField = true }: { open: boolean; onClose: () => void; title: string; children: ReactNode; footer?: ReactNode; size?: 'sm' | 'md' | 'lg'; focusField?: boolean }) {
   const { t } = useTranslation()
   const panelRef = useRef<HTMLDivElement>(null)
   const titleId = useId()
   const closeRef = useRef(onClose)
   closeRef.current = onClose
+  const focusFieldRef = useRef(focusField)
+  focusFieldRef.current = focusField
 
   useEffect(() => {
     if (!open) return
@@ -93,7 +96,7 @@ export function Modal({ open, onClose, title, children, footer, size = 'md' }: {
     const gap = window.innerWidth - document.documentElement.clientWidth
     document.body.style.overflow = 'hidden'
     if (gap > 0) document.body.style.paddingInlineEnd = `${gap}px`
-    const first = panelRef.current?.querySelector<HTMLElement>('input:not([type=hidden]):not([disabled]), select, textarea')
+    const first = focusFieldRef.current ? panelRef.current?.querySelector<HTMLElement>('input:not([type=hidden]):not([disabled]), select, textarea') : null
     ;(first ?? panelRef.current)?.focus({ preventScroll: true })
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') { e.stopPropagation(); closeRef.current() }

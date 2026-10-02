@@ -6,6 +6,13 @@ import { buildInsights, buildTraffic, deviceOf } from './analytics'
 import { attachment, dreamsCsv, tinyPdf } from './reports'
 import { defaultThemeKey, isMailTemplate, isMailTheme, mailPreviewHtml, mailTemplateRow, mailTemplateRows, mailThemes } from './mail'
 import { endSession, listDevices, removeDevice, removeOtherDevices, startSession } from './devices'
+import { finishRegistration, finishSignIn, listPasskeys, registrationOptions, removePasskey, signInOptions } from './passkeys'
+
+/**
+ * Preview only: the public half of a throwaway P-256 key (its private half was never kept), so the push button can be
+ * tried — the browser subscribes, nothing is ever sent.
+ */
+const MOCK_PUSH_KEY = 'BLG8Q3e-yg97PaYBiGpxgzU__5hoUDNQwxQl3TkAGm170BzckNCfAgIliFnPc_XnZUkzS6Cd4z2mMCX58eJLFJc'
 
 const BASE = (import.meta.env.VITE_API_URL as string) || ''
 const u = (p: string) => `${BASE}${p}`
@@ -92,6 +99,15 @@ export const handlers = [
     Object.assign(me, { name: b.name, gender: b.gender, birthDate: b.birthDate, age: ageOf(b.birthDate), onboarded: true })
     return HttpResponse.json(me)
   })),
+  // fingerprint / face sign-in (docs/PASSKEYS_CONTRACT.md); like /auth/magic/verify on success
+  http.post(u('/auth/passkey/options'), wrap(async () => HttpResponse.json(signInOptions()))),
+  http.post(u('/auth/passkey/verify'), wrap(async ({ request }) => {
+    const body = (await request.json().catch(() => ({}))) as Partial<T.PasskeyVerifyRequest>
+    const user = finishSignIn(body, uaOf(request))
+    if (!user) return problem(401, 'Unauthorized', 'This passkey cannot sign in to an account.', { code: 'PASSKEY_INVALID' })
+    startSession(user, uaOf(request), body.rememberMe ?? true)
+    return HttpResponse.json(session(user))
+  })),
 
   // ---------- public ----------
   http.get(u('/public/catalog'), wrap(async ({ request }) => {
@@ -112,6 +128,7 @@ export const handlers = [
     { id: 't3', name: 'Sara', rating: 4, comment: 'Calm, deep and honest. No exaggeration at all.', date: helpers.daysAgo(50) },
   ] }))),
   http.get(u('/public/stats'), wrap(async () => HttpResponse.json({ subscribers: '50K+', views: '1M+', videos: '230+', interpreted: 2000 + db.dreams.filter((d) => d.status === 'INTERPRETED').length } satisfies T.PublicStats))),
+  http.get(u('/public/push-key'), wrap(async () => HttpResponse.json({ publicKey: MOCK_PUSH_KEY } satisfies T.PushKey))),
   http.post(u('/public/track'), wrap(async ({ request }) => {
     const b = (await request.json().catch(() => null)) as T.TrackRequest | null
     if (!b?.path || !b.sessionId) return problem(400, 'Validation failed')
@@ -147,6 +164,19 @@ export const handlers = [
     const b = (await request.json()) as T.PreferencesRequest
     Object.assign(me, b, b.birthDate ? { age: ageOf(b.birthDate) } : {})
     return HttpResponse.json(me)
+  })),
+  // fingerprint / face sign-ins of the caller (docs/PASSKEYS_CONTRACT.md)
+  http.get(u('/me/passkeys'), wrap(async ({ request }) => HttpResponse.json(listPasskeys(requireUser(request))))),
+  http.post(u('/me/passkeys/registration/options'), wrap(async ({ request }) => HttpResponse.json(registrationOptions(requireUser(request))))),
+  http.post(u('/me/passkeys/registration'), wrap(async ({ request }) => {
+    const me = requireUser(request)
+    const body = (await request.json().catch(() => ({}))) as Partial<T.PasskeyRegistrationRequest>
+    const added = finishRegistration(me, body, uaOf(request))
+    return added ? HttpResponse.json(added, { status: 201 }) : problem(400, 'Bad request', 'The new passkey was not accepted.', { code: 'PASSKEY_INVALID' })
+  })),
+  http.delete(u('/me/passkeys/:id'), wrap(async ({ request, params }) => {
+    const me = requireUser(request)
+    return removePasskey(me.id, String(params.id)) ? new HttpResponse(null, { status: 204 }) : problem(404, 'Not found')
   })),
   // devices = the caller's active sign-in sessions (docs/SESSIONS_PROFILE_CONTRACT.md §2)
   http.get(u('/me/devices'), wrap(async ({ request }) => HttpResponse.json(listDevices(requireUser(request), uaOf(request), lang(request))))),

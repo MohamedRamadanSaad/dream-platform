@@ -27,6 +27,7 @@ import { UsersPage, User360Page } from '@/features/admin/UsersPage'
 import { TestimonialsAdminPage } from '@/features/admin/TestimonialsAdminPage'
 import { OrdersAdminPage } from '@/features/admin/OrdersAdminPage'
 import { EmailSettingsPage } from '@/features/admin/EmailSettingsPage'
+import { PasskeyOffer } from '@/features/account/PasskeyOffer'
 import { usePageTracking } from './usePageTracking'
 
 /** Root of every route: page-view tracking lives here so each pathname change is counted once. */
@@ -86,7 +87,7 @@ function UserLayout() {
       { to: '/me/profile', label: t('me.nav.profile'), icon: 'user' },
       { to: '/me/courses', label: t('me.nav.courses'), icon: 'play' },
       { to: '/me/notifications', label: t('me.nav.notifications'), icon: 'bell' },
-    ]}><Outlet /></AppShell>
+    ]}><PasskeyOffer /><Outlet /></AppShell>
   )
 }
 
@@ -105,7 +106,7 @@ function AdminLayout() {
       { to: '/admin/emails', label: t('admin.nav.emails'), icon: 'mail' },
       { to: '/admin/notifications', label: t('me.nav.notifications'), icon: 'bell' },
       { to: '/admin/profile', label: t('admin.nav.profile'), icon: 'account' },
-    ]}><Outlet /></AppShell>
+    ]}><PasskeyOffer /><Outlet /></AppShell>
   )
 }
 

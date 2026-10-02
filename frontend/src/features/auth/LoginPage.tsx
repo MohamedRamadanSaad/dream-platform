@@ -3,7 +3,8 @@ import { useNavigate, useSearchParams, Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useMutation } from '@tanstack/react-query'
 import { GoogleLogin, GoogleOAuthProvider } from '@react-oauth/google'
-import { INTERPRETER_DOMAIN } from '@/lib/utils'
+import { cn, INTERPRETER_DOMAIN } from '@/lib/utils'
+import { getPasskey, passkeyFailure, useFreshOptions, usePasskeySupport, withOptions } from '@/lib/passkeys'
 import { authApi } from '@/api/endpoints'
 import { useAuthStore, isInterpreter } from '@/app/auth-store'
 import { readRememberMe, saveRememberMe } from '@/app/session'
@@ -13,17 +14,22 @@ import { Button, Input, Label } from '@/components/ui'
 import { Icon } from '@/components/icons/Icon'
 import { LocaleToggle } from '@/components/layout'
 import { ApiError } from '@/api/client'
+import { armPasskeyOffer } from '@/features/account/PasskeyOffer'
 import type { AuthResponse, Gender } from '@/api/types'
 
 const GOOGLE_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID as string | undefined
 const MOCKS = import.meta.env.VITE_USE_MOCKS === 'true'
 
+type SignInMethod = 'google' | 'email' | 'passkey'
+
 function useFinishLogin() {
   const navigate = useNavigate()
   const [params] = useSearchParams()
   const setSession = useAuthStore((s) => s.setSession)
-  return (r: AuthResponse, remember: boolean) => {
+  return (r: AuthResponse, remember: boolean, method: SignInMethod) => {
     setSession(r.accessToken, r.user, remember)
+    // after Google or an e-mail code, the app may offer fingerprint / face sign-in once (see PasskeyOffer)
+    if (method !== 'passkey') armPasskeyOffer(r.user.id)
     const next = params.get('next')
     if (!r.user.onboarded) navigate(`/onboarding${next ? `?next=${encodeURIComponent(next)}` : ''}`)
     else navigate(next || (isInterpreter(r.user) ? '/admin' : '/me'))
@@ -46,6 +52,58 @@ function RememberMe({ checked, onChange }: { checked: boolean; onChange: (v: boo
   )
 }
 
+type PasskeyNote = 'cancelled' | 'invalid' | 'failed'
+
+/**
+ * "Sign in with fingerprint or face", shown only where it can work (this device, or a phone nearby). The options are
+ * fetched before the tap so the device's prompt opens inside it — Safari opens it only from the tap itself.
+ */
+function PasskeySignIn({ remember, onStart, onSignedIn }: { remember: boolean; onStart: () => void; onSignedIn: (r: AuthResponse, remember: boolean) => void }) {
+  const { t } = useTranslation()
+  const support = usePasskeySupport()
+  const usable = support?.signIn === true
+  const prepared = useFreshOptions(authApi.passkeyOptions, usable)
+  const [prompting, setPrompting] = useState(false)
+  const [note, setNote] = useState<PasskeyNote | null>(null)
+  const verify = useMutation({
+    mutationFn: authApi.passkeyVerify,
+    onSuccess: (r, v) => onSignedIn(r, v.rememberMe ?? true),
+    onError: (e) => {
+      // unknown or removed passkey, wrong site, expired challenge…: the server answers PASSKEY_INVALID
+      setNote(e instanceof ApiError && (e.problem.code === 'PASSKEY_INVALID' || e.status === 401) ? 'invalid' : 'failed')
+      prepared.warm()
+    },
+  })
+  if (!usable) return null
+  const busy = prompting || verify.isPending
+  const start = () => {
+    if (busy) return
+    onStart()
+    setNote(null)
+    setPrompting(true)
+    withOptions(prepared, getPasskey)
+      .then(({ requestId, credential }) => verify.mutate({ requestId, credential, rememberMe: remember }))
+      .catch((e: unknown) => {
+        // closing the prompt is not an error: a quiet hint for those who have not turned it on yet
+        setNote(passkeyFailure(e) === 'cancelled' ? 'cancelled' : 'failed')
+        prepared.warm()
+      })
+      .finally(() => setPrompting(false))
+  }
+  return (
+    <div className="mb-3">
+      <Button size="lg" className="w-full px-5 leading-snug" loading={busy} onClick={start} onPointerEnter={prepared.warm} onFocus={prepared.warm}>
+        {!busy && <span className="shrink-0"><Icon name="passkey" size={22} /></span>}{t('auth.passkey.button')}
+      </Button>
+      {note && (
+        <p role={note === 'cancelled' ? 'status' : 'alert'} className={cn('mt-2.5 text-center text-xs leading-relaxed', note === 'cancelled' ? 'text-fg-muted' : 'text-danger')}>
+          {t(`auth.passkey.${note}`)}
+        </p>
+      )}
+    </div>
+  )
+}
+
 export default function LoginPage() {
   const { t } = useTranslation()
   const finish = useFinishLogin()
@@ -56,9 +114,9 @@ export default function LoginPage() {
   const [remember, setRemember] = useState(readRememberMe)
   const choose = (v: boolean) => { setRemember(v); saveRememberMe(v) }
 
-  const google = useMutation({ mutationFn: authApi.google, onSuccess: (r, v) => finish(r, v.rememberMe ?? true), onError: (e) => setErr((e as ApiError).message) })
+  const google = useMutation({ mutationFn: authApi.google, onSuccess: (r, v) => finish(r, v.rememberMe ?? true, 'google'), onError: (e) => setErr((e as ApiError).message) })
   const magic = useMutation({ mutationFn: authApi.magicRequest, onSuccess: () => setSent(true), onError: (e) => setErr((e as ApiError).message) })
-  const verify = useMutation({ mutationFn: authApi.magicVerify, onSuccess: (r, v) => finish(r, v.rememberMe ?? true), onError: (e) => setErr((e as ApiError).message) })
+  const verify = useMutation({ mutationFn: authApi.magicVerify, onSuccess: (r, v) => finish(r, v.rememberMe ?? true, 'email'), onError: (e) => setErr((e as ApiError).message) })
 
   const isInterpreterEmail = email.trim().toLowerCase().endsWith(INTERPRETER_DOMAIN)
   // the link in the e-mail opens a new page: it reads the choice saved here (see MagicCallbackPage)
@@ -73,9 +131,10 @@ export default function LoginPage() {
         <div className="mb-6 text-gold-soft"><Icon name="moon" size={56} strokeWidth={0.9} /></div>
         <h1 className="font-display text-4xl">{t('auth.title')}</h1>
         <p className="mt-2 mb-8 text-center text-sm font-light text-pearl/60">{t('auth.lead')}</p>
-        <div className="card w-full bg-surface p-6 text-fg">
+        <div className="card w-full bg-surface p-5 text-fg sm:p-6">
+          <PasskeySignIn remember={remember} onStart={() => setErr(null)} onSignedIn={(r, rem) => finish(r, rem, 'passkey')} />
           {isInterpreterEmail ? (
-            <p className="rounded-xl border border-gold/40 bg-gold/10 p-3 text-center text-xs text-gold-ink">{t('auth.interpreterDomainHint')}</p>
+            <p className="mb-5 rounded-xl border border-gold/40 bg-gold/10 p-3 text-center text-xs text-gold-ink">{t('auth.interpreterDomainHint')}</p>
           ) : GOOGLE_ID && !MOCKS ? (
             <GoogleOAuthProvider clientId={GOOGLE_ID}>
               <div className="flex justify-center"><GoogleLogin onSuccess={(c) => c.credential && google.mutate({ idToken: c.credential, rememberMe: remember })} onError={() => setErr(t('common.error'))} shape="pill" width="320" /></div>
@@ -160,7 +219,7 @@ export function MagicCallbackPage() {
   const { t } = useTranslation()
   const [params] = useSearchParams()
   const finish = useFinishLogin()
-  const m = useMutation({ mutationFn: authApi.magicVerify, onSuccess: (r, v) => finish(r, v.rememberMe ?? true) })
+  const m = useMutation({ mutationFn: authApi.magicVerify, onSuccess: (r, v) => finish(r, v.rememberMe ?? true, 'email') })
   const token = params.get('token')
   const started = useRef(false)
   useEffect(() => {

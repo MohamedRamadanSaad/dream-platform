@@ -1,7 +1,6 @@
 // "Devices" on the account page: every browser where this account is signed in (docs/SESSIONS_PROFILE_CONTRACT.md §2).
-import { useEffect, useRef, useState } from 'react'
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useLocation } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { meApi } from '@/api/endpoints'
 import { ApiError } from '@/api/client'
@@ -12,6 +11,7 @@ import { Button, Modal, Skeleton } from '@/components/ui'
 import { toast } from '@/components/ui/Toaster'
 import { reduced } from '@/components/motion'
 import { cn, flagEmoji, fmtDate, regionName, timeAgo } from '@/lib/utils'
+import { useAnchorArrival } from './useAnchorArrival'
 import type { DeviceDto, DeviceType } from '@/api/types'
 
 const KEY = ['me', 'devices'] as const
@@ -64,13 +64,12 @@ function DeviceRow({ d, leaving, busy, onSignOut }: { d: DeviceDto; leaving: boo
 export function DevicesSection() {
   const { t } = useTranslation()
   const qc = useQueryClient()
-  const { hash } = useLocation()
   const { signOut, pending: signingOut } = useSignOut()
   const q = useQuery({ queryKey: KEY, queryFn: meApi.devices })
   const [leaving, setLeaving] = useState<string[]>([])
   const [askOthers, setAskOthers] = useState(false)
-  const [flash, setFlash] = useState(false)
-  const ref = useRef<HTMLElement>(null)
+  // the "new sign-in" e-mail links to …/profile#devices
+  const { ref, flash } = useAnchorArrival<HTMLElement>('devices', !q.isLoading)
 
   // this device first, then the server's order (most recently active first)
   const list = [...(q.data ?? [])].sort((a, b) => Number(b.current) - Number(a.current))
@@ -100,23 +99,6 @@ export function DevicesSection() {
     onSuccess: () => { setAskOthers(false); leave(others.map((d) => d.id), t('me.devices.othersDone')) },
     onError: () => toast.error(t('common.error')),
   })
-
-  // the "new sign-in" e-mail links to …/profile#devices: bring the list into view once it is drawn
-  const arrived = useRef(false)
-  useEffect(() => {
-    if (hash !== '#devices' || arrived.current || q.isLoading) return
-    const h = window.setTimeout(() => {
-      arrived.current = true
-      ref.current?.scrollIntoView({ behavior: reduced() ? 'auto' : 'smooth', block: 'start' })
-      setFlash(true)
-    }, 120)
-    return () => window.clearTimeout(h)
-  }, [hash, q.isLoading])
-  useEffect(() => {
-    if (!flash) return
-    const h = window.setTimeout(() => setFlash(false), 2400)
-    return () => window.clearTimeout(h)
-  }, [flash])
 
   return (
     <section id="devices" ref={ref} aria-labelledby="devices-title"

@@ -120,17 +120,24 @@
     "continue": "Continue",
     "logout": "Sign out",
     "birthDate": "Date of birth",
-    "interpreterDomainHint": "Interpreter accounts sign in with the email code only (not Google).",
+    "interpreterDomainHint": "Interpreter accounts sign in with the email code, not with Google.",
     "interpreterUseMagic": "This is an interpreter email. Please sign in with the email code.",
     "mockHint": "Test mode: any code will sign you in. Use {{email}} to sign in as the interpreter.",
     "linkInvalid": "This link is not valid or has expired",
     "providers": {
       "GOOGLE": "Google",
       "MAGIC_LINK": "Email code",
+      "PASSKEY": "Fingerprint or face",
       "APPLE": "Apple"
     },
     "rememberMe": "Keep me signed in on this device",
-    "rememberMeHint": "Don't tick this on a shared device."
+    "rememberMeHint": "Don't tick this on a shared device.",
+    "passkey": {
+      "button": "Sign in with fingerprint or face",
+      "cancelled": "Not turned on yet? Sign in another way, then turn it on from your account page.",
+      "invalid": "We couldn't sign you in with this fingerprint or face. Please sign in with Google or an email code, then add it again from your account page.",
+      "failed": "Fingerprint or face sign-in didn't work this time. Try again, or choose another way."
+    }
   },
   "me": {
     "greeting": "Peace be upon you, {{name}}",
@@ -257,16 +264,54 @@
       "age": "Age",
       "years": "{{n}} years",
       "pushDenied": "Your browser blocked notifications.",
+      "pushFailed": "Couldn't turn on notifications. Please try again.",
       "deleteConfirm": "Delete your account and all your data?",
       "signedInAs": "Signed in as",
       "personal": "Personal details",
       "signInTitle": "How you sign in",
       "noPasswords": "No passwords here. You sign in with Google or with a code sent to your email.",
+      "noPasswordsPasskey": "No passwords here. You sign in with Google, with a code sent to your email, or with your fingerprint or face.",
       "noPasswordsInterpreter": "No passwords here. You sign in with a code sent to your email.",
+      "noPasswordsInterpreterPasskey": "No passwords here. You sign in with a code sent to your email, or with your fingerprint or face.",
       "interpreterRole": "Interpreter account",
       "deleteBody": "Your account and your personal data will be removed, and you will be signed out on every device. This cannot be undone.",
       "deleteYes": "Delete my account",
       "deleted": "Your account was deleted"
+    },
+    "passkeys": {
+      "title": "Fingerprint or face sign-in",
+      "lead": "Sign in with one touch: your fingerprint, face or screen lock. Your fingerprint and face never leave your device.",
+      "count_one": "{{count}} device",
+      "count_other": "{{count}} devices",
+      "added": "Added {{date}}",
+      "lastUsed": "Last used {{when}}",
+      "neverUsed": "Not used yet",
+      "empty": "Not turned on for any device yet.",
+      "add": "Add fingerprint / face sign-in on this device",
+      "unsupportedBrowser": "This browser doesn't support fingerprint or face sign-in.",
+      "unsupportedDevice": "It can't be added on this device: there is no fingerprint, face or screen lock this browser can use.",
+      "addTitle": "Turn on fingerprint or face sign-in",
+      "addBody": "Your device will ask for your fingerprint, face or screen lock once now. After that, one touch signs you in — no email code.",
+      "labelField": "Name for this device",
+      "labelHint": "Optional. It only shows in this list.",
+      "continue": "Continue",
+      "addedToast": "Fingerprint or face sign-in is on for this device",
+      "errors": {
+        "exists": "This device is already added to your account.",
+        "unsupported": "This device or browser doesn't support fingerprint or face sign-in.",
+        "failed": "It couldn't be turned on this time. Please try again."
+      },
+      "remove": "Remove {{label}}",
+      "removeTitle": "Remove this sign-in?",
+      "removeBody": "“{{label}}” will no longer sign you in. You can still sign in with Google or an email code.",
+      "removeBodyInterpreter": "“{{label}}” will no longer sign you in. You can still sign in with an email code.",
+      "removeDevice": "Your device may still show it in its settings. You can delete it there too.",
+      "removeYes": "Remove",
+      "removed": "Removed",
+      "offerTitle": "Sign in faster next time",
+      "offerBody": "Turn on fingerprint or face sign-in on this device, and next time one touch signs you in.",
+      "offerYes": "Turn it on",
+      "offerLater": "Not now"
     },
     "devices": {
       "title": "Devices",
@@ -768,6 +813,10 @@
         "new-sign-in": {
           "label": "Sign-in from a new device",
           "desc": "To the user or to you, when the account is signed in from a device or browser not used before, with a link to review devices."
+        },
+        "passkey-added": {
+          "label": "Fingerprint or face sign-in added",
+          "desc": "To the user or to you, when fingerprint or face sign-in is added to the account, with a link to the account page."
         }
       },
       "toSupport": "Replies to support e-mails",
