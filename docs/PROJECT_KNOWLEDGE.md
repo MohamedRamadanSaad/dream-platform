@@ -101,7 +101,7 @@ Done: full frontend, full backend + DB, CI green, deploy files, Vercel preview l
 **Pending (owner's manual steps)**
 1. Add GitHub secrets `VPS_HOST`, `VPS_USER`, `VPS_SSH_KEY` + variable `VPS_ENABLED=true` at `https://github.com/MohamedRamadanSaad/dream-platform/settings/secrets/actions` (the sandbox cannot write secrets). Then trigger `deploy-vps.yml`.
 2. Cloudflare: A `@` and `www` → `186.241.26.214` proxied; SSL Full (strict).
-3. Site e-mail: SMTP_HOST/PORT/USERNAME/PASSWORD, MAIL_FROM in `backend.env` + SPF/DKIM DNS. Until then mails are logged, and interpreter codes can't be received on the domain mailbox.
+3. Site e-mail: mailbox `support@saadatu-aldarein.com` (Hostinger) exists. Add its password as GitHub secret `SMTP_PASSWORD`; `deploy-vps.yml` then writes SMTP_* + MAIL_FROM into `backend.env`, recreates the backend and requests a test sign-in code to that mailbox (host/user overridable with repo variables `SMTP_HOST`/`SMTP_USERNAME`). Check SPF/DKIM in Hostinger's e-mail DNS panel.
 4. Google OAuth web client id → `GOOGLE_CLIENT_ID` (backend.env) and `VITE_GOOGLE_CLIENT_ID` (.env); authorised origin `https://saadatu-aldarein.com`.
 5. VAPID keys (`npx web-push generate-vapid-keys`) → `VAPID_PUBLIC_KEY/PRIVATE_KEY`.
 6. YouTube channel id → setting `brand.youtube_channel_id`.

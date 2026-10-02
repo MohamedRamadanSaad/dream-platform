@@ -17,6 +17,26 @@ jobs:
         run: |
           tar czf - --exclude=node_modules --exclude=dist --exclude=.git frontend deploy backend 2>/dev/null \
             | ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "mkdir -p /opt/saadat && tar xzf - -C /opt/saadat"
+      # Site e-mail: the mailbox password lives only in the GitHub secret SMTP_PASSWORD; host/user can be
+      # overridden with repository variables. Written into backend.env over SSH stdin (never on a command line).
+      - name: mail settings
+        id: mail
+        env:
+          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+          SMTP_HOST: ${{ vars.SMTP_HOST || 'smtp.hostinger.com' }}
+          SMTP_PORT: ${{ vars.SMTP_PORT || '587' }}
+          SMTP_USERNAME: ${{ vars.SMTP_USERNAME || 'support@saadatu-aldarein.com' }}
+        run: |
+          if [ -z "$SMTP_PASSWORD" ]; then echo "secret SMTP_PASSWORD not set: e-mails stay in the backend log"; exit 0; fi
+          case "$SMTP_PASSWORD" in *"'"*) echo "SMTP_PASSWORD must not contain a single quote"; exit 1;; esac
+          result=$(printf "SMTP_HOST=%s\nSMTP_PORT=%s\nSMTP_USERNAME=%s\nSMTP_PASSWORD='%s'\nSMTP_AUTH=true\nSMTP_STARTTLS=true\nMAIL_FROM=%s\n" \
+              "$SMTP_HOST" "$SMTP_PORT" "$SMTP_USERNAME" "$SMTP_PASSWORD" "$SMTP_USERNAME" \
+            | ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} 'f=/opt/saadat/deploy/backend.env; new=$(mktemp)
+                grep -vE "^(SMTP_HOST|SMTP_PORT|SMTP_USERNAME|SMTP_PASSWORD|SMTP_AUTH|SMTP_STARTTLS|MAIL_FROM)=" "$f" > "$new"; cat >> "$new"
+                if cmp -s "$new" "$f"; then echo unchanged; else cat "$new" > "$f"; touch /opt/saadat/deploy/.recreate-backend; echo updated; fi
+                rm -f "$new"')
+          echo "mail settings: $result"
+          [ "$result" = "updated" ] && echo "changed=true" >> "$GITHUB_OUTPUT" || true
       - name: build & restart
         run: |
           ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} bash -s <<'EOS'
@@ -25,15 +45,31 @@ jobs:
             test -f .env || { echo "missing /opt/saadat/deploy/.env"; exit 1; }
             docker compose --env-file .env build --pull
             docker compose --env-file .env up -d --remove-orphans
+            if [ -f .recreate-backend ]; then docker compose --env-file .env up -d --no-deps --force-recreate backend; rm -f .recreate-backend; fi
             docker image prune -f >/dev/null
             docker compose --env-file .env ps
           EOS
       - name: smoke test
         run: |
           DOMAIN=$(ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "grep ^DOMAIN= /opt/saadat/deploy/.env | cut -d= -f2")
+          echo "DOMAIN=$DOMAIN" >> "$GITHUB_ENV"
           for i in $(seq 1 12); do
             code=$(curl -s -o /dev/null -w '%{http_code}' "https://$DOMAIN/" || true)
             [ "$code" = "200" ] && echo "OK https://$DOMAIN" && exit 0
             sleep 10
           done
           echo "site not responding (got $code)"; exit 1
+      # After the mail settings change: wait for the API, then ask for a sign-in code to the site mailbox so the
+      # delivery can be checked in that inbox.
+      - name: mail test
+        if: ${{ steps.mail.outputs.changed == 'true' }}
+        env:
+          SMTP_USERNAME: ${{ vars.SMTP_USERNAME || 'support@saadatu-aldarein.com' }}
+        run: |
+          for i in $(seq 1 24); do
+            curl -s "https://$DOMAIN/api/actuator/health" | grep -q '"UP"' && break
+            sleep 10
+          done
+          code=$(curl -s -o /dev/null -w '%{http_code}' -X POST "https://$DOMAIN/api/auth/magic/request" \
+            -H 'Content-Type: application/json' -H 'Accept-Language: ar' -d "{\"email\":\"$SMTP_USERNAME\"}")
+          echo "sign-in code requested for $SMTP_USERNAME (HTTP $code)"
