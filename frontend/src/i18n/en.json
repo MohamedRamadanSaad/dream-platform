@@ -96,7 +96,8 @@
     "terms": "Terms",
     "privacy": "Privacy",
     "contact": "Contact",
-    "youtube": "YouTube"
+    "youtube": "YouTube",
+    "geoCredit": "IP geolocation by DB-IP"
   },
   "auth": {
     "title": "Welcome",

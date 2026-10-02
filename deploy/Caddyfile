@@ -16,6 +16,14 @@
   handle /api/* {
     reverse_proxy backend:8080 {
       header_up X-Request-Id {http.request.uuid}
+      # Cloudflare is not in front of the site, so these can only come from the visitor: drop them. The server decides
+      # the country (GeoIP on the real client address) and rate limits use the address Caddy saw. If the site moves
+      # behind Cloudflare, trust CF-IPCountry / CF-Connecting-IP only from Cloudflare's address ranges instead.
+      header_up -CF-IPCountry
+      header_up -CF-Connecting-IP
+      header_up -X-Real-IP
+      header_up -Forwarded
+      header_up -X-Country
     }
   }
 

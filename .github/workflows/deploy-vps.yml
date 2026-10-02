@@ -187,6 +187,15 @@ jobs:
             docker compose --env-file .env build --pull
             docker compose --env-file .env up -d --remove-orphans
             if [ -f .recreate-backend ]; then docker compose --env-file .env up -d --no-deps --force-recreate backend; rm -f .recreate-backend; fi
+            # Caddy reads its (bind-mounted) Caddyfile only at start: when the file changed, validate it first, then restart
+            # Caddy so it picks up the new file. An invalid file fails the deploy and the running proxy keeps its old config.
+            if ! docker compose --env-file .env exec -T caddy cat /etc/caddy/Caddyfile | cmp -s - Caddyfile; then
+              DOMAIN=$(grep -m1 '^DOMAIN=' .env | cut -d= -f2-); ACME_EMAIL=$(grep -m1 '^ACME_EMAIL=' .env | cut -d= -f2-); export DOMAIN ACME_EMAIL
+              docker run --rm -e DOMAIN -e ACME_EMAIL -v "$PWD/Caddyfile:/etc/caddy/Caddyfile:ro" caddy:2-alpine \
+                caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile
+              docker compose --env-file .env restart caddy
+              echo "caddy: new Caddyfile applied"
+            fi
             docker image prune -f >/dev/null
             docker compose --env-file .env ps
           EOS
