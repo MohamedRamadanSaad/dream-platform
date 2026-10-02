@@ -1,0 +1,54 @@
+[
+  {
+    "key": "crescent-night",
+    "nameAr": "ليلة الهلال",
+    "nameEn": "Crescent night",
+    "headerImage": "/email/themes/crescent-night/header.jpg",
+    "footerImage": "/email/themes/crescent-night/footer.jpg",
+    "pageBg": "#0A1128",
+    "cardBg": "#F4EFE6",
+    "bodyText": "#0A1128",
+    "accent": "#D4AF37",
+    "headerText": "#F4EFE6",
+    "footerText": "#F4EFE6"
+  },
+  {
+    "key": "full-moon",
+    "nameAr": "البدر",
+    "nameEn": "Full moon",
+    "headerImage": "/email/themes/full-moon/header.jpg",
+    "footerImage": "/email/themes/full-moon/footer.jpg",
+    "pageBg": "#070D1F",
+    "cardBg": "#F4EFE6",
+    "bodyText": "#0A1128",
+    "accent": "#D4AF37",
+    "headerText": "#F4EFE6",
+    "footerText": "#F4EFE6"
+  },
+  {
+    "key": "dawn-glow",
+    "nameAr": "نور الفجر",
+    "nameEn": "Dawn light",
+    "headerImage": "/email/themes/dawn-glow/header.jpg",
+    "footerImage": "/email/themes/dawn-glow/footer.jpg",
+    "pageBg": "#1B2347",
+    "cardBg": "#FBF7EF",
+    "bodyText": "#16244A",
+    "accent": "#C9962B",
+    "headerText": "#FFF8E8",
+    "footerText": "#FFF8E8"
+  },
+  {
+    "key": "golden-midnight",
+    "nameAr": "منتصف الليل الذهبي",
+    "nameEn": "Golden midnight",
+    "headerImage": "/email/themes/golden-midnight/header.jpg",
+    "footerImage": "/email/themes/golden-midnight/footer.jpg",
+    "pageBg": "#05070F",
+    "cardBg": "#F4EFE6",
+    "bodyText": "#0A1128",
+    "accent": "#D4AF37",
+    "headerText": "#F4EFE6",
+    "footerText": "#F4EFE6"
+  }
+]

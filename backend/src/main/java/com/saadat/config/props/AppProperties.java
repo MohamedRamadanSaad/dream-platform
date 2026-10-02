@@ -160,6 +160,11 @@ public class AppProperties {
         private String from = "";
         /** Sender display name. */
         private String fromName = "";
+        /**
+         * Shared secret of the support mailbox webhook (POST /webhooks/mail/inbound, env MAIL_WEBHOOK_SECRET),
+         * sent by the mail host as {@code Authorization: Bearer <secret>}. Empty disables the endpoint (503).
+         */
+        private String webhookSecret = "";
     }
 
     @Getter

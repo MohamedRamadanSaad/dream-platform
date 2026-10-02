@@ -95,6 +95,8 @@ public final class SettingKeys {
     public static final String MAIL_EVENT_TESTIMONIAL_REQUEST = "mail.event.testimonial-request";
     public static final String MAIL_EVENT_INTERPRETER_DIGEST = "mail.event.interpreter-digest";
     public static final String MAIL_EVENT_YOUTUBE_NEW_VIDEO = "mail.event.youtube-new-video";
+    /** Automatic reply to e-mails received by the support mailbox (V16). */
+    public static final String MAIL_EVENT_SUPPORT_AUTO_REPLY = "mail.event.support-auto-reply";
 
     /** Every e-mail event switch (one per template except magic-link). */
     public static final List<String> MAIL_EVENTS = List.of(
@@ -103,11 +105,26 @@ public final class SettingKeys {
             MAIL_EVENT_TESTIMONIAL_RECEIVED, MAIL_EVENT_DREAM_SUBMITTED, MAIL_EVENT_DREAM_RECEIVED,
             MAIL_EVENT_INTERPRETER_QUESTION, MAIL_EVENT_USER_REPLIED, MAIL_EVENT_INTERPRETATION_READY,
             MAIL_EVENT_PAYMENT_RECEIPT, MAIL_EVENT_PAYMENT_SUSPICIOUS, MAIL_EVENT_REPLY_REMINDER,
-            MAIL_EVENT_TESTIMONIAL_REQUEST, MAIL_EVENT_INTERPRETER_DIGEST, MAIL_EVENT_YOUTUBE_NEW_VIDEO);
+            MAIL_EVENT_TESTIMONIAL_REQUEST, MAIL_EVENT_INTERPRETER_DIGEST, MAIL_EVENT_YOUTUBE_NEW_VIDEO,
+            MAIL_EVENT_SUPPORT_AUTO_REPLY);
 
     /** The switch of an e-mail template: {@code mail.event.<template>}. */
     public static String mailEvent(String template) {
         return MAIL_EVENT_PREFIX + template;
+    }
+
+    // ---- e-mail themes (V16): STRING mail.theme.<template>; blank/unknown = mail.theme.default ----
+    public static final String MAIL_THEME_PREFIX = "mail.theme.";
+    /** Theme of every e-mail whose own mail.theme.<template> is blank (a key of mail/themes.json). */
+    public static final String MAIL_THEME_DEFAULT = "mail.theme.default";
+    /** Base URL of the e-mail theme images; blank = app.frontend-url. */
+    public static final String MAIL_ASSETS_BASE_URL = "mail.assets_base_url";
+    /** The support mailbox auto-reply is sent to the same address at most once per N hours. */
+    public static final String MAIL_AUTO_REPLY_COOLDOWN_HOURS = "mail.auto_reply_cooldown_hours";
+
+    /** The theme of an e-mail template: {@code mail.theme.<template>}. */
+    public static String mailTheme(String template) {
+        return MAIL_THEME_PREFIX + template;
     }
 
     // ---- insights (GET /admin/analytics/insights) ----
@@ -143,6 +160,7 @@ public final class SettingKeys {
             MAIL_EVENT_INTERPRETER_QUESTION, MAIL_EVENT_USER_REPLIED, MAIL_EVENT_INTERPRETATION_READY,
             MAIL_EVENT_PAYMENT_RECEIPT, MAIL_EVENT_PAYMENT_SUSPICIOUS, MAIL_EVENT_REPLY_REMINDER,
             MAIL_EVENT_TESTIMONIAL_REQUEST, MAIL_EVENT_INTERPRETER_DIGEST, MAIL_EVENT_YOUTUBE_NEW_VIDEO,
+            MAIL_EVENT_SUPPORT_AUTO_REPLY, MAIL_THEME_DEFAULT, MAIL_ASSETS_BASE_URL, MAIL_AUTO_REPLY_COOLDOWN_HOURS,
             INSIGHTS_AWAITING_REPLY_DAYS, INSIGHTS_TRAFFIC_CHANGE_PERCENT, INSIGHTS_STREAK_MIN_DAYS,
             REPORTS_EXCEL_MAX_ROWS);
 }

@@ -1,0 +1,30 @@
+-- V16: e-mail themes (header/footer look of every e-mail, registry: classpath mail/themes.json), the image base URL,
+-- and the support mailbox auto-reply (POST /webhooks/mail/inbound): its switch and its per-address cooldown.
+-- mail.theme.<template> = '' means "use mail.theme.default".
+INSERT INTO app_settings (key, value, type, description) VALUES
+    ('mail.theme.default', 'crescent-night', 'STRING', 'E-mail theme used when an e-mail has no theme of its own (key from mail/themes.json)'),
+    ('mail.assets_base_url', '', 'STRING', 'Base URL of the e-mail theme images; empty = the site URL (FRONTEND_URL)'),
+    ('mail.auto_reply_cooldown_hours', '24', 'INT', 'Support auto-reply: at most one automatic reply to the same address per N hours'),
+    ('mail.event.support-auto-reply', 'true', 'BOOL', 'Reply automatically to e-mails received by the support mailbox'),
+    ('mail.theme.magic-link',             '', 'STRING', 'E-mail theme of magic-link; empty = mail.theme.default'),
+    ('mail.theme.dream-received',         '', 'STRING', 'E-mail theme of dream-received; empty = mail.theme.default'),
+    ('mail.theme.interpreter-question',   '', 'STRING', 'E-mail theme of interpreter-question; empty = mail.theme.default'),
+    ('mail.theme.user-replied',           '', 'STRING', 'E-mail theme of user-replied; empty = mail.theme.default'),
+    ('mail.theme.interpretation-ready',   '', 'STRING', 'E-mail theme of interpretation-ready; empty = mail.theme.default'),
+    ('mail.theme.payment-receipt',        '', 'STRING', 'E-mail theme of payment-receipt; empty = mail.theme.default'),
+    ('mail.theme.payment-suspicious',     '', 'STRING', 'E-mail theme of payment-suspicious; empty = mail.theme.default'),
+    ('mail.theme.reply-reminder',         '', 'STRING', 'E-mail theme of reply-reminder; empty = mail.theme.default'),
+    ('mail.theme.testimonial-request',    '', 'STRING', 'E-mail theme of testimonial-request; empty = mail.theme.default'),
+    ('mail.theme.interpreter-digest',     '', 'STRING', 'E-mail theme of interpreter-digest; empty = mail.theme.default'),
+    ('mail.theme.dream-submitted',        '', 'STRING', 'E-mail theme of dream-submitted; empty = mail.theme.default'),
+    ('mail.theme.youtube-new-video',      '', 'STRING', 'E-mail theme of youtube-new-video; empty = mail.theme.default'),
+    ('mail.theme.welcome',                '', 'STRING', 'E-mail theme of welcome; empty = mail.theme.default'),
+    ('mail.theme.payment-failed',         '', 'STRING', 'E-mail theme of payment-failed; empty = mail.theme.default'),
+    ('mail.theme.dream-cancelled',        '', 'STRING', 'E-mail theme of dream-cancelled; empty = mail.theme.default'),
+    ('mail.theme.credits-adjusted',       '', 'STRING', 'E-mail theme of credits-adjusted; empty = mail.theme.default'),
+    ('mail.theme.testimonial-approved',   '', 'STRING', 'E-mail theme of testimonial-approved; empty = mail.theme.default'),
+    ('mail.theme.account-deleted',        '', 'STRING', 'E-mail theme of account-deleted; empty = mail.theme.default'),
+    ('mail.theme.new-user',               '', 'STRING', 'E-mail theme of new-user; empty = mail.theme.default'),
+    ('mail.theme.testimonial-received',   '', 'STRING', 'E-mail theme of testimonial-received; empty = mail.theme.default'),
+    ('mail.theme.support-auto-reply',     '', 'STRING', 'E-mail theme of support-auto-reply; empty = mail.theme.default')
+ON CONFLICT (key) DO NOTHING;

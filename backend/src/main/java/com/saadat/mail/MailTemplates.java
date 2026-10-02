@@ -31,7 +31,12 @@ import java.util.List;
  *   <li>{@link #ACCOUNT_DELETED}: name (sent to the address captured before anonymising)</li>
  *   <li>{@link #NEW_USER} (to interpreter): userName, countryName, age, gender, link</li>
  *   <li>{@link #TESTIMONIAL_RECEIVED} (to interpreter): userName, rating, comment, link</li>
+ *   <li>{@link #SUPPORT_AUTO_REPLY} (to whoever wrote to the support mailbox): none — one bilingual e-mail
+ *       (Arabic then English) with the same content in both locale files; no call-to-action</li>
  * </ul>
+ *
+ * <p>Each template's header/footer theme comes from STRING setting {@code mail.theme.<name>} (see
+ * MailThemeService); the wording never depends on the theme.
  */
 public final class MailTemplates {
 
@@ -55,12 +60,13 @@ public final class MailTemplates {
     public static final String ACCOUNT_DELETED = "account-deleted";
     public static final String NEW_USER = "new-user";
     public static final String TESTIMONIAL_RECEIVED = "testimonial-received";
+    public static final String SUPPORT_AUTO_REPLY = "support-auto-reply";
 
     public static final List<String> ALL = List.of(
             MAGIC_LINK, DREAM_RECEIVED, INTERPRETER_QUESTION, USER_REPLIED, INTERPRETATION_READY,
             PAYMENT_RECEIPT, PAYMENT_SUSPICIOUS, REPLY_REMINDER, TESTIMONIAL_REQUEST, INTERPRETER_DIGEST,
             DREAM_SUBMITTED, YOUTUBE_NEW_VIDEO, WELCOME, PAYMENT_FAILED, DREAM_CANCELLED, CREDITS_ADJUSTED,
-            TESTIMONIAL_APPROVED, ACCOUNT_DELETED, NEW_USER, TESTIMONIAL_RECEIVED);
+            TESTIMONIAL_APPROVED, ACCOUNT_DELETED, NEW_USER, TESTIMONIAL_RECEIVED, SUPPORT_AUTO_REPLY);
 
     private MailTemplates() {
     }

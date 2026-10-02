@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<!--/* support-auto-reply (en) — ONE bilingual e-mail (Arabic, divider, English); support-auto-reply_ar.html has the
+     same content. Sent to whoever writes to the support mailbox (POST /webhooks/mail/inbound). No call-to-action.
+     Subject + preheader: messages mail.support-auto-reply.* (bilingual too). */-->
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{mail/_layout :: layout('ltr', 'en', ~{::content})}">
+<head><title>support-auto-reply</title></head>
+<body>
+<div th:fragment="content">
+  <div dir="rtl" lang="ar" th:style="|text-align:right;font-family:${fontAr};|">
+    <p style="margin:0 0 18px 0;font-size:18px;line-height:1.7;font-weight:600;">السلام عليكم ورحمة الله وبركاته،</p>
+    <p style="margin:0 0 16px 0;">شكرًا لتواصلك معنا. لقد استلمنا رسالتك بنجاح، وسنطّلع عليها بعناية ونرد عليك في أقرب وقت ممكن، خلال يومَي عمل بإذن الله.</p>
+    <p style="margin:0 0 4px 0;">شكرًا لك،</p>
+    <p style="margin:0 0 4px 0;">مع خالص التحية،</p>
+    <p style="margin:0;font-weight:600;" th:text="${brandNameAr}">إلى سعادة الدارين</p>
+  </div>
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:26px 0;border-collapse:collapse;">
+    <tr><td height="1" th:style="|height:1px;line-height:1px;font-size:0;background-color:${theme.accent};opacity:0.6;|">&nbsp;</td></tr>
+  </table>
+  <div dir="ltr" lang="en" th:style="|text-align:left;font-family:${fontEn};|">
+    <p style="margin:0 0 18px 0;font-size:18px;line-height:1.7;font-weight:600;">Peace be upon you,</p>
+    <p style="margin:0 0 16px 0;">Thank you for contacting us. We have received your message. We will review it and reply as soon as possible, within 2 working days.</p>
+    <p style="margin:0 0 4px 0;">Thank you,</p>
+    <p style="margin:0 0 4px 0;">Best regards,</p>
+    <p style="margin:0;font-weight:600;" th:text="${brandNameEn}">Saadatu Aldarein</p>
+  </div>
+</div>
+</body>
+</html>

@@ -157,6 +157,14 @@ public final class ApiPaths {
 
         public static final String YOUTUBE_REFRESH = ROOT + "/youtube/refresh";
 
+        /** E-mail themes: the registry, each template's theme + switch, the default theme and an HTML preview. */
+        public static final String MAIL_THEMES = ROOT + "/mail/themes";
+        public static final String MAIL_TEMPLATES = ROOT + "/mail/templates";
+        public static final String MAIL_TEMPLATE_THEME = MAIL_TEMPLATES + "/{template}/theme";
+        public static final String MAIL_THEME_DEFAULT = ROOT + "/mail/theme-default";
+        /** text/html; query template, theme (optional), locale (ar|en). */
+        public static final String MAIL_PREVIEW = ROOT + "/mail/preview";
+
         private Admin() {
         }
     }
@@ -168,6 +176,8 @@ public final class ApiPaths {
         public static final String MOR = ROOT + "/mor";
         /** Only functional when app.payments.mock=true (the controller must enforce it). */
         public static final String MOCK = ROOT + "/mock/{orderId}";
+        /** Support mailbox (Hostinger) "message.received" callback; Authorization: Bearer MAIL_WEBHOOK_SECRET. */
+        public static final String MAIL_INBOUND = ROOT + "/mail/inbound";
 
         private Webhooks() {
         }

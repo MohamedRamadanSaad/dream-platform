@@ -29,6 +29,8 @@ app:
       integration-id: "123"
       iframe-id: "456"
       hmac-secret: test-hmac-secret
+  mail:
+    webhook-secret: test-mail-webhook-secret
   cors:
     allowed-origins: http://localhost:5173
   rate-limit:

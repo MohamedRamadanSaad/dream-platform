@@ -131,6 +131,7 @@ app:
   mail:
     from: ${MAIL_FROM:}
     from-name: ${MAIL_FROM_NAME:}
+    webhook-secret: ${MAIL_WEBHOOK_SECRET:}
   youtube:
     feed-url: ${YOUTUBE_FEED_URL:https://www.youtube.com/feeds/videos.xml?channel_id={channelId}}
     timeout-seconds: 10

@@ -4,12 +4,19 @@
     <html th:replace="~{mail/_layout :: layout('rtl', 'ar', ~{::content})}"> ... <div th:fragment="content">...</div>
   and one call-to-action:
     <table th:replace="~{mail/_layout :: cta(${ctaUrl}, 'Label')}"></table>
-  Model provided by MailService: brandName, tagline, supportEmail, youtubeUrl, frontendUrl, subject, preheader, ctaUrl, year.
-  Footer labels come from messages (mail.footer.*). Table-based, inline styles, brand colours:
-  night #0A1128 (header/footer), gold #D4AF37 (brand line + button), pearl #F4EFE6 (body).
+  Model provided by MailService: brandName, tagline, supportEmail, youtubeUrl, frontendUrl, siteHost, subject,
+  preheader, ctaUrl, year, fontAr, fontEn and theme (MailThemeView: pageBg, cardBg, bodyText, accent, headerText,
+  footerText, headerImageUrl, footerImageUrl, headerVml, footerVml).
+  The THEME decides the header (image with moon/stars + brand text on top), the page background and the footer
+  (image with stars + text on top); the wording of the e-mail never depends on the theme.
+  Footer labels come from messages (mail.footer.*). Table-based, inline styles. Background images: the HTML
+  `background` attribute + CSS background-image for most clients, a VML rect for Outlook for Windows, and the
+  theme colour (bgcolor) when images are blocked. Templates must not set font-family: they inherit it from the
+  content cell (Arabic stack for rtl, English stack for ltr).
 */-->
-<html xmlns:th="http://www.thymeleaf.org" th:fragment="layout(dir, lang, content)" th:attr="lang=${lang},dir=${dir}"
-      th:with="align=${dir == 'rtl' ? 'right' : 'left'}">
+<html xmlns:th="http://www.thymeleaf.org" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office"
+      th:fragment="layout(dir, lang, content)" th:attr="lang=${lang},dir=${dir}"
+      th:with="align=${dir == 'rtl' ? 'right' : 'left'},font=${dir == 'rtl' ? fontAr : fontEn}">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -18,52 +25,83 @@
   <meta name="color-scheme" content="light">
   <meta name="supported-color-schemes" content="light">
   <title th:text="${subject}">Subject</title>
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;600&amp;display=swap" rel="stylesheet">
-  <style>
-    body, table, td, p, a, div, span, strong { font-family: 'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif; }
-    a { color: #0A1128; }
+  <!--[if gte mso 9]><xml><o:OfficeDocumentSettings><o:AllowPNG/><o:PixelsPerInch>96</o:PixelsPerInch></o:OfficeDocumentSettings></xml><![endif]-->
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;600;700&amp;family=IBM+Plex+Sans:wght@400;600&amp;display=swap" rel="stylesheet">
+  <style th:inline="css">
+    body, table, td, p, a, div, span, strong { font-family: [(${font})]; }
+    a { color: [(${theme.bodyText})]; }
     @media only screen and (max-width: 620px) {
       .container { width: 100% !important; }
       .px { padding-left: 20px !important; padding-right: 20px !important; }
     }
   </style>
 </head>
-<body th:attr="dir=${dir}" style="margin:0;padding:0;background-color:#F4EFE6;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;">
-<div th:text="${preheader}" style="display:none;max-height:0;max-width:0;overflow:hidden;mso-hide:all;font-size:1px;line-height:1px;color:#F4EFE6;opacity:0;">Preheader</div>
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" th:attr="dir=${dir}"
-       style="background-color:#F4EFE6;border-collapse:collapse;">
+<body th:attr="dir=${dir}" th:style="|margin:0;padding:0;background-color:${theme.pageBg};-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;|">
+<div th:text="${preheader}" th:style="|display:none;max-height:0;max-width:0;overflow:hidden;mso-hide:all;font-size:1px;line-height:1px;color:${theme.pageBg};opacity:0;|">Preheader</div>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" th:attr="dir=${dir},bgcolor=${theme.pageBg}"
+       th:style="|background-color:${theme.pageBg};border-collapse:collapse;|">
   <tr>
     <td align="center" style="padding:24px 12px;">
       <table role="presentation" class="container" width="600" cellpadding="0" cellspacing="0" border="0"
-             style="width:600px;max-width:600px;border-collapse:separate;border:1px solid #E6DCC8;border-radius:16px;overflow:hidden;background-color:#F4EFE6;">
-        <!-- header band -->
+             th:attr="bgcolor=${theme.cardBg}"
+             th:style="|width:600px;max-width:600px;border-collapse:separate;border-radius:18px;overflow:hidden;background-color:${theme.cardBg};|">
+        <!-- header: theme image (moon, stars, meteors) with the brand written on top -->
         <tr>
-          <td align="center" class="px" style="background-color:#0A1128;padding:28px 32px 22px 32px;">
-            <div th:text="${brandName}" style="font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:22px;line-height:1.4;font-weight:600;color:#D4AF37;">Brand</div>
-            <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" style="margin:12px auto 10px auto;">
-              <tr><td width="72" height="2" style="width:72px;height:2px;line-height:2px;font-size:0;background-color:#D4AF37;">&nbsp;</td></tr>
+          <td align="center" valign="middle" height="180"
+              th:attr="background=${theme.headerImageUrl},bgcolor=${theme.pageBg}"
+              th:style="|height:180px;padding:0;background-color:${theme.pageBg};background-image:url(${theme.headerImageUrl});background-size:cover;background-position:center;background-repeat:no-repeat;|">
+            <th:block th:utext="${theme.headerVml}"></th:block>
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
+              <tr>
+                <td align="center" valign="middle" height="180" class="px" style="height:180px;padding:0 32px;text-align:center;">
+                  <div th:text="${brandName}"
+                       th:style="|font-family:${font};font-size:28px;line-height:1.35;font-weight:700;color:${theme.accent};text-align:center;|">Brand</div>
+                  <div th:text="${tagline}"
+                       th:style="|margin-top:8px;font-family:${font};font-size:14px;line-height:1.6;color:${theme.headerText};text-align:center;|">Tagline</div>
+                </td>
+              </tr>
             </table>
-            <div th:text="${tagline}" style="font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:13px;line-height:1.6;color:#F4EFE6;">Tagline</div>
+            <!--[if gte mso 9]></v:textbox></v:rect><![endif]-->
           </td>
         </tr>
-        <!-- content -->
+        <!-- content (the font is set here so every template inherits it) -->
         <tr>
-          <td class="px" th:attr="dir=${dir},align=${align}"
-              style="padding:32px 36px 28px 36px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:16px;line-height:1.9;color:#0A1128;background-color:#F4EFE6;">
+          <td class="px" th:attr="dir=${dir},align=${align},bgcolor=${theme.cardBg}"
+              th:style="|padding:32px 36px 28px 36px;font-family:${font};font-size:16px;line-height:1.9;color:${theme.bodyText};background-color:${theme.cardBg};|">
             <th:block th:replace="${content}">Content</th:block>
           </td>
         </tr>
-        <!-- footer -->
+        <!-- footer: theme image (stars) with the links written on top -->
         <tr>
-          <td align="center" class="px" style="background-color:#0A1128;padding:24px 32px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:13px;line-height:1.8;color:#F4EFE6;">
-            <a th:if="${!#strings.isEmpty(youtubeUrl)}" th:href="${youtubeUrl}" th:text="#{mail.footer.youtube}"
-               style="color:#D4AF37;text-decoration:none;font-weight:600;">YouTube</a>
-            <div th:if="${!#strings.isEmpty(supportEmail)}" style="margin-top:6px;">
-              <span th:text="#{mail.footer.support}">Support</span>
-              <a th:href="${'mailto:' + supportEmail}" th:text="${supportEmail}" style="color:#D4AF37;text-decoration:none;">support@example.com</a>
-            </div>
-            <div th:text="#{mail.footer.note}" style="margin-top:12px;font-size:12px;line-height:1.7;color:#AEB4C2;">Note</div>
-            <div style="margin-top:6px;font-size:12px;color:#AEB4C2;">&copy; <span th:text="${year}">2026</span> <span th:text="${brandName}">Brand</span></div>
+          <td align="center" valign="middle" height="150"
+              th:attr="background=${theme.footerImageUrl},bgcolor=${theme.pageBg}"
+              th:style="|padding:0;background-color:${theme.pageBg};background-image:url(${theme.footerImageUrl});background-size:cover;background-position:center;background-repeat:no-repeat;|">
+            <th:block th:utext="${theme.footerVml}"></th:block>
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
+              <tr>
+                <td align="center" valign="middle" height="150" class="px"
+                    th:style="|padding:26px 32px;font-family:${font};font-size:13px;line-height:1.8;color:${theme.footerText};text-align:center;|">
+                  <div>
+                    <a th:href="${youtubeUrl}" th:text="#{mail.footer.youtube}" target="_blank"
+                       th:style="|font-family:${font};color:${theme.accent};text-decoration:none;font-weight:600;|">YouTube</a>
+                  </div>
+                  <div style="margin-top:6px;">
+                    <span th:text="#{mail.footer.website}">Please visit our website</span>
+                    <a th:href="${frontendUrl}" th:text="${siteHost}" dir="ltr" target="_blank"
+                       th:style="|font-family:${font};color:${theme.accent};text-decoration:none;font-weight:600;|">example.com</a>
+                  </div>
+                  <div th:if="${!#strings.isEmpty(supportEmail)}" style="margin-top:6px;">
+                    <span th:text="#{mail.footer.support}">Support</span>
+                    <a th:href="${'mailto:' + supportEmail}" th:text="${supportEmail}" dir="ltr"
+                       th:style="|font-family:${font};color:${theme.accent};text-decoration:none;|">support@example.com</a>
+                  </div>
+                  <div th:if="${showAccountNote}" th:text="#{mail.footer.note}"
+                       th:style="|margin-top:12px;font-family:${font};font-size:12px;line-height:1.7;color:${theme.footerText};opacity:0.8;|">Note</div>
+                  <div th:style="|margin-top:6px;font-family:${font};font-size:12px;color:${theme.footerText};opacity:0.8;|">&copy; <span th:text="${year}">2026</span> <span th:text="${brandName}">Brand</span></div>
+                </td>
+              </tr>
+            </table>
+            <!--[if gte mso 9]></v:textbox></v:rect><![endif]-->
           </td>
         </tr>
       </table>
@@ -73,23 +111,24 @@
 </body>
 </html>
 
-<!--/* The single gold pill call-to-action (bulletproof button) + plain-link fallback. */-->
-<table th:fragment="cta(url, label)" role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
+<!--/* The single pill call-to-action in the theme's accent colour (bulletproof button) + plain-link fallback. */-->
+<table th:fragment="cta(url, label)" th:with="cf=${#locale.language == 'en' ? fontEn : fontAr}"
+       role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
        style="margin:28px 0 8px 0;border-collapse:collapse;">
   <tr>
     <td align="center">
       <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center">
         <tr>
-          <td align="center" bgcolor="#D4AF37" style="border-radius:999px;background-color:#D4AF37;">
+          <td align="center" th:attr="bgcolor=${theme.accent}" th:style="|border-radius:999px;background-color:${theme.accent};|">
             <a th:href="${url}" th:text="${label}" target="_blank"
-               style="display:inline-block;padding:14px 38px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:16px;line-height:1.2;font-weight:600;color:#0A1128;text-decoration:none;border-radius:999px;">Open</a>
+               th:style="|display:inline-block;padding:14px 38px;font-family:${cf};font-size:16px;line-height:1.2;font-weight:600;color:${theme.bodyText};text-decoration:none;border-radius:999px;|">Open</a>
           </td>
         </tr>
       </table>
     </td>
   </tr>
   <tr>
-    <td align="center" style="padding-top:14px;font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;font-size:12px;line-height:1.6;color:#5B6478;">
+    <td align="center" th:style="|padding-top:14px;font-family:${cf};font-size:12px;line-height:1.6;color:#5B6478;|">
       <span th:text="#{mail.button.fallback}">If the button does not work, copy this link:</span><br>
       <a th:href="${url}" th:text="${url}" dir="ltr" style="color:#5B6478;word-break:break-all;">https://example.com</a>
     </td>
