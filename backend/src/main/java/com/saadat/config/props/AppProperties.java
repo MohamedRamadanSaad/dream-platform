@@ -176,6 +176,14 @@ public class AppProperties {
         /** HTTP timeout for the feed fetch, in seconds. */
         @Min(1)
         private int timeoutSeconds = 10;
+        /**
+         * While setting brand.youtube_channel_id is empty, resolve it from the channel page in setting
+         * brand.youtube_url (YoutubeChannelIdResolver). Off in tests (no network).
+         */
+        private boolean resolveChannelId = true;
+        /** The channel page is fetched only over https from this domain or one of its subdomains. */
+        @NotBlank
+        private String channelPageDomain = "youtube.com";
     }
 
     @Getter

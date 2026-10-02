@@ -26,7 +26,8 @@ import org.springframework.web.client.RestClient;
 /**
  * Polls the channel's public Atom feed and upserts {@code youtube_videos}. The scheduler ticks every
  * {@link #TICK_MINUTES} minutes and fetches only when setting {@code youtube.poll_minutes} has elapsed since the
- * last fetch; nothing happens while {@code brand.youtube_channel_id} is empty.
+ * last fetch. While {@code brand.youtube_channel_id} is empty, the id is first resolved from the channel URL
+ * ({@link YoutubeChannelIdResolver}); nothing is fetched until it is known.
  */
 @Slf4j
 @Service
@@ -43,16 +44,19 @@ public class YoutubeFeedService {
     private final YoutubeVideoRepository repository;
     private final SettingsService settings;
     private final YoutubeVideoMailer videoMailer;
+    private final YoutubeChannelIdResolver channelIdResolver;
     private final AppProperties.Youtube config;
     private final Clock clock;
     private final RestClient restClient;
     private final AtomicReference<Instant> lastFetchAt = new AtomicReference<>();
 
     public YoutubeFeedService(YoutubeVideoRepository repository, SettingsService settings,
-                              YoutubeVideoMailer videoMailer, AppProperties properties, Clock clock) {
+                              YoutubeVideoMailer videoMailer, YoutubeChannelIdResolver channelIdResolver,
+                              AppProperties properties, Clock clock) {
         this.repository = repository;
         this.settings = settings;
         this.videoMailer = videoMailer;
+        this.channelIdResolver = channelIdResolver;
         this.config = properties.getYoutube();
         this.clock = clock;
         SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
@@ -68,7 +72,7 @@ public class YoutubeFeedService {
 
     @Scheduled(initialDelay = 1, fixedDelay = TICK_MINUTES, timeUnit = TimeUnit.MINUTES)
     public void tick() {
-        if (!isConfigured()) {
+        if (!isConfigured() && channelIdResolver.resolveIfDue().isEmpty()) {
             return;
         }
         Instant last = lastFetchAt.get();

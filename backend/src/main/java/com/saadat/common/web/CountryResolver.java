@@ -1,6 +1,7 @@
 package com.saadat.common.web;
 
 import com.saadat.common.domain.CountrySource;
+import com.saadat.common.geo.IpCountryLookup;
 import com.saadat.config.props.AppProperties;
 import com.saadat.settings.SettingKeys;
 import com.saadat.settings.SettingsService;
@@ -15,6 +16,8 @@ import org.springframework.stereotype.Component;
  * <ol>
  *   <li>{@code CF-IPCountry} (Cloudflare) → source IP</li>
  *   <li>{@code X-Country} — only when {@code app.auth.allow-mock=true} (local/test) → source HEADER</li>
+ *   <li>the GeoIP database ({@link IpCountryLookup}) for the visitor's public IP as seen by the proxy
+ *       ({@link ProxyClientIp}) → source IP; skipped when no database is configured</li>
  *   <li>setting {@code pricing.default_country} → source DEFAULT</li>
  * </ol>
  */
@@ -27,13 +30,17 @@ public class CountryResolver {
     private static final Pattern ISO_ALPHA2 = Pattern.compile("^[A-Z]{2}$");
     /** Cloudflare pseudo-codes: XX = unknown, T1 = Tor. */
     private static final Set<String> CF_PSEUDO = Set.of("XX", "T1");
+    /** "Unknown or invalid territory" in IP databases. */
+    private static final String GEO_UNKNOWN = "ZZ";
 
     private final AppProperties properties;
     private final SettingsService settings;
+    private final IpCountryLookup ipCountryLookup;
 
-    public CountryResolver(AppProperties properties, SettingsService settings) {
+    public CountryResolver(AppProperties properties, SettingsService settings, IpCountryLookup ipCountryLookup) {
         this.properties = properties;
         this.settings = settings;
+        this.ipCountryLookup = ipCountryLookup;
     }
 
     public ResolvedCountry resolve(HttpServletRequest request) {
@@ -47,7 +54,20 @@ public class CountryResolver {
                 return new ResolvedCountry(dev, CountrySource.HEADER);
             }
         }
+        String located = locate(request);
+        if (located != null) {
+            return new ResolvedCountry(located, CountrySource.IP);
+        }
         return new ResolvedCountry(defaultCountry(), CountrySource.DEFAULT);
+    }
+
+    /** Country of the visitor's public IP from the GeoIP database, or null. */
+    private String locate(HttpServletRequest request) {
+        return ProxyClientIp.publicAddress(request)
+                .flatMap(ipCountryLookup::countryCode)
+                .map(CountryResolver::normalize)
+                .filter(code -> !GEO_UNKNOWN.equals(code))
+                .orElse(null);
     }
 
     public String resolveCode(HttpServletRequest request) {

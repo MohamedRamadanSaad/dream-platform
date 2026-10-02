@@ -51,6 +51,9 @@ dependencies {
     }
     implementation("org.bouncycastle:bcprov-jdk18on:1.78.1")
 
+    // Visitor country without Cloudflare: MaxMind's reader over DB-IP's free MMDB (Jackson 2.17.2 = Boot's)
+    implementation("com.maxmind.geoip2:geoip2:4.2.1")
+
     // API docs + error tracking
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.6.0")
     implementation("io.sentry:sentry-spring-boot-starter-jakarta:7.16.0")

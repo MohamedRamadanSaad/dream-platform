@@ -135,6 +135,12 @@ app:
   youtube:
     feed-url: ${YOUTUBE_FEED_URL:https://www.youtube.com/feeds/videos.xml?channel_id={channelId}}
     timeout-seconds: 10
+    # while brand.youtube_channel_id is empty, read it from the channel page in brand.youtube_url (https only)
+    resolve-channel-id: true
+    channel-page-domain: youtube.com
+  # IP → country when CF-IPCountry is absent: MMDB file (DB-IP "IP to Country Lite"); empty/missing = no lookup
+  geoip:
+    db-path: ${GEOIP_DB_PATH:}
   cors:
     allowed-origins: ${CORS_ALLOWED_ORIGINS:}
   rate-limit:

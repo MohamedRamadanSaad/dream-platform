@@ -31,6 +31,11 @@ app:
       hmac-secret: test-hmac-secret
   mail:
     webhook-secret: test-mail-webhook-secret
+  youtube:
+    resolve-channel-id: false                  # never fetch youtube.com from tests
+  geoip:
+    # absent at startup (no GeoIP for the other tests); GeoIpCountryIntegrationTest writes a test database here
+    db-path: ${java.io.tmpdir}/saadat-geoip-test-${random.uuid}.mmdb
   cors:
     allowed-origins: http://localhost:5173
   rate-limit:
