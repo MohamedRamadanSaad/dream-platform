@@ -85,9 +85,9 @@ class MailThemesIntegrationTest extends IntegrationTestBase {
             assertThat(ar.html())
                     .contains(FRONTEND + "/email/themes/rose-dawn/header.jpg")
                     .contains(FRONTEND + "/email/themes/rose-dawn/footer.jpg")
-                    .contains("#1B2347")             // pageBg
-                    .contains("#FBF7EF")             // cardBg
-                    .contains("#C9962B")             // accent (brand + button)
+                    .contains("#3E3352")             // pageBg
+                    .contains("#FBF4F2")             // cardBg
+                    .contains("#B76E79")             // accent (button)
                     .contains("v:fill")              // Outlook fallback
                     .contains("IBM+Plex+Sans+Arabic")
                     .contains("family=IBM+Plex+Sans:wght")
@@ -134,7 +134,7 @@ class MailThemesIntegrationTest extends IntegrationTestBase {
 
         mvc.perform(get(ApiPaths.Admin.MAIL_THEMES).header(HttpHeaders.AUTHORIZATION, bearer(interpreter)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(4))
+                .andExpect(jsonPath("$.length()").value(8))
                 .andExpect(jsonPath("$[0].key").value("crescent-night"))
                 .andExpect(jsonPath("$[0].headerImageUrl").value(FRONTEND + "/email/themes/crescent-night/header.jpg"))
                 .andExpect(jsonPath("$[0].usedByDefault").value(true));
@@ -217,7 +217,7 @@ class MailThemesIntegrationTest extends IntegrationTestBase {
         String enHtml = en.getResponse().getContentAsString(StandardCharsets.UTF_8);
         assertThat(enHtml)
                 .contains(FRONTEND + "/email/themes/sea-breeze/header.jpg")
-                .contains("#070D1F")
+                .contains("#0A2A33")
                 .contains("Watch our latest videos on our YouTube channel")
                 .contains("Ahmed")
                 .contains("dir=\"ltr\"")
