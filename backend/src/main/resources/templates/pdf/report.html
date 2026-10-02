@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <!--/*
   PDF report (openhtmltopdf). The output is parsed as XML: keep every tag closed and use numeric entities only.
-  Model (ReportService): lang, dir ('rtl'|'ltr'), rtl, brandName, tagline, site, generated, title, subtitle,
-  personGrid (rows of cells already in VISUAL order — tables are not mirrored for RTL), dreams (ReportViews.DreamView).
+  Model (ReportService): lang, dir ('rtl'|'ltr'), rtl, brandName, tagline, site, generated, title, subtitle (name or
+  null), reference (short dream number or null), personGrid (rows of cells already in VISUAL order — tables are not mirrored for RTL), dreams (ReportViews.DreamView).
   Brand: night #0A1128 band + gold #D4AF37 rule, pearl #F4EFE6 page, navy #16244A text.
 */-->
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org" th:attr="lang=${lang},dir=${dir}" th:class="${dir}">
@@ -53,6 +53,7 @@
   .rtl td.k, .rtl td.v { text-align: right; }
 
   .dream { margin-top: 7mm; }
+  .dream-top { page-break-inside: avoid; page-break-after: avoid; } /* heading + details stay together, and with the text */
   .dream.sep { padding-top: 6mm; border-top: 0.5mm solid #EADBAA; }
   table.dream-head { width: 100%; border-collapse: collapse; margin-bottom: 2.5mm; page-break-after: avoid; }
   table.dream-head td { padding: 0; vertical-align: middle; }
@@ -105,7 +106,7 @@
 </div>
 
 <div class="doc-title" th:text="${title}">Title</div>
-<div class="doc-sub" th:text="${subtitle}">Subtitle</div>
+<div class="doc-sub"><span th:if="${subtitle != null}" th:text="${subtitle}">Name</span><span th:if="${subtitle != null and reference != null}"> · </span><span th:if="${reference != null}" dir="ltr" th:text="${'#' + reference}">#00000000</span></div>
 
 <div class="section-title" th:text="#{pdf.section.person}">Personal details</div>
 <table class="card">
@@ -118,19 +119,21 @@
 <div class="muted" th:if="${dreams.isEmpty()}" th:text="#{pdf.empty}">No dreams yet.</div>
 
 <div th:each="dream, it : ${dreams}" class="dream" th:classappend="${it.index > 0} ? 'sep' : ''">
-  <table class="dream-head">
-    <tr>
-      <td class="dh-status" th:if="${rtl}"><span class="chip" th:classappend="${'st-' + dream.statusKey}" th:text="${dream.status}">Status</span></td>
-      <td class="dh-title"><span th:text="#{pdf.dream.title}">Dream</span> <span class="dh-num" dir="ltr" th:text="${'#' + dream.number}">#00000000</span></td>
-      <td class="dh-status" th:unless="${rtl}"><span class="chip" th:classappend="${'st-' + dream.statusKey}" th:text="${dream.status}">Status</span></td>
-    </tr>
-  </table>
+  <div class="dream-top">
+    <table class="dream-head">
+      <tr>
+        <td class="dh-status" th:if="${rtl}"><span class="chip" th:classappend="${'st-' + dream.statusKey}" th:text="${dream.status}">Status</span></td>
+        <td class="dh-title"><span th:text="#{pdf.dream.title}">Dream</span> <span class="dh-num" dir="ltr" th:text="${'#' + dream.number}">#00000000</span></td>
+        <td class="dh-status" th:unless="${rtl}"><span class="chip" th:classappend="${'st-' + dream.statusKey}" th:text="${dream.status}">Status</span></td>
+      </tr>
+    </table>
 
-  <table class="card">
-    <tr th:each="cells : ${dream.metaGrid}">
-      <td th:each="cell : ${cells}" th:class="${cell.label} ? 'k' : 'v'" dir="auto" th:text="${cell.text}">x</td>
-    </tr>
-  </table>
+    <table class="card">
+      <tr th:each="cells : ${dream.metaGrid}">
+        <td th:each="cell : ${cells}" th:class="${cell.label} ? 'k' : 'v'" dir="auto" th:text="${cell.text}">x</td>
+      </tr>
+    </table>
+  </div>
 
   <div class="label" th:text="#{pdf.dream.text}">The dream</div>
   <div class="text-block" dir="auto" th:text="${dream.text}">Dream text</div>

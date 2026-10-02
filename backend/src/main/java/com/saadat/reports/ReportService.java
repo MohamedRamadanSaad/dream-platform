@@ -92,8 +92,8 @@ public class ReportService {
         User owner = userRepository.findById(dream.getUserId())
                 .orElseThrow(() -> NotFoundException.of("User", dream.getUserId()));
         Ctx ctx = ctx(locale, true);
-        String subtitle = nameOf(owner, ctx) + " · #" + shortId(dream.getId());
-        byte[] pdf = render(ctx, text(ctx, "pdf.title.adminDream"), subtitle, owner, List.of(dream));
+        byte[] pdf = render(ctx, text(ctx, "pdf.title.adminDream"), nameOf(owner, ctx), shortId(dream.getId()), owner,
+                List.of(dream));
         return new Download(FILE_DREAM + shortId(dream.getId()) + PDF_SUFFIX, pdf);
     }
 
@@ -102,7 +102,7 @@ public class ReportService {
     public Download adminUser(UUID userId, Locale locale) {
         User user = userRepository.findById(userId).orElseThrow(() -> NotFoundException.of("User", userId));
         Ctx ctx = ctx(locale, true);
-        byte[] pdf = render(ctx, text(ctx, "pdf.title.adminUser"), nameOf(user, ctx), user, nonDrafts(userId));
+        byte[] pdf = render(ctx, text(ctx, "pdf.title.adminUser"), nameOf(user, ctx), null, user, nonDrafts(userId));
         return new Download(FILE_USER + shortId(userId) + PDF_SUFFIX, pdf);
     }
 
@@ -118,7 +118,7 @@ public class ReportService {
         Dream dream = nonDraft(dreamRepository.findByIdAndUserId(dreamId, userId), dreamId);
         User user = activeUser(userId);
         Ctx ctx = ctx(requested != null ? requested : user.getLocale(), false);
-        byte[] pdf = render(ctx, text(ctx, "pdf.title.userDream"), "#" + shortId(dream.getId()), user,
+        byte[] pdf = render(ctx, text(ctx, "pdf.title.userDream"), null, shortId(dream.getId()), user,
                 List.of(dream));
         return new Download(FILE_DREAM + shortId(dream.getId()) + PDF_SUFFIX, pdf);
     }
@@ -128,14 +128,18 @@ public class ReportService {
     public Download myDreams(UUID userId, Locale requested) {
         User user = activeUser(userId);
         Ctx ctx = ctx(requested != null ? requested : user.getLocale(), false);
-        byte[] pdf = render(ctx, text(ctx, "pdf.title.myDreams"), nameOf(user, ctx), user, nonDrafts(userId));
+        byte[] pdf = render(ctx, text(ctx, "pdf.title.myDreams"), nameOf(user, ctx), null, user, nonDrafts(userId));
         LocalDate today = LocalDate.now(clock.withZone(ctx.zone()));
         return new Download(FILE_MY_DREAMS + today + PDF_SUFFIX, pdf);
     }
 
     // ================================================================== model
 
-    private byte[] render(Ctx ctx, String title, String subtitle, User person, List<Dream> dreams) {
+    /**
+     * @param subtitle  person name under the title, or null
+     * @param reference short dream number shown after the name (printed left-to-right as {@code #1a2b3c4d}), or null
+     */
+    private byte[] render(Ctx ctx, String title, String subtitle, String reference, User person, List<Dream> dreams) {
         boolean rtl = ctx.locale() == Locale.AR;
         Map<String, Object> model = new HashMap<>();
         model.put("lang", ctx.locale().code());
@@ -149,6 +153,7 @@ public class ReportService {
                 Map.of("date", ctx.dateTime().format(clock.instant().atZone(ctx.zone())))));
         model.put("title", title);
         model.put("subtitle", subtitle);
+        model.put("reference", reference);
         model.put("personGrid", ReportViews.grid(personRows(ctx, person), PAIRS_PER_LINE, rtl));
         List<DreamView> views = new ArrayList<>();
         for (Dream d : dreams) {
@@ -165,7 +170,8 @@ public class ReportService {
             rows.add(row(ctx, "pdf.person.email", PdfRenderer.clean(user.getEmail())));
         }
         rows.add(row(ctx, "pdf.person.gender", gender(ctx, user.getGender())));
-        rows.add(row(ctx, "pdf.person.birthDate", user.getBirthDate() == null ? null : ctx.date().format(user.getBirthDate())));
+        rows.add(row(ctx, "pdf.person.birthDate",
+                user.getBirthDate() == null ? null : ctx.date().format(user.getBirthDate())));
         Integer age = Ages.of(user.getBirthDate(), clock);
         rows.add(row(ctx, "pdf.person.age", age == null ? null : String.valueOf(age)));
         rows.add(row(ctx, "pdf.person.country", country(ctx, user.getCountryCode())));
@@ -227,7 +233,8 @@ public class ReportService {
         rows.add(row(ctx, "pdf.payment.package", PdfRenderer.clean(o.getPackageNameSnapshot())));
         rows.add(row(ctx, "pdf.payment.amount", o.getAmount().toPlainString() + " " + o.getCurrency().name()));
         rows.add(row(ctx, "pdf.payment.provider", OrderDto.displayProvider(o).name()));
-        rows.add(row(ctx, "pdf.payment.paidAt", dateTimeOf(ctx, o.getPaidAt() != null ? o.getPaidAt() : o.getCreatedAt())));
+        rows.add(row(ctx, "pdf.payment.paidAt",
+                dateTimeOf(ctx, o.getPaidAt() != null ? o.getPaidAt() : o.getCreatedAt())));
         return rows;
     }
 
