@@ -17,8 +17,10 @@ jobs:
         run: |
           tar czf - --exclude=node_modules --exclude=dist --exclude=.git frontend deploy backend 2>/dev/null \
             | ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "mkdir -p /opt/saadat && tar xzf - -C /opt/saadat"
-      # Site e-mail: the mailbox password lives only in the GitHub secret SMTP_PASSWORD; host/user can be
-      # overridden with repository variables. Written into backend.env over SSH stdin (never on a command line).
+      # Settings written into the server env files IN PLACE by deploy/ops/setenv.sh (values via SSH stdin, never on a
+      # command line; unchanged values = no restart, no test e-mail).
+      # Site e-mail: the mailbox password lives only in the GitHub secret SMTP_PASSWORD; host/user can be overridden
+      # with repository variables.
       - name: mail settings
         id: mail
         env:
@@ -31,12 +33,12 @@ jobs:
           case "$SMTP_PASSWORD" in *"'"*) echo "SMTP_PASSWORD must not contain a single quote"; exit 1;; esac
           result=$(printf "SMTP_HOST=%s\nSMTP_PORT=%s\nSMTP_USERNAME=%s\nSMTP_PASSWORD='%s'\nSMTP_AUTH=true\nSMTP_STARTTLS=true\nMAIL_FROM=%s\n" \
               "$SMTP_HOST" "$SMTP_PORT" "$SMTP_USERNAME" "$SMTP_PASSWORD" "$SMTP_USERNAME" \
-            | ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} 'f=/opt/saadat/deploy/backend.env; new=$(mktemp)
-                grep -vE "^(SMTP_HOST|SMTP_PORT|SMTP_USERNAME|SMTP_PASSWORD|SMTP_AUTH|SMTP_STARTTLS|MAIL_FROM)=" "$f" > "$new"; cat >> "$new"
-                if cmp -s "$new" "$f"; then echo unchanged; else cat "$new" > "$f"; touch /opt/saadat/deploy/.recreate-backend; echo updated; fi
-                rm -f "$new"')
+            | ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "bash /opt/saadat/deploy/ops/setenv.sh /opt/saadat/deploy/backend.env")
           echo "mail settings: $result"
-          [ "$result" = "updated" ] && echo "changed=true" >> "$GITHUB_OUTPUT" || true
+          if [ "$result" = "updated" ]; then
+            ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "touch /opt/saadat/deploy/.recreate-backend"
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
       # Google sign-in: the OAuth web client ID is public (it ships in the frontend bundle). Backend verifies ID tokens
       # against it (GOOGLE_CLIENT_ID); the frontend gets it at build time (VITE_GOOGLE_CLIENT_ID).
       # Access: INTERPRETER_EMAILS (extra interpreter e-mails) comes only from the repository variable of the same
@@ -46,14 +48,13 @@ jobs:
           GOOGLE_CLIENT_ID: ${{ vars.GOOGLE_CLIENT_ID || '957021915232-jaan66ks1mq88nj60add9gbjlc7jsb0g.apps.googleusercontent.com' }}
           INTERPRETER_EMAILS: ${{ vars.INTERPRETER_EMAILS || '' }}
         run: |
-          ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "GID='$GOOGLE_CLIENT_ID' IEM='$INTERPRETER_EMAILS' bash -s" <<'EOS'
-            cd /opt/saadat/deploy
-            setkv() { if grep -qx "$2=$3" "$1"; then return 1; fi; t=$(mktemp); grep -v "^$2=" "$1" > "$t"; echo "$2=$3" >> "$t"; cat "$t" > "$1"; rm -f "$t"; }
-            if setkv backend.env GOOGLE_CLIENT_ID "$GID"; then touch .recreate-backend; echo "backend: google client id updated"; fi
-            if setkv .env VITE_GOOGLE_CLIENT_ID "$GID"; then echo "frontend: google client id updated (rebuild)"; fi
-            if setkv backend.env INTERPRETER_EMAILS "$IEM"; then touch .recreate-backend; echo "backend: interpreter e-mails updated"; fi
-            echo "google sign-in and access settings ok"
-          EOS
+          backend=$(printf "GOOGLE_CLIENT_ID=%s\nINTERPRETER_EMAILS=%s\n" "$GOOGLE_CLIENT_ID" "$INTERPRETER_EMAILS" \
+            | ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "bash /opt/saadat/deploy/ops/setenv.sh /opt/saadat/deploy/backend.env")
+          echo "backend access settings: $backend"
+          [ "$backend" = "updated" ] && ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "touch /opt/saadat/deploy/.recreate-backend"
+          frontend=$(printf "VITE_GOOGLE_CLIENT_ID=%s\n" "$GOOGLE_CLIENT_ID" \
+            | ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "bash /opt/saadat/deploy/ops/setenv.sh /opt/saadat/deploy/.env")
+          echo "frontend build settings: $frontend"
       - name: build & restart
         run: |
           ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} bash -s <<'EOS'
