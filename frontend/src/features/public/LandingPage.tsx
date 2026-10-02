@@ -8,7 +8,7 @@ import { publicApi } from '@/api/endpoints'
 import { useAuthStore } from '@/app/auth-store'
 import { NightSky, type MoonPos } from '@/components/motion/NightSky'
 import { Reveal, StaggerGroup, CountUp, parseStat, reduced } from '@/components/motion'
-import { PublicHeader, Footer } from '@/components/layout'
+import { PublicHeader, Footer, YoutubeLogo } from '@/components/layout'
 import { Icon } from '@/components/icons/Icon'
 import { Kicker, Skeleton, Stars } from '@/components/ui'
 import { Avatar, AvatarStack } from '@/components/ui/Avatar'
@@ -116,7 +116,7 @@ function Hero() {
               </div>
             )}
           </div>
-          <a href={YT} target="_blank" rel="noreferrer" className="btn btn-lg border border-navy text-gold-soft hover:border-gold"><span className="text-[#FF0000]"><Icon name="youtube" size={20} /></span>{t('hero.youtube')}</a>
+          <a href={YT} target="_blank" rel="noreferrer" className="btn btn-lg border border-navy text-gold-soft hover:border-gold"><YoutubeLogo size={18} />{t('hero.youtube')}</a>
         </div>
         <FloatingBadges />
         <div className="mt-6 border-t border-navy pt-6">
@@ -261,7 +261,7 @@ export default function LandingPage() {
         <StaggerGroup className="grid grid-cols-3 gap-3 md:gap-6">
           {[{ k: 'subscribers', v: stats?.subscribers, i: 'user' }, { k: 'views', v: stats?.views, i: 'play' }, { k: 'videos', v: stats?.videos, i: 'youtube' }].map((s) => (
             <div key={s.k} className="card card-hover flex flex-col items-center gap-1.5 px-2 py-5 text-center md:gap-2 md:p-8">
-              <div className="text-fg"><Icon name={s.i as never} size={26} strokeWidth={1.2} /></div>
+              <div className="flex h-[26px] items-center text-fg">{s.k === 'videos' ? <YoutubeLogo size={22} /> : <Icon name={s.i as never} size={26} strokeWidth={1.2} />}</div>
               <div className="text-3xl font-medium text-night dark:text-pearl md:text-5xl" dir="ltr">{s.v ? (() => { const st = parseStat(s.v); return <CountUp to={st.full} compact={st.compact} suffix={st.sign} /> })() : '…'}</div>
               <div className="text-xs font-light leading-snug text-fg-muted md:text-sm">{t(`stats.${s.k}`)}</div>
             </div>

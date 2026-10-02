@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link, NavLink, matchPath, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useAuthStore, isInterpreter } from '@/app/auth-store'
@@ -11,7 +11,20 @@ import { useQuery } from '@tanstack/react-query'
 import { meApi, notificationsApi, youtubeApi } from '@/api/endpoints'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 
+import flagSa from '@/assets/flags/sa.svg'
+import flagGb from '@/assets/flags/gb.svg'
+
 const YT = (import.meta.env.VITE_YOUTUBE_URL as string) || 'https://youtube.com/@almoaberafatema'
+
+/** The real YouTube mark: red rounded play box with a white triangle (not tinted by the theme). */
+export function YoutubeLogo({ size = 20, className }: { size?: number; className?: string }) {
+  return (
+    <svg width={size * 1.4} height={size} viewBox="0 0 28 20" aria-hidden="true" className={cn('shrink-0', className)}>
+      <path fill="#FF0000" d="M27.4 3.1A3.5 3.5 0 0 0 25 .6C22.8 0 14 0 14 0S5.2 0 3 .6A3.5 3.5 0 0 0 .6 3.1C0 5.3 0 10 0 10s0 4.7.6 6.9A3.5 3.5 0 0 0 3 19.4c2.2.6 11 .6 11 .6s8.8 0 11-.6a3.5 3.5 0 0 0 2.4-2.5c.6-2.2.6-6.9.6-6.9s0-4.7-.6-6.9z" />
+      <path fill="#FFFFFF" d="M11.2 14.3 18.5 10l-7.3-4.3z" />
+    </svg>
+  )
+}
 
 export function YoutubeButton({ dark }: { dark?: boolean }) {
   const { t } = useTranslation()
@@ -23,21 +36,74 @@ export function YoutubeButton({ dark }: { dark?: boolean }) {
   const href = data?.latest?.[0]?.url && count > 0 ? data.latest[0].url : YT
   return (
     <a href={href} target="_blank" rel="noreferrer" onClick={() => { if (count > 0) seen.mutate() }} className={cn('btn btn-sm relative gap-2 border', dark ? 'border-navy text-gold-soft hover:border-gold' : 'border-line text-fg hover:border-gold')} aria-label={t('nav.youtube')} title={count > 0 ? t('nav.youtubeNew', { count }) : undefined}>
-      <span className="text-[#FF0000]"><Icon name="youtube" size={18} /></span>
+      <YoutubeLogo size={15} />
       <span className="hidden sm:inline">{t('nav.youtube')}</span>
       {count > 0 && <span className="pulse-ring absolute -top-1 -end-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#FF0000] px-1 text-[10px] font-bold text-white">{count > 9 ? '9+' : count}</span>}
     </a>
   )
 }
 
+const LANGS = [
+  { code: 'ar', flag: flagSa, labelKey: 'common.langAr' },
+  { code: 'en', flag: flagGb, labelKey: 'common.langEn' },
+] as const
+
+const Flag = ({ src, size = 22 }: { src: string; size?: number }) => (
+  <img src={src} alt="" width={size} height={Math.round(size * 0.75)} className="shrink-0 rounded-[3px] object-cover shadow-[0_0_0_1px_rgba(0,0,0,.12)]" />
+)
+
+/** Language menu: the current flag opens a small list (Saudi flag = العربية, UK flag = English). */
 export function LocaleToggle({ dark }: { dark?: boolean }) {
   const { t } = useTranslation()
   const locale = useAuthStore((s) => s.locale)
   const setLocale = useAuthStore((s) => s.setLocale)
-  const next = locale === 'ar' ? 'en' : 'ar'
+  const [open, setOpen] = useState(false)
+  const box = useRef<HTMLDivElement>(null)
+  const current = LANGS.find((l) => l.code === locale) ?? LANGS[0]
+  useEffect(() => {
+    if (!open) return
+    const onDown = (e: MouseEvent) => { if (!box.current?.contains(e.target as Node)) setOpen(false) }
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setOpen(false) }
+    document.addEventListener('mousedown', onDown)
+    window.addEventListener('keydown', onKey)
+    return () => { document.removeEventListener('mousedown', onDown); window.removeEventListener('keydown', onKey) }
+  }, [open])
+  const pick = (code: 'ar' | 'en') => { setOpen(false); if (code !== locale) { setLocale(code); applyLocale(code) } }
   return (
-    <button onClick={() => { setLocale(next); applyLocale(next) }} className={cn('text-sm', dark ? 'text-gold-soft/80 hover:text-gold-soft' : 'text-fg-muted hover:text-fg')} aria-label="language">
-      {next === 'ar' ? t('common.langAr') : t('common.langEn')}
+    <div ref={box} className="relative">
+      <button type="button" onClick={() => setOpen((v) => !v)} aria-haspopup="listbox" aria-expanded={open} aria-label={t('common.language')} title={t('common.language')}
+        className={cn('flex h-10 items-center gap-1.5 rounded-full border px-2.5 transition-colors', dark ? 'border-navy hover:border-gold' : 'border-line hover:border-gold', open && 'border-gold')}>
+        <Flag src={current.flag} />
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className={cn('transition-transform duration-300', dark ? 'text-gold-soft/70' : 'text-fg-muted', open && 'rotate-180')}><path d="M6 9l6 6 6-6" /></svg>
+      </button>
+      {open && (
+        <ul role="listbox" aria-label={t('common.language')} className="modal-panel absolute end-0 top-full z-50 mt-2 w-44 overflow-hidden rounded-2xl border border-line bg-surface p-1.5 shadow-calm">
+          {LANGS.map((l) => (
+            <li key={l.code}>
+              <button type="button" role="option" aria-selected={l.code === locale} onClick={() => pick(l.code)} lang={l.code} dir={l.code === 'ar' ? 'rtl' : 'ltr'}
+                className={cn('flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-fg transition-colors', l.code === locale ? 'bg-gold/10' : 'hover:bg-surface-2')}>
+                <Flag src={l.flag} size={24} />
+                <span className="flex-1 text-start">{t(l.labelKey)}</span>
+                {l.code === locale && <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" className="text-gold-ink" aria-hidden="true"><path d="M5 12l4 4L19 6" /></svg>}
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  )
+}
+
+/** Desktop header sign-out: a round icon button that warms to red on hover. */
+export function SignOutButton() {
+  const { t } = useTranslation()
+  const { signOut, pending } = useSignOut()
+  const [hover, setHover] = useState(false)
+  return (
+    <button type="button" disabled={pending} onClick={() => void signOut()} onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}
+      aria-label={t('auth.logout')} title={t('auth.logout')}
+      className="flex h-10 w-10 items-center justify-center rounded-full border border-line text-fg-muted transition-colors hover:border-danger/50 hover:bg-danger/10 hover:text-danger disabled:opacity-50">
+      {pending ? <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" /> : <Icon name="logout" size={18} flipRtl active={hover} />}
     </button>
   )
 }
@@ -181,11 +247,8 @@ export function AppShell({ items, children, admin }: { items: { to: string; labe
             {/* theme lives in the profile on phones; the header keeps only what fits */}
             <div className="hidden md:block"><ThemeToggle /></div>
             <LocaleToggle />
-            {admin && (
-              <Link to={profile} aria-label={t('admin.nav.profile')} title={t('admin.nav.profile')} className="rounded-full transition-transform hover:-translate-y-0.5">
-                <Avatar name={user?.name || user?.email} size={36} />
-              </Link>
-            )}
+            {/* desktop: sign out right after the language menu, at the far end of the header */}
+            <div className="hidden md:block"><SignOutButton /></div>
           </div>
         </header>
         <main className="mx-auto max-w-6xl px-4 py-6 pb-[calc(7rem_+_env(safe-area-inset-bottom))] md:px-8 md:pb-10">{children}</main>

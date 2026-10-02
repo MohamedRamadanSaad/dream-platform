@@ -925,7 +925,8 @@
     "sent": "تم الإرسال",
     "published": "تم نشر التفسير",
     "langAr": "العربية",
-    "langEn": "English"
+    "langEn": "English",
+    "language": "اللغة"
   },
   "static": {
     "terms": "الشروط والأحكام",

@@ -891,7 +891,8 @@
     "sent": "Sent",
     "published": "Interpretation published",
     "langAr": "العربية",
-    "langEn": "English"
+    "langEn": "English",
+    "language": "Language"
   },
   "static": {
     "terms": "Terms and Conditions",
