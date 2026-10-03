@@ -1,4 +1,4 @@
-### commit 2ffb6ebd0ec4e0ac3c49b450a6976b816aec309e run 37098488784 Sat Oct  3 05:03:17 UTC 2026
+### commit acb52394ec53c24c519d2a7a7be42a44a449500b run 37098812152 Sat Oct  3 05:08:51 UTC 2026
 ## tests
 com.saadat.tracking.service.UserAgentsTest tests=20 failures=0 errors=0
 com.saadat.settings.AdminWaitTimeIntegrationTest tests=2 failures=0 errors=0
@@ -7,6 +7,7 @@ com.saadat.passkeys.service.PasskeyAddedMailIntegrationTest tests=2 failures=0 e
 com.saadat.security.AccessControlIntegrationTest tests=6 failures=0 errors=0
 com.saadat.passkeys.PasskeysIntegrationTest tests=15 failures=0 errors=0
 com.saadat.mail.MailEventsIntegrationTest tests=7 failures=0 errors=0
+com.saadat.credits.CreditExpiryIntegrationTest tests=2 failures=0 errors=0
 com.saadat.mail.inbound.InboundMailParserTest tests=5 failures=0 errors=0
 com.saadat.auth.RememberMeIntegrationTest tests=9 failures=0 errors=0
 com.saadat.youtube.service.YoutubeChannelIdResolverTest tests=7 failures=0 errors=0
@@ -26,6 +27,7 @@ com.saadat.mail.inbound.SupportAutoReplyWebhookIntegrationTest tests=5 failures=
 com.saadat.youtube.YoutubeUnseenServiceTest tests=5 failures=0 errors=0
 com.saadat.notifications.NotificationsIntegrationTest tests=4 failures=0 errors=0
 com.saadat.common.web.ProxyClientIpTest tests=5 failures=0 errors=0
+com.saadat.credits.CreditLotsTest tests=7 failures=1 errors=0
 com.saadat.youtube.service.YoutubeNewVideoMailIntegrationTest tests=1 failures=0 errors=0
 com.saadat.common.web.CountryResolverTest tests=5 failures=0 errors=0
 com.saadat.tracking.TrackIntegrationTest tests=4 failures=0 errors=0
@@ -44,7 +46,24 @@ com.saadat.youtube.YoutubeFeedParserTest tests=3 failures=0 errors=0
 com.saadat.dreams.DreamFlowIntegrationTest tests=7 failures=0 errors=0
 com.saadat.youtube.service.YoutubeChannelPageParserTest tests=8 failures=0 errors=0
 ## failures
+--- backend/build/test-results/test/TEST-com.saadat.credits.CreditLotsTest.xml
+    <failure message="java.lang.AssertionError: &#10;Expecting empty but was: [com.saadat.credits.service.CreditLots$Lot@894591b]" type="java.lang.AssertionError">java.lang.AssertionError: 
+Expecting empty but was: [com.saadat.credits.service.CreditLots$Lot@894591b]
+	at com.saadat.credits.CreditLotsTest.manualCreditsAndRefundsNeverExpireAndAreUsedLast(CreditLotsTest.java:83)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+</failure>
+  </testcase>
+  <testcase name="nextExpiryCountsCreditsDueTheSameDayWithinTheWindow()" classname="com.saadat.credits.CreditLotsTest" time="0.001"/>
+  <testcase name="purchaseWithoutValidityNeverExpires()" classname="com.saadat.credits.CreditLotsTest" time="0.001"/>
+  <testcase name="expireRowEmptiesItsLotAndSettledLotsAreNotDueAgain()" classname="com.saadat.credits.CreditLotsTest" time="0.0"/>
+  <testcase name="soonestExpiringPurchaseIsSpentFirst()" classname="com.saadat.credits.CreditLotsTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
 ## build.log (errors + tail)
+17:CreditLotsTest > manualCreditsAndRefundsNeverExpireAndAreUsedLast() FAILED
+30:> Task :test FAILED
+42:BUILD FAILED in 51s
 ...
 To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.14.3/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
 Daemon will be stopped at the end of the build 
@@ -59,15 +78,33 @@ Daemon will be stopped at the end of the build
 > Task :processTestResources
 > Task :testClasses
 OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+
 > Task :test
 
-05:03:17.189 INFO  [SpringApplicationShutdownHook] [] o.s.o.j.LocalContainerEntityManagerFactoryBean - Closing JPA EntityManagerFactory for persistence unit 'default'
-05:03:17.192 INFO  [SpringApplicationShutdownHook] [] com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated...
-05:03:17.217 INFO  [SpringApplicationShutdownHook] [] com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed.
+CreditLotsTest > manualCreditsAndRefundsNeverExpireAndAreUsedLast() FAILED
+    java.lang.AssertionError: 
+    Expecting empty but was: [com.saadat.credits.service.CreditLots$Lot@894591b]
+        at com.saadat.credits.CreditLotsTest.manualCreditsAndRefundsNeverExpireAndAreUsedLast(CreditLotsTest.java:83)
 
-> Task :check
-> Task :build
-gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/__run-1791003733445.json
+05:08:50.707 INFO  [SpringApplicationShutdownHook] [] o.s.o.j.LocalContainerEntityManagerFactoryBean - Closing JPA EntityManagerFactory for persistence unit 'default'
+05:08:50.710 INFO  [SpringApplicationShutdownHook] [] com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated...
+05:08:50.719 INFO  [SpringApplicationShutdownHook] [] com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed.
 
-BUILD SUCCESSFUL in 1m 8s
+> Task :test
+
+272 tests completed, 1 failed
+
+> Task :test FAILED
+gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/__run-1791004082557.json
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':test'.
+> There were failing tests. See the report at: file:///home/runner/work/dream-platform/dream-platform/backend/build/reports/tests/test/index.html
+
+* Try:
+> Run with --scan to get full insights.
+
+BUILD FAILED in 51s
 7 actionable tasks: 7 executed
