@@ -1,4 +1,4 @@
--- V28: new-video e-mails go to every user (owner's decision). users.marketing_opt_in now means "channel e-mails on":
+-- V29: new-video e-mails go to every user (owner's decision). users.marketing_opt_in now means "channel e-mails on":
 -- on for everyone (and for new accounts), off only when the user stops them (link in the e-mail, or My account).
 -- youtube.mail_daily_limit caps these e-mails per 24 hours so the shared mailbox quota stays free for sign-in codes,
 -- receipts and dream e-mails; the rest go out over the following hours (YoutubeMailBacklogJob).
