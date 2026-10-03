@@ -1,7 +1,0 @@
-### commit 106b1a7d569dc94aedc815067aaf83cc8371b500 run 37099116333 Sat Oct  3 05:13:36 UTC 2026
-## tests
-## failures
-## build.log (errors + tail)
-...
-To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.14.3/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
-Daemon will be stopped at the end of the build 
