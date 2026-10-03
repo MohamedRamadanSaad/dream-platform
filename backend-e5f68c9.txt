@@ -1,4 +1,4 @@
-### commit af63102a43c9d7464e92f65515c23de9ef78b5de run 37146383888 Sat Oct  3 19:02:46 UTC 2026
+### commit e5f68c98f6aeeb9874d1d55ed09f37c46359c31d run 37147835419 Sat Oct  3 19:26:30 UTC 2026
 ## tests
 com.saadat.tracking.service.UserAgentsTest tests=20 failures=0 errors=0
 com.saadat.settings.AdminWaitTimeIntegrationTest tests=2 failures=0 errors=0
@@ -49,6 +49,7 @@ com.saadat.reports.ExcelExportIntegrationTest tests=2 failures=0 errors=0
 com.saadat.users.MeControllerIntegrationTest tests=5 failures=0 errors=0
 com.saadat.youtube.ChannelMailOptOutIntegrationTest tests=1 failures=0 errors=0
 com.saadat.payments.KashierSignatureTest tests=2 failures=0 errors=0
+com.saadat.pricing.PricingGapsIntegrationTest tests=2 failures=0 errors=0
 com.saadat.auth.service.NewSignInMailIntegrationTest tests=5 failures=0 errors=0
 com.saadat.youtube.YoutubeFeedParserTest tests=3 failures=0 errors=0
 com.saadat.dreams.DreamFlowIntegrationTest tests=7 failures=0 errors=0
@@ -71,13 +72,13 @@ Daemon will be stopped at the end of the build
 OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
 > Task :test
 
-19:02:45.679 INFO  [SpringApplicationShutdownHook] [] o.s.o.j.LocalContainerEntityManagerFactoryBean - Closing JPA EntityManagerFactory for persistence unit 'default'
-19:02:45.682 INFO  [SpringApplicationShutdownHook] [] com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated...
-19:02:45.692 INFO  [SpringApplicationShutdownHook] [] com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed.
+19:26:29.439 INFO  [SpringApplicationShutdownHook] [] o.s.o.j.LocalContainerEntityManagerFactoryBean - Closing JPA EntityManagerFactory for persistence unit 'default'
+19:26:29.441 INFO  [SpringApplicationShutdownHook] [] com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated...
+19:26:29.455 INFO  [SpringApplicationShutdownHook] [] com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed.
 
 > Task :check
 > Task :build
-gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/__run-1791054102588.json
+gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/__run-1791055543160.json
 
-BUILD SUCCESSFUL in 1m 7s
+BUILD SUCCESSFUL in 48s
 7 actionable tasks: 7 executed
