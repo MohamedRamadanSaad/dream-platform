@@ -1,4 +1,4 @@
-### commit 0963aa7b65d6866204b8e294930bd1d793615e39 run 37106352200 Sat Oct  3 07:27:44 UTC 2026
+### commit 351bd577f7ac16805fac3b0a26f2d048819d68c1 run 37106763266 Sat Oct  3 07:35:34 UTC 2026
 ## tests
 com.saadat.tracking.service.UserAgentsTest tests=20 failures=0 errors=0
 com.saadat.settings.AdminWaitTimeIntegrationTest tests=2 failures=0 errors=0
@@ -35,6 +35,7 @@ com.saadat.tracking.TrackIntegrationTest tests=5 failures=0 errors=0
 com.saadat.admin.analytics.InsightsIntegrationTest tests=2 failures=0 errors=0
 com.saadat.admin.analytics.TrafficIntegrationTest tests=6 failures=0 errors=0
 com.saadat.publicapi.PublicInfoControllerIntegrationTest tests=3 failures=0 errors=0
+com.saadat.common.SoftDeleteIntegrationTest tests=9 failures=1 errors=0
 com.saadat.reports.ReportsIntegrationTest tests=2 failures=0 errors=0
 com.saadat.youtube.YoutubeIntegrationTest tests=2 failures=0 errors=0
 com.saadat.users.DashboardActivityIntegrationTest tests=2 failures=0 errors=0
@@ -52,7 +53,24 @@ com.saadat.youtube.YoutubeFeedParserTest tests=3 failures=0 errors=0
 com.saadat.dreams.DreamFlowIntegrationTest tests=7 failures=0 errors=0
 com.saadat.youtube.service.YoutubeChannelPageParserTest tests=8 failures=0 errors=0
 ## failures
+--- backend/build/test-results/test/TEST-com.saadat.common.SoftDeleteIntegrationTest.xml
+    <failure message="java.lang.AssertionError: Status expected:&lt;201&gt; but was:&lt;409&gt;" type="java.lang.AssertionError">java.lang.AssertionError: Status expected:&lt;201&gt; but was:&lt;409&gt;
+	at org.springframework.test.util.AssertionErrors.fail(AssertionErrors.java:59)
+	at org.springframework.test.util.AssertionErrors.assertEquals(AssertionErrors.java:122)
+	at org.springframework.test.web.servlet.result.StatusResultMatchers.lambda$matcher$9(StatusResultMatchers.java:637)
+	at org.springframework.test.web.servlet.MockMvc$1.andExpect(MockMvc.java:214)
+	at com.saadat.common.SoftDeleteIntegrationTest.deletedCountryGroupDetachesItsCountriesAndSoftDeletesItsPriceRules(SoftDeleteIntegrationTest.java:186)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+</failure>
+  </testcase>
+  <testcase name="deletedDraftStaysInTheTableButIsNotFoundListedOrCounted()" classname="com.saadat.common.SoftDeleteIntegrationTest" time="0.082"/>
+  <system-out><![CDATA[07:35:13.902 INFO  [Test worker] [] o.s.t.c.s.AnnotationConfigContextLoaderUtils - Could not detect default configuration classes for test class [com.saadat.common.SoftDeleteIntegrationTest]: SoftDeleteIntegrationTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
 ## build.log (errors + tail)
+17:SoftDeleteIntegrationTest > deletedCountryGroupDetachesItsCountriesAndSoftDeletesItsPriceRules() FAILED
+33:> Task :test FAILED
+45:BUILD FAILED in 1m 17s
 ...
 To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.14.3/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
 Daemon will be stopped at the end of the build 
@@ -67,15 +85,36 @@ Daemon will be stopped at the end of the build
 > Task :processTestResources
 > Task :testClasses
 OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+
 > Task :test
 
-07:27:43.528 INFO  [SpringApplicationShutdownHook] [] o.s.o.j.LocalContainerEntityManagerFactoryBean - Closing JPA EntityManagerFactory for persistence unit 'default'
-07:27:43.540 INFO  [SpringApplicationShutdownHook] [] com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated...
-07:27:43.548 INFO  [SpringApplicationShutdownHook] [] com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed.
+SoftDeleteIntegrationTest > deletedCountryGroupDetachesItsCountriesAndSoftDeletesItsPriceRules() FAILED
+    java.lang.AssertionError: Status expected:<201> but was:<409>
+        at org.springframework.test.util.AssertionErrors.fail(AssertionErrors.java:59)
+        at org.springframework.test.util.AssertionErrors.assertEquals(AssertionErrors.java:122)
+        at org.springframework.test.web.servlet.result.StatusResultMatchers.lambda$matcher$9(StatusResultMatchers.java:637)
+        at org.springframework.test.web.servlet.MockMvc$1.andExpect(MockMvc.java:214)
+        at com.saadat.common.SoftDeleteIntegrationTest.deletedCountryGroupDetachesItsCountriesAndSoftDeletesItsPriceRules(SoftDeleteIntegrationTest.java:186)
 
-> Task :check
-> Task :build
-gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/__run-1791012413897.json
+07:35:33.059 INFO  [SpringApplicationShutdownHook] [] o.s.o.j.LocalContainerEntityManagerFactoryBean - Closing JPA EntityManagerFactory for persistence unit 'default'
+07:35:33.065 INFO  [SpringApplicationShutdownHook] [] com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated...
+07:35:33.079 INFO  [SpringApplicationShutdownHook] [] com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed.
 
-BUILD SUCCESSFUL in 53s
+> Task :test
+
+306 tests completed, 1 failed
+
+> Task :test FAILED
+gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/__run-1791012861105.json
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':test'.
+> There were failing tests. See the report at: file:///home/runner/work/dream-platform/dream-platform/backend/build/reports/tests/test/index.html
+
+* Try:
+> Run with --scan to get full insights.
+
+BUILD FAILED in 1m 17s
 7 actionable tasks: 7 executed
