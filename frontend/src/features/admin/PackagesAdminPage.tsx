@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { adminApi } from '@/api/endpoints'
@@ -13,6 +13,66 @@ import type { AdminPackage, CouponDto, PromotionDto } from '@/api/types'
 type Tab = 'packages' | 'promotions' | 'coupons'
 const iso = (d: string) => (d ? new Date(d).toISOString() : '')
 const local = (iso: string) => (iso ? new Date(iso).toISOString().slice(0, 16) : '')
+
+type OfferState = 'running' | 'upcoming' | 'stopped' | 'expired' | 'usedUp'
+const isCurrent = (s: OfferState) => s === 'running' || s === 'upcoming'
+const usedUp = (used: number, max: number | null) => max != null && max > 0 && used >= max
+
+// Nothing here is deleted: a stopped, past-end or used-up offer moves to the "ended" list and can be turned on
+// again (stopped) or given new dates / a new limit (ended).
+function promotionState(p: PromotionDto, now: number): OfferState {
+  if (!p.active) return 'stopped'
+  if (new Date(p.endsAt).getTime() <= now) return 'expired'
+  if (usedUp(p.usedCount, p.maxUses)) return 'usedUp'
+  return new Date(p.startsAt).getTime() > now ? 'upcoming' : 'running'
+}
+function couponState(c: CouponDto, now: number): OfferState {
+  if (!c.active) return 'stopped'
+  if (c.expiresAt && new Date(c.expiresAt).getTime() <= now) return 'expired'
+  if (usedUp(c.usedCount, c.maxUses)) return 'usedUp'
+  return 'running'
+}
+
+function StateChip({ state }: { state: OfferState }) {
+  const { t } = useTranslation()
+  const tone = state === 'running' ? 'bg-success/10 text-success' : state === 'upcoming' ? 'bg-gold/10 text-gold-ink' : 'bg-surface-2 text-fg-muted'
+  return <span className={cn('chip text-[11px]', tone)}><span className="h-1.5 w-1.5 rounded-full bg-current" />{t(`admin.packages.state.${state}`)}</span>
+}
+
+function StopButton({ active, onClick }: { active: boolean; onClick: () => void }) {
+  const { t } = useTranslation()
+  return <Button size="sm" variant="ghost" className={active ? 'text-danger' : 'text-success'} onClick={onClick}>{active ? t('admin.packages.stop') : t('admin.packages.resume')}</Button>
+}
+
+function Row({ title, meta, actions, ended, state }: { title: ReactNode; meta: ReactNode; actions: ReactNode; ended?: boolean; state?: OfferState }) {
+  return (
+    <div className={cn('card flex flex-col gap-3 p-5 sm:flex-row sm:items-center sm:justify-between sm:gap-4', ended && 'bg-surface-2/40')}>
+      <div className="min-w-0">
+        <div className={cn('flex flex-wrap items-center gap-2 font-medium', ended && 'text-fg-muted')}>{title}{state && <StateChip state={state} />}</div>
+        <div className="mt-1 text-xs text-fg-dim">{meta}</div>
+      </div>
+      <div className="flex shrink-0 flex-wrap gap-2">{actions}</div>
+    </div>
+  )
+}
+
+/** The current list, then the stopped / ended ones in a folded section (kept, never deleted). */
+function Split<T>({ current, ended, endedTitle, render }: { current: T[]; ended: T[]; endedTitle: string; render: (x: T) => ReactNode }) {
+  const { t } = useTranslation()
+  return (
+    <>
+      {current.length ? current.map(render) : <div className="card p-6 text-center text-sm text-fg-muted">{t('admin.packages.emptyCurrent')}</div>}
+      <details className="group mt-8" open={ended.length > 0 && current.length === 0}>
+        <summary className="flex cursor-pointer select-none list-none items-center gap-2 text-sm font-medium text-fg-muted hover:text-fg">
+          <span className="transition-transform duration-300 group-open:rotate-90 rtl:rotate-180 rtl:group-open:rotate-90">{'›'}</span>
+          {endedTitle}<span className="chip bg-surface-2 text-xs text-fg-dim">{ended.length}</span>
+        </summary>
+        <p className="mb-3 mt-2 text-xs text-fg-dim">{t('admin.packages.endedHint')}</p>
+        <div className="space-y-3">{ended.length ? ended.map(render) : <div className="card p-6 text-center text-sm text-fg-muted">{t('admin.packages.emptyEnded')}</div>}</div>
+      </details>
+    </>
+  )
+}
 
 export function PackagesAdminPage() {
   const { t } = useTranslation()
@@ -29,8 +89,10 @@ export function PackagesAdminPage() {
   const saveP = useMutation({ mutationFn: adminApi.savePackage, onSuccess: () => { setEditP(null); inv() } })
   const savePr = useMutation({ mutationFn: adminApi.savePromotion, onSuccess: () => { setEditPr(null); inv() } })
   const saveC = useMutation({ mutationFn: adminApi.saveCoupon, onSuccess: () => { setEditC(null); inv() } })
-  const delPr = useMutation({ mutationFn: adminApi.deletePromotion, meta: { toast: 'common.deleted' }, onSuccess: inv })
-  const delC = useMutation({ mutationFn: adminApi.deleteCoupon, meta: { toast: 'common.deleted' }, onSuccess: inv })
+  const now = Date.now()
+  const packages = [...(pk.data ?? [])].sort((a, b) => a.sortOrder - b.sortOrder)
+  const promotions = [...(pr.data ?? [])].sort((a, b) => b.endsAt.localeCompare(a.endsAt))
+  const coupons = cp.data ?? []
   const geo = useGeo(tab === 'promotions')
   const prNeedsTarget = !!editPr && !!editPr.scope && editPr.scope !== 'GLOBAL' && !editPr.scopeId
 
@@ -40,24 +102,45 @@ export function PackagesAdminPage() {
         <Button size="sm" onClick={() => tab === 'packages' ? setEditP({ nameAr: '', nameEn: '', descriptionAr: '', descriptionEn: '', credits: 1, badge: null, sortOrder: (pk.data?.length ?? 0) + 1, active: true, validityMonths: 12 }) : tab === 'promotions' ? setEditPr({ name: '', packageIds: [], type: 'PERCENT', value: 10, startsAt: new Date().toISOString(), endsAt: new Date(Date.now() + 7 * 864e5).toISOString(), maxUses: null, scope: 'GLOBAL', scopeId: null, active: true }) : setEditC({ code: '', type: 'PERCENT', value: 10, maxUses: null, perUserLimit: 1, expiresAt: null, active: true })}>+ {t('admin.packages.new')}</Button></div>
       <Tabs value={tab} onChange={setTab} items={[{ value: 'packages', label: t('admin.packages.packages') }, { value: 'promotions', label: t('admin.packages.promotions') }, { value: 'coupons', label: t('admin.packages.coupons') }]} />
       <div className="mt-6 space-y-3">
-        {tab === 'packages' && (pk.isLoading ? <Skeleton className="h-40" /> : pk.data!.sort((a, b) => a.sortOrder - b.sortOrder).map((p) => (
-          <div key={p.id} className={cn('card flex items-center justify-between gap-4 p-5', !p.active && 'opacity-50')}>
-            <div><div className="font-medium">{locale === 'ar' ? p.nameAr : p.nameEn} {p.badge && <span className="chip bg-gold/10 text-gold-ink">{p.badge}</span>}</div><div className="text-xs text-fg-dim">{t('packages.dreams', { count: p.credits })} · {p.active ? t('admin.packages.active') : t('admin.packages.inactive')}</div></div>
-            <div className="flex gap-2"><Button size="sm" variant="ghost" onClick={() => setEditP(p)}>{t('common.edit')}</Button><Button size="sm" variant="ghost" onClick={() => saveP.mutate({ id: p.id, active: !p.active })}>{p.active ? t('admin.packages.inactive') : t('admin.packages.active')}</Button></div>
-          </div>
-        )))}
-        {tab === 'promotions' && (pr.isLoading ? <Skeleton className="h-40" /> : pr.data!.map((p) => (
-          <div key={p.id} className={cn('card flex items-center justify-between gap-4 p-5', !p.active && 'opacity-50')}>
-            <div><div className="flex flex-wrap items-center gap-2 font-medium">{p.name} <span className="text-xs text-fg-dim">· {p.type === 'PERCENT' ? `${p.value}%` : p.type === 'FIXED' ? `-${p.value}` : `+${p.value}`}</span><span className="chip bg-gold/10 text-gold-ink"><Icon name="globe" size={12} />{targetLabel(t, locale, p.scope, p.scopeId, geo.countries.data, geo.groups.data)}</span></div><div className="text-xs text-fg-dim">{fmtDate(p.startsAt, locale)} {arrowNext(locale)} {fmtDate(p.endsAt, locale)} · {t('admin.packages.used')} {p.usedCount}{p.maxUses ? `/${p.maxUses}` : ''} · {p.packageIds.map((id) => { const x = pk.data?.find((y) => y.id === id); return locale === 'ar' ? x?.nameAr : x?.nameEn }).join(locale === 'ar' ? '، ' : ', ')}</div></div>
-            <div className="flex gap-2"><Button size="sm" variant="ghost" onClick={() => setEditPr(p)}>{t('common.edit')}</Button><Button size="sm" variant="ghost" className="text-danger" onClick={() => confirm('?') && delPr.mutate(p.id)}>{t('common.delete')}</Button></div>
-          </div>
-        )))}
-        {tab === 'coupons' && (cp.isLoading ? <Skeleton className="h-40" /> : cp.data!.map((c) => (
-          <div key={c.id} className={cn('card flex items-center justify-between gap-4 p-5', !c.active && 'opacity-50')}>
-            <div><div className="font-medium" dir="ltr">{c.code} <span className="text-xs text-fg-dim">· {c.type === 'PERCENT' ? `${c.value}%` : `-${c.value}`}</span></div><div className="text-xs text-fg-dim">{t('admin.packages.used')} {c.usedCount}{c.maxUses ? `/${c.maxUses}` : ''} · {t('admin.packages.perUser')} {c.perUserLimit}{c.expiresAt && ` · ${t('admin.packages.expires')} ${fmtDate(c.expiresAt, locale)}`}</div></div>
-            <div className="flex gap-2"><Button size="sm" variant="ghost" onClick={() => setEditC(c)}>{t('common.edit')}</Button><Button size="sm" variant="ghost" className="text-danger" onClick={() => confirm('?') && delC.mutate(c.id)}>{t('common.delete')}</Button></div>
-          </div>
-        )))}
+        {tab === 'packages' && (pk.isLoading ? <Skeleton className="h-40" /> : (
+          <Split current={packages.filter((p) => p.active)} ended={packages.filter((p) => !p.active)} endedTitle={t('admin.packages.stoppedPackages')}
+            render={(p) => (
+              <Row key={p.id} ended={!p.active} state={p.active ? undefined : 'stopped'}
+                title={<>{locale === 'ar' ? p.nameAr : p.nameEn} {p.badge && <span className="chip bg-gold/10 text-gold-ink">{p.badge}</span>}</>}
+                meta={t('packages.dreams', { count: p.credits })}
+                actions={<><Button size="sm" variant="ghost" onClick={() => setEditP(p)}>{t('common.edit')}</Button><StopButton active={p.active} onClick={() => saveP.mutate({ id: p.id, active: !p.active })} /></>} />
+            )} />
+        ))}
+        {tab === 'promotions' && (pr.isLoading ? <Skeleton className="h-40" /> : (
+          <Split current={promotions.filter((p) => isCurrent(promotionState(p, now)))} ended={promotions.filter((p) => !isCurrent(promotionState(p, now)))} endedTitle={t('admin.packages.endedPromotions')}
+            render={(p) => {
+              const state = promotionState(p, now)
+              return (
+                <Row key={p.id} ended={!isCurrent(state)} state={state}
+                  title={<>{p.name} <span className="text-xs text-fg-dim">· {p.type === 'PERCENT' ? `${p.value}%` : p.type === 'FIXED' ? `-${p.value}` : `+${p.value}`}</span><span className="chip bg-gold/10 text-gold-ink"><Icon name="globe" size={12} />{targetLabel(t, locale, p.scope, p.scopeId, geo.countries.data, geo.groups.data)}</span></>}
+                  meta={<>{fmtDate(p.startsAt, locale)} {arrowNext(locale)} {fmtDate(p.endsAt, locale)} · {t('admin.packages.used')} {p.usedCount}{p.maxUses ? `/${p.maxUses}` : ''} · {p.packageIds.map((id) => { const x = pk.data?.find((y) => y.id === id); return locale === 'ar' ? x?.nameAr : x?.nameEn }).join(locale === 'ar' ? '، ' : ', ')}</>}
+                  actions={<>
+                    <Button size="sm" variant="ghost" onClick={() => setEditPr(p)}>{state === 'expired' || state === 'usedUp' ? t('admin.packages.renew') : t('common.edit')}</Button>
+                    {(state !== 'expired' && state !== 'usedUp') && <StopButton active={p.active} onClick={() => savePr.mutate({ id: p.id, active: !p.active })} />}
+                  </>} />
+              )
+            }} />
+        ))}
+        {tab === 'coupons' && (cp.isLoading ? <Skeleton className="h-40" /> : (
+          <Split current={coupons.filter((c) => isCurrent(couponState(c, now)))} ended={coupons.filter((c) => !isCurrent(couponState(c, now)))} endedTitle={t('admin.packages.endedCoupons')}
+            render={(c) => {
+              const state = couponState(c, now)
+              return (
+                <Row key={c.id} ended={!isCurrent(state)} state={state}
+                  title={<span dir="ltr">{c.code} <span className="text-xs text-fg-dim">· {c.type === 'PERCENT' ? `${c.value}%` : `-${c.value}`}</span></span>}
+                  meta={<>{t('admin.packages.used')} {c.usedCount}{c.maxUses ? `/${c.maxUses}` : ''} · {t('admin.packages.perUser')} {c.perUserLimit}{c.expiresAt && ` · ${t('admin.packages.expires')} ${fmtDate(c.expiresAt, locale)}`}</>}
+                  actions={<>
+                    <Button size="sm" variant="ghost" onClick={() => setEditC(c)}>{state === 'expired' || state === 'usedUp' ? t('admin.packages.renew') : t('common.edit')}</Button>
+                    {(state !== 'expired' && state !== 'usedUp') && <StopButton active={c.active} onClick={() => saveC.mutate({ id: c.id, active: !c.active })} />}
+                  </>} />
+              )
+            }} />
+        ))}
       </div>
 
       <Modal open={!!editP} onClose={() => setEditP(null)} title={t('admin.packages.packages')} size="lg"
