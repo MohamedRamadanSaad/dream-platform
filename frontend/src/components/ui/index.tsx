@@ -53,13 +53,17 @@ export function ErrorBox({ message, onRetry }: { message?: string; onRetry?: () 
 
 export function Tabs<T extends string>({ value, onChange, items }: { value: T; onChange: (v: T) => void; items: { value: T; label: string; count?: number; tone?: 'danger' }[] }) {
   return (
-    <div role="tablist" className="flex gap-1 overflow-x-auto border-b border-line">
+    // the line sits on the outer box; the inner row scrolls sideways only (a 1px vertical overflow used to
+    // show a stray vertical scrollbar on Windows) and overlaps the line so the active tab's gold bar covers it
+    <div className="border-b border-line">
+    <div role="tablist" className="no-scrollbar -mb-px flex gap-1 overflow-x-auto overflow-y-hidden">
       {items.map((it) => (
         <button key={it.value} role="tab" aria-selected={value === it.value} onClick={() => onChange(it.value)}
-          className={cn('whitespace-nowrap px-4 py-3 text-sm transition-colors border-b-2 -mb-px', value === it.value ? 'border-gold text-fg font-medium' : 'border-transparent text-fg-muted hover:text-fg', it.tone === 'danger' && value !== it.value && 'text-danger')}>
+          className={cn('whitespace-nowrap px-4 py-3 text-sm transition-colors border-b-2', value === it.value ? 'border-gold text-fg font-medium' : 'border-transparent text-fg-muted hover:text-fg', it.tone === 'danger' && value !== it.value && 'text-danger')}>
           {it.label}{it.count !== undefined && <span className="ms-1.5 text-xs text-fg-dim">· {it.count}</span>}
         </button>
       ))}
+    </div>
     </div>
   )
 }

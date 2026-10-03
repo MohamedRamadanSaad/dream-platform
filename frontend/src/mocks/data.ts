@@ -268,7 +268,7 @@ export function toDetail(d: (typeof db.dreams)[number]): T.DreamDetail {
 }
 
 export const ytVideos: import('@/api/types').YoutubeVideoDto[] = [
-  { id: 'yt1', title: 'رؤية الماء في المنام — بين الرزق والفتنة', url: 'https://youtube.com/@almoaberafatema', publishedAt: new Date(Date.now() - 2 * 864e5).toISOString(), thumbnailUrl: null },
+  { id: 'yt1', title: 'رؤية الماء في المنام: بين الرزق والفتنة', url: 'https://youtube.com/@almoaberafatema', publishedAt: new Date(Date.now() - 2 * 864e5).toISOString(), thumbnailUrl: null },
   { id: 'yt2', title: 'كيف تفرّق بين الرؤيا والحُلم؟', url: 'https://youtube.com/@almoaberafatema', publishedAt: new Date(Date.now() - 9 * 864e5).toISOString(), thumbnailUrl: null },
   { id: 'yt3', title: 'أدب الرؤيا: متى تحكيها ولمن؟', url: 'https://youtube.com/@almoaberafatema', publishedAt: new Date(Date.now() - 20 * 864e5).toISOString(), thumbnailUrl: null },
 ]

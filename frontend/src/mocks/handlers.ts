@@ -487,7 +487,7 @@ export const handlers = [
     const order = d.credit?.orderId ? db.orders.find((o) => o.id === d.credit!.orderId) : null
     d.messages.forEach((m) => { if (m.senderRole === 'USER') m.readAt ??= helpers.now() })
     const r: T.AdminDreamDetail = { ...toDetail(d), user: { id: usr.id, name: usr.name, email: usr.email, countryCode: usr.countryCode, age: usr.age },
-      payment: order ? { orderId: order.id, payerName: usr.name, payerEmail: usr.email, paidAt: order.paidAt ?? order.createdAt, packageName: order.packageName, amount: order.amount, currency: order.currency, provider: order.provider, providerRef: order.providerRef ?? '—', countryCode: order.countryCode } : null }
+      payment: order ? { orderId: order.id, payerName: usr.name, payerEmail: usr.email, paidAt: order.paidAt ?? order.createdAt, packageName: order.packageName, amount: order.amount, currency: order.currency, provider: order.provider, providerRef: order.providerRef ?? '-', countryCode: order.countryCode } : null }
     return HttpResponse.json(r)
   })),
   http.post(u('/admin/dreams/:id/messages'), wrap(async ({ request, params }) => {

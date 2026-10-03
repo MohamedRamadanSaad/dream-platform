@@ -19,7 +19,7 @@ function RecordTile({ icon, label, value, sub }: { icon: IconName; label: string
   return (
     <div className="min-w-0 rounded-2xl border border-navy bg-navy/40 p-5 transition-colors duration-500 hover:border-gold/60" onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}>
       <div className="flex items-center justify-between gap-2 text-xs text-pearl/70"><span>{label}</span><span className="text-gold"><Icon name={icon} size={18} active={hover} /></span></div>
-      <div className="mt-3 font-display text-3xl text-gold-soft md:text-4xl">{value !== null ? <CountUp to={value} format={(n) => fmtNum(n, locale)} /> : '—'}</div>
+      <div className="mt-3 font-display text-3xl text-gold-soft md:text-4xl">{value !== null ? <CountUp to={value} format={(n) => fmtNum(n, locale)} /> : '-'}</div>
       {sub && <div className="mt-1.5 text-xs text-pearl/70">{sub}</div>}
     </div>
   )

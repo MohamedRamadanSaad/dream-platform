@@ -132,7 +132,7 @@ function HoursStrip({ mine, users }: { mine: number[]; users: number[] }) {
           const m = mine.includes(h), u = users.includes(h)
           const what = [m && t('admin.activity.mine'), u && t('admin.activity.users')].filter(Boolean).join(' · ')
           return (
-            <div key={h} role="listitem" title={`${fmtHour(h, locale)}${what ? ` — ${what}` : ''}`} aria-label={`${fmtHour(h, locale)}${what ? `: ${what}` : ''}`}
+            <div key={h} role="listitem" title={`${fmtHour(h, locale)}${what ? `: ${what}` : ''}`} aria-label={`${fmtHour(h, locale)}${what ? `: ${what}` : ''}`}
               className={cn('h-9 min-w-0 flex-1 rounded-[5px] transition-colors', m ? 'bg-gold' : 'bg-surface-2')}
               style={u ? { boxShadow: 'inset 0 0 0 2px var(--viz-2)' } : undefined} />
           )

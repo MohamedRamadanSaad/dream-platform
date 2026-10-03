@@ -15,7 +15,7 @@
     "title1": "Dream interpretation:",
     "title2": "peace and depth",
     "title3": "toward happiness in this life and the next",
-    "lead": "We help you understand the symbols in your dream in a gentle, deep and realistic way. No exaggeration and no shallow answers — just a balanced reading that brings good news and peace of mind.",
+    "lead": "We help you understand the symbols in your dream in a gentle, deep and realistic way. No exaggeration and no shallow answers, just a balanced reading that brings good news and peace of mind.",
     "cta": "Request an interpretation",
     "youtube": "Follow on YouTube",
     "hadith": "“A good dream is from Allah, and a bad dream is from Satan.”",
@@ -45,7 +45,7 @@
     "title": "A balanced approach",
     "p1": "Fatema interprets dreams with a scholarly method based on Islamic teaching, without exaggeration and without causing fear. We believe dreams are messages from God. Some bring good news and comfort; others bring a warning. We work hard to give a deep and realistic reading of their symbols.",
     "p2": "This site is for interpreting dreams on sound foundations from the Quran and the Sunnah of the Prophet. It links dream interpretation with calling people to Allah, in a simple and short way.",
-    "p3": "Since I started this work, I have seen that the people most interested in dreams are often the ones facing the hardest trials. So I made episodes about true happiness — being close to Allah — which leads to happiness in the Hereafter.",
+    "p3": "Since I started this work, I have seen that the people most interested in dreams are often the ones facing the hardest trials. So I made episodes about true happiness, which is being close to Allah, and which leads to happiness in the Hereafter.",
     "verse": "“And who is better in speech than one who calls to Allah, does good, and says: I am one of the Muslims.”",
     "verseSrc": "Surah Fussilat, verse 33",
     "aboutTitle": "About the interpreter",
@@ -66,7 +66,7 @@
   },
   "stats": {
     "kicker": "In numbers",
-    "title": "By Allah’s grace, our interpretations match what really happens — as the people who asked us confirm",
+    "title": "By Allah’s grace, our interpretations match what really happens, as the people who asked us confirm",
     "subscribers": "YouTube subscribers",
     "views": "video views",
     "videos": "interpretation videos"
@@ -92,12 +92,11 @@
     "quoteBy": "Interpreter Fatema"
   },
   "footer": {
-    "rights": "© {{year}} Interpreter Fatema — balanced dream interpretation, deep and realistic",
+    "rights": "© {{year}} Interpreter Fatema | Balanced dream interpretation, deep and realistic",
     "terms": "Terms",
     "privacy": "Privacy",
     "contact": "Contact",
-    "youtube": "YouTube",
-    "geoCredit": "IP geolocation by DB-IP"
+    "youtube": "YouTube"
   },
   "auth": {
     "title": "Welcome",
@@ -110,7 +109,7 @@
     "sentHint": "The link works for 15 minutes. You can also type the code:",
     "code": "Sign-in code",
     "verify": "Sign in",
-    "noPassword": "No password — one link signs you in",
+    "noPassword": "No password. One link signs you in",
     "onboardingTitle": "One last step",
     "onboardingLead": "We need your name and gender, because the interpretation can be different for men and women.",
     "name": "Name",
@@ -275,7 +274,7 @@
       "noPasswordsInterpreter": "No passwords here. You sign in with a code sent to your email.",
       "noPasswordsInterpreterPasskey": "No passwords here. You sign in with a code sent to your email, or with your fingerprint or face.",
       "interpreterRole": "Interpreter account",
-      "deleteBody": "Your account and your personal data will be removed, and you will be signed out on every device. This cannot be undone.",
+      "deleteBody": "Your name, email and sign-in methods will be removed, and you will be signed out on every device. Records of dreams and payments are kept for accounting, without your name or email. This cannot be undone.",
       "deleteYes": "Delete my account",
       "deleted": "Your account was deleted"
     },
@@ -292,7 +291,7 @@
       "unsupportedBrowser": "This browser doesn't support fingerprint or face sign-in.",
       "unsupportedDevice": "It can't be added on this device: there is no fingerprint, face or screen lock this browser can use.",
       "addTitle": "Turn on fingerprint or face sign-in",
-      "addBody": "Your device will ask for your fingerprint, face or screen lock once now. After that, one touch signs you in — no email code.",
+      "addBody": "Your device will ask for your fingerprint, face or screen lock once now. After that, one touch signs you in, with no email code.",
       "labelField": "Name for this device",
       "labelHint": "Optional. It only shows in this list.",
       "continue": "Continue",
@@ -553,7 +552,7 @@
         "BONUS": "Gift"
       },
       "reason": "Reason",
-      "draftHidden": "[Draft — hidden until it is submitted]",
+      "draftHidden": "[Draft, hidden until it is submitted]",
       "tagsPlaceholder": "Regular follower, …"
     },
     "testimonials": {
@@ -696,7 +695,7 @@
         "terms": "Terms",
         "privacy": "Privacy"
       },
-      "pageRange": "{{from}}–{{to}} of {{total}}",
+      "pageRange": "{{from}} to {{to}} of {{total}}",
       "prevPage": "Previous page",
       "nextPage": "Next page"
     },
@@ -895,9 +894,159 @@
     "language": "Language"
   },
   "static": {
-    "terms": "Terms and Conditions",
-    "privacy": "Privacy Policy",
-    "placeholder": "[{{title}} text — will be written and reviewed before launch]"
+    "terms": {
+      "intro": "Welcome to Saadat Al-Darain. The site offers dream interpretation by Interpreter Fatema. By using the site and creating an account, you agree to these terms. Please read them carefully.",
+      "sections": [
+        {
+          "h": "What an interpretation is",
+          "p": [
+            "A dream interpretation is a considered opinion based on the known principles of interpretation from the Quran, the Sunnah and the scholars. It can be right or wrong. It is not knowledge of the unseen and it does not say for certain what will happen.",
+            "An interpretation does not replace a doctor, therapist, lawyer or financial adviser. Do not make a major decision based on it alone."
+          ]
+        },
+        {
+          "h": "Your account",
+          "p": [
+            "You sign in with Google or with a code sent to your email. There is no password.",
+            "Enter your real name, gender and date of birth. The interpreter uses them to understand your dream. The site detects your country from your internet connection.",
+            "You are responsible for keeping your email and your signed-in devices safe. You can review and sign out devices from My account.",
+            "If you are under 18, use the site with your parent's or guardian's knowledge and consent."
+          ]
+        },
+        {
+          "h": "Packages and credits",
+          "p": [
+            "One credit is one dream interpretation.",
+            "Prices are shown in your country's currency. The site decides the country and the price.",
+            "A credit is used when you send a dream for interpretation, not when you save a draft.",
+            "Credits stay valid for the period shown on the package when you buy it.",
+            "Payment is handled by an approved payment provider. The site never sees or stores your card details. An order may be reviewed before credits are added if the payment country differs from the country you were shown prices for."
+          ]
+        },
+        {
+          "h": "Cancellations and refunds",
+          "p": [
+            "If the interpreter cancels a dream before interpreting it, its credit returns to your account automatically.",
+            "A credit used for a dream that has been interpreted cannot be refunded.",
+            "If you have a problem with a payment, email our support address and we will look into it."
+          ]
+        },
+        {
+          "h": "Reply time and questions",
+          "p": [
+            "You see the expected reply time before you send a dream, and again in the confirmation email.",
+            "The interpreter may ask you a question to understand the dream better. The reply-time clock stops until you answer."
+          ]
+        },
+        {
+          "h": "What you write",
+          "p": [
+            "Write your own dream, honestly.",
+            "Do not include other people's personal details, and do not write offensive or improper content.",
+            "We may suspend any account that misuses the site."
+          ]
+        },
+        {
+          "h": "Reviews",
+          "p": [
+            "We may ask for your review after the interpretation. A review is only published after the interpreter approves it. It shows your first name only and never shows your dream."
+          ]
+        },
+        {
+          "h": "Content",
+          "p": [
+            "Your interpretation is yours for personal use, and you can download it from your dream page.",
+            "The site's design, text and the channel's videos belong to their owners. Do not copy them for commercial use without permission."
+          ]
+        },
+        {
+          "h": "Changes to these terms",
+          "p": [
+            "We may update these terms when needed, and the date at the top of this page shows the last update. If you keep using the site after an update, you accept it."
+          ]
+        }
+      ]
+    },
+    "privacy": {
+      "intro": "Your privacy matters to us. This page explains what data we collect, why, who can see it, and how you control it.",
+      "sections": [
+        {
+          "h": "What we collect",
+          "p": [
+            "Account details: name, email, gender, date of birth, language and country.",
+            "Your dreams: the dream text, the interpretation and the messages between you and the interpreter.",
+            "Orders and payments: package, amount, currency, country, payment status, the payment provider's transaction number and the card's issuing country. We never store your card number or any other card details.",
+            "Devices: browser, operating system, country and sign-in time, so we can show your devices and warn you about a sign-in from a new device.",
+            "Page visits: page name, device type, country and the site you came from, with a random session number that does not identify you.",
+            "Browser notifications, if you turn them on."
+          ]
+        },
+        {
+          "h": "How we use it",
+          "p": [
+            "To interpret your dreams. The interpreter sees your age, gender and country because they help her understand the dream.",
+            "To send emails and notifications about your dreams and your account.",
+            "To show the right price for your country.",
+            "To protect your account and prevent misuse.",
+            "For overall visit statistics that do not identify anyone."
+          ]
+        },
+        {
+          "h": "Who can see your dreams",
+          "p": [
+            "Only you and the interpreter. Dreams are never published, and your data is never sold or used for advertising."
+          ]
+        },
+        {
+          "h": "Your IP address",
+          "p": [
+            "We do not store your IP address with your visits or your devices. We use it for a moment to find your country and to block misuse. It is only stored with email sign-in code requests, for security."
+          ]
+        },
+        {
+          "h": "Services we use",
+          "p": [
+            "Google: for Google sign-in and to load the site's fonts.",
+            "Cloudflare: to protect the site and detect your country.",
+            "The payment provider: to process payments. It receives only your name, email and country.",
+            "Email and browser notification services: to deliver messages to you.",
+            "The hosting companies that run the site."
+          ]
+        },
+        {
+          "h": "Storage in your browser",
+          "p": [
+            "One cookie keeps you signed in, and no page can read it.",
+            "Local storage for your sign-in, language and theme, and a session number that is cleared when you close the browser.",
+            "We do not use any advertising or commercial tracking tools."
+          ]
+        },
+        {
+          "h": "Deleting your account",
+          "p": [
+            "You can delete your account from My account. When you do, we remove your name, email, sign-in methods and notification subscription, and sign you out on every device.",
+            "We keep the records of dreams and payments for accounting, linked to an account that no longer has your name or email."
+          ]
+        },
+        {
+          "h": "Channel emails",
+          "p": [
+            "We only send new video alerts if you agree to them, and you can turn them off at any time."
+          ]
+        },
+        {
+          "h": "Your rights",
+          "p": [
+            "You can ask for a copy of your data, or ask us to correct or delete it, by emailing our support address."
+          ]
+        }
+      ]
+    },
+    "updated": "Last updated: {{date}}",
+    "contactLabel": "Contact us",
+    "geoCredit": "Country data by DB-IP",
+    "termsTitle": "Terms and Conditions",
+    "privacyTitle": "Privacy Policy"
   },
   "courses": {
     "lead": "Video courses with their own subscription, separate from dream packages. Coming in phase two.",

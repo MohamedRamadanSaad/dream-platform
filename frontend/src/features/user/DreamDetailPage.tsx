@@ -103,7 +103,7 @@ export function DreamDetailPage() {
 
       {d.interpretation && (
         <div className="card border-success/30 p-6">
-          <div className="mb-4 flex items-center gap-3"><span className="text-success"><Icon name="moon" size={22} /></span><div><div className="text-sm text-success">{t('me.detail.interpretation')} — {t('interpreter')}</div><div className="text-xs text-fg-dim">{fmtDate(d.interpretation.interpretedAt, locale)}</div></div></div>
+          <div className="mb-4 flex items-center gap-3"><span className="text-success"><Icon name="moon" size={22} /></span><div><div className="text-sm text-success">{t('me.detail.interpretation')} · {t('interpreter')}</div><div className="text-xs text-fg-dim">{fmtDate(d.interpretation.interpretedAt, locale)}</div></div></div>
           <p className="whitespace-pre-wrap text-lg leading-[2.1] text-fg md:text-[1.2rem]">{d.interpretation.text}</p>
           <div className="mt-6 border-t border-line pt-5">
             {d.testimonial ? (

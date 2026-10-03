@@ -34,9 +34,9 @@ export function UsersPage() {
                 <tr key={u.id} className="border-b border-line last:border-0 hover:bg-surface-2/60">
                   <td className="px-4 py-3"><div className="flex items-center gap-3"><Avatar name={u.name || u.email} size={34} /><div><Link to={`/admin/users/${u.id}`} className="font-medium hover:text-gold-ink">{u.name || u.email}</Link><div className="text-xs text-fg-dim" dir="ltr">{u.email}</div></div></div></td>
                   <td className="px-4 py-3">{u.countryCode}</td><td className="px-4 py-3">{fmtNum(u.visits, locale)}</td><td className="px-4 py-3">{fmtNum(u.dreams, locale)}</td>
-                  <td className="px-4 py-3">{u.drafts > 0 ? <span className="chip bg-warn/10 text-warn">{u.drafts}</span> : '—'}</td>
+                  <td className="px-4 py-3">{u.drafts > 0 ? <span className="chip bg-warn/10 text-warn">{u.drafts}</span> : '-'}</td>
                   <td className="px-4 py-3">{fmtMoney(Math.round(u.totalPaidBase), 'USD', locale)}</td>
-                  <td className="px-4 py-3">{u.avgRating !== null ? <Stars value={Math.round(u.avgRating)} size={12} /> : '—'}</td>
+                  <td className="px-4 py-3">{u.avgRating !== null ? <Stars value={Math.round(u.avgRating)} size={12} /> : '-'}</td>
                   <td className="px-4 py-3 text-xs text-fg-dim">{timeAgo(u.lastSeenAt, locale)}</td>
                 </tr>
               ))}
@@ -71,7 +71,7 @@ export function User360Page() {
       <Link to="/admin/users" className="text-sm text-fg-muted">{arrowBack(locale)} {t('common.back')}</Link>
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="flex items-start gap-4"><Avatar name={u.name || u.email} size={56} /><div><h1 className="font-display text-4xl">{u.name || u.email}</h1><div className="text-sm text-fg-muted" dir="ltr">{u.email}</div>
-          <div className="mt-2 flex flex-wrap gap-2 text-xs text-fg-dim"><span>{u.countryCode}</span><span>· {u.gender ? t(u.gender === 'FEMALE' ? 'auth.female' : 'auth.male') : '—'}</span>{u.age != null && <span>· {t('me.profile.years', { n: u.age })}</span>}<span>· {u.locale}</span><span>· {u.providers.join(', ')}</span><span>· {t('admin.users.since')} {fmtDate(u.createdAt, locale)}</span></div>
+          <div className="mt-2 flex flex-wrap gap-2 text-xs text-fg-dim"><span>{u.countryCode}</span><span>· {u.gender ? t(u.gender === 'FEMALE' ? 'auth.female' : 'auth.male') : '-'}</span>{u.age != null && <span>· {t('me.profile.years', { n: u.age })}</span>}<span>· {u.locale}</span><span>· {u.providers.join(', ')}</span><span>· {t('admin.users.since')} {fmtDate(u.createdAt, locale)}</span></div>
           {u.tags.length > 0 && <div className="mt-2 flex gap-1.5">{u.tags.map((x) => <span key={x} className="chip bg-gold/10 text-gold-ink">{x}</span>)}</div>}</div></div>
         <div className="flex flex-wrap items-start gap-2">
           <DownloadButton label={t('reports.pdf')} run={() => reportsApi.adminUserPdf(u.id)} />

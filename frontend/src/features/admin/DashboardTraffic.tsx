@@ -193,7 +193,7 @@ export function TrafficSection() {
             </select>
             <select aria-label={t('admin.traffic.pageLabel')} className="input col-span-2 min-w-0 py-2 sm:col-span-1" value={filters.path} onChange={(e) => update({ path: e.target.value })}>
               <option value="">{t('admin.traffic.allPages')}</option>
-              {paths.map((p) => <option key={p} value={p}>{pageName(p) ? `${pageName(p)} — ${p}` : p}</option>)}
+              {paths.map((p) => <option key={p} value={p}>{pageName(p) ? `${pageName(p)} (${p})` : p}</option>)}
             </select>
           </div>
           <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-fg-muted">

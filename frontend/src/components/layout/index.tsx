@@ -185,8 +185,6 @@ export function Footer() {
         <div className="flex flex-col gap-2 text-sm md:items-end">
           <div className="flex gap-6"><a href={YT} target="_blank" rel="noreferrer" className="text-gold-soft">{t('footer.youtube')}</a><Link to="/terms" className="hover:text-pearl">{t('footer.terms')}</Link><Link to="/privacy" className="hover:text-pearl">{t('footer.privacy')}</Link></div>
           <div className="text-pearl/50">{t('footer.rights', { year: new Date().getFullYear() })}</div>
-          {/* required credit for the free DB-IP country database (CC BY 4.0) used to show prices for the visitor's country */}
-          <a href="https://db-ip.com" target="_blank" rel="noreferrer" className="text-xs text-pearl/40 hover:text-pearl/70">{t('footer.geoCredit')}</a>
         </div>
       </div>
     </footer>

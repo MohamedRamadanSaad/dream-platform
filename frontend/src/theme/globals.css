@@ -93,6 +93,10 @@ body {
 .chip { @apply inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs; }
 }
 
+/* scrolls sideways without showing a bar (tab rows, chip rows) */
+.no-scrollbar { scrollbar-width: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
+
 /* iPhone home-indicator clearance for fixed bottom bars */
 .pb-safe { padding-bottom: env(safe-area-inset-bottom); }
 

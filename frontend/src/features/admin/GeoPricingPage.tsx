@@ -152,7 +152,7 @@ function PriceRow({ pkg, sel, country, rules, groups, currencyDefault, onSave, o
         </div>
       ) : (
         <div className="flex items-center gap-3">
-          <div className="text-xl font-medium">{rule ? fmtMoney(rule.price, rule.currency, locale) : '—'}</div>
+          <div className="text-xl font-medium">{rule ? fmtMoney(rule.price, rule.currency, locale) : '-'}</div>
           <Button size="sm" variant="ghost" onClick={() => { setPrice(rule ? String(rule.price) : ''); setCur(rule?.currency ?? currencyDefault); setEdit(true) }}>{t('common.edit')}</Button>
           {own && scope !== 'GLOBAL' && rule && <Button size="sm" variant="ghost" className="text-fg-dim" onClick={() => onReset(rule.id)}>{t('admin.pricing.reset')}</Button>}
         </div>
