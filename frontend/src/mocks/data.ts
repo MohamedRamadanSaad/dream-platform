@@ -39,12 +39,12 @@ export const db = {
 
   countries: [
     { code: 'EG', nameAr: 'مصر', nameEn: 'Egypt', continent: 'AF', defaultCurrency: 'EGP', groupId: null },
-    { code: 'SA', nameAr: 'السعودية', nameEn: 'Saudi Arabia', continent: 'AS', defaultCurrency: 'SAR', groupId: 'g1' },
-    { code: 'AE', nameAr: 'الإمارات', nameEn: 'UAE', continent: 'AS', defaultCurrency: 'SAR', groupId: 'g1' },
-    { code: 'KW', nameAr: 'الكويت', nameEn: 'Kuwait', continent: 'AS', defaultCurrency: 'SAR', groupId: 'g1' },
-    { code: 'QA', nameAr: 'قطر', nameEn: 'Qatar', continent: 'AS', defaultCurrency: 'SAR', groupId: 'g1' },
-    { code: 'BH', nameAr: 'البحرين', nameEn: 'Bahrain', continent: 'AS', defaultCurrency: 'SAR', groupId: 'g1' },
-    { code: 'OM', nameAr: 'عُمان', nameEn: 'Oman', continent: 'AS', defaultCurrency: 'SAR', groupId: 'g1' },
+    { code: 'SA', nameAr: 'السعودية', nameEn: 'Saudi Arabia', continent: 'AS', defaultCurrency: 'USD', groupId: 'g1' },
+    { code: 'AE', nameAr: 'الإمارات', nameEn: 'UAE', continent: 'AS', defaultCurrency: 'USD', groupId: 'g1' },
+    { code: 'KW', nameAr: 'الكويت', nameEn: 'Kuwait', continent: 'AS', defaultCurrency: 'USD', groupId: 'g1' },
+    { code: 'QA', nameAr: 'قطر', nameEn: 'Qatar', continent: 'AS', defaultCurrency: 'USD', groupId: 'g1' },
+    { code: 'BH', nameAr: 'البحرين', nameEn: 'Bahrain', continent: 'AS', defaultCurrency: 'USD', groupId: 'g1' },
+    { code: 'OM', nameAr: 'عُمان', nameEn: 'Oman', continent: 'AS', defaultCurrency: 'USD', groupId: 'g1' },
     { code: 'JO', nameAr: 'الأردن', nameEn: 'Jordan', continent: 'AS', defaultCurrency: 'USD', groupId: null },
     { code: 'MA', nameAr: 'المغرب', nameEn: 'Morocco', continent: 'AF', defaultCurrency: 'USD', groupId: 'g2' },
     { code: 'DZ', nameAr: 'الجزائر', nameEn: 'Algeria', continent: 'AF', defaultCurrency: 'USD', groupId: 'g2' },
@@ -73,10 +73,10 @@ export const db = {
     { id: 'r4', scope: 'COUNTRY', scopeId: 'EG', packageId: 'p1', price: 199, currency: 'EGP' },
     { id: 'r5', scope: 'COUNTRY', scopeId: 'EG', packageId: 'p2', price: 349, currency: 'EGP' },
     { id: 'r6', scope: 'COUNTRY', scopeId: 'EG', packageId: 'p3', price: 499, currency: 'EGP' },
-    // Gulf group
-    { id: 'r7', scope: 'GROUP', scopeId: 'g1', packageId: 'p1', price: 49, currency: 'SAR' },
-    { id: 'r8', scope: 'GROUP', scopeId: 'g1', packageId: 'p2', price: 89, currency: 'SAR' },
-    { id: 'r9', scope: 'GROUP', scopeId: 'g1', packageId: 'p3', price: 129, currency: 'SAR' },
+    // Gulf group (in USD since V30: Kashier never takes SAR)
+    { id: 'r7', scope: 'GROUP', scopeId: 'g1', packageId: 'p1', price: 7, currency: 'USD' },
+    { id: 'r8', scope: 'GROUP', scopeId: 'g1', packageId: 'p2', price: 12, currency: 'USD' },
+    { id: 'r9', scope: 'GROUP', scopeId: 'g1', packageId: 'p3', price: 23, currency: 'USD' },
     // Europe continent
     { id: 'r10', scope: 'CONTINENT', scopeId: 'EU', packageId: 'p1', price: 19, currency: 'USD' },
     { id: 'r11', scope: 'CONTINENT', scopeId: 'EU', packageId: 'p2', price: 35, currency: 'USD' },

@@ -110,6 +110,7 @@ export const adminApi = {
     g.id ? http.put<T.CountryGroup>(`/admin/country-groups/${g.id}`, g) : http.post<T.CountryGroup>('/admin/country-groups', g),
   deleteGroup: (id: string) => http.delete<void>(`/admin/country-groups/${id}`),
   priceRules: () => http.get<T.PriceRule[]>('/admin/price-rules'),
+  pricingGaps: () => http.get<T.PricingGap[]>('/admin/pricing/gaps'),
   savePriceRule: (r: Omit<T.PriceRule, 'id'> & { id?: string }) =>
     r.id ? http.put<T.PriceRule>(`/admin/price-rules/${r.id}`, r) : http.post<T.PriceRule>('/admin/price-rules', r),
   deletePriceRule: (id: string) => http.delete<void>(`/admin/price-rules/${id}`),

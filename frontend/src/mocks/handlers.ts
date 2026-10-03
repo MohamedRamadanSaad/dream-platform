@@ -576,6 +576,23 @@ export const handlers = [
   })),
   http.delete(u('/admin/country-groups/:id'), wrap(async ({ request, params }) => { requireAdmin(request); db.groups = db.groups.filter((x) => x.id !== params.id); db.countries.forEach((c) => { if (c.groupId === params.id) c.groupId = null }); return new HttpResponse(null, { status: 204 }) })),
   http.get(u('/admin/price-rules'), wrap(async ({ request }) => { requireAdmin(request); return HttpResponse.json(db.priceRules) })),
+  // same rule as the backend PriceResolver: COUNTRY > GROUP > CONTINENT > GLOBAL, only prices in the country's currency
+  http.get(u('/admin/pricing/gaps'), wrap(async ({ request }) => {
+    requireAdmin(request)
+    const active = db.packages.filter((p) => p.active)
+    const gaps: T.PricingGap[] = []
+    for (const c of db.countries) {
+      const missing = active.filter((p) => {
+        const rules = db.priceRules.filter((r) => r.packageId === p.id && r.currency === c.defaultCurrency)
+        return !rules.some((r) => (r.scope === 'COUNTRY' && r.scopeId === c.code) || (r.scope === 'GROUP' && r.scopeId === c.groupId) || (r.scope === 'CONTINENT' && r.scopeId === c.continent) || r.scope === 'GLOBAL')
+      })
+      if (missing.length) {
+        const g = db.groups.find((x) => x.id === c.groupId)
+        gaps.push({ countryCode: c.code, nameAr: c.nameAr, nameEn: c.nameEn, currency: c.defaultCurrency, groupId: c.groupId ?? null, groupName: g?.name ?? null, allMissing: missing.length === active.length, missing: missing.map((p) => ({ id: p.id, nameAr: p.nameAr, nameEn: p.nameEn })) })
+      }
+    }
+    return HttpResponse.json(gaps)
+  })),
   http.post(u('/admin/price-rules'), wrap(async ({ request }) => {
     requireAdmin(request); const b = (await request.json()) as Omit<T.PriceRule, 'id'>
     const existing = db.priceRules.find((r) => r.scope === b.scope && r.scopeId === b.scopeId && r.packageId === b.packageId)

@@ -406,6 +406,18 @@ export interface PriceRule {
   price: number
   currency: Currency
 }
+/** GET /admin/pricing/gaps: a country that cannot buy some active packages (no price in its currency). */
+export interface PricingGap {
+  countryCode: string
+  nameAr: string
+  nameEn: string
+  currency: Currency
+  groupId: string | null
+  groupName: string | null
+  /** true when the country cannot buy any active package at all */
+  allMissing: boolean
+  missing: { id: string; nameAr: string; nameEn: string }[]
+}
 export interface CountryDto {
   code: string
   nameAr: string

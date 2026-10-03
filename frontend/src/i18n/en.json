@@ -467,6 +467,23 @@
       "timerPaused": "Timer paused"
     },
     "pricing": {
+      "gaps": {
+        "title_one": "Warning: 1 country has no prices",
+        "title_other": "Warning: {{n}} countries have no prices",
+        "lead": "Visitors from these countries do not see the packages below, so they cannot buy or send their dreams. Add prices for them in their currency.",
+        "missing": "Missing a price {{currency}} for: {{packages}}",
+        "all": "No package is shown to them. Missing a price {{currency}}",
+        "currency": {
+          "EGP": "in Egyptian pounds",
+          "USD": "in US dollars",
+          "SAR": "in riyals"
+        },
+        "more": "and {{n}} more",
+        "less": "Show less",
+        "hint": "Tap a country to open its prices and add the missing one.",
+        "dot": "Missing a price",
+        "noPrice": "Not shown here: missing a price {{currency}}"
+      },
       "title": "Prices by country",
       "lead": "The price is chosen in this order: country → group → continent → global.",
       "continents": "Continents",
