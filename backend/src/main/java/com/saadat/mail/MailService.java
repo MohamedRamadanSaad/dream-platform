@@ -75,13 +75,14 @@ public class MailService {
     private final SettingsService settings;
     private final AppProperties properties;
     private final MailThemeService themeService;
+    private final SentFolderArchiver sentFolder;
     private final Clock clock;
     private final String smtpHost;
 
     public MailService(ITemplateEngine templateEngine, ObjectProvider<JavaMailSender> mailSender,
                        EmailLogRepository emailLogRepository, MessageText messageText, SettingsService settings,
-                       AppProperties properties, MailThemeService themeService, Clock clock,
-                       @Value("${spring.mail.host:}") String smtpHost) {
+                       AppProperties properties, MailThemeService themeService, SentFolderArchiver sentFolder,
+                       Clock clock, @Value("${spring.mail.host:}") String smtpHost) {
         this.templateEngine = templateEngine;
         this.mailSender = mailSender;
         this.emailLogRepository = emailLogRepository;
@@ -89,6 +90,7 @@ public class MailService {
         this.settings = settings;
         this.properties = properties;
         this.themeService = themeService;
+        this.sentFolder = sentFolder;
         this.clock = clock;
         this.smtpHost = smtpHost == null ? "" : smtpHost.trim();
     }
@@ -131,7 +133,11 @@ public class MailService {
         String lastError = null;
         for (int attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
             try {
-                String messageId = deliver(sender, to, mail, inReplyTo(model));
+                MimeMessage delivered = deliver(sender, to, mail, inReplyTo(model));
+                String messageId = delivered.getMessageID();
+                if (sentFolder.shouldArchive(template)) {
+                    sentFolder.archive(delivered, template);
+                }
                 record(userId, to, template, ref, mail.subject(), EmailStatus.SENT, messageId, null);
                 return EmailStatus.SENT;
             } catch (Exception e) {
@@ -259,7 +265,8 @@ public class MailService {
         return id;
     }
 
-    private String deliver(JavaMailSender sender, String to, RenderedMail mail, String inReplyTo) throws Exception {
+    private MimeMessage deliver(JavaMailSender sender, String to, RenderedMail mail, String inReplyTo)
+            throws Exception {
         MimeMessage message = sender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(message, false, "UTF-8");
         helper.setTo(to);
@@ -280,7 +287,7 @@ public class MailService {
             message.setHeader("References", inReplyTo);
         }
         sender.send(message);
-        return message.getMessageID();
+        return message;
     }
 
     private void record(UUID userId, String to, String template, String ref, String subject, EmailStatus status,

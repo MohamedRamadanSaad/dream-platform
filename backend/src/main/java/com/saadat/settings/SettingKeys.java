@@ -144,6 +144,10 @@ public final class SettingKeys {
     public static final String MAIL_ASSETS_BASE_URL = "mail.assets_base_url";
     /** The support mailbox auto-reply is sent to the same address at most once per N hours. */
     public static final String MAIL_AUTO_REPLY_COOLDOWN_HOURS = "mail.auto_reply_cooldown_hours";
+    /** Keep a copy of every sent e-mail in the mailbox's Sent folder (IMAP), so the mailbox shows what was sent. */
+    public static final String MAIL_SAVE_TO_SENT = "mail.save_to_sent";
+    /** IMAP folder that receives the copies (Hostinger: INBOX.Sent). */
+    public static final String MAIL_SENT_FOLDER = "mail.sent_folder";
 
     /** The theme of an e-mail template: {@code mail.theme.<template>}. */
     public static String mailTheme(String template) {
@@ -188,7 +192,7 @@ public final class SettingKeys {
             MAIL_EVENT_TESTIMONIAL_REQUEST, MAIL_EVENT_INTERPRETER_DIGEST, MAIL_EVENT_YOUTUBE_NEW_VIDEO,
             MAIL_EVENT_SUPPORT_AUTO_REPLY, MAIL_EVENT_NEW_SIGN_IN,
             MAIL_EVENT_PASSKEY_ADDED, MAIL_EVENT_SUPPORT_IN_PROGRESS, MAIL_EVENT_SUPPORT_CLOSED,
-            MAIL_THEME_DEFAULT, MAIL_ASSETS_BASE_URL, MAIL_AUTO_REPLY_COOLDOWN_HOURS,
+            MAIL_THEME_DEFAULT, MAIL_ASSETS_BASE_URL, MAIL_AUTO_REPLY_COOLDOWN_HOURS, MAIL_SAVE_TO_SENT, MAIL_SENT_FOLDER,
             INSIGHTS_AWAITING_REPLY_DAYS, INSIGHTS_TRAFFIC_CHANGE_PERCENT, INSIGHTS_STREAK_MIN_DAYS,
             REPORTS_EXCEL_MAX_ROWS);
 }
