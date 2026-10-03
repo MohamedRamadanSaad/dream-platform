@@ -159,6 +159,8 @@ public final class ApiPaths {
 
         public static final String PRICE_RULES = ROOT + "/price-rules";
         public static final String PRICE_RULE = PRICE_RULES + "/{id}";
+        /** Countries that cannot buy some active package (no price in their currency). */
+        public static final String PRICING_GAPS = ROOT + "/pricing/gaps";
 
         public static final String PROMOTIONS = ROOT + "/promotions";
         public static final String PROMOTION = PROMOTIONS + "/{id}";

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.saadat.common.api.ApiPaths;
 import com.saadat.common.security.AuthPrincipal;
 import com.saadat.pricing.service.PricingAdminService;
+import com.saadat.pricing.service.PricingCoverage;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class AdminGeoPricingController {
 
     private final PricingAdminService service;
+    private final PricingCoverage coverage;
     private final JsonMerge jsonMerge;
 
     // ---------------------------------------------------------------- countries
@@ -30,6 +32,12 @@ public class AdminGeoPricingController {
     @GetMapping(ApiPaths.Admin.COUNTRIES)
     public List<CountryDto> countries() {
         return service.countries();
+    }
+
+    /** The prices page warning: countries with an active package they cannot buy. */
+    @GetMapping(ApiPaths.Admin.PRICING_GAPS)
+    public List<PricingCoverage.Gap> gaps() {
+        return coverage.gaps();
     }
 
     // ---------------------------------------------------------------- groups
