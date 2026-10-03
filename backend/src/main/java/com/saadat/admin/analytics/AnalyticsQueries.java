@@ -137,6 +137,17 @@ public class AnalyticsQueries {
                 (rs, i) -> new KeyCount(rs.getString(1), rs.getLong(2), 0));
     }
 
+    /**
+     * [countryCode, visits] since {@code start}: distinct visits (sessions) of the site's pages, the same "visits"
+     * as the traffic report. Views without a known country are left out.
+     */
+    public List<Object[]> visitsByCountrySince(Instant start) {
+        String sql = "select pv.country_code, count(distinct pv.session_id) from page_views pv "
+                + "where pv.created_at >= :start and pv.country_code is not null group by pv.country_code";
+        return jdbc.query(sql, new MapSqlParameterSource("start", ts(start)),
+                (rs, i) -> new Object[]{trim(rs.getString(1)), rs.getLong(2)});
+    }
+
     /** The top country by views since {@code start} (null when no view has a country). */
     public CountryCount topCountrySince(Instant start, Instant end) {
         List<CountryCount> top = topCountries(start, end, ViewFilter.NONE, 1);

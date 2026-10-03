@@ -20,7 +20,6 @@ import com.saadat.pricing.repo.CountryRepository;
 import com.saadat.settings.SettingKeys;
 import com.saadat.settings.SettingsService;
 import com.saadat.users.repo.UserRepository;
-import com.saadat.users.repo.UserSessionRepository;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Clock;
@@ -67,9 +66,9 @@ public class AnalyticsService {
     private final DreamRepository dreamRepository;
     private final OrderRepository orderRepository;
     private final UserRepository userRepository;
-    private final UserSessionRepository sessionRepository;
     private final CountryRepository countryRepository;
     private final AnalyticsRepository analyticsRepository;
+    private final AnalyticsQueries analyticsQueries;
     private final SettingsService settingsService;
     private final Clock clock;
 
@@ -137,7 +136,8 @@ public class AnalyticsService {
         Instant since = period.since(clock.instant());
         Map<String, BigDecimal> fx = fxToUsd();
 
-        Map<String, Long> visits = countMap(sessionRepository.countVisitsByCountrySince(since));
+        // visits = visits of the site's pages (page_views), not sign-ins: one person signing in again is not a visit
+        Map<String, Long> visits = countMap(analyticsQueries.visitsByCountrySince(since));
         Map<String, Long> dreams = countMap(dreamRepository.countSubmittedByCountrySince(since));
         Map<String, Long> users = countMap(userRepository.countUsersByCountry());
         Map<String, BigDecimal> revenue = new HashMap<>();

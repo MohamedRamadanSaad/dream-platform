@@ -17,10 +17,6 @@ public interface UserSessionRepository extends JpaRepository<UserSession, UUID> 
 
     long countByStartedAtAfter(Instant since);
 
-    /** [countryCode, visits] rows since {@code since} (use Instant.EPOCH for "all"). */
-    @Query("select s.countryCode, count(s) from UserSession s where s.startedAt >= :since group by s.countryCode")
-    List<Object[]> countVisitsByCountrySince(@Param("since") Instant since);
-
     /** [userId, visits] rows since {@code since}. */
     @Query("select s.userId, count(s) from UserSession s where s.userId is not null and s.startedAt >= :since "
             + "group by s.userId")
