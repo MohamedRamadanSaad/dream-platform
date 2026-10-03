@@ -1,4 +1,4 @@
--- V27: the owner now wants to read what the person wrote directly on the support page (privacy change: until V26
+-- V28: the owner now wants to read what the person wrote directly on the support page (privacy change: until V26
 -- the message body was never stored). support_tickets.body = plain text of the incoming e-mail (normalized line
 -- endings, trimmed, quoted reply cut, at most 20,000 characters); NULL until it is known — taken from the inbound
 -- webhook payload when present, otherwise fetched read-only over IMAP from INBOX by Message-ID.

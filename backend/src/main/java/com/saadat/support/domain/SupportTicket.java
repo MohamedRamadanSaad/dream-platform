@@ -17,7 +17,7 @@ import lombok.Setter;
 
 /**
  * Row of {@code support_tickets}: one e-mail a person sent to the support mailbox: the sender, the subject, when it
- * was received and (since V27) the plain text the person wrote ({@code body}, null until it arrives — from the
+ * was received and (since V28) the plain text the person wrote ({@code body}, null until it arrives — from the
  * webhook payload or fetched read-only over IMAP; {@code bodyFetchedAt} = last fetch attempt). {@code number} is the human ticket number (#1001…, from the
  * sequence {@code support_ticket_number_seq}); {@code messageId} (unique) de-duplicates repeated webhook deliveries
  * and threads our replies (In-Reply-To / References).

@@ -51,7 +51,7 @@ Rules:
 Every e-mail that a person sends to the support mailbox (it passes the auto-reply guards: not `no-sender`,
 `own-address`, `automated-sender`, `auto-submitted`, `bulk`, `mailing-list`) opens a ticket, even when the auto-reply
 is skipped for its cooldown or switched off. Stored: the sender (e-mail + display name), the subject, the received time
-and — since V27 (privacy change, the owner's decision) — `body`, the plain text the person wrote (see "Message text"
+and — since V28 (privacy change, the owner's decision) — `body`, the plain text the person wrote (see "Message text"
 below). Repeated deliveries: same `Message-ID` = one ticket; without a Message-ID, the same sender +
 subject within 2 minutes = one ticket. Interpreter-only routes:
 
