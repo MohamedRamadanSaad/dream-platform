@@ -1,10 +1,12 @@
 import { useEffect } from 'react'
+import { useQuery } from '@tanstack/react-query'
+import { publicApi } from '@/api/endpoints'
 import { useTranslation } from 'react-i18next'
 import { PublicHeader, Footer } from '@/components/layout'
 import { useAuthStore } from '@/app/auth-store'
 import { fmtDay, fmtNum } from '@/lib/utils'
 
-const SUPPORT_EMAIL = 'support@saadatu-aldarein.com'
+const FALLBACK_EMAIL = 'support@saadatu-aldarein.com'
 /** Change when the text of either page changes. */
 const UPDATED = '2026-10-03'
 
@@ -15,6 +17,9 @@ export function StaticPage({ kind }: { kind: 'terms' | 'privacy' }) {
   const locale = useAuthStore((s) => s.locale)
   const title = t(kind === 'terms' ? 'static.termsTitle' : 'static.privacyTitle')
   const sections = t(`static.${kind}.sections`, { returnObjects: true }) as Section[]
+  const legal = useQuery({ queryKey: ['public', 'legal'], queryFn: publicApi.legal, staleTime: 10 * 60_000 }).data
+  const email = legal?.supportEmail || FALLBACK_EMAIL
+  const seller = legal ? ([['name', legal.name, false], ['address', legal.address, false], ['taxNo', legal.taxRegistrationNo, true]] as const).filter(([, v]) => !!v) : []
   useEffect(() => {
     const before = document.title
     document.title = `${title} | ${t('brand')}`
@@ -48,9 +53,24 @@ export function StaticPage({ kind }: { kind: 'terms' | 'privacy' }) {
           ))}
         </div>
 
+        {/* seller details required for selling online (shown on the terms page) */}
+        {kind === 'terms' && seller.length > 0 && (
+          <section className="card mt-5 p-6 md:p-7">
+            <h2 className="mb-4 font-display text-xl md:text-2xl">{t('static.seller.title')}</h2>
+            <dl className="divide-y divide-line">
+              {seller.map(([k, v, ltr]) => (
+                <div key={k} className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1 py-3">
+                  <dt className="text-sm text-fg-muted">{t(`static.seller.${k}`)}</dt>
+                  <dd dir={ltr ? 'ltr' : undefined} className="font-medium tabular-nums">{v}</dd>
+                </div>
+              ))}
+            </dl>
+          </section>
+        )}
+
         <div className="mt-10 flex flex-wrap items-center justify-between gap-3 rounded-xl2 bg-night px-6 py-5 text-pearl">
           <span className="text-sm text-pearl/70">{t('static.contactLabel')}</span>
-          <a href={`mailto:${SUPPORT_EMAIL}`} dir="ltr" className="font-medium text-gold-soft hover:text-gold">{SUPPORT_EMAIL}</a>
+          <a href={`mailto:${email}`} dir="ltr" className="font-medium text-gold-soft hover:text-gold">{email}</a>
         </div>
 
         {/* attribution required by the free DB-IP country database (CC BY 4.0) */}

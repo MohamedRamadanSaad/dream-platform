@@ -554,6 +554,9 @@ export interface InsightsResponse {
 /** GET/PUT /admin/settings — raw key/value map (BOOL values are 'true' / 'false'). PUT sends only changed keys. */
 export type SettingsMap = Record<string, string>
 
+/** GET /public/legal: seller details (empty strings when not set). */
+export interface LegalInfo { name: string; address: string; taxRegistrationNo: string; supportEmail: string }
+
 /** GET /admin/mail/themes — one e-mail theme (header/footer images + colours). Image URLs are absolute. */
 export interface MailThemeDto {
   key: string

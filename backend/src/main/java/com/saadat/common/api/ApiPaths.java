@@ -42,6 +42,8 @@ public final class ApiPaths {
         public static final String TESTIMONIALS = ROOT + "/testimonials";
         public static final String STATS = ROOT + "/stats";
         public static final String PUSH_KEY = ROOT + "/push-key";
+        /** Seller details for the terms page and the footer. */
+        public static final String LEGAL = ROOT + "/legal";
         /** POST page-view tracking (token optional). */
         public static final String TRACK = ROOT + "/track";
 

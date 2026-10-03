@@ -20,12 +20,20 @@
       <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;" th:text="|${amount} ${currency}|">—</td>
     </tr>
     <tr th:if="${!#strings.isEmpty(orderRef)}">
-      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;">رقم الطلب</td>
-      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;" th:text="${orderRef}">—</td>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;">رقم الفاتورة</td>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;" dir="ltr" th:text="${orderRef}"></td>
     </tr>
     <tr th:if="${!#strings.isEmpty(paidAt)}">
       <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;">تاريخ الدفع</td>
       <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;" th:text="${paidAt}">—</td>
+    </tr>
+    <tr th:if="${!#strings.isEmpty(legalName)}">
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;">مقدّم الخدمة</td>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;" th:text="${legalName}"></td>
+    </tr>
+    <tr th:if="${!#strings.isEmpty(taxRegNo)}">
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;">رقم التسجيل الضريبي</td>
+      <td align="right" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;" dir="ltr" th:text="${taxRegNo}"></td>
     </tr>
   </table>
   <p style="margin:0 0 16px 0;font-size:14px;line-height:1.8;color:#5B6478;">احتفظ بهذه الرسالة إيصالاً للدفع.</p>

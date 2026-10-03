@@ -204,6 +204,9 @@ public class MailService {
         vars.putIfAbsent("brandNameAr", settings.getString(SettingKeys.BRAND_NAME_AR, ""));
         vars.putIfAbsent("brandNameEn", settings.getString(SettingKeys.BRAND_NAME_EN, ""));
         vars.putIfAbsent("supportEmail", settings.getString(SettingKeys.BRAND_SUPPORT_EMAIL, ""));
+        // seller details for the payment receipt (rows are hidden when empty)
+        vars.putIfAbsent("legalName", settings.getString(SettingKeys.BRAND_LEGAL_NAME, "").trim());
+        vars.putIfAbsent("taxRegNo", settings.getString(SettingKeys.BRAND_TAX_REGISTRATION_NO, "").trim());
         vars.putIfAbsent("youtubeUrl", youtube == null || youtube.isBlank() ? frontend : youtube.trim());
         vars.putIfAbsent("frontendUrl", frontend);
         vars.putIfAbsent("siteHost", hostOf(frontend));

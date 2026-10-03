@@ -8,7 +8,7 @@ import { Icon, type IconName } from '@/components/icons/Icon'
 import { cn } from '@/lib/utils'
 import { Avatar } from '@/components/ui/Avatar'
 import { useQuery } from '@tanstack/react-query'
-import { meApi, notificationsApi, youtubeApi } from '@/api/endpoints'
+import { meApi, notificationsApi, publicApi, youtubeApi } from '@/api/endpoints'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 
 import flagSa from '@/assets/flags/sa.svg'
@@ -173,6 +173,14 @@ export function PublicHeader() {
   )
 }
 
+/** Small seller line under the copyright (Egyptian consumer protection law); hidden until a number is set. */
+function TaxLine() {
+  const { t } = useTranslation()
+  const { data } = useQuery({ queryKey: ['public', 'legal'], queryFn: publicApi.legal, staleTime: 10 * 60_000 })
+  if (!data?.taxRegistrationNo) return null
+  return <div className="text-xs text-pearl/40">{t('footer.taxNo')}: <span dir="ltr" className="tabular-nums">{data.taxRegistrationNo}</span></div>
+}
+
 export function Footer() {
   const { t } = useTranslation()
   return (
@@ -185,6 +193,7 @@ export function Footer() {
         <div className="flex flex-col gap-2 text-sm md:items-end">
           <div className="flex gap-6"><a href={YT} target="_blank" rel="noreferrer" className="text-gold-soft">{t('footer.youtube')}</a><Link to="/terms" className="hover:text-pearl">{t('footer.terms')}</Link><Link to="/privacy" className="hover:text-pearl">{t('footer.privacy')}</Link></div>
           <div className="text-pearl/50">{t('footer.rights', { year: new Date().getFullYear() })}</div>
+          <TaxLine />
         </div>
       </div>
     </footer>

@@ -96,7 +96,8 @@
     "terms": "Terms",
     "privacy": "Privacy",
     "contact": "Contact",
-    "youtube": "YouTube"
+    "youtube": "YouTube",
+    "taxNo": "Tax registration no."
   },
   "auth": {
     "title": "Welcome",
@@ -214,7 +215,10 @@
         "REFUND": "Refund",
         "MANUAL": "Added by the interpreter",
         "BONUS": "Gift"
-      }
+      },
+      "invoiceNo": "Invoice number",
+      "copy": "Copy invoice number",
+      "copied": "Invoice number copied"
     },
     "orderStatus": {
       "INITIATED": "Not finished",
@@ -933,6 +937,14 @@
       "AWAITING_USER_REPLY": "Waiting for the user's reply",
       "INTERPRETED": "Interpreted",
       "CANCELLED": "Cancelled"
+    },
+    "legal": {
+      "title": "Seller details",
+      "lead": "Shown on the terms page, at the bottom of the site and in the payment receipt email. Leave a field empty to hide it.",
+      "name": "Name as on the tax card",
+      "address": "Address or governorate",
+      "taxNo": "Tax registration no.",
+      "save": "Save"
     }
   },
   "common": {
@@ -996,7 +1008,8 @@
             "One credit is one dream interpretation.",
             "Prices are shown in your country's currency. The site decides the country and the price.",
             "A credit is used when you send a dream for interpretation, not when you save a draft.",
-            "Credits stay valid for the period shown on the package when you buy it.",
+            "Credits from each package stay valid for the period shown on it when you buy it, which is 12 months from the payment date unless stated otherwise. Credits not used within that period expire and are not refunded.",
+            "When you send a dream, the credit that expires soonest is used first, and your account shows when your credits will expire before they do.",
             "Payment is handled by an approved payment provider. The site never sees or stores your card details. An order may be reviewed before credits are added if the payment country differs from the country you were shown prices for."
           ]
         },
@@ -1004,7 +1017,9 @@
           "h": "Cancellations and refunds",
           "p": [
             "A credit used for a dream that has been interpreted cannot be refunded.",
-            "If you have a problem with a payment, email our support address and we will look into it."
+            "For a payment problem or a refund request, email our support address from the email you use to sign in.",
+            "Type the invoice number in your message, as shown in your payment receipt email or on the Payments page, describe the problem briefly, and attach screenshots or proof.",
+            "We review every complete request and reply with a decision as soon as possible, within 2 working days."
           ]
         },
         {
@@ -1033,6 +1048,13 @@
           "p": [
             "Your interpretation is yours for personal use, and you can download it from your dream page.",
             "The site's design, text and the channel's videos belong to their owners. Do not copy them for commercial use without permission."
+          ]
+        },
+        {
+          "h": "Governing law",
+          "p": [
+            "These terms and every transaction on the site are governed by the laws of the Arab Republic of Egypt.",
+            "The Egyptian courts have jurisdiction over any dispute, after first trying to settle it amicably through our support email."
           ]
         },
         {
@@ -1122,7 +1144,14 @@
     "contactLabel": "Contact us",
     "geoCredit": "Country data by DB-IP",
     "termsTitle": "Terms and Conditions",
-    "privacyTitle": "Privacy Policy"
+    "privacyTitle": "Privacy Policy",
+    "seller": {
+      "title": "Service provider details",
+      "name": "Name",
+      "address": "Address",
+      "taxNo": "Tax registration no.",
+      "email": "Email"
+    }
   },
   "courses": {
     "lead": "Video courses with their own subscription, separate from dream packages. Coming in phase two.",

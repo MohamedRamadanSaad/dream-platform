@@ -91,6 +91,15 @@ public class PublicInfoController {
                 settings.getInt(SettingKeys.STATS_INTERPRETED_BASE, 0) + dreamRepository.countByStatus(DreamStatus.INTERPRETED));
     }
 
+    @GetMapping(ApiPaths.Public.LEGAL)
+    public PublicDtos.LegalInfo legal() {
+        return new PublicDtos.LegalInfo(
+                settings.getString(SettingKeys.BRAND_LEGAL_NAME, "").trim(),
+                settings.getString(SettingKeys.BRAND_LEGAL_ADDRESS, "").trim(),
+                settings.getString(SettingKeys.BRAND_TAX_REGISTRATION_NO, "").trim(),
+                settings.getString(SettingKeys.BRAND_SUPPORT_EMAIL, "").trim());
+    }
+
     @GetMapping(ApiPaths.Public.PUSH_KEY)
     public PushKey pushKey() {
         String key = properties.getPush().getPublicKey();

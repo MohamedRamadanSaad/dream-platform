@@ -213,6 +213,9 @@ export const MAIL_THEMES: Omit<T.MailThemeDto, 'headerImageUrl' | 'footerImageUr
 db.settings = {
   ...Object.fromEntries(MAIL_EVENTS.map((e) => [`mail.event.${e}`, 'true'])),
   ...Object.fromEntries(MAIL_TEMPLATES.map((e) => [`mail.theme.${e}`, ''])),
+  'brand.legal_name': 'فاطمه عبدالوهاب محمد عبوالوهاب',
+  'brand.legal_address': 'دمياط الجديدة، محافظة دمياط',
+  'brand.tax_registration_no': '114-683-768',
   'mail.theme.default': 'crescent-night',
   'mail.assets_base_url': '',
   'mail.auto_reply_cooldown_hours': '24',

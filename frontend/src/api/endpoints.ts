@@ -21,6 +21,7 @@ export const publicApi = {
   stats: () => http.get<T.PublicStats>('/public/stats'),
   /** Web Push key read at run time, so a new key needs no new build. */
   pushKey: () => http.get<T.PushKey>('/public/push-key'),
+  legal: () => http.get<T.LegalInfo>('/public/legal'),
   /** Page-view hit — fire-and-forget (see usePageTracking). */
   track: (body: T.TrackRequest) => postQuietly('/public/track', body),
 }

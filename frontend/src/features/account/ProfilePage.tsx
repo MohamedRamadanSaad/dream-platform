@@ -1,11 +1,11 @@
 // One account page for every role: /me/profile (users) and /admin/profile (the interpreter).
 import { useState, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useMutation, useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Icon } from '@/components/icons/Icon'
 import { Avatar } from '@/components/ui/Avatar'
 import { toast } from '@/components/ui/Toaster'
-import { meApi, notificationsApi, publicApi } from '@/api/endpoints'
+import { adminApi, meApi, notificationsApi, publicApi } from '@/api/endpoints'
 import { useAuthStore, isInterpreter } from '@/app/auth-store'
 import { useSignOut } from '@/app/session'
 import { applyLocale } from '@/i18n'
@@ -165,6 +165,34 @@ function PushCard() {
   )
 }
 
+const SELLER_KEYS = { name: 'brand.legal_name', address: 'brand.legal_address', taxNo: 'brand.tax_registration_no' } as const
+
+/** Interpreter only: the seller details shown on the terms page, in the footer and on the payment receipt. */
+function SellerCard() {
+  const { t } = useTranslation()
+  const qc = useQueryClient()
+  const q = useQuery({ queryKey: ['admin', 'settings'], queryFn: adminApi.settings })
+  const [draft, setDraft] = useState<Record<string, string>>({})
+  const value = (k: keyof typeof SELLER_KEYS) => draft[SELLER_KEYS[k]] ?? q.data?.[SELLER_KEYS[k]] ?? ''
+  const changes = Object.fromEntries(Object.entries(draft).filter(([k, v]) => q.data?.[k] !== v).map(([k, v]) => [k, v.trim()]))
+  const save = useMutation({
+    mutationFn: () => adminApi.saveSettings(changes),
+    onSuccess: (all) => { qc.setQueryData(['admin', 'settings'], all); setDraft({}); void qc.invalidateQueries({ queryKey: ['public', 'legal'] }) },
+  })
+  return (
+    <section aria-labelledby="seller-title" className="card p-5 sm:p-6">
+      <h2 id="seller-title" className="font-display text-xl">{t('admin.legal.title')}</h2>
+      <p className="mt-1 text-sm font-light text-fg-muted">{t('admin.legal.lead')}</p>
+      <div className="mt-5 grid gap-5 sm:grid-cols-2">
+        <Field label={t('admin.legal.name')} className="sm:col-span-2"><Input dir="auto" value={value('name')} onChange={(e) => setDraft((d) => ({ ...d, [SELLER_KEYS.name]: e.target.value }))} /></Field>
+        <Field label={t('admin.legal.address')}><Input dir="auto" value={value('address')} onChange={(e) => setDraft((d) => ({ ...d, [SELLER_KEYS.address]: e.target.value }))} /></Field>
+        <Field label={t('admin.legal.taxNo')}><Input dir="ltr" inputMode="numeric" value={value('taxNo')} onChange={(e) => setDraft((d) => ({ ...d, [SELLER_KEYS.taxNo]: e.target.value }))} /></Field>
+      </div>
+      <div className="mt-6 flex justify-end"><Button disabled={!Object.keys(changes).length} loading={save.isPending} onClick={() => save.mutate()}>{t('admin.legal.save')}</Button></div>
+    </section>
+  )
+}
+
 export function ProfilePage() {
   const { t } = useTranslation()
   const user = useAuthStore((s) => s.user)!
@@ -189,6 +217,7 @@ export function ProfilePage() {
       </div>
       <PersonalCard />
       {!interpreter && <PushCard />}
+      {interpreter && <SellerCard />}
       {/* how this account signs in, then where: methods → fingerprint / face (#passkeys) → devices (#devices) */}
       <SignInMethods interpreter={interpreter} />
       <PasskeysSection />
