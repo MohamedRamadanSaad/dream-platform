@@ -81,7 +81,7 @@ Admin endpoints `GET/PUT /admin/settings` (map) exist for the interpreter; `admi
 - Frontend will show the count on the YouTube button and call `/youtube/seen` on click (frontend change is out of scope for the backend agent; keep the shapes above).
 
 ## 9. Admin analytics (`com.saadat.admin.analytics`)
-- `GET /admin/analytics/summary`, `GET /admin/analytics/countries?period=7d|30d|1y|all` (visits from `user_sessions`, dreams from `dreams.submitted_at`, revenue converted to base currency USD with static rates from settings key `pricing.fx_to_usd` JSON `{ "EGP":0.0208,"SAR":0.2667,"USD":1 }`), `GET /admin/analytics/users?list=&q=&page=&size=`, `GET /admin/users/{id}` (AdminUser360 — note field `dreamList`), `PUT /admin/users/{id}/notes`, `POST /admin/users/{id}/credits {delta, reason}` (ledger MANUAL + audit).
+- `GET /admin/analytics/summary`, `GET /admin/analytics/countries?period=7d|30d|1y|all` (visits = distinct visits of the site pages from `page_views`, the same "visits" as the traffic report — not sign-ins; dreams from `dreams.submitted_at`, revenue converted to base currency USD with static rates from settings key `pricing.fx_to_usd` JSON `{ "EGP":0.0208,"SAR":0.2667,"USD":1 }`), `GET /admin/analytics/users?list=&q=&page=&size=`, `GET /admin/users/{id}` (AdminUser360 — note field `dreamList`), `PUT /admin/users/{id}/notes`, `POST /admin/users/{id}/credits {delta, reason}` (ledger MANUAL + audit).
 - Audit: an `AuditService.record(actor, action, entity, id, before, after)` called by every admin mutation (prices, packages, promotions, coupons, settings, wait-time, manual credits, notes, testimonial approval, cancel).
 
 ## 10. Public

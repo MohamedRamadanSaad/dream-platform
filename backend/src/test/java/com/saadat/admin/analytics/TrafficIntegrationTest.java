@@ -166,6 +166,23 @@ class TrafficIntegrationTest extends IntegrationTestBase {
     }
 
     @Test
+    void topCountriesCountPageVisitsNotSignIns() throws Exception {
+        // Oman (no other test uses it), within the last 7 days: one browser, six visits, the first of two pages
+        List<PageView> rows = new ArrayList<>();
+        for (int i = 0; i < 6; i++) {
+            rows.add(view("/", "t-om-" + i, "OMV1", "OM", Device.MOBILE,
+                    Instant.now().minusSeconds(3600L * (i + 1)).toString()));
+        }
+        rows.add(view("/terms", "t-om-0", "OMV1", "OM", Device.MOBILE, Instant.now().minusSeconds(3500).toString()));
+        pageViewRepository.saveAll(rows);
+        User interpreter = createUser("traffic", Role.INTERPRETER);
+        mvc.perform(get(ApiPaths.Admin.ANALYTICS_COUNTRIES).param("period", "7d")
+                        .header(HttpHeaders.AUTHORIZATION, bearer(interpreter)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.topVisits[?(@.countryCode == 'OM')].visits").value(hasItem(6)));
+    }
+
+    @Test
     void defaultRangeIsTheCurrentMonthAndBadInputIsRejected() throws Exception {
         User interpreter = createUser("traffic", Role.INTERPRETER);
         mvc.perform(get(ApiPaths.Admin.ANALYTICS_TRAFFIC).header(HttpHeaders.AUTHORIZATION, bearer(interpreter)))
