@@ -10,7 +10,7 @@ import java.time.Instant;
 import java.util.UUID;
 
 /**
- * types.ts OrderDto. {@code provider} is always PAYMOB | MOR (contract): orders paid through the local mock
+ * types.ts OrderDto. {@code provider} is always KASHIER | MOR (contract): orders paid through the local mock
  * provider are shown as the gateway their currency would use. {@code providerRef} is the provider's
  * transaction id once paid.
  */

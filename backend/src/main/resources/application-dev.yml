@@ -1,4 +1,4 @@
-# Staging server: real SMTP, Paymob TEST keys, JSON logs. All secrets from env.
+# Staging server: real SMTP, Kashier TEST keys, JSON logs. All secrets from env.
 
 sentry:
   environment: ${SENTRY_ENVIRONMENT:dev}

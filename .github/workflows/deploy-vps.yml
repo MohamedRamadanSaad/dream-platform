@@ -133,48 +133,50 @@ jobs:
           else
             echo "::warning::push keys could not be generated on the server (web push stays off)"
           fi
-      # Paymob (Egypt, EGP): the four values come from GitHub secrets of the same names and are written to backend.env
-      # (stdin only). Real payments start (PAYMENTS_MOCK=false) only when all four are set AND the repository variable
-      # PAYMENTS_LIVE is "true"; otherwise the current mock setting is left as it is.
-      - name: paymob settings
+      # Kashier (Egypt, EGP): KASHIER_MERCHANT_ID, KASHIER_API_KEY, KASHIER_SECRET_KEY come from GitHub secrets of the
+      # same names, KASHIER_MODE from the repository variable (test | live, default test); all are written to
+      # backend.env (stdin only). Real payments start (PAYMENTS_MOCK=false) only when the three secrets are set AND the
+      # repository variable PAYMENTS_LIVE is "true"; otherwise the current mock setting is left as it is.
+      - name: kashier settings
         env:
-          PAYMOB_API_KEY: ${{ secrets.PAYMOB_API_KEY }}
-          PAYMOB_INTEGRATION_ID: ${{ secrets.PAYMOB_INTEGRATION_ID }}
-          PAYMOB_IFRAME_ID: ${{ secrets.PAYMOB_IFRAME_ID }}
-          PAYMOB_HMAC_SECRET: ${{ secrets.PAYMOB_HMAC_SECRET }}
+          KASHIER_MERCHANT_ID: ${{ secrets.KASHIER_MERCHANT_ID }}
+          KASHIER_API_KEY: ${{ secrets.KASHIER_API_KEY }}
+          KASHIER_SECRET_KEY: ${{ secrets.KASHIER_SECRET_KEY }}
+          KASHIER_MODE: ${{ vars.KASHIER_MODE || 'test' }}
           PAYMENTS_LIVE: ${{ vars.PAYMENTS_LIVE || 'false' }}
         run: |
           lines=""
           count=0
-          for name in PAYMOB_API_KEY PAYMOB_INTEGRATION_ID PAYMOB_IFRAME_ID PAYMOB_HMAC_SECRET; do
+          for name in KASHIER_MERCHANT_ID KASHIER_API_KEY KASHIER_SECRET_KEY; do
             value=${!name}
             value="${value#"${value%%[![:space:]]*}"}"   # trim (pasted secrets often end with a newline)
             value="${value%"${value##*[![:space:]]}"}"
             [ -z "$value" ] && continue
             case "$value" in *"'"*|*[[:space:]]*)
-              echo "::warning::secret $name must not contain quotes or spaces: Paymob settings not changed"; exit 0;;
+              echo "::warning::secret $name must not contain quotes or spaces: Kashier settings not changed"; exit 0;;
             esac
-            if [ "$name" = PAYMOB_INTEGRATION_ID ] || [ "$name" = PAYMOB_IFRAME_ID ]; then
-              case "$value" in *[!0-9]*) echo "::warning::secret $name must be a number: Paymob settings not changed"; exit 0;; esac
-            fi
             lines+="$name='$value'"$'\n'
             count=$((count + 1))
           done
+          if [ -z "$lines" ]; then
+            echo "no KASHIER_* secrets: payment settings not changed"; exit 0
+          fi
+          case "$KASHIER_MODE" in test|live) ;; *)
+            echo "::warning::variable KASHIER_MODE must be test or live: Kashier settings not changed"; exit 0;;
+          esac
+          lines+="KASHIER_MODE=$KASHIER_MODE"$'\n'
           live=no
           if [ "$PAYMENTS_LIVE" = "true" ]; then
-            if [ "$count" -eq 4 ]; then
+            if [ "$count" -eq 3 ]; then
               lines+="PAYMENTS_MOCK=false"$'\n'
               live=yes
             else
-              echo "::warning::PAYMENTS_LIVE is true but only $count of the 4 PAYMOB_* secrets are set: payment mode not changed"
+              echo "::warning::PAYMENTS_LIVE is true but only $count of the 3 KASHIER_* secrets are set: payment mode not changed"
             fi
-          fi
-          if [ -z "$lines" ]; then
-            echo "no PAYMOB_* secrets: payment settings not changed"; exit 0
           fi
           result=$(printf '%s' "$lines" \
             | ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "bash /opt/saadat/deploy/ops/setenv.sh /opt/saadat/deploy/backend.env")
-          echo "paymob settings: $result ($count of 4 secrets set; PAYMENTS_MOCK=false written: $live)"
+          echo "kashier settings: $result ($count of 3 secrets set; mode $KASHIER_MODE; PAYMENTS_MOCK=false written: $live)"
           if [ "$result" = "updated" ]; then
             ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "touch /opt/saadat/deploy/.recreate-backend"
           fi

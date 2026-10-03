@@ -113,12 +113,12 @@ app:
     refresh-cookie-same-site: Lax
   payments:
     mock: false
-    paymob:
-      api-key: ${PAYMOB_API_KEY:}
-      integration-id: ${PAYMOB_INTEGRATION_ID:}
-      iframe-id: ${PAYMOB_IFRAME_ID:}
-      hmac-secret: ${PAYMOB_HMAC_SECRET:}
-      base-url: ${PAYMOB_BASE_URL:https://accept.paymob.com}
+    kashier:
+      merchant-id: ${KASHIER_MERCHANT_ID:}
+      api-key: ${KASHIER_API_KEY:}
+      secret-key: ${KASHIER_SECRET_KEY:}
+      mode: ${KASHIER_MODE:test}
+      base-url: ${KASHIER_BASE_URL:}
     mor:
       api-key: ${MOR_API_KEY:}
       store-id: ${MOR_STORE_ID:}

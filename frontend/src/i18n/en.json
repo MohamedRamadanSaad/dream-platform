@@ -245,7 +245,7 @@
       "autoSubmit_one": "1 dream will be submitted automatically after payment",
       "autoSubmit_other": "{{count}} dreams will be submitted automatically after payment",
       "methods": "Cards · Apple Pay · Google Pay",
-      "methodsEg": "Cards via Paymob"
+      "methodsEg": "Cards and mobile wallets via Kashier"
     },
     "profile": {
       "title": "Account",

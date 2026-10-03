@@ -313,7 +313,7 @@ export const handlers = [
       if (!c) return problem(422, 'Invalid coupon', 'كود الخصم غير صالح')
       price = c.type === 'PERCENT' ? Math.round(price * (1 - c.value / 100)) : Math.max(0, price - c.value)
     }
-    const order: T.OrderDto & { userId: string } = { id: uid(), userId: me.id, packageName: pkg.nameAr, credits: pkg.credits, amount: price, currency: r.currency, status: 'INITIATED', provider: r.currency === 'EGP' ? 'PAYMOB' : 'MOR', providerRef: null, countryCode: me.countryCode, createdAt: helpers.now(), paidAt: null }
+    const order: T.OrderDto & { userId: string } = { id: uid(), userId: me.id, packageName: pkg.nameAr, credits: pkg.credits, amount: price, currency: r.currency, status: 'INITIATED', provider: r.currency === 'EGP' ? 'KASHIER' : 'MOR', providerRef: null, countryCode: me.countryCode, createdAt: helpers.now(), paidAt: null }
     db.orders.unshift(order)
     // mock: simulate webhook success after 4s, then auto-submit selected drafts
     setTimeout(() => {

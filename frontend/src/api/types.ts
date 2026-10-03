@@ -259,7 +259,7 @@ export interface CheckoutRequest {
 }
 export interface CheckoutResponse {
   orderId: string
-  provider: 'PAYMOB' | 'MOR'
+  provider: 'KASHIER' | 'MOR'
   checkoutUrl: string
   amount: number
   currency: Currency
@@ -272,7 +272,7 @@ export interface OrderDto {
   amount: number
   currency: Currency
   status: OrderStatus
-  provider: 'PAYMOB' | 'MOR'
+  provider: 'KASHIER' | 'MOR'
   providerRef: string | null
   countryCode: string
   createdAt: string

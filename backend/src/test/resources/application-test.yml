@@ -24,11 +24,11 @@ app:
     refresh-cookie-secure: false
   payments:
     mock: true
-    paymob:
-      api-key: test-api-key
-      integration-id: "123"
-      iframe-id: "456"
-      hmac-secret: test-hmac-secret
+    kashier:
+      merchant-id: MID-0-1
+      api-key: test-kashier-api-key
+      secret-key: test-kashier-secret-key
+      mode: test
   mail:
     webhook-secret: test-mail-webhook-secret
   youtube:

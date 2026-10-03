@@ -17,6 +17,7 @@ import com.saadat.common.domain.Role;
 import com.saadat.credits.service.CreditService;
 import com.saadat.dreams.repo.DreamRepository;
 import com.saadat.payments.domain.Order;
+import com.saadat.payments.provider.KashierSignature;
 import com.saadat.payments.provider.WebhookEvent;
 import com.saadat.payments.repo.CreditLedgerRepository;
 import com.saadat.payments.repo.OrderRepository;
@@ -34,6 +35,8 @@ class PaymentFlowIntegrationTest extends IntegrationTestBase {
 
     /** Seeded package p1 (1 credit); SA is in the Gulf group → 49 SAR. */
     private static final String PACKAGE_ONE = "22222222-2222-4222-8222-000000000001";
+    /** app.payments.kashier.api-key in application-test.yml. */
+    private static final String KASHIER_TEST_API_KEY = "test-kashier-api-key";
     private static final String DREAM_TEXT = "رأيت بيتاً قديماً فيه باب مفتوح ينتهي إلى حديقة خضراء مليئة بالورود.";
 
     @Autowired
@@ -160,11 +163,42 @@ class PaymentFlowIntegrationTest extends IntegrationTestBase {
     }
 
     @Test
-    void paymobWebhookWithBadHmacIsRejected() throws Exception {
-        mvc.perform(post(ApiPaths.Webhooks.PAYMOB).param("hmac", "deadbeef")
+    void kashierWebhookWithBadSignatureIsRejected() throws Exception {
+        mvc.perform(post(ApiPaths.Webhooks.KASHIER).header(KashierSignature.HEADER, "deadbeef")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"type\":\"TRANSACTION\",\"obj\":{\"id\":1,\"success\":true}}"))
+                        .content(kashierBody("pay", "SUCCESS", UUID.randomUUID().toString(), "TX-1", "49", "SAR")))
                 .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void signedKashierPaySuccessCreditsTheOrder() throws Exception {
+        User user = createUser("kashier", Role.USER);
+        JsonNode checkout = checkout(user, null);
+        UUID orderId = UUID.fromString(checkout.get("orderId").asText());
+        String txn = "TX-" + UUID.randomUUID();
+
+        // a failed card try is acknowledged but leaves the order open (the customer may retry in the session)
+        postKashier(kashierBody("pay", "FAILURE", orderId.toString(), txn + "-F", "49", "SAR"));
+        assertThat(orderRepository.findById(orderId).orElseThrow().getStatus()).isEqualTo(OrderStatus.INITIATED);
+
+        postKashier(kashierBody("pay", "SUCCESS", orderId.toString(), txn, "49", "SAR"));
+        Order paid = orderRepository.findById(orderId).orElseThrow();
+        assertThat(paid.getStatus()).isEqualTo(OrderStatus.SUCCESS);
+        assertThat(paid.getProviderTxnId()).isEqualTo(txn);
+        assertThat(creditService.balance(user.getId())).isEqualTo(1);
+
+        // the same notification again → still one credit
+        postKashier(kashierBody("pay", "SUCCESS", orderId.toString(), txn, "49", "SAR"));
+        assertThat(creditService.balance(user.getId())).isEqualTo(1);
+    }
+
+    @Test
+    void signedKashierWebhookWithWrongAmountIsSuspicious() throws Exception {
+        User user = createUser("kashier-amount", Role.USER);
+        UUID orderId = UUID.fromString(checkout(user, null).get("orderId").asText());
+        postKashier(kashierBody("pay", "SUCCESS", orderId.toString(), "TX-" + UUID.randomUUID(), "1", "SAR"));
+        assertThat(orderRepository.findById(orderId).orElseThrow().getStatus()).isEqualTo(OrderStatus.SUSPICIOUS);
+        assertThat(creditService.balance(user.getId())).isZero();
     }
 
     @Test
@@ -175,6 +209,34 @@ class PaymentFlowIntegrationTest extends IntegrationTestBase {
     }
 
     // ------------------------------------------------------------------ helpers
+
+    private void postKashier(String body) throws Exception {
+        String data = objectMapper.readTree(body).get("data").toString();
+        String signature = KashierSignature.sign(KashierSignature.payload(objectMapper.readTree(data)),
+                KASHIER_TEST_API_KEY);
+        mvc.perform(post(ApiPaths.Webhooks.KASHIER).header(KashierSignature.HEADER, signature)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isOk());
+    }
+
+    private String kashierBody(String event, String status, String merchantOrderId, String txn, String amount,
+                               String currency) throws Exception {
+        Map<String, Object> data = new java.util.LinkedHashMap<>();
+        data.put("merchantOrderId", merchantOrderId);
+        data.put("kashierOrderId", UUID.randomUUID().toString());
+        data.put("orderReference", "TEST-ORD-1");
+        data.put("transactionId", txn);
+        data.put("status", status);
+        data.put("method", "card");
+        data.put("amount", new BigDecimal(amount));
+        data.put("currency", currency);
+        data.put("transactionResponseCode", "00");
+        data.put("channel", "online | e-commerce");
+        data.put("signatureKeys", java.util.List.of("transactionResponseCode", "amount", "channel", "currency",
+                "kashierOrderId", "merchantOrderId", "method", "orderReference", "status", "transactionId"));
+        return objectMapper.writeValueAsString(Map.of("event", event, "data", data));
+    }
 
     private JsonNode checkout(User user, UUID draft) throws Exception {
         Map<String, Object> body = draft == null

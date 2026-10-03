@@ -8,7 +8,7 @@ Binding rules for anyone continuing the dream-interpretation platform. Short, im
 3. Testimonials only from interpreted dreams, approved by the interpreter before display.
 4. Follow-up questions per dream (chat) with e-mail + in-app + push on each step; user replies pause the SLA.
 5. Prices shown per visitor country, decided by the **server** (Cloudflare country header). The user can never choose a country/currency. Order stores payment country; mismatch → SUSPICIOUS, no credits.
-6. Currencies: EGP (Egypt via Paymob), SAR (Gulf group), USD (everyone else; Europe uses USD). Interpreter manages prices by continent → country, country groups/favourites, packages, promotions, coupons — all from the dashboard, nothing hardcoded.
+6. Currencies: EGP (Egypt via Kashier), SAR (Gulf group), USD (everyone else; Europe uses USD). Interpreter manages prices by continent → country, country groups/favourites, packages, promotions, coupons — all from the dashboard, nothing hardcoded.
 7. Promotions must be religiously appropriate (no Mawlid offer). Seeds: Saudi National Day (SA), 6 October Victory (EG).
 8. Interpreter dashboard opens on top countries (visits / dreams / payments); 360° user view; full CRUDs; orders CSV.
 9. Courses module later (placeholder page only).
@@ -23,7 +23,7 @@ Binding rules for anyone continuing the dream-interpretation platform. Short, im
 ## C. Backend conventions
 15. Spring Boot 3 / Java 21 / Gradle Kotlin DSL / PostgreSQL 16 / Flyway. Packages by domain under `com.saadat.*`; every route in one constants class `ApiPaths`.
 16. All business settings live in the DB table `app_settings` (keys in `SettingKeys`), editable from the dashboard — no static strings for business values. Env vars only for infrastructure/secrets.
-17. Profiles: local / dev / prod / test. Prod refuses mocks. Payments mocked via config until Paymob keys exist (Paymob last).
+17. Profiles: local / dev / prod / test. Prod refuses mocks. Payments mocked via config until Kashier keys exist (Kashier last).
 18. Professional Thymeleaf e-mails in the site's look, Arabic + English, sent from the site e-mail (variables ready; LOGGED when SMTP empty).
 19. YouTube channel button = notification badge of unseen videos (feed polled server-side).
 20. Every change must pass CI tests (Testcontainers). Backend compiles only in GitHub Actions from the sandbox; read `ci-logs` branch for results.
