@@ -80,7 +80,9 @@ class CreditLotsTest {
         assertThat(lot(lots, refund).remaining()).isEqualTo(1);
         assertThat(lot(lots, manual).expiresAt()).isNull();
         assertThat(lot(lots, refund).expiresAt()).isNull();
-        assertThat(CreditLots.due(lots, day(1000))).isEmpty();
+        // only the (fully used) purchase is due, for settling; nothing is left to write off
+        assertThat(CreditLots.due(lots, day(1000))).extracting(Lot::id).containsExactly(p);
+        assertThat(CreditLots.pendingExpired(lots, day(1000))).isZero();
     }
 
     @Test
