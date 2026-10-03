@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Map;
 import org.springframework.stereotype.Component;
 
-/** Picks the provider for a currency: mock (when enabled) → MOCK; EGP → KASHIER; everything else → MOR. */
+/** Picks the provider for a currency: mock (when enabled) → MOCK; EGP and USD → KASHIER; SAR → MOR (Kashier never takes SAR). */
 @Component
 public class ProviderRegistry {
 
@@ -38,6 +38,6 @@ public class ProviderRegistry {
 
     /** The real gateway for a currency, regardless of mock mode (what the SPA shows as provider). */
     public static PaymentProviderType nominal(Currency currency) {
-        return currency == Currency.EGP ? PaymentProviderType.KASHIER : PaymentProviderType.MOR;
+        return currency == Currency.EGP || currency == Currency.USD ? PaymentProviderType.KASHIER : PaymentProviderType.MOR;
     }
 }
