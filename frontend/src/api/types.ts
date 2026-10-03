@@ -308,6 +308,12 @@ export interface DashboardSummary {
   waitTime: WaitTime
   /** Soonest credit expiry within the notice window, else null. */
   nextExpiry: { credits: number; at: string } | null
+  /** Credits spent on dreams so far (dream refunds given back are subtracted). */
+  usedCredits: number
+  /** When the user was last on the site before this visit; null on the first visit. */
+  lastVisitAt: string | null
+  /** The latest package the user paid for; null when none yet. */
+  lastPackage: { orderId: string; name: string; credits: number; amount: number; currency: Currency; paidAt: string } | null
 }
 export interface PreferencesRequest {
   locale?: Locale

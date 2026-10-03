@@ -1,6 +1,7 @@
+import { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useQuery } from '@tanstack/react-query'
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import { meApi } from '@/api/endpoints'
 import { useAuthStore } from '@/app/auth-store'
 import { ErrorBox, Skeleton, StatusBadge } from '@/components/ui'
@@ -33,6 +34,13 @@ export function PaymentsPage() {
   const credits = useQuery({ queryKey: ['me', 'credits'], queryFn: meApi.credits })
   const orders = useQuery({ queryKey: ['me', 'orders'], queryFn: () => meApi.orders(0, 50) })
   const reason = (k: string) => t(`me.payments.reason.${k}`)
+  // links from the dashboard open a section (#history, #ledger) once its data is on screen
+  const { hash } = useLocation()
+  const ready = !!credits.data && !!orders.data
+  useEffect(() => {
+    if (!hash || !ready) return
+    document.getElementById(hash.slice(1))?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }, [hash, ready])
   return (
     <PageEnter className="space-y-6">
       <h1 className="font-display text-4xl">{t('me.payments.title')}</h1>
@@ -42,7 +50,7 @@ export function PaymentsPage() {
         <Link to="/me/packages" className="btn btn-sm btn-gold">{t('me.nav.packages')}</Link>
       </div>
       <CreditExpiryNotice />
-      <section>
+      <section id="history" className="scroll-mt-24">
         <h2 className="mb-3 font-display text-2xl">{t('me.payments.history')}</h2>
         {orders.isLoading ? <Skeleton className="h-40" /> : orders.isError ? <ErrorBox onRetry={() => orders.refetch()} /> : (
           <div className="card divide-y divide-line p-0">
@@ -56,7 +64,7 @@ export function PaymentsPage() {
           </div>
         )}
       </section>
-      <section>
+      <section id="ledger" className="scroll-mt-24">
         <h2 className="mb-3 font-display text-2xl">{t('me.payments.ledger')}</h2>
         {credits.isLoading ? <Skeleton className="h-32" /> : (
           <div className="card divide-y divide-line p-0">

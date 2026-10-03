@@ -1,5 +1,5 @@
-import { useMemo, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useMemo, useRef, useState } from 'react'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { dreamsApi, meApi, reportsApi } from '@/api/endpoints'
@@ -12,9 +12,11 @@ import { arrowNext, cn, fmtDate, timeAgo } from '@/lib/utils'
 import type { DreamStatus, DreamSummary } from '@/api/types'
 import { replyTimeText } from '@/lib/waitTime'
 import { CreditExpiryNotice } from './CreditExpiryNotice'
+import { UserOverview } from './UserOverview'
 import { ApiError } from '@/api/client'
 
 type Tab = 'DRAFT' | 'IN_REVIEW' | 'AWAITING_USER_REPLY' | 'INTERPRETED'
+const TABS: Tab[] = ['DRAFT', 'IN_REVIEW', 'AWAITING_USER_REPLY', 'INTERPRETED']
 
 export function DreamRow({ d, selectable, selected, onToggle }: { d: DreamSummary; selectable?: boolean; selected?: boolean; onToggle?: () => void }) {
   const { t } = useTranslation()
@@ -46,8 +48,21 @@ export function UserDreamsPage() {
   const qc = useQueryClient()
   const user = useAuthStore((s) => s.user)
   const locale = useAuthStore((s) => s.locale)
-  const [tab, setTab] = useState<Tab>('DRAFT')
+  const [params, setParams] = useSearchParams()
+  const fromUrl = params.get('tab') as Tab | null
+  const [tab, setTabState] = useState<Tab>(fromUrl && TABS.includes(fromUrl) ? fromUrl : 'DRAFT')
   const [selected, setSelected] = useState<string[]>([])
+  const listRef = useRef<HTMLDivElement>(null)
+  // the tab lives in the address too (?tab=), so a dashboard tile or a shared link opens the right list
+  const setTab = (v: Tab) => {
+    setTabState(v)
+    setSelected([])
+    setParams((p) => { const n = new URLSearchParams(p); if (v === 'DRAFT') n.delete('tab'); else n.set('tab', v); return n }, { replace: true })
+  }
+  const openTab = (v: Tab) => {
+    setTab(v)
+    requestAnimationFrame(() => listRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }))
+  }
 
   const dash = useQuery({ queryKey: ['me', 'dashboard'], queryFn: meApi.dashboard })
   const list = useQuery({ queryKey: ['dreams', tab], queryFn: () => dreamsApi.list(tab as DreamStatus, 0, 50) })
@@ -79,6 +94,8 @@ export function UserDreamsPage() {
         <Link to="/me/new" className="btn btn-md btn-gold"><Icon name="plus" size={16} />{t('me.nav.new')}</Link>
       </div>
 
+      <UserOverview data={dash.data} loading={dash.isLoading} tab={tab} onTab={openTab} />
+
       <CreditExpiryNotice className="mb-4" withLink />
       {dash.data?.waitTime && (
         <div className="card mb-6 flex items-center gap-3 p-4 text-sm">
@@ -88,14 +105,14 @@ export function UserDreamsPage() {
       )}
 
       {dash.data && dash.data.awaitingReply > 0 && tab !== 'AWAITING_USER_REPLY' && (
-        <button onClick={() => setTab('AWAITING_USER_REPLY')} className="card mb-6 flex w-full items-center gap-3 border-danger/30 bg-danger/5 p-4 text-start text-sm">
+        <button onClick={() => openTab('AWAITING_USER_REPLY')} className="card mb-6 flex w-full items-center gap-3 border-danger/30 bg-danger/5 p-4 text-start text-sm">
           <span className="text-danger"><Icon name="chat" size={20} /></span>
           <span className="flex-1">{t('me.tabs.awaiting')} · {dash.data.awaitingReply}</span>
           <span className="text-gold-ink">{t('common.seeAll')} {arrowNext(locale)}</span>
         </button>
       )}
 
-      <Tabs value={tab} onChange={(v) => { setTab(v); setSelected([]) }} items={tabs} />
+      <div ref={listRef} className="scroll-mt-24"><Tabs value={tab} onChange={setTab} items={tabs} /></div>
 
       {tab === 'INTERPRETED' && items.length > 0 && (
         <div className="mt-4 flex justify-end"><DownloadButton label={t('reports.allMyDreams')} run={reportsApi.myDreamsPdf} /></div>

@@ -166,6 +166,13 @@ export const handlers = [
       unreadNotifications: db.notifications.filter((n) => n.userId === me.id && !n.readAt).length,
       waitTime: waitTimePublic(request.headers.get('accept-language') ?? 'ar'),
       nextExpiry: balanceOf(me.id) > 0 ? { credits: Math.min(2, balanceOf(me.id)), at: new Date(Date.now() + 24 * 864e5).toISOString() } : null,
+      usedCredits: Math.max(0, -db.ledger.filter((l) => l.userId === me.id && (l.reason === 'SUBMIT' || (l.reason === 'REFUND' && l.dreamId))).reduce((a, l) => a + l.delta, 0)),
+      // the preview has no visit history: show "yesterday evening" for the demo account
+      lastVisitAt: me.id === 'u1' ? new Date(Date.now() - 20 * 3600e3).toISOString() : null,
+      lastPackage: (() => {
+        const o = db.orders.filter((x) => x.userId === me.id && x.status === 'SUCCESS').sort((a, b) => (b.paidAt ?? '').localeCompare(a.paidAt ?? ''))[0]
+        return o ? { orderId: o.id, name: o.packageName, credits: o.credits, amount: o.amount, currency: o.currency, paidAt: o.paidAt ?? o.createdAt } : null
+      })(),
     }
     return HttpResponse.json(s)
   })),

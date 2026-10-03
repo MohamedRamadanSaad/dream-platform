@@ -52,11 +52,21 @@ export function ErrorBox({ message, onRetry }: { message?: string; onRetry?: () 
 }
 
 export function Tabs<T extends string>({ value, onChange, items }: { value: T; onChange: (v: T) => void; items: { value: T; label: string; count?: number | string; tone?: 'danger' }[] }) {
+  // on a phone the row scrolls sideways: bring the active tab into view (also when it is chosen from outside)
+  const rowRef = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    const row = rowRef.current
+    const tab = row?.querySelector<HTMLElement>('[aria-selected="true"]')
+    if (!row || !tab) return
+    const r = row.getBoundingClientRect(), b = tab.getBoundingClientRect()
+    if (b.left < r.left) row.scrollBy({ left: b.left - r.left - 16, behavior: 'smooth' })
+    else if (b.right > r.right) row.scrollBy({ left: b.right - r.right + 16, behavior: 'smooth' })
+  }, [value])
   return (
     // the line sits on the outer box; the inner row scrolls sideways only (a 1px vertical overflow used to
     // show a stray vertical scrollbar on Windows) and overlaps the line so the active tab's gold bar covers it
     <div className="border-b border-line">
-    <div role="tablist" className="no-scrollbar -mb-px flex gap-1 overflow-x-auto overflow-y-hidden">
+    <div ref={rowRef} role="tablist" className="no-scrollbar -mb-px flex gap-1 overflow-x-auto overflow-y-hidden">
       {items.map((it) => (
         <button key={it.value} role="tab" aria-selected={value === it.value} onClick={() => onChange(it.value)}
           className={cn('whitespace-nowrap px-4 py-3 text-sm transition-colors border-b-2', value === it.value ? 'border-gold text-fg font-medium' : 'border-transparent text-fg-muted hover:text-fg', it.tone === 'danger' && value !== it.value && 'text-danger')}>

@@ -1,6 +1,7 @@
 // Typed endpoint functions — one per route in the contract. Screens import from here only.
 import { download, getText, http, postQuietly } from './client'
 import type * as T from './types'
+import { currentVisitId } from '@/lib/visit'
 
 export const authApi = {
   google: (body: T.GoogleLoginRequest) => http.post<T.AuthResponse>('/auth/google', body),
@@ -30,7 +31,7 @@ export const publicApi = {
 
 export const meApi = {
   get: () => http.get<T.UserDto>('/me'),
-  dashboard: () => http.get<T.DashboardSummary>('/me/dashboard'),
+  dashboard: () => http.get<T.DashboardSummary>('/me/dashboard', { visit: currentVisitId() }),
   preferences: (body: T.PreferencesRequest) => http.put<T.UserDto>('/me/preferences', body),
   credits: () => http.get<T.CreditsSummary>('/me/credits'),
   orders: (page = 0, size = 20) => http.get<T.Page<T.OrderDto>>('/me/orders', { page, size }),
