@@ -51,10 +51,16 @@ public class PromotionService {
         return best(promotionRepository.findActiveAt(now), pkg.getId(), price, country, now);
     }
 
-    /** Counts one use (on successful payment). Never fails the caller when max_uses was reached meanwhile. */
+    /**
+     * Counts one use (on successful payment). Never fails the caller when max_uses was reached meanwhile. A promotion
+     * deleted while the order was pending is skipped.
+     */
     @Transactional
     public void recordUse(UUID promotionId) {
-        if (promotionId != null && promotionRepository.incrementUsedCount(promotionId) == 0) {
+        if (promotionId == null || !promotionRepository.existsById(promotionId)) {
+            return;
+        }
+        if (promotionRepository.incrementUsedCount(promotionId) == 0) {
             log.info("Promotion {} reached max_uses; use not counted", promotionId);
         }
     }

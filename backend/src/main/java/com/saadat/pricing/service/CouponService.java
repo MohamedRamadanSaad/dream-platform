@@ -46,10 +46,14 @@ public class CouponService {
         return coupon;
     }
 
-    /** Records the redemption for a paid order (idempotent per order). Never fails the payment. */
+    /**
+     * Records the redemption for a paid order (idempotent per order). Never fails the payment. A coupon deleted
+     * while the order was pending is skipped, as when the database used to null the order's coupon on delete.
+     */
     @Transactional
     public void redeem(UUID couponId, UUID userId, UUID orderId) {
-        if (couponId == null || redemptionRepository.existsByOrderId(orderId)) {
+        if (couponId == null || !couponRepository.existsById(couponId)
+                || redemptionRepository.existsByOrderId(orderId)) {
             return;
         }
         if (couponRepository.incrementUsedCount(couponId) == 0) {

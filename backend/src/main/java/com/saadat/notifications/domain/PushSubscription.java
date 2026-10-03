@@ -12,12 +12,14 @@ import java.util.UUID;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.SoftDelete;
 
-/** Row of {@code push_subscriptions} (Web Push, VAPID). {@code endpoint} is unique. */
+/** Row of {@code push_subscriptions} (Web Push, VAPID). {@code endpoint} is unique among non-deleted rows. */
 @Getter
 @Setter
 @NoArgsConstructor
 @Entity
+@SoftDelete(columnName = "deleted")
 @Table(name = "push_subscriptions")
 public class PushSubscription {
 

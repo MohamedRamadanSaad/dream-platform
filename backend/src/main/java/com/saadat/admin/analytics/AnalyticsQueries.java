@@ -204,7 +204,7 @@ public class AnalyticsQueries {
                 select (select count(*) from users u
                          where u.role = 'USER' and u.created_at >= :start and u.created_at < :end) as signups,
                        (select count(*) from dreams d
-                         where d.submitted_at >= :start and d.submitted_at < :end) as dreams,
+                         where not d.deleted and d.submitted_at >= :start and d.submitted_at < :end) as dreams,
                        (select count(*) from orders o
                          where o.status = 'SUCCESS' and o.paid_at >= :start and o.paid_at < :end) as paid
                 """;
@@ -215,27 +215,27 @@ public class AnalyticsQueries {
     /** dreams submitted per hour of day (0..23). */
     public long[] dreamsByHour(Instant start, Instant end, String tz) {
         String sql = "select cast(extract(hour from d.submitted_at at time zone :tz) as int) as h, count(*) "
-                + "from dreams d where d.submitted_at >= :start and d.submitted_at < :end group by 1";
+                + "from dreams d where not d.deleted and d.submitted_at >= :start and d.submitted_at < :end group by 1";
         return buckets(sql, range(start, end).addValue("tz", tz), 24, 0);
     }
 
     /** dreams submitted per ISO day of week (index 0 = Monday … 6 = Sunday). */
     public long[] dreamsByWeekday(Instant start, Instant end, String tz) {
         String sql = "select cast(extract(isodow from d.submitted_at at time zone :tz) as int) as w, count(*) "
-                + "from dreams d where d.submitted_at >= :start and d.submitted_at < :end group by 1";
+                + "from dreams d where not d.deleted and d.submitted_at >= :start and d.submitted_at < :end group by 1";
         return buckets(sql, range(start, end).addValue("tz", tz), 7, 1);
     }
 
     /** interpretations per hour of day (0..23). */
     public long[] interpretationsByHour(Instant start, Instant end, String tz) {
         String sql = "select cast(extract(hour from d.interpreted_at at time zone :tz) as int) as h, count(*) "
-                + "from dreams d where d.status = 'INTERPRETED' and d.interpreted_at >= :start "
+                + "from dreams d where not d.deleted and d.status = 'INTERPRETED' and d.interpreted_at >= :start "
                 + "and d.interpreted_at < :end group by 1";
         return buckets(sql, range(start, end).addValue("tz", tz), 24, 0);
     }
 
     public long interpretedBetween(Instant start, Instant end) {
-        String sql = "select count(*) from dreams d where d.status = 'INTERPRETED' "
+        String sql = "select count(*) from dreams d where not d.deleted and d.status = 'INTERPRETED' "
                 + "and d.interpreted_at >= :start and d.interpreted_at < :end";
         Long n = jdbc.queryForObject(sql, range(start, end), Long.class);
         return n == null ? 0 : n;
@@ -244,7 +244,8 @@ public class AnalyticsQueries {
     /** Interpreted since {@code start}: total and how many before their expected time. */
     public OnTime onTime(Instant start, Instant end) {
         String sql = "select count(*), count(*) filter (where d.expected_by is not null "
-                + "and d.interpreted_at <= d.expected_by) from dreams d where d.status = 'INTERPRETED' "
+                + "and d.interpreted_at <= d.expected_by) from dreams d "
+                + "where not d.deleted and d.status = 'INTERPRETED' "
                 + "and d.interpreted_at >= :start and d.interpreted_at < :end";
         return jdbc.queryForObject(sql, range(start, end), (rs, i) -> new OnTime(rs.getLong(1), rs.getLong(2)));
     }
@@ -252,13 +253,14 @@ public class AnalyticsQueries {
     /** Distinct local dates with at least one interpretation since {@code start}, newest first. */
     public List<LocalDate> interpretationDays(Instant start, String tz) {
         String sql = "select distinct cast(d.interpreted_at at time zone :tz as date) as local_day from dreams d "
-                + "where d.status = 'INTERPRETED' and d.interpreted_at >= :start order by local_day desc";
+                + "where not d.deleted and d.status = 'INTERPRETED' and d.interpreted_at >= :start "
+                + "order by local_day desc";
         return jdbc.query(sql, new MapSqlParameterSource("tz", tz).addValue("start", ts(start)),
                 (rs, i) -> rs.getObject(1, LocalDate.class));
     }
 
     public long awaitingReplySince(Instant pausedBefore) {
-        String sql = "select count(*) from dreams d where d.status = 'AWAITING_USER_REPLY' "
+        String sql = "select count(*) from dreams d where not d.deleted and d.status = 'AWAITING_USER_REPLY' "
                 + "and d.sla_paused_at < :before";
         Long n = jdbc.queryForObject(sql, new MapSqlParameterSource("before", ts(pausedBefore)), Long.class);
         return n == null ? 0 : n;

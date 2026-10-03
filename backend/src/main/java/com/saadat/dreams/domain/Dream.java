@@ -17,6 +17,7 @@ import java.util.UUID;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.SoftDelete;
 
 /**
  * Row of {@code dreams}. Status machine: DRAFT → IN_REVIEW ⇄ AWAITING_USER_REPLY → INTERPRETED; CANCELLED.
@@ -26,6 +27,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @Entity
+@SoftDelete(columnName = "deleted")
 @Table(name = "dreams")
 public class Dream {
 

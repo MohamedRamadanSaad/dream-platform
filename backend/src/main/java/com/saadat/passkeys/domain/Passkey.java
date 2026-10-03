@@ -14,16 +14,19 @@ import java.util.UUID;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.SoftDelete;
 
 /**
  * Row of {@code passkeys}: one WebAuthn credential (fingerprint / face / device PIN sign-in) of an account. The
  * private key never leaves the user's device; the server keeps the credential ID, the COSE public key and the
- * signature counter. Deleted with the account (AccountService) and by the database when the user row goes.
+ * signature counter. Soft-deleted ({@code deleted = true}) when the user removes it and with the account
+ * (AccountService); a deleted row is invisible to every query.
  */
 @Getter
 @Setter
 @NoArgsConstructor
 @Entity
+@SoftDelete(columnName = "deleted")
 @Table(name = "passkeys")
 public class Passkey {
 

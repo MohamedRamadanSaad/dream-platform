@@ -12,6 +12,7 @@ import java.util.UUID;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.SoftDelete;
 
 /**
  * Row of {@code refresh_tokens}. The raw token (32 random bytes) only lives in the {@code rt} cookie; the DB
@@ -22,6 +23,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @Entity
+@SoftDelete(columnName = "deleted")
 @Table(name = "refresh_tokens")
 public class RefreshToken {
 

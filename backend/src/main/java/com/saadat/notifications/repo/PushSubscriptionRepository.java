@@ -13,7 +13,7 @@ public interface PushSubscriptionRepository extends JpaRepository<PushSubscripti
 
     Optional<PushSubscription> findByEndpoint(String endpoint);
 
-    /** Used on unsubscribe and when the push service answers 404/410. */
+    /** Used on unsubscribe and when the push service answers 404/410. Soft: the row stays, flagged deleted. */
     @Transactional
     long deleteByEndpoint(String endpoint);
 

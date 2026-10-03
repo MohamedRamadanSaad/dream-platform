@@ -20,6 +20,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.annotations.SoftDelete;
 import org.hibernate.type.SqlTypes;
 
 /** Row of {@code promotions}. {@code packageIds} maps the {@code uuid[]} column. */
@@ -27,6 +28,7 @@ import org.hibernate.type.SqlTypes;
 @Setter
 @NoArgsConstructor
 @Entity
+@SoftDelete(columnName = "deleted")
 @Table(name = "promotions")
 public class Promotion {
 

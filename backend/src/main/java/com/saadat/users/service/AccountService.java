@@ -112,8 +112,9 @@ public class AccountService {
 
     /**
      * Soft delete: e-mail anonymised, name cleared, tokens revoked, identities unlinked (so the Google account
-     * or e-mail can sign up again as a new account), passkeys deleted, push subscriptions removed. Dreams/orders are
-     * kept for accounting but are no longer linked to any personal data.
+     * or e-mail can sign up again as a new account), passkeys and push subscriptions soft-deleted (rows kept with
+     * {@code deleted = true}, invisible everywhere). Dreams/orders are kept for accounting but are no longer linked
+     * to any personal data.
      */
     @Transactional
     public void delete(UUID userId) {

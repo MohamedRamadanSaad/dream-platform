@@ -30,6 +30,12 @@ Use PostgreSQL types; `timestamptz`; `uuid` PKs; enums as `varchar` + CHECK cons
 - `V7__youtube.sql`: `youtube_videos(id varchar PK /*video id*/, title, published_at, thumbnail_url, url, fetched_at)`; `youtube_seen(user_id PK, seen_at)`.
 - `V8__audit_interpreter.sql`: `audit_log(id, actor_id, action, entity, entity_id, before jsonb, after jsonb, created_at)`; `user_notes(user_id PK, notes text, tags text[], updated_at)`; `interpreter_settings` is NOT a table — it lives in `app_settings` (busy mode etc.).
 
+### Soft delete (`V31__soft_delete.sql`)
+Nothing is ever removed from the database. Tables `country_groups`, `price_rules`, `promotions`, `coupons`, `packages`, `dreams`, `passkeys`, `passkey_challenges`, `push_subscriptions`, `auth_identities`, `magic_links`, `refresh_tokens` have `deleted boolean NOT NULL DEFAULT false`, and their entities carry Hibernate `@SoftDelete(columnName = "deleted")`: `repository.delete(...)`, derived `deleteBy...` and JPQL `delete from X` become `update ... set deleted = true`, and every entity load / JPQL query skips deleted rows (404 by id, not listed, not counted). `packages` keeps "delete" = deactivate; the column is there for uniformity. `users` keeps its own anonymising soft delete (`deleted_at`).
+- Natural keys are partial unique indexes `... WHERE NOT deleted` (same names as the old constraints): `ux_coupons_code`, `ux_price_rules_scope_package` (NULLS NOT DISTINCT), `ux_auth_identities_provider_subject`, `ux_push_subscriptions_endpoint`, `ux_passkeys_credential_id`. A deleted coupon code, price key, Google account, push endpoint or passkey can be created again.
+- `ON DELETE CASCADE / SET NULL` no longer fire: services do it explicitly (deleting a country group detaches its countries and soft-deletes its GROUP price rules; a coupon or promotion deleted while an order was pending is not redeemed / counted on payment).
+- Native SQL (JdbcTemplate, `nativeQuery = true`) is NOT filtered by Hibernate: every native query reading one of these tables must add `not x.deleted` (in the WHERE clause or the join condition).
+
 Interpreter account: on first login, if email ∈ setting `interpreter.emails` (comma list) → role INTERPRETER.
 
 ## 2. Settings (`com.saadat.settings`)

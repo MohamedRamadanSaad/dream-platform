@@ -15,9 +15,10 @@ import java.util.UUID;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.SoftDelete;
 
 /**
- * Row of {@code price_rules}; unique (scope, scope_id, package_id) with NULLS NOT DISTINCT.
+ * Row of {@code price_rules}; unique (scope, scope_id, package_id) with NULLS NOT DISTINCT among non-deleted rows.
  * {@code scopeId}: null for GLOBAL, continent code for CONTINENT, group UUID (string) for GROUP,
  * country code for COUNTRY.
  */
@@ -25,6 +26,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @Entity
+@SoftDelete(columnName = "deleted")
 @Table(name = "price_rules")
 public class PriceRule {
 

@@ -12,6 +12,7 @@ import java.util.UUID;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.SoftDelete;
 
 /**
  * Row of {@code magic_links}. Only SHA-256 hashes of the token and of the 6-digit code are stored.
@@ -21,6 +22,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @Entity
+@SoftDelete(columnName = "deleted")
 @Table(name = "magic_links")
 public class MagicLink {
 

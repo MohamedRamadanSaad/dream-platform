@@ -21,8 +21,10 @@ public interface AnalyticsRepository extends Repository<User, UUID> {
                    u.email,
                    u.country_code,
                    (select count(*) from user_sessions s where s.user_id = u.id) as visits,
-                   (select count(*) from dreams d where d.user_id = u.id and d.status <> 'DRAFT') as dreams,
-                   (select count(*) from dreams d where d.user_id = u.id and d.status = 'DRAFT') as drafts,
+                   (select count(*) from dreams d where d.user_id = u.id and not d.deleted
+                                                  and d.status <> 'DRAFT') as dreams,
+                   (select count(*) from dreams d where d.user_id = u.id and not d.deleted
+                                                  and d.status = 'DRAFT') as drafts,
                    (select avg(t.rating) from testimonials t where t.user_id = u.id) as avg_rating,
                    coalesce((select max(s.started_at) from user_sessions s where s.user_id = u.id),
                             u.last_login_at, u.created_at) as last_seen,
@@ -39,8 +41,10 @@ public interface AnalyticsRepository extends Repository<User, UUID> {
                    u.email,
                    u.country_code,
                    (select count(*) from user_sessions s where s.user_id = u.id) as visits,
-                   (select count(*) from dreams d where d.user_id = u.id and d.status <> 'DRAFT') as dreams,
-                   (select count(*) from dreams d where d.user_id = u.id and d.status = 'DRAFT') as drafts,
+                   (select count(*) from dreams d where d.user_id = u.id and not d.deleted
+                                                  and d.status <> 'DRAFT') as dreams,
+                   (select count(*) from dreams d where d.user_id = u.id and not d.deleted
+                                                  and d.status = 'DRAFT') as drafts,
                    (select avg(t.rating) from testimonials t where t.user_id = u.id) as avg_rating,
                    coalesce((select max(s.started_at) from user_sessions s where s.user_id = u.id),
                             u.last_login_at, u.created_at) as last_seen,

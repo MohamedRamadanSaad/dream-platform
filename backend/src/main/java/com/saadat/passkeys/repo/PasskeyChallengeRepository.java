@@ -30,6 +30,7 @@ public interface PasskeyChallengeRepository extends JpaRepository<PasskeyChallen
     int consumeOwn(@Param("requestId") UUID requestId, @Param("purpose") PasskeyPurpose purpose,
                    @Param("userId") UUID userId, @Param("now") Instant now);
 
+    /** Housekeeping. Soft: flags expired challenges {@code deleted = true}; flagged rows are never matched again. */
     @Modifying
     @Transactional
     @Query("delete from PasskeyChallenge c where c.expiresAt < :before")

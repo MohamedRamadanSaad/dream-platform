@@ -15,12 +15,17 @@ import java.util.UUID;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.SoftDelete;
 
-/** Row of {@code auth_identities}: one account, many providers; unique (provider, provider_subject). */
+/**
+ * Row of {@code auth_identities}: one account, many providers; unique (provider, provider_subject) among non-deleted
+ * rows, so a deleted account's identity never blocks a new sign-up.
+ */
 @Getter
 @Setter
 @NoArgsConstructor
 @Entity
+@SoftDelete(columnName = "deleted")
 @Table(name = "auth_identities")
 public class AuthIdentity {
 

@@ -58,6 +58,7 @@ public interface RefreshTokenRepository extends JpaRepository<RefreshToken, UUID
     int revokeAllForUserExceptFamily(@Param("userId") UUID userId, @Param("keepFamilyId") UUID keepFamilyId,
                                      @Param("now") Instant now);
 
+    /** Housekeeping. Soft: flags expired tokens {@code deleted = true}; flagged rows are never matched again. */
     @Modifying
     @Transactional
     @Query("delete from RefreshToken t where t.expiresAt < :before")

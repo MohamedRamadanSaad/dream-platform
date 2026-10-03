@@ -16,12 +16,17 @@ import java.util.UUID;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.SoftDelete;
 
-/** Row of {@code coupons}. {@code code} is stored upper-case (DB CHECK); look it up upper-cased. */
+/**
+ * Row of {@code coupons}. {@code code} is stored upper-case (DB CHECK); look it up upper-cased. Unique among
+ * non-deleted rows: a deleted code can be created again.
+ */
 @Getter
 @Setter
 @NoArgsConstructor
 @Entity
+@SoftDelete(columnName = "deleted")
 @Table(name = "coupons")
 public class Coupon {
 

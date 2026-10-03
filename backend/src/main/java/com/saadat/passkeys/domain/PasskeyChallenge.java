@@ -14,6 +14,7 @@ import java.util.UUID;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.SoftDelete;
 
 /**
  * Row of {@code passkey_challenges}: the random challenge of one registration or sign-in ceremony, identified by the
@@ -24,6 +25,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @Entity
+@SoftDelete(columnName = "deleted")
 @Table(name = "passkey_challenges")
 public class PasskeyChallenge {
 

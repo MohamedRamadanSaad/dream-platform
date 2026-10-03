@@ -24,7 +24,7 @@ public interface PasskeyRepository extends JpaRepository<Passkey, UUID> {
 
     long countByUserId(UUID userId);
 
-    /** Account deletion. */
+    /** Account deletion. Soft: {@code @SoftDelete} on {@link Passkey} turns this JPQL delete into an update. */
     @Modifying
     @Transactional
     @Query("delete from Passkey p where p.userId = :userId")

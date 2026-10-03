@@ -199,7 +199,10 @@ public class PricingAdminService {
         return after;
     }
 
-    /** Deletes the group, detaches its countries and removes its GROUP price rules. */
+    /**
+     * Soft-deletes the group, detaches its countries and soft-deletes its GROUP price rules: done here because the
+     * database's ON DELETE SET NULL / CASCADE no longer fires (rows are only flagged {@code deleted = true}).
+     */
     @Transactional
     public void deleteGroup(UUID id, UUID actor) {
         CountryGroup g = findGroup(id);

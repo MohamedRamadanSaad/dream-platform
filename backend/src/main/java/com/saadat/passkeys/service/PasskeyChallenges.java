@@ -82,7 +82,7 @@ public class PasskeyChallenges {
         return repository.findById(id);
     }
 
-    /** Housekeeping: removes expired challenges; returns how many. */
+    /** Housekeeping: flags expired challenges deleted (soft delete); returns how many were flagged now. */
     @Transactional
     public int purgeExpired() {
         return repository.deleteExpiredBefore(clock.instant());

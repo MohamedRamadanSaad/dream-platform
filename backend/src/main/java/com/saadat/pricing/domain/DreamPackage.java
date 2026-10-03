@@ -13,12 +13,14 @@ import java.util.UUID;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.SoftDelete;
 
 /** Row of {@code packages} (credit bundles). Named DreamPackage to avoid clashing with java.lang.Package. */
 @Getter
 @Setter
 @NoArgsConstructor
 @Entity
+@SoftDelete(columnName = "deleted")
 @Table(name = "packages")
 public class DreamPackage {
 

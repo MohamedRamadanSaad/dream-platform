@@ -77,7 +77,7 @@ public class DreamExcelExporter {
               join users u on u.id = d.user_id
               left join interpretations i on i.dream_id = d.id
               left join countries c on c.code = u.country_code
-             where d.status <> 'DRAFT'
+             where not d.deleted and d.status <> 'DRAFT'
             """;
 
     /** Validated filters; null = no filter. {@code from}/{@code to} are submitted_at days (business zone). */

@@ -20,6 +20,7 @@ public interface MagicLinkRepository extends JpaRepository<MagicLink, UUID> {
     /** Throttling helper: how many links were requested for this e-mail since {@code since}. */
     long countByEmailAndCreatedAtAfter(String email, Instant since);
 
+    /** Housekeeping. Soft: flags expired links {@code deleted = true}; flagged rows are never matched again. */
     @Modifying
     @Transactional
     @Query("delete from MagicLink m where m.expiresAt < :before")

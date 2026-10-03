@@ -12,12 +12,14 @@ import java.util.UUID;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.SoftDelete;
 
 /** Row of {@code country_groups}. Membership lives on {@code countries.group_id}. */
 @Getter
 @Setter
 @NoArgsConstructor
 @Entity
+@SoftDelete(columnName = "deleted")
 @Table(name = "country_groups")
 public class CountryGroup {
 
