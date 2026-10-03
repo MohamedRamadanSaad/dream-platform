@@ -255,6 +255,13 @@
       "SUSPICIOUS": "Under review"
     },
     "checkout": {
+      "errors": {
+        "AMOUNT_TOO_LOW": "The discount is larger than the package price, so this code cannot be used. Try without it or contact us.",
+        "NO_PRICE": "This package is not available in your country right now. Please choose another one.",
+        "INVALID_COUPON": "This discount code is not valid or has expired.",
+        "PAYMENT_PROVIDER_ERROR": "We could not reach the payment page right now. Nothing was charged. Please try again shortly.",
+        "NOT_CONFIGURED": "Payment is not available right now. Nothing was charged. Please try again shortly."
+      },
       "title": "Checkout",
       "secure": "Secure payment. We never store your card details.",
       "coupon": "Coupon code",

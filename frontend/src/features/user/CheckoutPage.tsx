@@ -35,7 +35,7 @@ export function PackagesPage() {
 }
 
 export function CheckoutPage() {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const navigate = useNavigate()
   const [params] = useSearchParams()
   const locale = useAuthStore((s) => s.locale)
@@ -48,7 +48,11 @@ export function CheckoutPage() {
   const create = useMutation({
     mutationFn: () => checkoutApi.create({ packageId, couponCode: coupon || undefined, dreamIds }),
     onSuccess: (r) => { window.location.href = r.checkoutUrl.startsWith('http') ? r.checkoutUrl : r.checkoutUrl + `?return=${encodeURIComponent('/me/payments')}` },
-    onError: (e) => setErr((e as ApiError).message),
+    onError: (e) => {
+      const err = e as ApiError
+      const code = err.problem?.code
+      setErr(code && i18n.exists(`me.checkout.errors.${code}`) ? t(`me.checkout.errors.${code}`) : err.message)
+    },
   })
   if (!packageId) { navigate('/me/packages'); return null }
   return (

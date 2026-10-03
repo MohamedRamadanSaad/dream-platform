@@ -73,6 +73,9 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class PaymentService {
 
+    /** Smallest amount sent to a payment provider (1 EGP / 1 USD). */
+    static final BigDecimal MIN_CHARGE = BigDecimal.ONE;
+
     public static final String MAIL_RECEIPT = MailTemplates.PAYMENT_RECEIPT;
     public static final String MAIL_SUSPICIOUS = MailTemplates.PAYMENT_SUSPICIOUS;
     public static final String MAIL_FAILED = MailTemplates.PAYMENT_FAILED;
@@ -143,6 +146,10 @@ public class PaymentService {
         if (request.couponCode() != null && !request.couponCode().isBlank()) {
             coupon = couponService.validate(request.couponCode(), userId);
             amount = CouponService.apply(coupon, amount);
+        }
+        // a FIXED discount is a plain number (not tied to a currency): never send a zero or near-zero charge
+        if (amount.compareTo(MIN_CHARGE) < 0) {
+            throw new ValidationException("The price after discounts is below the minimum charge", "AMOUNT_TOO_LOW");
         }
         BigDecimal discount = resolved.price().subtract(amount);
         if (discount.signum() < 0) {
