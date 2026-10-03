@@ -6,6 +6,7 @@ import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import org.springframework.stereotype.Component;
 
@@ -127,6 +128,18 @@ public class MailSamples {
                 m.put("passkey", "Chrome · Windows");
                 m.put("addedAt", now);
                 m.put("link", FrontendPaths.MY_PASSKEYS);
+            }
+            case MailTemplates.SUPPORT_IN_PROGRESS, MailTemplates.SUPPORT_CLOSED -> {
+                m.put("ticketNumber", "1024");
+                m.put("ticketSubject", en ? "I cannot see my dream" : "لا أستطيع رؤية رؤياي");
+                boolean closed = MailTemplates.SUPPORT_CLOSED.equals(template);
+                m.put("messageLines", en
+                        ? (closed
+                                ? List.of("Your dream is now in your account.", "Thank you for your patience.")
+                                : List.of("Thank you for your message.", "We are checking your account now."))
+                        : (closed
+                                ? List.of("أصبحت رؤياك الآن في حسابك.", "شكرًا لصبرك.")
+                                : List.of("شكرًا لرسالتك.", "نراجع حسابك الآن.")));
             }
             default -> {
                 // account-deleted, support-auto-reply: name only (or nothing)

@@ -49,6 +49,30 @@ class InboundMailParserTest {
     }
 
     @Test
+    void readsTheSenderNameAndTheReceivedTime() throws Exception {
+        InboundMailParser.InboundMessage a = InboundMailParser.parse(mapper.readTree(
+                "{\"data\":{\"from\":{\"name\":\"Visitor\",\"address\":\"a@example.com\"},"
+                        + "\"date\":\"2026-10-01T08:00:00Z\"}}"));
+        assertThat(a.senderName()).isEqualTo("Visitor");
+        assertThat(a.receivedAt()).isEqualTo(java.time.Instant.parse("2026-10-01T08:00:00Z"));
+
+        InboundMailParser.InboundMessage b = InboundMailParser.parse(mapper.readTree(
+                "{\"from\":\"\\\"Sara Ali\\\" <s@example.com>\",\"date\":\"Wed, 1 Oct 2025 10:15:00 +0300 (AST)\"}"));
+        assertThat(b.senderName()).isEqualTo("Sara Ali");
+        assertThat(b.receivedAt()).isEqualTo(java.time.Instant.parse("2025-10-01T07:15:00Z"));
+
+        InboundMailParser.InboundMessage c = InboundMailParser.parse(mapper.readTree(
+                "{\"from\":[{\"email\":\"c@example.com\"}],\"timestamp\":1759302900}"));
+        assertThat(c.senderName()).isNull();
+        assertThat(c.receivedAt()).isEqualTo(java.time.Instant.ofEpochSecond(1759302900L));
+
+        InboundMailParser.InboundMessage d = InboundMailParser.parse(mapper.readTree(
+                "{\"from\":\"d@example.com\",\"date\":\"not a date\"}"));
+        assertThat(d.senderName()).isNull();
+        assertThat(d.receivedAt()).isNull();
+    }
+
+    @Test
     void detectsAutomatedSenders() {
         assertThat(SupportAutoReplyService.isAutomatedSender("noreply@example.com")).isTrue();
         assertThat(SupportAutoReplyService.isAutomatedSender("No-Reply@example.com")).isTrue();

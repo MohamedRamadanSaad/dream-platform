@@ -37,6 +37,10 @@ import java.util.List;
  *       link (the devices list of the account's profile page)</li>
  *   <li>{@link #PASSKEY_ADDED}: name, passkey (its label, e.g. "Chrome · Windows"), addedAt, link (the passkeys
  *       section of the account's profile page)</li>
+ *   <li>{@link #SUPPORT_IN_PROGRESS} / {@link #SUPPORT_CLOSED} (to whoever wrote to the support mailbox): ticketNumber*,
+ *       ticketSubject, messageLines* (the interpreter's message split into lines; rendered escaped, one line per
+ *       {@code <br>}); optional {@code _inReplyTo} (MailService#MODEL_IN_REPLY_TO, never rendered). Bilingual like
+ *       {@link #SUPPORT_AUTO_REPLY}</li>
  * </ul>
  *
  * <p>Each template's header/footer theme comes from STRING setting {@code mail.theme.<name>} (see
@@ -69,13 +73,24 @@ public final class MailTemplates {
     public static final String NEW_SIGN_IN = "new-sign-in";
     /** Security notice after a passkey (fingerprint / face sign-in) was added to the account. */
     public static final String PASSKEY_ADDED = "passkey-added";
+    /** To the sender of a support e-mail: the ticket is now being worked on, with the interpreter's message. */
+    public static final String SUPPORT_IN_PROGRESS = "support-in-progress";
+    /** To the sender of a support e-mail: the ticket is closed, with the interpreter's message. */
+    public static final String SUPPORT_CLOSED = "support-closed";
 
     public static final List<String> ALL = List.of(
             MAGIC_LINK, DREAM_RECEIVED, INTERPRETER_QUESTION, USER_REPLIED, INTERPRETATION_READY,
             PAYMENT_RECEIPT, PAYMENT_SUSPICIOUS, REPLY_REMINDER, TESTIMONIAL_REQUEST, INTERPRETER_DIGEST,
             DREAM_SUBMITTED, YOUTUBE_NEW_VIDEO, WELCOME, PAYMENT_FAILED, DREAM_CANCELLED, CREDITS_ADJUSTED,
             TESTIMONIAL_APPROVED, ACCOUNT_DELETED, NEW_USER, TESTIMONIAL_RECEIVED, SUPPORT_AUTO_REPLY, NEW_SIGN_IN,
-            PASSKEY_ADDED);
+            PASSKEY_ADDED, SUPPORT_IN_PROGRESS, SUPPORT_CLOSED);
+
+    /**
+     * E-mails to people outside the platform whose language we do not know (they wrote to the support mailbox):
+     * one bilingual body (Arabic, then English), identical {@code _ar}/{@code _en} files, no call-to-action and no
+     * "this concerns your account" footer note.
+     */
+    public static final List<String> BILINGUAL = List.of(SUPPORT_AUTO_REPLY, SUPPORT_IN_PROGRESS, SUPPORT_CLOSED);
 
     private MailTemplates() {
     }

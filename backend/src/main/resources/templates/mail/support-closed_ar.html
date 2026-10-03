@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<!--/* support-closed (ar) — ONE bilingual e-mail (Arabic, divider, English) like support-auto-reply; support-closed_en.html has
+     the same content. Sent to whoever wrote to the support mailbox when the interpreter closed a support ticket
+     (POST /admin/support/tickets/{id}/...). Model: ticketNumber, ticketSubject, messageLines (the interpreter's
+     message, one item per line: each line is escaped by th:text, lines are joined with br tags; never th:utext).
+     No call-to-action. Subject + preheader: messages mail.support-closed.* (bilingual too). */-->
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{mail/_layout :: layout('rtl', 'ar', ~{::content})}">
+<head><title>support-closed</title></head>
+<body>
+<div th:fragment="content">
+  <div dir="rtl" lang="ar" th:style="|text-align:right;font-family:${fontAr};|">
+    <p style="margin:0 0 18px 0;font-size:18px;line-height:1.7;font-weight:600;">السلام عليكم ورحمة الله وبركاته،</p>
+    <p style="margin:0 0 16px 0;">تم إغلاق تذكرتك.</p>
+    <p style="margin:0 0 12px 0;font-weight:600;">رقم التذكرة: <span dir="ltr">#<span th:text="${ticketNumber}">1024</span></span><th:block th:if="${!#strings.isEmpty(ticketSubject)}"> · <span dir="auto" th:text="${ticketSubject}">…</span></th:block></p>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:4px 0 18px 0;border-collapse:collapse;" th:if="${messageLines != null}">
+      <tr><td dir="auto" th:style="|padding:14px 18px;border-radius:12px;background-color:#FFFFFF;border:1px solid #E6DCC8;border-right:4px solid ${theme.accent};font-size:15px;line-height:1.8;color:#0A1128;|"><th:block th:each="line, st : ${messageLines}"><th:block th:text="${line}">…</th:block><br th:if="${!st.last}"/></th:block></td></tr>
+    </table>
+    <p style="margin:0 0 16px 0;">إن احتجت إلى أي مساعدة أخرى فراسلنا في أي وقت.</p>
+    <p style="margin:0 0 4px 0;">مع خالص التحية،</p>
+    <p style="margin:0;font-weight:600;" th:text="${brandNameAr}">إلى سعادة الدارين</p>
+  </div>
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:26px 0;border-collapse:collapse;">
+    <tr><td height="1" th:style="|height:1px;line-height:1px;font-size:0;background-color:${theme.accent};opacity:0.6;|">&nbsp;</td></tr>
+  </table>
+  <div dir="ltr" lang="en" th:style="|text-align:left;font-family:${fontEn};|">
+    <p style="margin:0 0 18px 0;font-size:18px;line-height:1.7;font-weight:600;">Peace be upon you,</p>
+    <p style="margin:0 0 16px 0;">Your ticket has been closed.</p>
+    <p style="margin:0 0 12px 0;font-weight:600;">Ticket <span dir="ltr">#<span th:text="${ticketNumber}">1024</span></span><th:block th:if="${!#strings.isEmpty(ticketSubject)}"> · <span dir="auto" th:text="${ticketSubject}">…</span></th:block></p>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:4px 0 18px 0;border-collapse:collapse;" th:if="${messageLines != null}">
+      <tr><td dir="auto" th:style="|padding:14px 18px;border-radius:12px;background-color:#FFFFFF;border:1px solid #E6DCC8;border-left:4px solid ${theme.accent};font-size:15px;line-height:1.8;color:#0A1128;|"><th:block th:each="line, st : ${messageLines}"><th:block th:text="${line}">…</th:block><br th:if="${!st.last}"/></th:block></td></tr>
+    </table>
+    <p style="margin:0 0 16px 0;">If you need anything else, just write to us any time.</p>
+    <p style="margin:0 0 4px 0;">Best regards,</p>
+    <p style="margin:0;font-weight:600;" th:text="${brandNameEn}">Saadatu Aldarein</p>
+  </div>
+</div>
+</body>
+</html>

@@ -1,6 +1,11 @@
 package com.saadat.mail.inbound;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import java.time.Instant;
+import java.time.OffsetDateTime;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
@@ -23,7 +28,11 @@ import java.util.regex.Pattern;
  *       {@code sender}); the first e-mail address found anywhere under that key wins — so {@code "from": "a@b.c"},
  *       {@code from.address}, {@code from.email}, {@code from[0].address}, {@code data.from…},
  *       {@code message.from…} and {@code envelope.from} all work, as does {@code "Name <a@b.c>"}</li>
+ *   <li>sender name: the {@code name} next to that address ({@code from.name}, {@code from[0].name}) or the
+ *       display part of {@code "Name <a@b.c>"}</li>
  *   <li>subject / message id: the first text under a key {@code subject} / {@code message_id}</li>
+ *   <li>received time: the first value under {@code received_at}, then {@code date}, then {@code timestamp} that
+ *       parses as ISO-8601, RFC 1123 (e-mail {@code Date:} header) or epoch seconds/milliseconds; else null</li>
  *   <li>headers: {@link #headerValues} finds a header given as a key ({@code "Auto-Submitted": "auto-replied"}),
  *       as {@code {name|key, value}} pairs, or inside a raw header block ({@code "headers": "A: b\r\n…"})</li>
  * </ul>
@@ -32,30 +41,145 @@ public final class InboundMailParser {
 
     static final Pattern EMAIL = Pattern.compile("[A-Za-z0-9._%+'-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}");
     private static final List<String> SENDER_KEYS = List.of("from", "envelopefrom", "sender");
+    private static final List<String> RECEIVED_KEYS = List.of("receivedat", "date", "timestamp");
+    private static final Pattern DISPLAY_NAME = Pattern.compile("^\\s*\"?([^\"<]*?)\"?\\s*<");
+    private static final int NAME_MAX = 200;
+    /** Epoch values below this are seconds, above are milliseconds (1e11 s ≈ year 5138). */
+    private static final long EPOCH_MILLIS_THRESHOLD = 100_000_000_000L;
     private static final Set<String> NAME_KEYS = Set.of("name", "key", "header");
     private static final int MAX_NODES = 5000;
 
     private InboundMailParser() {
     }
 
-    /** What the auto-reply needs from the payload. */
-    public record InboundMessage(String sender, String subject, String messageId) {
+    /**
+     * What the auto-reply and the support ticket need from the payload (the body is never read). {@code senderName}
+     * and {@code receivedAt} may be null.
+     */
+    public record InboundMessage(String sender, String subject, String messageId, String senderName,
+                                 Instant receivedAt) {
     }
 
     public static InboundMessage parse(JsonNode root) {
         String sender = null;
+        String senderName = null;
         for (String key : SENDER_KEYS) {
             Optional<JsonNode> node = firstUnderKey(root, key);
             if (node.isPresent()) {
                 sender = firstEmail(node.get()).orElse(null);
                 if (sender != null) {
+                    senderName = displayName(node.get());
                     break;
                 }
             }
         }
         String subject = firstUnderKey(root, "subject").flatMap(InboundMailParser::firstText).orElse(null);
         String messageId = firstUnderKey(root, "messageid").flatMap(InboundMailParser::firstText).orElse(null);
-        return new InboundMessage(sender, subject, messageId);
+        Instant receivedAt = null;
+        for (String key : RECEIVED_KEYS) {
+            Optional<JsonNode> node = firstUnderKey(root, key);
+            if (node.isPresent()) {
+                receivedAt = parseInstant(node.get());
+                if (receivedAt != null) {
+                    break;
+                }
+            }
+        }
+        return new InboundMessage(sender, subject, messageId, senderName, receivedAt);
+    }
+
+    /**
+     * Display name of a sender node: {@code {"name": "A"}}, {@code [{"name": "A", ...}]} or the text
+     * {@code "A" <a@b.c>}; null when there is none or it is itself an e-mail address.
+     */
+    static String displayName(JsonNode node) {
+        String name = null;
+        JsonNode n = node;
+        if (n.isArray() && !n.isEmpty()) {
+            n = n.get(0);
+        }
+        if (n.isObject()) {
+            JsonNode value = n.get("name");
+            if (value == null) {
+                value = n.get("display_name");
+            }
+            if (value != null && value.isTextual()) {
+                name = value.asText();
+            } else {
+                for (String key : List.of("address", "email", "value", "text")) {
+                    JsonNode text = n.get(key);
+                    if (text != null && text.isTextual()) {
+                        name = nameFromText(text.asText());
+                        if (name != null) {
+                            break;
+                        }
+                    }
+                }
+            }
+        } else if (n.isTextual()) {
+            name = nameFromText(n.asText());
+        }
+        if (name == null) {
+            return null;
+        }
+        String cleaned = name.replaceAll("[\\p{Cntrl}]", " ").trim();
+        if (cleaned.startsWith("\"") && cleaned.endsWith("\"") && cleaned.length() >= 2) {
+            cleaned = cleaned.substring(1, cleaned.length() - 1).trim();
+        }
+        if (cleaned.isEmpty() || EMAIL.matcher(cleaned).matches()) {
+            return null;
+        }
+        return cleaned.length() > NAME_MAX ? cleaned.substring(0, NAME_MAX) : cleaned;
+    }
+
+    private static String nameFromText(String text) {
+        Matcher m = DISPLAY_NAME.matcher(text);
+        if (m.find()) {
+            String name = m.group(1).trim();
+            return name.isEmpty() ? null : name;
+        }
+        return null;
+    }
+
+    /** ISO-8601 instant/offset, RFC 1123 or epoch seconds/milliseconds; null when it does not parse. */
+    static Instant parseInstant(JsonNode node) {
+        if (node.isNumber()) {
+            return fromEpoch(node.asLong());
+        }
+        if (!node.isTextual()) {
+            return null;
+        }
+        String text = node.asText().trim();
+        if (text.isEmpty()) {
+            return null;
+        }
+        if (text.chars().allMatch(Character::isDigit) && text.length() <= 15) {
+            return fromEpoch(Long.parseLong(text));
+        }
+        try {
+            return Instant.parse(text);
+        } catch (DateTimeParseException ignored) {
+            // next format
+        }
+        try {
+            return OffsetDateTime.parse(text).toInstant();
+        } catch (DateTimeParseException ignored) {
+            // next format
+        }
+        try {
+            // "Fri, 3 Oct 2026 10:15:00 +0300 (AST)" → drop the trailing comment
+            String rfc = text.replaceAll("\\s*\\([^)]*\\)\\s*$", "");
+            return ZonedDateTime.parse(rfc, DateTimeFormatter.RFC_1123_DATE_TIME).toInstant();
+        } catch (DateTimeParseException ignored) {
+            return null;
+        }
+    }
+
+    private static Instant fromEpoch(long value) {
+        if (value <= 0) {
+            return null;
+        }
+        return value < EPOCH_MILLIS_THRESHOLD ? Instant.ofEpochSecond(value) : Instant.ofEpochMilli(value);
     }
 
     /** Every value of the header {@code name} (e.g. "Auto-Submitted") found in the payload. */

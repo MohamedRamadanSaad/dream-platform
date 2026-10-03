@@ -183,6 +183,17 @@ public final class ApiPaths {
         /** text/html; query template, theme (optional), locale (ar|en). */
         public static final String MAIL_PREVIEW = ROOT + "/mail/preview";
 
+        /** Support mailbox tickets: GET ?status=&page=&size= (newest first). */
+        public static final String SUPPORT_TICKETS = ROOT + "/support/tickets";
+        /** GET {new, inProgress, closed}. */
+        public static final String SUPPORT_TICKET_COUNTS = SUPPORT_TICKETS + "/counts";
+        /** GET ticket + events. */
+        public static final String SUPPORT_TICKET = SUPPORT_TICKETS + "/{id}";
+        /** POST {message}: NEW/IN_PROGRESS → IN_PROGRESS + e-mail to the sender (409 when CLOSED). */
+        public static final String SUPPORT_TICKET_IN_PROGRESS = SUPPORT_TICKET + "/in-progress";
+        /** POST {message}: → CLOSED + e-mail to the sender (409 when already CLOSED). */
+        public static final String SUPPORT_TICKET_CLOSE = SUPPORT_TICKET + "/close";
+
         private Admin() {
         }
     }

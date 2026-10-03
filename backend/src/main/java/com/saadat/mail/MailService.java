@@ -53,6 +53,13 @@ public class MailService {
     public static final String MODEL_LINK = "link";
     public static final String MODEL_CTA_URL = "ctaUrl";
     public static final String MODEL_THEME = "theme";
+    /**
+     * Optional model entry (never rendered): Message-ID of the e-mail this one answers. When present the e-mail is
+     * sent with {@code In-Reply-To} and {@code References} set to it, so it lands in the same thread (support
+     * ticket replies). Other e-mails are unaffected.
+     */
+    public static final String MODEL_IN_REPLY_TO = "_inReplyTo";
+    private static final int MESSAGE_ID_MAX = 500;
 
     /** Font stacks of the e-mail layout: Arabic (rtl) and English (ltr). */
     public static final String FONT_AR = "'IBM Plex Sans Arabic', 'IBM Plex Sans', Tahoma, Arial, sans-serif";
@@ -124,7 +131,7 @@ public class MailService {
         String lastError = null;
         for (int attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
             try {
-                String messageId = deliver(sender, to, mail);
+                String messageId = deliver(sender, to, mail, inReplyTo(model));
                 record(userId, to, template, ref, mail.subject(), EmailStatus.SENT, messageId, null);
                 return EmailStatus.SENT;
             } catch (Exception e) {
@@ -205,7 +212,7 @@ public class MailService {
         vars.put("fontEn", FONT_EN);
         vars.put(MODEL_THEME, themeService.view(themeService.resolve(template, themeKeyOverride)));
         // the "this concerns your account" footer note is wrong for replies to people who may have no account
-        vars.putIfAbsent("showAccountNote", !MailTemplates.SUPPORT_AUTO_REPLY.equals(template));
+        vars.putIfAbsent("showAccountNote", !MailTemplates.BILINGUAL.contains(template));
         Object link = vars.get(MODEL_LINK);
         if (!vars.containsKey(MODEL_CTA_URL)) {
             if (link instanceof String s && s.startsWith("/")) {
@@ -227,7 +234,29 @@ public class MailService {
         return TEMPLATE_DIR + template + "_" + com.saadat.common.domain.Locale.AR.code();
     }
 
-    private String deliver(JavaMailSender sender, String to, RenderedMail mail) throws Exception {
+    /**
+     * The Message-ID to answer from {@link #MODEL_IN_REPLY_TO}, or null: CR/LF and other control characters are
+     * removed (no header injection) and the value is wrapped in angle brackets when it is not already.
+     */
+    static String inReplyTo(Map<String, Object> model) {
+        Object raw = model == null ? null : model.get(MODEL_IN_REPLY_TO);
+        if (!(raw instanceof String s)) {
+            return null;
+        }
+        String id = s.replaceAll("[\\p{Cntrl}\\s]", "");
+        if (id.isEmpty() || id.length() > MESSAGE_ID_MAX) {
+            return null;
+        }
+        if (!id.startsWith("<")) {
+            id = "<" + id;
+        }
+        if (!id.endsWith(">")) {
+            id = id + ">";
+        }
+        return id;
+    }
+
+    private String deliver(JavaMailSender sender, String to, RenderedMail mail, String inReplyTo) throws Exception {
         MimeMessage message = sender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(message, false, "UTF-8");
         helper.setTo(to);
@@ -243,6 +272,10 @@ public class MailService {
         }
         helper.setSubject(mail.subject());
         helper.setText(mail.html(), true);
+        if (inReplyTo != null) {
+            message.setHeader("In-Reply-To", inReplyTo);
+            message.setHeader("References", inReplyTo);
+        }
         sender.send(message);
         return message.getMessageID();
     }

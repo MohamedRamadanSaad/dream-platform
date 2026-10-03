@@ -9,6 +9,7 @@ import com.saadat.common.error.NotConfiguredException;
 import com.saadat.common.error.UnauthorizedException;
 import com.saadat.config.props.AppProperties;
 import com.saadat.mail.inbound.SupportAutoReplyService;
+import com.saadat.support.service.SupportTicketService;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -26,6 +27,9 @@ import org.springframework.web.bind.annotation.RestController;
  * compared in constant time. Blank secret → 503 (endpoint off); wrong/missing token → 401. Once authenticated the
  * answer is always 200: {@code {"status":"ok"}} or {@code {"status":"skipped","reason":"..."}} (open route like
  * every /webhooks/** path; authenticity is the secret).
+ *
+ * <p>Every message that passes the guards (written by a person) also opens a support ticket (sender, subject, time;
+ * never the body) — even when the auto-reply itself is skipped for its cooldown or switched off.
  */
 @Slf4j
 @RestController
@@ -37,6 +41,7 @@ public class MailWebhookController {
 
     private final AppProperties properties;
     private final SupportAutoReplyService autoReplyService;
+    private final SupportTicketService ticketService;
     private final ObjectMapper objectMapper;
 
     /** Response body; {@code reason} only when skipped. */
@@ -65,7 +70,11 @@ public class MailWebhookController {
             log.info("Inbound mail webhook: payload is empty or not JSON, skipped");
             return new InboundResponse(SupportAutoReplyService.STATUS_SKIPPED, REASON_INVALID_PAYLOAD);
         }
-        SupportAutoReplyService.Outcome outcome = autoReplyService.handle(payload);
+        SupportAutoReplyService.Screening screening = autoReplyService.screen(payload);
+        if (screening.fromPerson()) {
+            ticketService.openFromInbound(screening.message()); // never throws
+        }
+        SupportAutoReplyService.Outcome outcome = autoReplyService.reply(screening);
         return new InboundResponse(outcome.status(), outcome.reason());
     }
 

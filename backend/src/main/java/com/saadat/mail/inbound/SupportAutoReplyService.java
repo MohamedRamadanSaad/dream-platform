@@ -30,6 +30,10 @@ import org.springframework.stereotype.Service;
  * message is automatic or bulk ({@code Auto-Submitted} other than "no", {@code Precedence: bulk|list|junk},
  * {@code List-Id}); or the address already got an auto-reply within {@code mail.auto_reply_cooldown_hours}
  * (from {@code email_log}, plus an in-memory guard for bursts that arrive before the async send is logged).
+ *
+ * <p>The guards are split in two: {@link #screen} decides whether a <b>person</b> wrote the message (sender,
+ * own-address, automated sender, Auto-Submitted, Precedence, List-Id) — the webhook also opens a support ticket for
+ * every accepted message — and {@link #reply} then applies the switch and the cooldown of the auto-reply only.
  */
 @Slf4j
 @Service
@@ -84,36 +88,66 @@ public class SupportAutoReplyService {
         }
     }
 
+    /**
+     * Result of {@link #screen}: the parsed message and, when it was not written by a person, the reason
+     * ({@code no-sender}, {@code own-address}, {@code automated-sender}, {@code auto-submitted}, {@code bulk},
+     * {@code mailing-list}); {@code rejectReason == null} means a real person wrote it.
+     */
+    public record Screening(InboundMessage message, String rejectReason) {
+
+        public boolean fromPerson() {
+            return rejectReason == null;
+        }
+    }
+
     /** Applies the guards and queues the auto-reply. Never throws for payload problems. */
     public Outcome handle(JsonNode payload) {
+        return reply(screen(payload));
+    }
+
+    /** The loop / automation guards: was this message written by a person? Never throws for payload problems. */
+    public Screening screen(JsonNode payload) {
         InboundMessage message = InboundMailParser.parse(payload);
         String sender = message.sender();
         if (sender == null || sender.isBlank()) {
-            return skip(REASON_NO_SENDER, null);
-        }
-        if (!mailService.isEnabled(MailTemplates.SUPPORT_AUTO_REPLY)) {
-            return skip(REASON_DISABLED, sender);
+            return new Screening(message, REASON_NO_SENDER);
         }
         if (isOwnAddress(sender)) {
-            return skip(REASON_OWN_ADDRESS, sender);
+            return new Screening(message, REASON_OWN_ADDRESS);
         }
         if (isAutomatedSender(sender)) {
-            return skip(REASON_AUTOMATED_SENDER, sender);
+            return new Screening(message, REASON_AUTOMATED_SENDER);
         }
         for (String value : InboundMailParser.headerValues(payload, "Auto-Submitted")) {
             if (!value.isBlank() && !"no".equalsIgnoreCase(value.trim())) {
-                return skip(REASON_AUTO_SUBMITTED, sender);
+                return new Screening(message, REASON_AUTO_SUBMITTED);
             }
         }
         for (String value : InboundMailParser.headerValues(payload, "Precedence")) {
             if (BULK_PRECEDENCE.contains(value.trim().toLowerCase(java.util.Locale.ROOT))) {
-                return skip(REASON_BULK, sender);
+                return new Screening(message, REASON_BULK);
             }
         }
         for (String value : InboundMailParser.headerValues(payload, "List-Id")) {
             if (!value.isBlank()) {
-                return skip(REASON_MAILING_LIST, sender);
+                return new Screening(message, REASON_MAILING_LIST);
             }
+        }
+        return new Screening(message, null);
+    }
+
+    /**
+     * Queues the auto-reply for a screened message: skipped with the screening's reason when no person wrote it,
+     * then when the switch is off ({@code disabled}) or the address is in its cooldown ({@code cooldown}).
+     */
+    public Outcome reply(Screening screening) {
+        InboundMessage message = screening.message();
+        String sender = message.sender();
+        if (!screening.fromPerson()) {
+            return skip(screening.rejectReason(), sender == null || sender.isBlank() ? null : sender);
+        }
+        if (!mailService.isEnabled(MailTemplates.SUPPORT_AUTO_REPLY)) {
+            return skip(REASON_DISABLED, sender);
         }
 
         Instant now = clock.instant();
