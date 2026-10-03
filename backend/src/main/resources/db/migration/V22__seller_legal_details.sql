@@ -1,4 +1,4 @@
--- V21: seller details shown on the terms page, in the footer and on the payment receipt
+-- V22: seller details shown on the terms page, in the footer and on the payment receipt
 -- (Egyptian consumer protection law 181/2018, distance selling). Editable from the interpreter's account page.
 INSERT INTO app_settings (key, value, type, description) VALUES
     ('brand.legal_name',          'فاطمه عبدالوهاب محمد عبوالوهاب', 'STRING', 'Seller legal name exactly as on the tax card (empty hides it)'),
