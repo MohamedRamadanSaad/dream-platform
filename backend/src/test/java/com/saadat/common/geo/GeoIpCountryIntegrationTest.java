@@ -64,7 +64,7 @@ class GeoIpCountryIntegrationTest extends IntegrationTestBase {
                         .header(ClientIp.HEADER_X_FORWARDED_FOR, CLIENT_IN_EGYPT + ", 192.0.2.1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.countryCode").value("SA"))
-                .andExpect(jsonPath("$.currency").value("SAR"));
+                .andExpect(jsonPath("$.currency").value("USD"));
     }
 
     @Test

@@ -40,7 +40,7 @@ import org.springframework.test.web.servlet.MvcResult;
  */
 class ReportsIntegrationTest extends IntegrationTestBase {
 
-    /** Seeded package p1 (1 credit); SA → 49 SAR via the mock provider. */
+    /** Seeded package p1 (1 credit); SA → 7 USD via the mock provider. */
     private static final String PACKAGE_ONE = "22222222-2222-4222-8222-000000000001";
     private static final Path SAMPLES = Path.of("build", "samples");
 

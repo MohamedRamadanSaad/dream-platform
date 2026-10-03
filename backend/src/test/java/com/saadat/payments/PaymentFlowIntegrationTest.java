@@ -33,7 +33,7 @@ import org.springframework.test.web.servlet.MvcResult;
 
 class PaymentFlowIntegrationTest extends IntegrationTestBase {
 
-    /** Seeded package p1 (1 credit); SA is in the Gulf group → 49 SAR. */
+    /** Seeded package p1 (1 credit); SA is in the Gulf group → 7 USD (V30). */
     private static final String PACKAGE_ONE = "22222222-2222-4222-8222-000000000001";
     /** app.payments.kashier.api-key in application-test.yml. */
     private static final String KASHIER_TEST_API_KEY = "test-kashier-api-key";
@@ -63,9 +63,9 @@ class PaymentFlowIntegrationTest extends IntegrationTestBase {
         mvc.perform(get(ApiPaths.Public.CATALOG).header("Authorization", bearer(user)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.countryCode").value("SA"))
-                .andExpect(jsonPath("$.currency").value("SAR"))
+                .andExpect(jsonPath("$.currency").value("USD"))
                 .andExpect(jsonPath("$.packages[0].id").value(PACKAGE_ONE))
-                .andExpect(jsonPath("$.packages[0].price").value(49.0));
+                .andExpect(jsonPath("$.packages[0].price").value(7.0));
     }
 
     @Test
@@ -75,9 +75,9 @@ class PaymentFlowIntegrationTest extends IntegrationTestBase {
 
         JsonNode checkout = checkout(user, draft);
         UUID orderId = UUID.fromString(checkout.get("orderId").asText());
-        assertThat(checkout.get("provider").asText()).isEqualTo("MOR");
-        assertThat(checkout.get("currency").asText()).isEqualTo("SAR");
-        assertThat(new BigDecimal(checkout.get("amount").asText())).isEqualByComparingTo("49");
+        assertThat(checkout.get("provider").asText()).isEqualTo("KASHIER");
+        assertThat(checkout.get("currency").asText()).isEqualTo("USD");
+        assertThat(new BigDecimal(checkout.get("amount").asText())).isEqualByComparingTo("7");
         assertThat(checkout.get("checkoutUrl").asText()).contains("/checkout/mock/" + orderId);
         assertThat(orderRepository.findById(orderId).orElseThrow().getStatus()).isEqualTo(OrderStatus.INITIATED);
 
@@ -166,7 +166,7 @@ class PaymentFlowIntegrationTest extends IntegrationTestBase {
     void kashierWebhookWithBadSignatureIsRejected() throws Exception {
         mvc.perform(post(ApiPaths.Webhooks.KASHIER).header(KashierSignature.HEADER, "deadbeef")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(kashierBody("pay", "SUCCESS", UUID.randomUUID().toString(), "TX-1", "49", "SAR")))
+                        .content(kashierBody("pay", "SUCCESS", UUID.randomUUID().toString(), "TX-1", "7", "USD")))
                 .andExpect(status().isUnauthorized());
     }
 
@@ -178,17 +178,17 @@ class PaymentFlowIntegrationTest extends IntegrationTestBase {
         String txn = "TX-" + UUID.randomUUID();
 
         // a failed card try is acknowledged but leaves the order open (the customer may retry in the session)
-        postKashier(kashierBody("pay", "FAILURE", orderId.toString(), txn + "-F", "49", "SAR"));
+        postKashier(kashierBody("pay", "FAILURE", orderId.toString(), txn + "-F", "7", "USD"));
         assertThat(orderRepository.findById(orderId).orElseThrow().getStatus()).isEqualTo(OrderStatus.INITIATED);
 
-        postKashier(kashierBody("pay", "SUCCESS", orderId.toString(), txn, "49", "SAR"));
+        postKashier(kashierBody("pay", "SUCCESS", orderId.toString(), txn, "7", "USD"));
         Order paid = orderRepository.findById(orderId).orElseThrow();
         assertThat(paid.getStatus()).isEqualTo(OrderStatus.SUCCESS);
         assertThat(paid.getProviderTxnId()).isEqualTo(txn);
         assertThat(creditService.balance(user.getId())).isEqualTo(1);
 
         // the same notification again → still one credit
-        postKashier(kashierBody("pay", "SUCCESS", orderId.toString(), txn, "49", "SAR"));
+        postKashier(kashierBody("pay", "SUCCESS", orderId.toString(), txn, "7", "USD"));
         assertThat(creditService.balance(user.getId())).isEqualTo(1);
     }
 
@@ -196,7 +196,7 @@ class PaymentFlowIntegrationTest extends IntegrationTestBase {
     void signedKashierWebhookWithWrongAmountIsSuspicious() throws Exception {
         User user = createUser("kashier-amount", Role.USER);
         UUID orderId = UUID.fromString(checkout(user, null).get("orderId").asText());
-        postKashier(kashierBody("pay", "SUCCESS", orderId.toString(), "TX-" + UUID.randomUUID(), "1", "SAR"));
+        postKashier(kashierBody("pay", "SUCCESS", orderId.toString(), "TX-" + UUID.randomUUID(), "1", "USD"));
         assertThat(orderRepository.findById(orderId).orElseThrow().getStatus()).isEqualTo(OrderStatus.SUSPICIOUS);
         assertThat(creditService.balance(user.getId())).isZero();
     }
