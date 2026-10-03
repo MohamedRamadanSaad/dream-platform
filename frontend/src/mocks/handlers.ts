@@ -5,7 +5,7 @@ import { db, resolvePrice, applyPromotion, balanceOf, toSummary, toDetail, uid, 
 import { buildInsights, buildTraffic, deviceOf } from './analytics'
 import { attachment, dreamsCsv, tinyPdf } from './reports'
 import { defaultThemeKey, isMailTemplate, isMailTheme, mailPreviewHtml, mailTemplateRow, mailTemplateRows, mailThemes } from './mail'
-import { supportAction, supportCounts, supportDetail, supportList } from './support'
+import { supportAction, supportCounts, supportDetail, supportFetchBody, supportList } from './support'
 import { endSession, listDevices, removeDevice, removeOtherDevices, startSession } from './devices'
 import { finishRegistration, finishSignIn, listPasskeys, registrationOptions, removePasskey, signInOptions } from './passkeys'
 
@@ -485,6 +485,11 @@ export const handlers = [
   http.get(u('/admin/support/tickets/:id'), wrap(async ({ request, params }) => {
     requireAdmin(request)
     const t = supportDetail(String(params.id))
+    return t ? HttpResponse.json(t) : problem(404, 'Not found')
+  })),
+  http.post(u('/admin/support/tickets/:id/fetch-body'), wrap(async ({ request, params }) => {
+    requireAdmin(request)
+    const t = supportFetchBody(String(params.id))
     return t ? HttpResponse.json(t) : problem(404, 'Not found')
   })),
   ...(['in-progress', 'close'] as const).map((path) => http.post(u(`/admin/support/tickets/:id/${path}`), wrap(async ({ request, params }) => {

@@ -150,6 +150,7 @@ export const adminApi = {
     http.get<T.Page<T.SupportTicket>>('/admin/support/tickets', { status, page, size }),
   supportTicketCounts: () => http.get<T.SupportTicketCounts>('/admin/support/tickets/counts'),
   supportTicket: (id: string) => http.get<T.SupportTicketDetail>(`/admin/support/tickets/${id}`),
+  supportTicketFetchBody: (id: string) => http.post<T.SupportTicketDetail>(`/admin/support/tickets/${id}/fetch-body`),
   supportTicketInProgress: (id: string, message: string) =>
     http.post<T.SupportTicketDetail>(`/admin/support/tickets/${id}/in-progress`, { message } satisfies T.SupportTicketMessageRequest),
   supportTicketClose: (id: string, message: string) =>

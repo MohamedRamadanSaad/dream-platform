@@ -1,4 +1,4 @@
-import { useEffect, useId, useState } from 'react'
+import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { adminApi } from '@/api/endpoints'
@@ -12,8 +12,8 @@ import { Icon } from '@/components/icons/Icon'
 import { PageEnter, StaggerGroup } from '@/components/motion'
 import { cn, fmtDate, fmtNum, timeAgo } from '@/lib/utils'
 
-// Support mailbox tickets: one per e-mail a person sent to the support address (only sender, subject and time are
-// kept). "In progress" (NEW, or another update on IN_PROGRESS) and "Close ticket" (NEW / IN_PROGRESS) each open a
+// Support mailbox tickets: one per e-mail a person sent to the support address (sender, subject, time and the text
+// the person wrote — `body`, null until it arrives; "Load message" asks the server to read it now). "In progress" (NEW, or another update on IN_PROGRESS) and "Close ticket" (NEW / IN_PROGRESS) each open a
 // dialog; the message is e-mailed to the sender. Closed is final.
 export const SUPPORT_KEY = ['admin', 'support'] as const
 export const SUPPORT_COUNTS_KEY = [...SUPPORT_KEY, 'counts'] as const
@@ -103,6 +103,8 @@ function TicketCard({ ticket: x, onAction }: { ticket: SupportTicket; onAction: 
         </div>
       </div>
 
+      <MessageBody ticket={x} />
+
       {x.lastMessage && (
         <div className="mt-3 rounded-xl bg-surface-2/70 p-3">
           <div className="mb-1 text-[11px] font-medium text-gold-ink">{t('admin.support.lastReply', { when: x.lastMessageAt ? timeAgo(x.lastMessageAt, locale) : '' })}</div>
@@ -132,6 +134,61 @@ function TicketCard({ ticket: x, onAction }: { ticket: SupportTicket; onAction: 
 
       {open && <div id={historyId}><History id={x.id} /></div>}
     </article>
+  )
+}
+
+/** The text the person wrote: clamped to 6 lines with a toggle; when missing, a "Load message" button. */
+function MessageBody({ ticket: x }: { ticket: SupportTicket }) {
+  const { t } = useTranslation()
+  const qc = useQueryClient()
+  const textId = useId()
+  const ref = useRef<HTMLParagraphElement>(null)
+  const [expanded, setExpanded] = useState(false)
+  const [overflows, setOverflows] = useState(false)
+  const load = useMutation({
+    meta: { toast: false },
+    mutationFn: () => adminApi.supportTicketFetchBody(x.id),
+    onSuccess: (d: SupportTicketDetail) => {
+      qc.setQueryData([...SUPPORT_KEY, 'ticket', d.id], d)
+      if (d.body) qc.invalidateQueries({ queryKey: [...SUPPORT_KEY, 'list'] })
+    },
+  })
+  const body = x.body ?? load.data?.body ?? null
+
+  useLayoutEffect(() => {
+    const el = ref.current
+    if (!el || expanded) return
+    const check = () => setOverflows(el.scrollHeight > el.clientHeight + 1)
+    check()
+    if (typeof ResizeObserver === 'undefined') return
+    const ro = new ResizeObserver(check)
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [body, expanded])
+
+  if (!body) {
+    return (
+      <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2 rounded-xl border border-dashed border-line px-3 py-2.5">
+        <span className="inline-flex min-w-0 flex-1 items-center gap-1.5 text-xs text-fg-dim"><Icon name="mail" size={14} />{t('admin.support.body.missing')}</span>
+        <Button size="sm" variant="ghost" loading={load.isPending} onClick={() => load.mutate()}>{t('admin.support.body.load')}</Button>
+        {(load.isError || (load.isSuccess && !load.data?.body)) && (
+          <p role="alert" className={cn('w-full text-xs', load.isError ? 'text-bad-ink' : 'text-fg-dim')}>
+            {load.isError ? t('admin.support.body.loadFailed') : t('admin.support.body.notFound')}
+          </p>
+        )}
+      </div>
+    )
+  }
+  return (
+    <div className="mt-3 rounded-xl border border-line p-3">
+      <div className="mb-1 inline-flex items-center gap-1.5 text-[11px] font-medium text-fg-dim"><Icon name="mail" size={13} />{t('admin.support.body.label')}</div>
+      <p id={textId} ref={ref} dir="auto" className={cn('whitespace-pre-wrap break-words text-sm font-light leading-relaxed text-fg', !expanded && 'line-clamp-6')}>{body}</p>
+      {(overflows || expanded) && (
+        <Button size="sm" variant="link" className="mt-1 px-0" aria-expanded={expanded} aria-controls={textId} onClick={() => setExpanded((v) => !v)}>
+          {expanded ? t('admin.support.body.showLess') : t('admin.support.body.showMore')}
+        </Button>
+      )}
+    </div>
   )
 }
 
@@ -211,6 +268,9 @@ function ActionDialog({ state, onClose }: { state: NonNullable<DialogState>; onC
           <span className="flex min-w-0 flex-wrap items-baseline gap-x-2">{ticket.fromName && <bdi dir="auto" className="font-medium">{ticket.fromName}</bdi>}<bdi dir="ltr" className="min-w-0 truncate text-fg-muted">{ticket.fromEmail}</bdi></span>
         </div>
         <div className="mt-1 truncate text-xs text-fg-muted"><bdi dir="ltr">#{ticket.number}</bdi> · <span dir="auto">{ticket.subject || t('admin.support.noSubject')}</span></div>
+        {ticket.body && (
+          <p dir="auto" className="mt-2 line-clamp-3 whitespace-pre-wrap break-words border-t border-line pt-2 text-xs font-light leading-relaxed text-fg-muted">{ticket.body}</p>
+        )}
       </div>
       <label htmlFor={fieldId} className="label">{t('admin.support.dialog.messageLabel')}</label>
       <Textarea id={fieldId} rows={6} value={text} maxLength={MESSAGE_MAX} dir="auto" aria-describedby={counterId} aria-invalid={touched && invalid}

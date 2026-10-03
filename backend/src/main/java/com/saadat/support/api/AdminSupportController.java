@@ -8,6 +8,7 @@ import com.saadat.support.api.SupportTicketDtos.SupportTicketCounts;
 import com.saadat.support.api.SupportTicketDtos.SupportTicketDetail;
 import com.saadat.support.api.SupportTicketDtos.SupportTicketRow;
 import com.saadat.support.domain.SupportTicketStatus;
+import com.saadat.support.service.SupportTicketBodyService;
 import com.saadat.support.service.SupportTicketService;
 import jakarta.validation.Valid;
 import java.util.UUID;
@@ -28,6 +29,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class AdminSupportController {
 
     private final SupportTicketService service;
+    private final SupportTicketBodyService bodyService;
 
     @GetMapping(ApiPaths.Admin.SUPPORT_TICKETS)
     public PageResponse<SupportTicketRow> list(@RequestParam(required = false) SupportTicketStatus status,
@@ -54,6 +56,20 @@ public class AdminSupportController {
     @PostMapping(ApiPaths.Admin.SUPPORT_TICKET_CLOSE)
     public SupportTicketDetail close(@PathVariable UUID id, @Valid @RequestBody MessageRequest body) {
         return service.close(actor(), id, body.message());
+    }
+
+    /**
+     * Reads the text of the e-mail from the mailbox now when it is still missing (no-op when it is already there, IMAP
+     * is not configured or {@code support.fetch_body} is off) and returns the detail; 404 unknown ticket.
+     */
+    @PostMapping(ApiPaths.Admin.SUPPORT_TICKET_FETCH_BODY)
+    public SupportTicketDetail fetchBody(@PathVariable UUID id) {
+        SupportTicketDetail before = service.detail(id); // 404 first
+        if (before.body() != null) {
+            return before;
+        }
+        bodyService.fetchNow(id);
+        return service.detail(id);
     }
 
     private static UUID actor() {

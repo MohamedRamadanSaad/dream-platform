@@ -12,6 +12,7 @@ import com.saadat.common.web.LogMask;
 import com.saadat.mail.MailService;
 import com.saadat.mail.MailTemplates;
 import com.saadat.mail.inbound.InboundMailParser.InboundMessage;
+import com.saadat.mail.inbound.MailBodyText;
 import com.saadat.support.api.SupportTicketDtos.SupportTicketCounts;
 import com.saadat.support.api.SupportTicketDtos.SupportTicketDetail;
 import com.saadat.support.api.SupportTicketDtos.SupportTicketEventDto;
@@ -51,7 +52,8 @@ import org.springframework.transaction.support.TransactionTemplate;
  *
  * <ul>
  *   <li>{@link #openFromInbound}: de-duplicates by Message-ID, or (no Message-ID) by the same sender + subject within
- *       {@link #DEDUPE_WINDOW}; never stores the body; never throws.</li>
+ *       {@link #DEDUPE_WINDOW}; stores the text the person wrote when the webhook payload carries it (otherwise
+ *       {@link SupportTicketBodyService} fetches it over IMAP); never throws.</li>
  *   <li>{@link #markInProgress} (NEW / IN_PROGRESS → IN_PROGRESS, repeatable) and {@link #close} (NEW / IN_PROGRESS →
  *       CLOSED, final; 409 {@code TICKET_CLOSED} otherwise): the status change, the event and the audit row commit
  *       first, then the e-mail to the sender is sent synchronously (template {@code support-in-progress} /
@@ -135,6 +137,11 @@ public class SupportTicketService {
             ticket.setSubject(subject);
             ticket.setMessageId(messageId);
             ticket.setReceivedAt(receivedAt(message.receivedAt(), now));
+            String body = MailBodyText.normalize(message.body());
+            if (body != null) {
+                ticket.setBody(body);
+                ticket.setBodyFetchedAt(now);
+            }
             ticket.setStatus(SupportTicketStatus.NEW);
             ticket.setCreatedAt(now);
             ticket.setUpdatedAt(now);
@@ -201,14 +208,14 @@ public class SupportTicketService {
         SupportTicketRow r = row(t, latest, events.size());
         return new SupportTicketDetail(r.id(), r.number(), r.fromEmail(), r.fromName(), r.subject(), r.receivedAt(),
                 r.status(), r.updatedAt(), r.closedAt(), r.lastMessage(), r.lastMessageAt(), r.eventsCount(),
-                eventDtos);
+                r.body(), eventDtos);
     }
 
     private static SupportTicketRow row(SupportTicket t, SupportTicketEvent latest, int eventsCount) {
         return new SupportTicketRow(t.getId(), t.getNumber(), t.getFromEmail(), t.getFromName(), t.getSubject(),
                 t.getReceivedAt(), t.getStatus(), t.getUpdatedAt(), t.getClosedAt(),
                 latest == null ? null : latest.getMessage(), latest == null ? null : latest.getCreatedAt(),
-                eventsCount);
+                eventsCount, t.getBody());
     }
 
     // ================================================================== actions

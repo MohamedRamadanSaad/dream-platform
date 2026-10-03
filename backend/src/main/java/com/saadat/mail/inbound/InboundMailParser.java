@@ -33,6 +33,7 @@ import java.util.regex.Pattern;
  *   <li>subject / message id: the first text under a key {@code subject} / {@code message_id}</li>
  *   <li>received time: the first value under {@code received_at}, then {@code date}, then {@code timestamp} that
  *       parses as ISO-8601, RFC 1123 (e-mail {@code Date:} header) or epoch seconds/milliseconds; else null</li>
+ *   <li>body: {@link #body} — the plain text the person wrote, when the payload carries it (else null)</li>
  *   <li>headers: {@link #headerValues} finds a header given as a key ({@code "Auto-Submitted": "auto-replied"}),
  *       as {@code {name|key, value}} pairs, or inside a raw header block ({@code "headers": "A: b\r\n…"})</li>
  * </ul>
@@ -48,16 +49,33 @@ public final class InboundMailParser {
     private static final long EPOCH_MILLIS_THRESHOLD = 100_000_000_000L;
     private static final Set<String> NAME_KEYS = Set.of("name", "key", "header");
     private static final int MAX_NODES = 5000;
+    /** Keys (normalized) that hold the plain text of the message, most specific first. */
+    private static final List<String> BODY_TEXT_KEYS = List.of("textbody", "bodytext", "textplain", "bodyplain",
+            "plaintext", "plain", "text", "body", "content");
+    /** Keys (normalized) that hold the HTML of the message. */
+    private static final List<String> BODY_HTML_KEYS = List.of("htmlbody", "bodyhtml", "texthtml", "html");
+    /** Last resort: a short preview of the message. */
+    private static final List<String> BODY_PREVIEW_KEYS = List.of("snippet", "preview", "intro");
+    /** Parts of the payload that never hold the message text (a "text" there is a name or a header). */
+    private static final Set<String> BODY_SKIP_KEYS = Set.of("from", "to", "cc", "bcc", "sender", "replyto",
+            "envelope", "envelopefrom", "envelopeto", "headers", "header", "attachments", "attachment", "subject",
+            "raw", "source", "eml");
 
     private InboundMailParser() {
     }
 
     /**
-     * What the auto-reply and the support ticket need from the payload (the body is never read). {@code senderName}
-     * and {@code receivedAt} may be null.
+     * What the auto-reply and the support ticket need from the payload. {@code senderName}, {@code receivedAt} and
+     * {@code body} (plain text the person wrote, already cleaned by {@link MailBodyText#clean}) may be null.
      */
     public record InboundMessage(String sender, String subject, String messageId, String senderName,
-                                 Instant receivedAt) {
+                                 Instant receivedAt, String body) {
+
+        /** Without a body (the text is fetched later over IMAP). */
+        public InboundMessage(String sender, String subject, String messageId, String senderName,
+                              Instant receivedAt) {
+            this(sender, subject, messageId, senderName, receivedAt, null);
+        }
     }
 
     public static InboundMessage parse(JsonNode root) {
@@ -85,7 +103,86 @@ public final class InboundMailParser {
                 }
             }
         }
-        return new InboundMessage(sender, subject, messageId, senderName, receivedAt);
+        return new InboundMessage(sender, subject, messageId, senderName, receivedAt, body(root));
+    }
+
+    /**
+     * The plain text the person wrote, when the payload carries it: the first text under a plain-text key
+     * ({@code text}, {@code text_body}, {@code plain}, {@code body} as text, {@code body.text}, {@code content.text}
+     * …), else an HTML key ({@code html}, {@code html_body}, {@code body.html} …) converted to text, else
+     * {@code snippet}/{@code preview}. The sender/recipient, header and attachment parts of the payload are not
+     * searched; base64 blobs and values over {@link MailBodyText#MAX_INPUT_CHARS} are ignored. Cleaned with
+     * {@link MailBodyText#clean}; null when there is none.
+     */
+    public static String body(JsonNode root) {
+        for (String key : BODY_TEXT_KEYS) {
+            String value = firstBodyText(root, key);
+            if (value != null) {
+                String text = MailBodyText.clean(MailBodyText.looksLikeHtml(value)
+                        ? MailBodyText.htmlToText(value) : value);
+                if (text != null) {
+                    return text;
+                }
+            }
+        }
+        for (String key : BODY_HTML_KEYS) {
+            String value = firstBodyText(root, key);
+            if (value != null) {
+                String text = MailBodyText.clean(MailBodyText.htmlToText(value));
+                if (text != null) {
+                    return text;
+                }
+            }
+        }
+        for (String key : BODY_PREVIEW_KEYS) {
+            String value = firstBodyText(root, key);
+            if (value != null) {
+                String text = MailBodyText.clean(value);
+                if (text != null) {
+                    return text;
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Breadth-first: the shallowest usable text value under {@code key}, skipping the subtrees of
+     * {@link #BODY_SKIP_KEYS}.
+     */
+    private static String firstBodyText(JsonNode root, String key) {
+        Deque<JsonNode> queue = new ArrayDeque<>();
+        if (root != null) {
+            queue.add(root);
+        }
+        int visited = 0;
+        while (!queue.isEmpty() && visited++ < MAX_NODES) {
+            JsonNode node = queue.poll();
+            if (node.isObject()) {
+                Iterator<Map.Entry<String, JsonNode>> fields = node.fields();
+                while (fields.hasNext()) {
+                    Map.Entry<String, JsonNode> field = fields.next();
+                    String name = normalize(field.getKey());
+                    JsonNode value = field.getValue();
+                    if (value == null || BODY_SKIP_KEYS.contains(name)) {
+                        continue;
+                    }
+                    if (name.equals(key) && value.isTextual()) {
+                        String text = value.asText();
+                        if (!text.isBlank() && text.length() <= MailBodyText.MAX_INPUT_CHARS
+                                && !MailBodyText.looksLikeBase64(text)) {
+                            return text;
+                        }
+                    }
+                    if (value.isContainerNode()) {
+                        queue.add(value);
+                    }
+                }
+            } else if (node.isArray()) {
+                node.forEach(queue::add);
+            }
+        }
+        return null;
     }
 
     /**

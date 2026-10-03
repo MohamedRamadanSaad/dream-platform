@@ -28,7 +28,6 @@ import org.springframework.stereotype.Component;
 public class SentFolderArchiver {
 
     static final String DEFAULT_FOLDER = "INBOX.Sent";
-    private static final int TIMEOUT_MILLIS = 15_000;
 
     private final SettingsService settings;
     private final String imapHost;
@@ -51,14 +50,7 @@ public class SentFolderArchiver {
 
     /** IMAP host: explicit value, else the SMTP host with a leading {@code smtp.} turned into {@code imap.}. */
     static String resolveHost(String imapHost, String smtpHost) {
-        if (imapHost != null && !imapHost.isBlank()) {
-            return imapHost.trim();
-        }
-        if (smtpHost == null || smtpHost.isBlank()) {
-            return "";
-        }
-        String host = smtpHost.trim();
-        return host.startsWith("smtp.") ? "imap." + host.substring("smtp.".length()) : host;
+        return ImapSupport.resolveHost(imapHost, smtpHost);
     }
 
     /** Whether copies are wanted and possible for this template (sign-in e-mails are never copied). */
@@ -79,14 +71,7 @@ public class SentFolderArchiver {
         if (folderName == null || folderName.isBlank()) {
             folderName = DEFAULT_FOLDER;
         }
-        Properties props = new Properties();
-        props.put("mail.store.protocol", "imaps");
-        props.put("mail.imaps.host", imapHost);
-        props.put("mail.imaps.port", String.valueOf(imapPort));
-        props.put("mail.imaps.ssl.enable", "true");
-        props.put("mail.imaps.connectiontimeout", String.valueOf(TIMEOUT_MILLIS));
-        props.put("mail.imaps.timeout", String.valueOf(TIMEOUT_MILLIS));
-        props.put("mail.imaps.writetimeout", String.valueOf(TIMEOUT_MILLIS));
+        Properties props = ImapSupport.sessionProperties(imapHost, imapPort);
         Store store = null;
         try {
             store = Session.getInstance(props).getStore("imaps");

@@ -874,7 +874,7 @@
     },
     "support": {
       "title": "Support messages",
-      "lead": "Every e-mail people send to the support address. We show the sender, the subject and the time only, not the message text.",
+      "lead": "Every e-mail people send to the support address: the sender, the subject, the time and the message text as they wrote it, so you do not need to open the mailbox.",
       "tabs": {
         "new": "New",
         "inProgress": "In progress",
@@ -896,6 +896,15 @@
       "closedOn": "Closed {{date}}",
       "lastReply": "Your last reply · {{when}}",
       "loadMore": "Show more",
+      "body": {
+        "label": "Message",
+        "showMore": "Show full message",
+        "showLess": "Hide",
+        "missing": "The message text has not arrived yet",
+        "load": "Load message",
+        "loadFailed": "Could not load the message",
+        "notFound": "The message text is not in the mailbox yet. Please try again later."
+      },
       "actions": {
         "inProgress": "In progress",
         "update": "Send update",

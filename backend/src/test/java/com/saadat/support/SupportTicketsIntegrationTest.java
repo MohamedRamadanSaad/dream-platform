@@ -136,6 +136,80 @@ class SupportTicketsIntegrationTest extends IntegrationTestBase {
                 .satisfies(t -> assertThat(t.getStatus()).isEqualTo(SupportTicketStatus.NEW));
     }
 
+    @Test
+    void webhookWithTheTextStoresItAndTheApiReturnsIt() throws Exception {
+        User interpreter = createUser("support-body", Role.INTERPRETER);
+        String sender = uniqueSender();
+        String messageId = "<" + UUID.randomUUID() + "@example.com>";
+        String extra = "\"text\":\"السلام عليكم\\r\\nلم يصلني التفسير بعد.\\n\\nOn Fri, 3 Oct 2026, Support"
+                + " <support@saadatu-aldarein.com> wrote:\\n> old\",";
+
+        inbound(payload(sender, "Missing interpretation", messageId, extra)).andExpect(status().isOk());
+
+        SupportTicket ticket = ticketRepository.findByMessageId(messageId).orElseThrow();
+        String expected = "السلام عليكم\nلم يصلني التفسير بعد.";
+        assertThat(ticket.getBody()).isEqualTo(expected);
+        assertThat(ticket.getBodyFetchedAt()).isNotNull();
+
+        mvc.perform(get(ApiPaths.Admin.SUPPORT_TICKET, ticket.getId())
+                        .header(HttpHeaders.AUTHORIZATION, bearer(interpreter)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.body").value(expected));
+
+        JsonNode page = json(get(ApiPaths.Admin.SUPPORT_TICKETS).param("status", "NEW").param("size", "100"),
+                interpreter);
+        JsonNode row = null;
+        for (JsonNode r : page.get("items")) {
+            if (r.get("id").asText().equals(ticket.getId().toString())) {
+                row = r;
+            }
+        }
+        assertThat(row).isNotNull();
+        assertThat(row.get("body").asText()).isEqualTo(expected);
+    }
+
+    @Test
+    void webhookWithAnHtmlBodyStoresPlainText() throws Exception {
+        String sender = uniqueSender();
+        String messageId = "<" + UUID.randomUUID() + "@example.com>";
+        inbound(payload(sender, "Html", messageId,
+                "\"html\":\"<div>Hello<br>World</div><script>alert(1)</script><p>A &amp; B</p>\","))
+                .andExpect(status().isOk());
+
+        assertThat(ticketRepository.findByMessageId(messageId).orElseThrow().getBody())
+                .isEqualTo("Hello\nWorld\nA & B");
+    }
+
+    @Test
+    void ticketWithoutTextHasANullBodyAndFetchBodyWithoutImapReturnsTheDetail() throws Exception {
+        User interpreter = createUser("support-fetch", Role.INTERPRETER);
+        SupportTicket ticket = open(uniqueSender(), "No text");
+        assertThat(ticket.getBody()).isNull();
+
+        mvc.perform(get(ApiPaths.Admin.SUPPORT_TICKET, ticket.getId())
+                        .header(HttpHeaders.AUTHORIZATION, bearer(interpreter)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.body").isEmpty());
+
+        // no SMTP/IMAP account in tests: nothing is fetched, the detail comes back unchanged (no 500)
+        mvc.perform(post(ApiPaths.Admin.SUPPORT_TICKET_FETCH_BODY, ticket.getId())
+                        .header(HttpHeaders.AUTHORIZATION, bearer(interpreter)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(ticket.getId().toString()))
+                .andExpect(jsonPath("$.status").value("NEW"))
+                .andExpect(jsonPath("$.subject").value("No text"))
+                .andExpect(jsonPath("$.body").isEmpty());
+
+        mvc.perform(post(ApiPaths.Admin.SUPPORT_TICKET_FETCH_BODY, UUID.randomUUID())
+                        .header(HttpHeaders.AUTHORIZATION, bearer(interpreter)))
+                .andExpect(status().isNotFound());
+
+        User user = createUser("support-fetch-user", Role.USER);
+        mvc.perform(post(ApiPaths.Admin.SUPPORT_TICKET_FETCH_BODY, ticket.getId())
+                        .header(HttpHeaders.AUTHORIZATION, bearer(user)))
+                .andExpect(status().isForbidden());
+    }
+
     // ================================================================== admin API
 
     @Test

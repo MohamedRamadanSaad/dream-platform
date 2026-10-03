@@ -600,9 +600,10 @@ export type SupportTicketAction = 'IN_PROGRESS' | 'CLOSED'
 export type SupportEmailStatus = 'QUEUED' | 'SENT' | 'FAILED' | 'LOGGED' | 'DISABLED'
 
 /**
- * One e-mail a person sent to the support mailbox. The message body is never stored: only the sender, the subject
- * and when it arrived. `number` is the human ticket number (#1001…). `lastMessage`/`lastMessageAt` = the
- * interpreter's latest message (null while NEW).
+ * One e-mail a person sent to the support mailbox: the sender, the subject, when it arrived and `body` = the plain
+ * text the person wrote (null until it arrives; POST …/fetch-body asks the server to read it from the mailbox now).
+ * `number` is the human ticket number (#1001…). `lastMessage`/`lastMessageAt` = the interpreter's latest message
+ * (null while NEW).
  */
 export interface SupportTicket {
   id: string
@@ -617,6 +618,7 @@ export interface SupportTicket {
   lastMessage: string | null
   lastMessageAt: string | null
   eventsCount: number
+  body: string | null
 }
 
 /** One interpreter message on a ticket (oldest first in the detail). */

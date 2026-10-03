@@ -72,6 +72,52 @@ class InboundMailParserTest {
         assertThat(d.receivedAt()).isNull();
     }
 
+    private String body(String json) throws Exception {
+        return InboundMailParser.parse(mapper.readTree(json)).body();
+    }
+
+    @Test
+    void readsThePlainTextBodyInSeveralShapes() throws Exception {
+        assertThat(body("{\"from\":\"a@example.com\",\"text\":\"Hello\\r\\nWorld \"}")).isEqualTo("Hello\nWorld");
+        assertThat(body("{\"data\":{\"text_body\":\"From text_body\"}}")).isEqualTo("From text_body");
+        assertThat(body("{\"textBody\":\"From textBody\"}")).isEqualTo("From textBody");
+        assertThat(body("{\"plain\":\"From plain\"}")).isEqualTo("From plain");
+        assertThat(body("{\"body\":\"From body\"}")).isEqualTo("From body");
+        assertThat(body("{\"message\":{\"body\":{\"text\":\"From body.text\",\"html\":\"<p>x</p>\"}}}"))
+                .isEqualTo("From body.text");
+        assertThat(body("{\"body\":{\"plain\":\"From body.plain\"}}")).isEqualTo("From body.plain");
+        assertThat(body("{\"content\":{\"text\":\"السلام عليكم\"}}")).isEqualTo("السلام عليكم");
+    }
+
+    @Test
+    void convertsAnHtmlBodyToText() throws Exception {
+        assertThat(body("{\"html\":\"<div>Hi<br>there</div><script>alert(1)</script><p>Tom &amp; Jerry</p>\"}"))
+                .isEqualTo("Hi\nthere\nTom & Jerry");
+        assertThat(body("{\"body\":{\"html\":\"<p>From body.html</p>\"}}")).isEqualTo("From body.html");
+        assertThat(body("{\"html_body\":\"<p>From html_body</p>\"}")).isEqualTo("From html_body");
+        // an HTML value under a plain key is converted too
+        assertThat(body("{\"body\":\"<html><body><p>Hello</p></body></html>\"}")).isEqualTo("Hello");
+    }
+
+    @Test
+    void fallsBackToTheSnippetAndIgnoresSendersHeadersAndBlobs() throws Exception {
+        assertThat(body("{\"snippet\":\"Short preview\"}")).isEqualTo("Short preview");
+        assertThat(body("{\"text\":\"Real text\",\"snippet\":\"Short preview\"}")).isEqualTo("Real text");
+        // a "text" inside the sender is a display name, not the message
+        assertThat(body("{\"from\":{\"text\":\"Ahmed <a@example.com>\"},\"subject\":\"Hi\"}")).isNull();
+        assertThat(body("{\"attachments\":[{\"content\":\"Zm9v\"}]}")).isNull();
+        String blob = "QUJD".repeat(200);
+        assertThat(body("{\"body\":\"" + blob + "\"}")).isNull();
+        assertThat(body("{\"from\":\"a@example.com\"}")).isNull();
+        assertThat(body("{\"text\":\"   \"}")).isNull();
+    }
+
+    @Test
+    void cutsTheQuotedReplyFromThePayloadText() throws Exception {
+        assertThat(body("{\"text\":\"My answer\\n\\nOn Fri, 3 Oct 2026, Support <support@example.com> wrote:\\n> old\"}"))
+                .isEqualTo("My answer");
+    }
+
     @Test
     void detectsAutomatedSenders() {
         assertThat(SupportAutoReplyService.isAutomatedSender("noreply@example.com")).isTrue();

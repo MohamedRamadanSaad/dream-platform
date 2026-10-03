@@ -9,6 +9,7 @@ import com.saadat.common.error.NotConfiguredException;
 import com.saadat.common.error.UnauthorizedException;
 import com.saadat.config.props.AppProperties;
 import com.saadat.mail.inbound.SupportAutoReplyService;
+import com.saadat.support.service.SupportTicketBodyService;
 import com.saadat.support.service.SupportTicketService;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -28,8 +29,9 @@ import org.springframework.web.bind.annotation.RestController;
  * answer is always 200: {@code {"status":"ok"}} or {@code {"status":"skipped","reason":"..."}} (open route like
  * every /webhooks/** path; authenticity is the secret).
  *
- * <p>Every message that passes the guards (written by a person) also opens a support ticket (sender, subject, time;
- * never the body) — even when the auto-reply itself is skipped for its cooldown or switched off.
+ * <p>Every message that passes the guards (written by a person) also opens a support ticket (sender, subject, time
+ * and the text when the payload carries it; otherwise the text is fetched over IMAP in the background) — even when
+ * the auto-reply itself is skipped for its cooldown or switched off.
  */
 @Slf4j
 @RestController
@@ -42,6 +44,7 @@ public class MailWebhookController {
     private final AppProperties properties;
     private final SupportAutoReplyService autoReplyService;
     private final SupportTicketService ticketService;
+    private final SupportTicketBodyService bodyService;
     private final ObjectMapper objectMapper;
 
     /** Response body; {@code reason} only when skipped. */
@@ -72,7 +75,9 @@ public class MailWebhookController {
         }
         SupportAutoReplyService.Screening screening = autoReplyService.screen(payload);
         if (screening.fromPerson()) {
-            ticketService.openFromInbound(screening.message()); // never throws
+            ticketService.openFromInbound(screening.message()) // never throws
+                    .filter(ticket -> ticket.getBody() == null)
+                    .ifPresent(ticket -> bodyService.scheduleFetch(ticket.getId())); // background, never throws
         }
         SupportAutoReplyService.Outcome outcome = autoReplyService.reply(screening);
         return new InboundResponse(outcome.status(), outcome.reason());

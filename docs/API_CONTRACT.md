@@ -50,8 +50,9 @@ Rules:
 
 Every e-mail that a person sends to the support mailbox (it passes the auto-reply guards: not `no-sender`,
 `own-address`, `automated-sender`, `auto-submitted`, `bulk`, `mailing-list`) opens a ticket, even when the auto-reply
-is skipped for its cooldown or switched off. Only the sender (e-mail + display name), the subject and the received time
-are stored, never the body. Repeated deliveries: same `Message-ID` = one ticket; without a Message-ID, the same sender +
+is skipped for its cooldown or switched off. Stored: the sender (e-mail + display name), the subject, the received time
+and — since V27 (privacy change, the owner's decision) — `body`, the plain text the person wrote (see "Message text"
+below). Repeated deliveries: same `Message-ID` = one ticket; without a Message-ID, the same sender +
 subject within 2 minutes = one ticket. Interpreter-only routes:
 
 | Method | Route | Body / query | Response |
@@ -61,6 +62,20 @@ subject within 2 minutes = one ticket. Interpreter-only routes:
 | GET | `/admin/support/tickets/{id}` | — | `SupportTicketDetail` (ticket + `events[]` oldest first) |
 | POST | `/admin/support/tickets/{id}/in-progress` | `{message}` (trimmed, 1..2000) | `SupportTicketDetail`; 409 `TICKET_CLOSED` when closed |
 | POST | `/admin/support/tickets/{id}/close` | `{message}` | `SupportTicketDetail`; 409 `TICKET_CLOSED` when already closed |
+| POST | `/admin/support/tickets/{id}/fetch-body` | — | `SupportTicketDetail`; reads the text from the mailbox now when `body` is null (unchanged detail when IMAP is not configured, `support.fetch_body` is off or the message is not found); 404 unknown ticket |
+
+`SupportTicket` (list rows) and `SupportTicketDetail` both carry `body: string | null`.
+
+Message text (`body`): plain text only — LF line endings, trimmed, at most one blank line in a row, a quoted reply cut
+at "On … wrote:" / «في … كتب …:» / "-----Original Message-----", at most 20,000 characters (cut with "…").
+1. From the webhook payload when present (keys searched leniently: `text`, `text_body`/`textBody`, `plain`, `body` as
+   text, `body.text`, `body.plain`, `content.text`; else `html`/`html_body`/`body.html` converted to text; else
+   `snippet`/`preview`; sender/recipient/header/attachment parts ignored; base64 blobs and values over 1 MB ignored).
+2. Otherwise read **read-only** over IMAP from INBOX (same account as SMTP; host `IMAP_HOST` or `smtp.`→`imap.`, port
+   `IMAP_PORT` 993, timeouts 15 s) by Message-ID (else the last 50 messages, same sender + subject): text/plain part,
+   else text/html converted; attachments skipped. Background attempts after 5 s, 30 s and 120 s; a job every 10 minutes
+   retries up to 20 tickets of the last 30 days still without text (at most once per hour each). BOOL setting
+   `support.fetch_body` (true) switches IMAP reading off. Logs never contain the text.
 
 Rules: NEW → IN_PROGRESS (more updates allowed) → CLOSED (final); NEW → CLOSED directly. Each action e-mails the
 sender synchronously (`support-in-progress` / `support-closed`: one bilingual e-mail, the interpreter's message escaped

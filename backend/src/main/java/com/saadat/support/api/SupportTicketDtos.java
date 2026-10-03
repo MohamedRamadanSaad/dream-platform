@@ -17,11 +17,13 @@ public final class SupportTicketDtos {
 
     /**
      * types.ts SupportTicket — one row of the list. {@code lastMessage}/{@code lastMessageAt}: the interpreter's latest
-     * message (null while NEW); {@code eventsCount}: how many messages she sent on this ticket.
+     * message (null while NEW); {@code eventsCount}: how many messages she sent on this ticket; {@code body}: the
+     * plain text the person wrote (null until it arrives).
      */
     public record SupportTicketRow(UUID id, long number, String fromEmail, String fromName, String subject,
                                    Instant receivedAt, SupportTicketStatus status, Instant updatedAt,
-                                   Instant closedAt, String lastMessage, Instant lastMessageAt, int eventsCount) {
+                                   Instant closedAt, String lastMessage, Instant lastMessageAt, int eventsCount,
+                                   String body) {
     }
 
     /** types.ts SupportTicketEvent — one message of the interpreter, oldest first in the detail. */
@@ -33,7 +35,7 @@ public final class SupportTicketDtos {
     public record SupportTicketDetail(UUID id, long number, String fromEmail, String fromName, String subject,
                                       Instant receivedAt, SupportTicketStatus status, Instant updatedAt,
                                       Instant closedAt, String lastMessage, Instant lastMessageAt, int eventsCount,
-                                      List<SupportTicketEventDto> events) {
+                                      String body, List<SupportTicketEventDto> events) {
     }
 
     /** types.ts SupportTicketCounts {@code {new, inProgress, closed}} ("new" is a Java keyword). */

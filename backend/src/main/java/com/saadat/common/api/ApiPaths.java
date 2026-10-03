@@ -195,6 +195,8 @@ public final class ApiPaths {
         public static final String SUPPORT_TICKET_IN_PROGRESS = SUPPORT_TICKET + "/in-progress";
         /** POST {message}: → CLOSED + e-mail to the sender (409 when already CLOSED). */
         public static final String SUPPORT_TICKET_CLOSE = SUPPORT_TICKET + "/close";
+        /** POST: read the text of the e-mail from the mailbox now (when it has not arrived yet); returns the detail. */
+        public static final String SUPPORT_TICKET_FETCH_BODY = SUPPORT_TICKET + "/fetch-body";
 
         private Admin() {
         }
