@@ -10,13 +10,16 @@ public final class TrafficDtos {
     private TrafficDtos() {
     }
 
-    /** conversionRate = paidOrders / visitors × 100, one decimal. */
-    public record TrafficKpis(long views, long visitors, long signups, long dreams, long paidOrders,
+    /**
+     * visitors = distinct browsers (one person coming back counts once), visits = distinct sessions (a new visit
+     * starts after 30 minutes without a page view). conversionRate = paidOrders / visitors × 100, one decimal.
+     */
+    public record TrafficKpis(long views, long visitors, long visits, long signups, long dreams, long paidOrders,
                               double conversionRate) {
     }
 
     /** previousViews = views on the aligned day of the comparison range. */
-    public record DailyTraffic(LocalDate date, long views, long visitors, long previousViews) {
+    public record DailyTraffic(LocalDate date, long views, long visitors, long visits, long previousViews) {
     }
 
     public record HourlyTraffic(int hour, long views, long dreams) {
@@ -44,7 +47,7 @@ public final class TrafficDtos {
 
     /** All-time records; thisMonthRank: 1 = the current month is the best month ever (null when it has no views). */
     public record TrafficRecords(BestDay bestDay, BestMonth bestMonth, long totalViews, long totalVisitors,
-                                 Integer thisMonthRank) {
+                                 long totalVisits, Integer thisMonthRank) {
     }
 
     public record TrafficReport(

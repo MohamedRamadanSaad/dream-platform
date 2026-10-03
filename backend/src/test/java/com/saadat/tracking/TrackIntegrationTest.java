@@ -96,6 +96,42 @@ class TrackIntegrationTest extends IntegrationTestBase {
     }
 
     @Test
+    void storesTheVisitorIdAndAcceptsBodiesWithoutIt() throws Exception {
+        String session = "s-" + UUID.randomUUID();
+        String visitor = UUID.randomUUID().toString();
+        Map<String, Object> withVisitor = new LinkedHashMap<>();
+        withVisitor.put("path", "/");
+        withVisitor.put("sessionId", session);
+        withVisitor.put("visitorId", " " + visitor + " ");
+        mvc.perform(post(ApiPaths.Public.TRACK)
+                        .header(HttpHeaders.USER_AGENT, UA_DESKTOP)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(withVisitor)))
+                .andExpect(status().isNoContent());
+        // an old cached app version sends no visitorId: still stored, visitor id empty
+        mvc.perform(post(ApiPaths.Public.TRACK)
+                        .header(HttpHeaders.USER_AGENT, UA_DESKTOP)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body("/terms", null, session)))
+                .andExpect(status().isNoContent());
+
+        List<PageView> rows = pageViewRepository.findBySessionIdOrderByCreatedAtAsc(session);
+        assertThat(rows).hasSize(2);
+        assertThat(rows).filteredOn(v -> "/".equals(v.getPath())).singleElement()
+                .satisfies(v -> assertThat(v.getVisitorId()).isEqualTo(visitor));
+        assertThat(rows).filteredOn(v -> "/terms".equals(v.getPath())).singleElement()
+                .satisfies(v -> assertThat(v.getVisitorId()).isNull());
+
+        Map<String, Object> tooLong = new LinkedHashMap<>(withVisitor);
+        tooLong.put("visitorId", "v".repeat(101));
+        mvc.perform(post(ApiPaths.Public.TRACK)
+                        .header(HttpHeaders.USER_AGENT, UA_DESKTOP)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(tooLong)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
     void invalidBodiesAre400() throws Exception {
         mvc.perform(post(ApiPaths.Public.TRACK)
                         .header(HttpHeaders.USER_AGENT, UA_DESKTOP)

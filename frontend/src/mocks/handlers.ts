@@ -135,7 +135,7 @@ export const handlers = [
     const b = (await request.json().catch(() => null)) as T.TrackRequest | null
     if (!b?.path || !b.sessionId) return problem(400, 'Validation failed')
     if (!b.path.startsWith('/admin')) {
-      db.pageViews.push({ path: b.path.slice(0, 255), referrer: b.referrer ?? null, sessionId: b.sessionId, device: deviceOf(request.headers.get('user-agent') ?? navigator.userAgent), countryCode: countryOf(request), at: helpers.now() })
+      db.pageViews.push({ path: b.path.slice(0, 255), referrer: b.referrer ?? null, sessionId: b.sessionId, visitorId: b.visitorId?.trim() || null, device: deviceOf(request.headers.get('user-agent') ?? navigator.userAgent), countryCode: countryOf(request), at: helpers.now() })
     }
     return new HttpResponse(null, { status: 204 })
   })),

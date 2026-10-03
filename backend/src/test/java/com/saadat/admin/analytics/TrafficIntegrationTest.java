@@ -67,6 +67,7 @@ class TrafficIntegrationTest extends IntegrationTestBase {
                 .andExpect(jsonPath("$.compareTo").value("2024-03-09"))
                 .andExpect(jsonPath("$.current.views").value(4))
                 .andExpect(jsonPath("$.current.visitors").value(3))
+                .andExpect(jsonPath("$.current.visits").value(3))
                 .andExpect(jsonPath("$.current.signups").value(0))
                 .andExpect(jsonPath("$.current.dreams").value(0))
                 .andExpect(jsonPath("$.current.paidOrders").value(0))
@@ -77,6 +78,7 @@ class TrafficIntegrationTest extends IntegrationTestBase {
                 .andExpect(jsonPath("$.daily[0].date").value("2024-03-10"))
                 .andExpect(jsonPath("$.daily[0].views").value(3))
                 .andExpect(jsonPath("$.daily[0].visitors").value(2))
+                .andExpect(jsonPath("$.daily[0].visits").value(2))
                 .andExpect(jsonPath("$.daily[0].previousViews").value(1))
                 .andExpect(jsonPath("$.daily[1].views").value(0))
                 .andExpect(jsonPath("$.daily[1].previousViews").value(0))
@@ -104,6 +106,7 @@ class TrafficIntegrationTest extends IntegrationTestBase {
                 .andExpect(jsonPath("$.referrers[?(@.host == 'google.com')].views").value(hasItem(2)))
                 .andExpect(jsonPath("$.records.totalViews").value(greaterThanOrEqualTo(7)))
                 .andExpect(jsonPath("$.records.totalVisitors").value(greaterThanOrEqualTo(5)))
+                .andExpect(jsonPath("$.records.totalVisits").value(greaterThanOrEqualTo(5)))
                 .andExpect(jsonPath("$.records.bestDay.date").isNotEmpty())
                 .andExpect(jsonPath("$.records.bestMonth.month").isNotEmpty());
     }
@@ -135,6 +138,31 @@ class TrafficIntegrationTest extends IntegrationTestBase {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.current.views").value(1))
                 .andExpect(jsonPath("$.topPages", hasSize(1)));
+    }
+
+    @Test
+    void oneBrowserComingBackIsOneVisitorWithSeveralVisits() throws Exception {
+        // 2023-06-15 (no other test writes there): browser V1 comes three times (three visits), browser V2 once
+        pageViewRepository.saveAll(List.of(
+                view("/", "t-v1-a", "V1", "SA", Device.MOBILE, "2023-06-15T08:00:00Z"),
+                view("/terms", "t-v1-a", "V1", "SA", Device.MOBILE, "2023-06-15T08:02:00Z"),
+                view("/", "t-v1-b", "V1", "SA", Device.MOBILE, "2023-06-15T12:00:00Z"),
+                view("/", "t-v1-c", "V1", "SA", Device.MOBILE, "2023-06-15T18:00:00Z"),
+                view("/", "t-v2-a", "V2", "SA", Device.DESKTOP, "2023-06-15T09:00:00Z")));
+        User interpreter = createUser("traffic", Role.INTERPRETER);
+        mvc.perform(get(ApiPaths.Admin.ANALYTICS_TRAFFIC)
+                        .param("from", "2023-06-15").param("to", "2023-06-15")
+                        .header(HttpHeaders.AUTHORIZATION, bearer(interpreter)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.current.views").value(5))
+                .andExpect(jsonPath("$.current.visitors").value(2))
+                .andExpect(jsonPath("$.current.visits").value(4))
+                .andExpect(jsonPath("$.daily[0].visitors").value(2))
+                .andExpect(jsonPath("$.daily[0].visits").value(4))
+                .andExpect(jsonPath("$.topPages[0].path").value("/"))
+                .andExpect(jsonPath("$.topPages[0].visitors").value(2))
+                .andExpect(jsonPath("$.topCountries[0].countryCode").value("SA"))
+                .andExpect(jsonPath("$.topCountries[0].visitors").value(2));
     }
 
     @Test
@@ -172,6 +200,13 @@ class TrafficIntegrationTest extends IntegrationTestBase {
         v.setDevice(device);
         v.setReferrerHost(referrer);
         v.setCreatedAt(Instant.parse(at));
+        return v;
+    }
+
+    private static PageView view(String path, String session, String visitor, String country, Device device,
+                                 String at) {
+        PageView v = view(path, session, country, device, null, at);
+        v.setVisitorId(visitor);
         return v;
     }
 }

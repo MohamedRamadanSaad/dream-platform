@@ -8,11 +8,18 @@ All routes go in `ApiPaths`. `/admin/**` = ROLE_INTERPRETER.
 
 `POST /public/track` — open (token optional; if a valid Bearer is sent, attach userId). 204. Rate limit 60/min/IP.
 ```ts
-interface TrackRequest { path: string; referrer?: string | null; sessionId: string } // path without query, max 255; sessionId = random id kept in sessionStorage
+interface TrackRequest { path: string; referrer?: string | null; sessionId: string; visitorId?: string }
+// path without query, max 255.
+// sessionId = the visit: random id in the first-party cookie saadat_sid, Max-Age 30 min renewed on every hit
+//             (a new visit starts after 30 minutes without a page view). Referrer is sent on the visit's first hit only.
+// visitorId = the browser: random id in the first-party cookie saadat_vid (mirrored in localStorage saadat-vid),
+//             Max-Age 1 year renewed on every hit. Optional (old cached app versions do not send it), max 100.
 ```
 Server stores `page_views(id, path, session_id, visitor_id?, user_id null, country_code (server-detected, same CountryResolver), device 'MOBILE'|'TABLET'|'DESKTOP' (from User-Agent), referrer_host null, created_at)`.
 Paths starting with `/admin` are ignored (not stored). Bots (UA contains bot|crawler|spider|preview) ignored.
-"Visitors" = distinct session_id. The frontend sends one track call per route change.
+"Visitors" = distinct `coalesce(visitor_id, session_id)` (one browser coming back counts once; rows stored before the
+visitor cookie, 2026-10-03, have no visitor_id, so each of their sessions counts as one visitor). "Visits" = distinct
+session_id. The frontend sends one track call per route change.
 
 ## 2. Traffic analytics with filter
 
@@ -20,12 +27,12 @@ Paths starting with `/admin` are ignored (not stored). Bots (UA contains bot|cra
 All params optional. Default range = current calendar month up to today. Comparison range = the same
 number of days immediately before `from` (so default = this month vs the same days of last month).
 ```ts
-interface TrafficKpis { views: number; visitors: number; signups: number; dreams: number; paidOrders: number; conversionRate: number /* paidOrders / visitors * 100, 1 decimal */ }
+interface TrafficKpis { views: number; visitors: number; visits: number; signups: number; dreams: number; paidOrders: number; conversionRate: number /* paidOrders / visitors * 100, 1 decimal */ }
 interface TrafficReport {
   from: string; to: string; compareFrom: string; compareTo: string
   current: TrafficKpis
   previous: TrafficKpis
-  daily: { date: string; views: number; visitors: number; previousViews: number }[]   // one row per day of current range; previousViews = views on the aligned day of the compare range
+  daily: { date: string; views: number; visitors: number; visits: number; previousViews: number }[]   // one row per day of current range; previousViews = views on the aligned day of the compare range
   hourly: { hour: number; views: number; dreams: number }[]                            // 24 rows, 0..23 business time zone, over current range
   topPages: { path: string; views: number; visitors: number }[]                        // max 10
   topCountries: { countryCode: string; countryName: string; views: number; visitors: number }[] // max 10, name localized by Accept-Language
@@ -36,6 +43,7 @@ interface TrafficReport {
     bestMonth: { month: string /* YYYY-MM */; views: number } | null
     totalViews: number
     totalVisitors: number
+    totalVisits: number
     thisMonthRank: number | null   // rank of the current month by views among all months (1 = best ever)
   }
 }
@@ -120,7 +128,7 @@ Each event is toggleable by a BOOL setting `mail.event.<template>` (default true
 - **Insights**: insight ids = rule names (`overdue`, `awaiting-reply`, `busy-on`, `busy-off`, `testimonials-pending`,
   `traffic-up`, `traffic-down`, `peak-hours`, `youtube-time`, `country-price`, `fast-response`, `streak`,
   `interpreted-up`). The overdue link is `/admin/queue` as written above — the SPA queue route today is `/admin/dreams`,
-  so the frontend should map/redirect `/admin/queue`. "Visits" in the traffic rule = visitors (distinct sessions),
+  so the frontend should map/redirect `/admin/queue`. "Visits" in the traffic rule = visits (distinct sessions),
   this month's days 1..today vs the same day numbers of last month (skipped when last month had none). Thresholds are
   settings: `insights.awaiting_reply_days` (3), `insights.traffic_change_percent` (10), `insights.streak_min_days` (3).
   The product has one interpreter, so `myActivity` counts every interpretation.

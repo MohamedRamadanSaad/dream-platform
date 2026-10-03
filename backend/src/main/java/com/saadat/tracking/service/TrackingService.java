@@ -62,6 +62,8 @@ public class TrackingService {
         PageView view = new PageView();
         view.setPath(path);
         view.setSessionId(request.sessionId().trim());
+        view.setVisitorId(request.visitorId() == null || request.visitorId().isBlank() ? null
+                : request.visitorId().trim());
         view.setUserId(userId);
         view.setCountryCode(countryOf(country, userId));
         view.setDevice(UserAgents.device(userAgent));

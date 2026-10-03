@@ -99,6 +99,7 @@ public class TrafficService {
             DayCount c = currentDays.get(date);
             DayCount p = previousDays.get(compareFrom.plusDays(i));
             daily.add(new DailyTraffic(date, c == null ? 0 : c.views(), c == null ? 0 : c.visitors(),
+                    c == null ? 0 : c.visits(),
                     p == null ? 0 : p.views()));
         }
 
@@ -138,8 +139,8 @@ public class TrafficService {
         Counts views = queries.viewCounts(start, end, filter);
         SideCounts side = queries.sideCounts(start, end);
         double rate = views.visitors() == 0 ? 0.0 : round1(side.paidOrders() * PERCENT / views.visitors());
-        return new TrafficKpis(views.views(), views.visitors(), side.signups(), side.dreams(), side.paidOrders(),
-                rate);
+        return new TrafficKpis(views.views(), views.visitors(), views.visits(), side.signups(), side.dreams(),
+                side.paidOrders(), rate);
     }
 
     private TrafficRecords records(LocalDate today, String tz) {
@@ -151,7 +152,7 @@ public class TrafficService {
         return new TrafficRecords(
                 bestDay == null ? null : new BestDay(bestDay.day(), bestDay.views()),
                 bestMonth == null ? null : new BestMonth(bestMonth.month(), bestMonth.views()),
-                totals.views(), totals.visitors(), thisMonthRank);
+                totals.views(), totals.visitors(), totals.visits(), thisMonthRank);
     }
 
     /** Validated filters; blank = none. Country is an ISO alpha-2 code, device one of {@link Device}. */

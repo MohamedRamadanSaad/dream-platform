@@ -57,7 +57,11 @@ function dayStats(day: string, today: string, f: Filter) {
   const scaled = baseViews(day, today) * factor(f) * (k === '||' ? 1 : 0.85 + rand(day + k) * 0.3)
   const hits = hitsOn(day, f)
   const ratio = (f.path ? 0.7 : 0.56) + rand(`${day}v`) * 0.08
-  return { views: Math.round(scaled) + hits.length, visitors: Math.round(scaled * ratio) + new Set(hits.map((h) => h.sessionId)).size }
+  return {
+    views: Math.round(scaled) + hits.length,
+    visitors: Math.round(scaled * ratio) + new Set(hits.map((h) => h.visitorId ?? h.sessionId)).size,
+    visits: Math.round(scaled * ratio * 1.3) + new Set(hits.map((h) => h.sessionId)).size,
+  }
 }
 
 /** Business numbers are never filtered by country / device / path. */
@@ -68,14 +72,14 @@ function business(day: string, today: string) {
 }
 
 function kpis(from: string, to: string, today: string, f: Filter): T.TrafficKpis {
-  let views = 0, dailyVisitors = 0, signups = 0, dreams = 0, paidOrders = 0
+  let views = 0, dailyVisitors = 0, visits = 0, signups = 0, dreams = 0, paidOrders = 0
   for (let d = from; d <= to; d = shift(d, 1)) {
     const s = dayStats(d, today, f)
     const b = business(d, today)
-    views += s.views; dailyVisitors += s.visitors; signups += b.signups; dreams += b.dreams; paidOrders += b.paid
+    views += s.views; dailyVisitors += s.visitors; visits += s.visits; signups += b.signups; dreams += b.dreams; paidOrders += b.paid
   }
   const visitors = from === to ? dailyVisitors : Math.round(dailyVisitors * 0.88) // returning visitors count once
-  return { views, visitors, signups, dreams, paidOrders, conversionRate: visitors ? Math.round((paidOrders / visitors) * 1000) / 10 : 0 }
+  return { views, visitors, visits, signups, dreams, paidOrders, conversionRate: visitors ? Math.round((paidOrders / visitors) * 1000) / 10 : 0 }
 }
 
 const countryName = (cc: string, locale: string) => {
@@ -100,7 +104,7 @@ function records(today: string): T.TrafficReport['records'] {
   }
   const ranked = [...months.entries()].sort((a, b) => b[1] - a[1])
   const rank = ranked.findIndex(([m]) => m === today.slice(0, 7)) + 1
-  return { bestDay, bestMonth: ranked[0] ? { month: ranked[0][0], views: ranked[0][1] } : null, totalViews, totalVisitors: Math.round(totalViews * 0.47), thisMonthRank: rank || null }
+  return { bestDay, bestMonth: ranked[0] ? { month: ranked[0][0], views: ranked[0][1] } : null, totalViews, totalVisitors: Math.round(totalViews * 0.47), totalVisits: Math.round(totalViews * 0.62), thisMonthRank: rank || null }
 }
 
 /** GET /admin/analytics/traffic — null when the dates are invalid (the handler answers 400). */
@@ -123,7 +127,7 @@ export function buildTraffic(q: URLSearchParams, locale: string): T.TrafficRepor
   const daily = Array.from({ length: days }, (_, i) => {
     const date = shift(from, i)
     const s = dayStats(date, today, f)
-    return { date, views: s.views, visitors: s.visitors, previousViews: dayStats(shift(compareFrom, i), today, f).views }
+    return { date, views: s.views, visitors: s.visitors, visits: s.visits, previousViews: dayStats(shift(compareFrom, i), today, f).views }
   })
 
   const hw = HOUR_WEIGHT.reduce((a, b) => a + b, 0), dw = DREAM_HOUR_WEIGHT.reduce((a, b) => a + b, 0)

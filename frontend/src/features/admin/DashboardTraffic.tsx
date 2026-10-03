@@ -51,7 +51,7 @@ function usePageName() {
 }
 
 const KPIS: { key: keyof TrafficKpis; icon: IconName }[] = [
-  { key: 'views', icon: 'eye' }, { key: 'visitors', icon: 'user' }, { key: 'signups', icon: 'plus' },
+  { key: 'views', icon: 'eye' }, { key: 'visitors', icon: 'user' }, { key: 'visits', icon: 'globe' }, { key: 'signups', icon: 'plus' },
   { key: 'dreams', icon: 'moon' }, { key: 'paidOrders', icon: 'wallet' }, { key: 'conversionRate', icon: 'chart' },
 ]
 
@@ -60,10 +60,10 @@ function KpiTiles({ r }: { r: TrafficReport }) {
   const locale = useAuthStore((s) => s.locale)
   const fmt = (k: keyof TrafficKpis, v: number) => (k === 'conversionRate' ? fmtPct(v, locale) : fmtNum(v, locale))
   return (
-    <div className="grid grid-cols-2 gap-3 lg:grid-cols-3 xl:grid-cols-6">
-      {KPIS.map(({ key, icon }) => (
-        <div key={key} className="card flex min-w-0 flex-col p-4">
-          <div className="flex items-start justify-between gap-2 text-xs text-fg-muted"><span>{t(`admin.traffic.kpi.${key}`)}</span><span className="shrink-0 text-gold-ink"><Icon name={icon} size={16} /></span></div>
+    <div className="grid grid-cols-2 gap-3 md:grid-cols-4 xl:grid-cols-7">
+      {KPIS.map(({ key, icon }, i) => (
+        <div key={key} className={cn('card flex min-w-0 flex-col p-4', i === KPIS.length - 1 && 'col-span-2 xl:col-span-1')}>
+          <div className="flex items-start justify-between gap-2 text-xs text-fg-muted xl:min-h-8"><span>{t(`admin.traffic.kpi.${key}`)}</span><span className="shrink-0 text-gold-ink"><Icon name={icon} size={16} /></span></div>
           <div className="mt-2 font-display text-2xl leading-tight md:text-3xl">{fmt(key, r.current[key])}</div>
           <div className="mt-auto flex flex-wrap items-center gap-x-2 gap-y-1 pt-3">
             <DeltaChip current={r.current[key]} previous={r.previous[key]} />
@@ -107,7 +107,7 @@ function DailyTable({ r }: { r: TrafficReport }) {
       <div className="mt-3 max-h-72 overflow-auto rounded-xl border border-line">
         <table className="w-full text-xs">
           <thead className="sticky top-0 bg-surface-2 text-fg-muted">
-            <tr>{[t('admin.traffic.date'), t('admin.traffic.kpi.views'), t('admin.traffic.kpi.visitors'), t('admin.traffic.previous')].map((h, i) => <th key={h} className={cn('px-3 py-2 font-normal', i ? 'text-end' : 'text-start')}>{h}</th>)}</tr>
+            <tr>{[t('admin.traffic.date'), t('admin.traffic.kpi.views'), t('admin.traffic.kpi.visitors'), t('admin.traffic.kpi.visits'), t('admin.traffic.previous')].map((h, i) => <th key={h} className={cn('px-3 py-2 font-normal', i ? 'text-end' : 'text-start')}>{h}</th>)}</tr>
           </thead>
           <tbody>
             {r.daily.map((d, i) => (
@@ -115,6 +115,7 @@ function DailyTable({ r }: { r: TrafficReport }) {
                 <td className="px-3 py-1.5">{fmtDay(d.date, locale, { weekday: 'short', day: 'numeric', month: 'short' })}</td>
                 <td className="px-3 py-1.5 text-end tabular-nums">{fmtNum(d.views, locale)}</td>
                 <td className="px-3 py-1.5 text-end tabular-nums">{fmtNum(d.visitors, locale)}</td>
+                <td className="px-3 py-1.5 text-end tabular-nums">{fmtNum(d.visits, locale)}</td>
                 <td className="px-3 py-1.5 text-end tabular-nums text-fg-muted">{fmtNum(d.previousViews, locale)} <span className="text-fg-dim">({fmtDay(addDays(r.compareFrom, i), locale)})</span></td>
               </tr>
             ))}

@@ -16,7 +16,10 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-/** Row of {@code page_views}: one SPA route change. Visitors = distinct {@code sessionId}. */
+/**
+ * Row of {@code page_views}: one SPA route change. Visitors = distinct {@code visitorId} (falls back to
+ * {@code sessionId} for rows stored before the visitor cookie), visits = distinct {@code sessionId}.
+ */
 @Getter
 @Setter
 @NoArgsConstructor

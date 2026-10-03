@@ -25,10 +25,11 @@ public class AnalyticsQueries {
         public static final ViewFilter NONE = new ViewFilter("", "", "");
     }
 
-    public record Counts(long views, long visitors) {
+    /** visitors = distinct browsers (visitor id cookie), visits = distinct sessions (30 minutes of inactivity). */
+    public record Counts(long views, long visitors, long visits) {
     }
 
-    public record DayCount(LocalDate day, long views, long visitors) {
+    public record DayCount(LocalDate day, long views, long visitors, long visits) {
     }
 
     public record KeyCount(String key, long views, long visitors) {
@@ -52,6 +53,12 @@ public class AnalyticsQueries {
     public record OnTime(long total, long onTime) {
     }
 
+    /**
+     * One visitor = one browser: the long-lived visitor id cookie. Rows stored before that cookie existed have no
+     * visitor id, so each of their sessions counts as its own visitor.
+     */
+    private static final String VISITOR = "coalesce(pv.visitor_id, pv.session_id)";
+
     private static final String VIEWS_IN_RANGE = """
             pv.created_at >= :start and pv.created_at < :end
               and (:country = '' or pv.country_code = :country)
@@ -68,17 +75,19 @@ public class AnalyticsQueries {
     // ================================================================== page views (filtered)
 
     public Counts viewCounts(Instant start, Instant end, ViewFilter filter) {
-        String sql = "select count(*) as views, count(distinct pv.session_id) as visitors from page_views pv where "
-                + VIEWS_IN_RANGE;
-        return jdbc.queryForObject(sql, views(start, end, filter), (rs, i) -> new Counts(rs.getLong(1), rs.getLong(2)));
+        String sql = "select count(*) as views, count(distinct " + VISITOR + ") as visitors, "
+                + "count(distinct pv.session_id) as visits from page_views pv where " + VIEWS_IN_RANGE;
+        return jdbc.queryForObject(sql, views(start, end, filter),
+                (rs, i) -> new Counts(rs.getLong(1), rs.getLong(2), rs.getLong(3)));
     }
 
     public List<DayCount> viewsByDay(Instant start, Instant end, ViewFilter filter, String tz) {
         String sql = "select cast(pv.created_at at time zone :tz as date) as d, count(*) as views, "
-                + "count(distinct pv.session_id) as visitors from page_views pv where " + VIEWS_IN_RANGE
-                + " group by 1";
+                + "count(distinct " + VISITOR + ") as visitors, count(distinct pv.session_id) as visits "
+                + "from page_views pv where " + VIEWS_IN_RANGE + " group by 1";
         return jdbc.query(sql, views(start, end, filter).addValue("tz", tz),
-                (rs, i) -> new DayCount(rs.getObject(1, LocalDate.class), rs.getLong(2), rs.getLong(3)));
+                (rs, i) -> new DayCount(rs.getObject(1, LocalDate.class), rs.getLong(2), rs.getLong(3),
+                        rs.getLong(4)));
     }
 
     /** views per hour of day (0..23) as an array of 24. */
@@ -96,7 +105,7 @@ public class AnalyticsQueries {
     }
 
     public List<KeyCount> topPages(Instant start, Instant end, ViewFilter filter, int limit) {
-        String sql = "select pv.path, count(*) as views, count(distinct pv.session_id) as visitors "
+        String sql = "select pv.path, count(*) as views, count(distinct " + VISITOR + ") as visitors "
                 + "from page_views pv where " + VIEWS_IN_RANGE
                 + " group by pv.path order by views desc, pv.path asc limit :limit";
         return jdbc.query(sql, views(start, end, filter).addValue("limit", limit),
@@ -105,7 +114,7 @@ public class AnalyticsQueries {
 
     public List<CountryCount> topCountries(Instant start, Instant end, ViewFilter filter, int limit) {
         String sql = "select pv.country_code, max(c.name_ar), max(c.name_en), count(*) as views, "
-                + "count(distinct pv.session_id) as visitors "
+                + "count(distinct " + VISITOR + ") as visitors "
                 + "from page_views pv left join countries c on c.code = pv.country_code where " + VIEWS_IN_RANGE
                 + " and pv.country_code is not null "
                 + "group by pv.country_code order by views desc, pv.country_code asc limit :limit";
@@ -153,8 +162,10 @@ public class AnalyticsQueries {
     }
 
     public Counts totals() {
-        return jdbc.queryForObject("select count(*), count(distinct pv.session_id) from page_views pv",
-                new MapSqlParameterSource(), (rs, i) -> new Counts(rs.getLong(1), rs.getLong(2)));
+        String sql = "select count(*), count(distinct " + VISITOR + "), count(distinct pv.session_id) "
+                + "from page_views pv";
+        return jdbc.queryForObject(sql, new MapSqlParameterSource(),
+                (rs, i) -> new Counts(rs.getLong(1), rs.getLong(2), rs.getLong(3)));
     }
 
     /** Views of {@code month} (YYYY-MM, null when none) and the number of months with more views. */

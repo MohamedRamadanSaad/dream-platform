@@ -149,8 +149,8 @@ public class InsightsService {
         // Same elapsed time in both months (month start → now), so today's partial day is not compared with a full day.
         Instant sameMomentLastMonth = lastMonthStart.plus(Duration.between(monthStart, now));
         Instant beforeEnd = sameMomentLastMonth.isBefore(monthStart) ? sameMomentLastMonth : monthStart;
-        long visitsNow = queries.viewCounts(monthStart, now, ViewFilter.NONE).visitors();
-        long visitsBefore = queries.viewCounts(lastMonthStart, beforeEnd, ViewFilter.NONE).visitors();
+        long visitsNow = queries.viewCounts(monthStart, now, ViewFilter.NONE).visits();
+        long visitsBefore = queries.viewCounts(lastMonthStart, beforeEnd, ViewFilter.NONE).visits();
         if (visitsBefore > 0) {
             double change = (visitsNow - visitsBefore) * PERCENT / visitsBefore;
             int threshold = settings.getInt(SettingKeys.INSIGHTS_TRAFFIC_CHANGE_PERCENT);

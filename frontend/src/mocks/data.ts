@@ -181,7 +181,7 @@ export const db = {
   userNotes: {} as Record<string, { notes: string; tags: string[] }>,
 
   /** POST /public/track hits (the mock traffic report adds them to today's numbers). */
-  pageViews: [] as { path: string; referrer: string | null; sessionId: string; device: T.DeviceType; countryCode: string; at: string }[],
+  pageViews: [] as { path: string; referrer: string | null; sessionId: string; visitorId: string | null; device: T.DeviceType; countryCode: string; at: string }[],
 
   /** app_settings as the admin settings API returns it (string values; BOOL = 'true' / 'false'). */
   settings: {} as T.SettingsMap,

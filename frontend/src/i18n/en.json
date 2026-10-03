@@ -658,6 +658,7 @@
       "kpi": {
         "views": "Page views",
         "visitors": "Visitors",
+        "visits": "Visits",
         "signups": "New accounts",
         "dreams": "Dreams sent",
         "paidOrders": "Paid orders",
@@ -721,6 +722,7 @@
       "bestMonth": "Best month ever",
       "totalViews": "All page views",
       "totalVisitors": "All visitors",
+      "totalVisits": "All visits",
       "sinceStart": "since the site opened",
       "rankBest": "This is the best month ever!",
       "rank": "This month is <b>#{{n}}</b> of all months",
@@ -1132,7 +1134,8 @@
           "h": "Storage in your browser",
           "p": [
             "One cookie keeps you signed in, and no page can read it.",
-            "Local storage for your sign-in, language and theme, and a session number that is cleared when you close the browser.",
+            "Two small cookies for statistics only: a random number for your browser, so a returning visitor counts once (kept for one year), and a visit number that ends after 30 minutes without browsing. They do not hold your name or email.",
+            "Local storage for your sign-in, language and theme.",
             "We do not use any advertising or commercial tracking tools."
           ]
         },

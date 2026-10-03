@@ -484,7 +484,10 @@ export type DeviceType = 'MOBILE' | 'TABLET' | 'DESKTOP'
 export interface TrackRequest {
   path: string
   referrer?: string | null
+  /** The visit: a cookie that ends after 30 minutes without a page view. */
   sessionId: string
+  /** The browser: a cookie kept for a year, so a person coming back is still one visitor. */
+  visitorId?: string
 }
 
 /** GET /admin/analytics/traffic — every param optional; default range = this calendar month up to today. */
@@ -497,7 +500,10 @@ export type TrafficQuery = {
 }
 export interface TrafficKpis {
   views: number
+  /** Distinct browsers: one person coming back counts once. */
   visitors: number
+  /** Distinct visits: a new visit starts after 30 minutes without a page view. */
+  visits: number
   signups: number
   dreams: number
   paidOrders: number
@@ -511,7 +517,7 @@ export interface TrafficReport {
   compareTo: string
   current: TrafficKpis
   previous: TrafficKpis
-  daily: { date: string; views: number; visitors: number; previousViews: number }[]
+  daily: { date: string; views: number; visitors: number; visits: number; previousViews: number }[]
   hourly: { hour: number; views: number; dreams: number }[]
   topPages: { path: string; views: number; visitors: number }[]
   topCountries: { countryCode: string; countryName: string; views: number; visitors: number }[]
@@ -524,6 +530,7 @@ export interface TrafficReport {
     bestMonth: { month: string; views: number } | null
     totalViews: number
     totalVisitors: number
+    totalVisits: number
     /** Rank of the current month by views among all months (1 = best ever). */
     thisMonthRank: number | null
   }

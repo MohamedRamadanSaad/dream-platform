@@ -4,7 +4,7 @@ import { Trans, useTranslation } from 'react-i18next'
 import { useAuthStore } from '@/app/auth-store'
 import { Icon, type IconName } from '@/components/icons/Icon'
 import { CountUp } from '@/components/motion'
-import { fmtDay, fmtMonth, fmtNum } from '@/lib/utils'
+import { cn, fmtDay, fmtMonth, fmtNum } from '@/lib/utils'
 import type { TrafficReport } from '@/api/types'
 
 // [x %, y %, size px] — fixed so the sky does not jump between renders
@@ -13,11 +13,11 @@ const STARS: [number, number, number][] = [
   [69, 40, 1], [76, 12, 2], [84, 66, 1.5], [92, 28, 1], [97, 84, 2], [48, 92, 1], [15, 50, 1], [88, 48, 1],
 ]
 
-function RecordTile({ icon, label, value, sub }: { icon: IconName; label: string; value: number | null; sub: string | null }) {
+function RecordTile({ icon, label, value, sub, className }: { icon: IconName; label: string; value: number | null; sub: string | null; className?: string }) {
   const locale = useAuthStore((s) => s.locale)
   const [hover, setHover] = useState(false)
   return (
-    <div className="min-w-0 rounded-2xl border border-navy bg-navy/40 p-5 transition-colors duration-500 hover:border-gold/60" onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}>
+    <div className={cn('min-w-0 rounded-2xl border border-navy bg-navy/40 p-5 transition-colors duration-500 hover:border-gold/60', className)} onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}>
       <div className="flex items-center justify-between gap-2 text-xs text-pearl/70"><span>{label}</span><span className="text-gold"><Icon name={icon} size={18} active={hover} /></span></div>
       <div className="mt-3 font-display text-3xl text-gold-soft md:text-4xl">{value !== null ? <CountUp to={value} format={(n) => fmtNum(n, locale)} /> : '-'}</div>
       {sub && <div className="mt-1.5 text-xs text-pearl/70">{sub}</div>}
@@ -72,13 +72,14 @@ export function RecordsBoard({ records }: { records: TrafficReport['records'] })
             <p className="max-w-md text-sm font-light text-pearl/70">{t('admin.records.emptyHint')}</p>
           </div>
         ) : (
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-5">
           <RecordTile icon="trophy" label={t('admin.records.bestDay')} value={records.bestDay?.views ?? null}
             sub={records.bestDay ? `${fmtDay(records.bestDay.date, locale, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}` : null} />
           <RecordTile icon="calendar" label={t('admin.records.bestMonth')} value={records.bestMonth?.views ?? null}
             sub={records.bestMonth ? `${fmtMonth(records.bestMonth.month, locale)}` : null} />
           <RecordTile icon="eye" label={t('admin.records.totalViews')} value={records.totalViews} sub={t('admin.records.sinceStart')} />
           <RecordTile icon="user" label={t('admin.records.totalVisitors')} value={records.totalVisitors} sub={t('admin.records.sinceStart')} />
+          <RecordTile icon="globe" label={t('admin.records.totalVisits')} value={records.totalVisits} sub={t('admin.records.sinceStart')} className="sm:col-span-2 xl:col-span-1" />
         </div>
         )}
       </div>
