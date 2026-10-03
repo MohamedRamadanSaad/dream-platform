@@ -19,6 +19,26 @@ export function saveRememberMe(on: boolean) {
   try { localStorage.setItem(REMEMBER_KEY, on ? '1' : '0') } catch { /* private mode: the default (true) applies */ }
 }
 
+const LAST_EMAIL_KEY = 'saadat-last-email'
+
+/**
+ * The e-mail of the last account signed in on this browser WITH "Keep me signed in": the e-mail sign-in field starts
+ * filled with it, so a returning visitor does not type it again. Kept only in this browser (never sent anywhere);
+ * a sign-in without "Keep me signed in" (shared device) forgets it, and so does "Not you?" or deleting the account.
+ */
+export function readLastEmail(): string {
+  try { return localStorage.getItem(LAST_EMAIL_KEY) ?? '' } catch { return '' }
+}
+export function rememberLastEmail(email: string | null | undefined, keep: boolean) {
+  try {
+    if (keep && email) localStorage.setItem(LAST_EMAIL_KEY, email.trim().toLowerCase())
+    else localStorage.removeItem(LAST_EMAIL_KEY)
+  } catch { /* storage blocked: nothing is remembered */ }
+}
+export function forgetLastEmail() {
+  try { localStorage.removeItem(LAST_EMAIL_KEY) } catch { /* storage blocked */ }
+}
+
 /**
  * Start-up check for a session signed in WITHOUT "Keep me signed in". Its refresh cookie dies with the browser, but
  * the user and access token cached in localStorage would survive it. A tab that is not part of the current browser

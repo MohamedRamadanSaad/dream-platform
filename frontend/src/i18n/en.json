@@ -140,7 +140,8 @@
       "cancelled": "Not turned on yet? Sign in another way, then turn it on from your account page.",
       "invalid": "We couldn't sign you in with this fingerprint or face. Please sign in with Google or an email code, then add it again from your account page.",
       "failed": "Fingerprint or face sign-in didn't work this time. Try again, or choose another way."
-    }
+    },
+    "notYou": "Not you? Use another email"
   },
   "me": {
     "greeting": "Peace be upon you, {{name}}",

@@ -7,7 +7,7 @@ import { Avatar } from '@/components/ui/Avatar'
 import { toast } from '@/components/ui/Toaster'
 import { adminApi, meApi, notificationsApi, publicApi } from '@/api/endpoints'
 import { useAuthStore, isInterpreter } from '@/app/auth-store'
-import { useSignOut } from '@/app/session'
+import { useSignOut, forgetLastEmail } from '@/app/session'
 import { applyLocale } from '@/i18n'
 import { Button, Input, Label, Modal, Segmented, Switch } from '@/components/ui'
 import { PageEnter } from '@/components/motion'
@@ -220,7 +220,7 @@ export function ProfilePage() {
     mutationFn: meApi.deleteAccount,
     meta: { toast: false },
     // the server has already ended every session of the account
-    onSuccess: () => { toast.success(t('me.profile.deleted')); void signOut({ server: false }) },
+    onSuccess: () => { forgetLastEmail(); toast.success(t('me.profile.deleted')); void signOut({ server: false }) },
     onError: () => toast.error(t('common.error')),
   })
   return (

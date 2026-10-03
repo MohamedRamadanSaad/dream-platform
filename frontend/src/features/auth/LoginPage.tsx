@@ -7,7 +7,7 @@ import { cn, INTERPRETER_DOMAIN } from '@/lib/utils'
 import { getPasskey, passkeyFailure, useFreshOptions, usePasskeySupport, withOptions } from '@/lib/passkeys'
 import { authApi } from '@/api/endpoints'
 import { useAuthStore, isInterpreter } from '@/app/auth-store'
-import { readRememberMe, saveRememberMe } from '@/app/session'
+import { readRememberMe, saveRememberMe, readLastEmail, rememberLastEmail, forgetLastEmail } from '@/app/session'
 import { NightSky } from '@/components/motion/NightSky'
 import { PageEnter } from '@/components/motion'
 import { Button, Input, Label } from '@/components/ui'
@@ -28,6 +28,7 @@ function useFinishLogin() {
   const setSession = useAuthStore((s) => s.setSession)
   return (r: AuthResponse, remember: boolean, method: SignInMethod) => {
     setSession(r.accessToken, r.user, remember)
+    rememberLastEmail(r.user.email, remember)
     // after Google or an e-mail code, the app may offer fingerprint / face sign-in once (see PasskeyOffer)
     if (method !== 'passkey') armPasskeyOffer(r.user.id)
     const next = params.get('next')
@@ -107,7 +108,8 @@ function PasskeySignIn({ remember, onStart, onSignedIn }: { remember: boolean; o
 export default function LoginPage() {
   const { t } = useTranslation()
   const finish = useFinishLogin()
-  const [email, setEmail] = useState('')
+  const [rememberedEmail, setRememberedEmail] = useState(readLastEmail)
+  const [email, setEmail] = useState(rememberedEmail)
   const [code, setCode] = useState('')
   const [sent, setSent] = useState(false)
   const [err, setErr] = useState<string | null>(null)
@@ -148,7 +150,11 @@ export default function LoginPage() {
           {!sent ? (
             <form onSubmit={submitEmail} className="flex flex-col gap-3">
               <Label>{t('auth.email')}</Label>
-              <Input dir="ltr" type="email" required placeholder="you@email.com" value={email} onChange={(e) => setEmail(e.target.value)} />
+              <Input dir="ltr" type="email" required autoComplete="email" placeholder="you@email.com" value={email} onChange={(e) => setEmail(e.target.value)} />
+              {rememberedEmail && email === rememberedEmail && (
+                <button type="button" className="self-start text-xs text-fg-muted underline-offset-2 hover:text-fg hover:underline"
+                  onClick={() => { forgetLastEmail(); setRememberedEmail(''); setEmail('') }}>{t('auth.notYou')}</button>
+              )}
               <Button type="submit" variant="ghost" loading={magic.isPending}>{t('auth.sendLink')} ✦</Button>
               <p className="text-center text-xs text-fg-dim">{t('auth.noPassword')}</p>
             </form>
