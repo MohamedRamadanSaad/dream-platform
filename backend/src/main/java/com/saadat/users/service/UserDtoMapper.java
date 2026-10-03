@@ -47,7 +47,8 @@ public class UserDtoMapper {
                 code,
                 countryName(code, user.getLocale()),
                 user.isOnboarded(),
-                user.getCreatedAt());
+                user.getCreatedAt(),
+                user.isMarketingOptIn());
     }
 
     public String countryName(String code, Locale locale) {

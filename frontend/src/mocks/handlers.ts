@@ -79,7 +79,7 @@ export const handlers = [
     const email = body.email?.toLowerCase()
     let user = db.users.find((x) => x.email.toLowerCase() === email)
     if (!user && email) {
-      user = { id: uid(), name: '', email, gender: null, birthDate: null, age: null, role: 'USER', providers: ['MAGIC_LINK'], locale: 'ar', countryCode: 'SA', countryName: 'السعودية', onboarded: false, createdAt: helpers.now() }
+      user = { id: uid(), name: '', email, gender: null, birthDate: null, age: null, role: 'USER', providers: ['MAGIC_LINK'], locale: 'ar', countryCode: 'SA', countryName: 'السعودية', onboarded: false, createdAt: helpers.now(), marketingOptIn: true }
       db.users.push(user)
     }
     if (!user) user = db.users[0]
@@ -121,6 +121,13 @@ export const handlers = [
       return { id: p.id, name: locale.startsWith('en') ? p.nameEn : p.nameAr, description: locale.startsWith('en') ? p.descriptionEn : p.descriptionAr, credits: p.credits, badge: p.badge, price: a.price, originalPrice: a.original, currency: r.currency, promotion: a.promo, validityMonths: p.validityMonths }
     })
     return HttpResponse.json({ countryCode: cc, countryName: (locale.startsWith('en') ? c?.nameEn : c?.nameAr) ?? cc, currency: packages[0]?.currency ?? 'USD', packages } satisfies T.Catalog)
+  })),
+  http.post(u('/public/unsubscribe'), wrap(async ({ request }) => {
+    const b = (await request.json()) as { u: string; t: string }
+    const usr = db.users.find((x) => x.id === b.u)
+    if (!usr || !b.t) return problem(422, 'Invalid link')
+    usr.marketingOptIn = false
+    return new HttpResponse(null, { status: 204 })
   })),
   http.get(u('/public/legal'), wrap(async () => HttpResponse.json({ name: db.settings['brand.legal_name'] ?? '', taxRegistrationNo: db.settings['brand.tax_registration_no'] ?? '', supportEmail: 'support@saadatu-aldarein.com' }))),
   http.get(u('/public/wait-time'), wrap(async ({ request }) => HttpResponse.json(waitTimePublic(request.headers.get('accept-language') ?? 'ar')))),

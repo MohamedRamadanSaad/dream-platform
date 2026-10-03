@@ -283,7 +283,9 @@
       "interpreterRole": "Interpreter account",
       "deleteBody": "Your name, email and sign-in methods will be removed, and you will be signed out on every device. Records of dreams and payments are kept for accounting, without your name or email. This cannot be undone.",
       "deleteYes": "Delete my account",
-      "deleted": "Your account was deleted"
+      "deleted": "Your account was deleted",
+      "channelMail": "New video emails",
+      "channelMailHint": "An email when a new video is published on the interpreter's channel."
     },
     "passkeys": {
       "title": "Fingerprint or face sign-in",
@@ -1103,6 +1105,7 @@
           "p": [
             "To interpret your dreams. The interpreter sees your age, gender and country because they help her understand the dream.",
             "To send emails and notifications about your dreams and your account.",
+            "To email you when a new video is published on the interpreter's channel.",
             "To show the right price for your country.",
             "To protect your account and prevent misuse.",
             "For overall visit statistics that do not identify anyone."
@@ -1194,5 +1197,14 @@
     "preparing": "Preparing the file…",
     "failed": "The file could not be downloaded. Please try again.",
     "notFound": "This file is not available."
+  },
+  "unsubscribe": {
+    "title": "Stop new video alerts",
+    "body": "You will no longer get an email when a new video is published on the interpreter's channel. Emails about your dreams and your account do not change.",
+    "confirm": "Stop the alerts",
+    "doneTitle": "Alerts stopped",
+    "doneBody": "You will not get new video emails anymore. You can turn them back on at any time from My account.",
+    "invalid": "This link is not valid. You can stop the alerts from My account.",
+    "home": "Back to the site"
   }
 }

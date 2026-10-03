@@ -22,6 +22,8 @@ export const publicApi = {
   /** Web Push key read at run time, so a new key needs no new build. */
   pushKey: () => http.get<T.PushKey>('/public/push-key'),
   legal: () => http.get<T.LegalInfo>('/public/legal'),
+  /** Link from the new-video e-mail: stops those e-mails. */
+  unsubscribe: (u: string, t: string) => http.post<void>('/public/unsubscribe', { u, t }),
   /** Page-view hit — fire-and-forget (see usePageTracking). */
   track: (body: T.TrackRequest) => postQuietly('/public/track', body),
 }

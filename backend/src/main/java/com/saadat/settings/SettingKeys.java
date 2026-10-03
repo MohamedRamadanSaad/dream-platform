@@ -22,6 +22,8 @@ public final class SettingKeys {
     public static final String BRAND_LEGAL_NAME = "brand.legal_name";
     public static final String BRAND_TAX_REGISTRATION_NO = "brand.tax_registration_no";
     public static final String BRAND_YOUTUBE_URL = "brand.youtube_url";
+    /** Most new-video e-mails per 24 hours (the shared mailbox quota must stay free for sign-in codes). */
+    public static final String YOUTUBE_MAIL_DAILY_LIMIT = "youtube.mail_daily_limit";
     /** Empty until provided; the YouTube poller skips when empty. */
     public static final String BRAND_YOUTUBE_CHANNEL_ID = "brand.youtube_channel_id";
 
@@ -170,7 +172,7 @@ public final class SettingKeys {
     /** Every key seeded by the migrations. */
     public static final List<String> ALL = List.of(
             BRAND_NAME_AR, BRAND_NAME_EN, BRAND_TAGLINE_AR, BRAND_TAGLINE_EN, BRAND_SUPPORT_EMAIL,
-            BRAND_YOUTUBE_URL, BRAND_YOUTUBE_CHANNEL_ID,
+            BRAND_YOUTUBE_URL, BRAND_YOUTUBE_CHANNEL_ID, YOUTUBE_MAIL_DAILY_LIMIT,
             BRAND_LEGAL_NAME, BRAND_TAX_REGISTRATION_NO,
             WAIT_BUSY, WAIT_NORMAL_HOURS, WAIT_BUSY_MIN_DAYS, WAIT_BUSY_MAX_DAYS, WAIT_MESSAGE_AR, WAIT_MESSAGE_EN,
             WAIT_AUTO_RESET_AT,

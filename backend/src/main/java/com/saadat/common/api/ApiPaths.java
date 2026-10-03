@@ -44,6 +44,8 @@ public final class ApiPaths {
         public static final String PUSH_KEY = ROOT + "/push-key";
         /** Seller details for the terms page and the footer. */
         public static final String LEGAL = ROOT + "/legal";
+        /** POST {u, t}: stops new-video e-mails (link in the e-mail, no sign-in needed). */
+        public static final String UNSUBSCRIBE = ROOT + "/unsubscribe";
         /** POST page-view tracking (token optional). */
         public static final String TRACK = ROOT + "/track";
 

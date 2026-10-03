@@ -9,6 +9,7 @@
   <p style="margin:0 0 18px 0;font-size:18px;line-height:1.7;font-weight:600;color:#0A1128;" th:text="${videoTitle}">Title</p>
   <p style="margin:0 0 16px 0;" th:if="${!#strings.isEmpty(thumbnailUrl)}"><a th:href="${videoUrl}"><img th:src="${thumbnailUrl}" th:alt="${videoTitle}" width="100%" style="display:block;width:100%;max-width:528px;height:auto;border:0;border-radius:12px;" alt=""></a></p>
   <table th:replace="~{mail/_layout :: cta(${videoUrl}, 'Watch the video')}"></table>
+  <p th:if="${!#strings.isEmpty(unsubscribeUrl)}" style="margin:22px 0 0 0;font-size:12px;line-height:1.7;color:#8A93A6;">Prefer not to get new video alerts? <a th:href="${unsubscribeUrl}" style="color:#8A93A6;text-decoration:underline;">Stop them here</a></p>
 </div>
 </body>
 </html>

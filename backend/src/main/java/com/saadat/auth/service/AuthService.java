@@ -236,7 +236,7 @@ public class AuthService {
         user.setRole(Role.USER);
         user.setLocale(ctx.requestLocale() == null ? Locale.AR : ctx.requestLocale());
         user.setOnboarded(false);
-        user.setMarketingOptIn(false);
+        user.setMarketingOptIn(true); // channel e-mails on by default; stopped from the e-mail link or My account
         user.setCreatedAt(clock.instant());
         log.info("Creating user {}", LogMask.email(email));
         return userRepository.save(user);

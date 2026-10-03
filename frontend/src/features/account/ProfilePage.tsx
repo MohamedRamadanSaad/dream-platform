@@ -9,7 +9,7 @@ import { adminApi, meApi, notificationsApi, publicApi } from '@/api/endpoints'
 import { useAuthStore, isInterpreter } from '@/app/auth-store'
 import { useSignOut } from '@/app/session'
 import { applyLocale } from '@/i18n'
-import { Button, Input, Label, Modal, Segmented } from '@/components/ui'
+import { Button, Input, Label, Modal, Segmented, Switch } from '@/components/ui'
 import { PageEnter } from '@/components/motion'
 import { GoogleG } from '@/features/auth/LoginPage'
 import { fromBase64url, toBase64url } from '@/lib/base64url'
@@ -165,6 +165,24 @@ function PushCard() {
   )
 }
 
+/** New-video e-mails: on by default; the user can stop or restart them here (also stoppable from the e-mail). */
+function ChannelMailCard() {
+  const { t } = useTranslation()
+  const user = useAuthStore((s) => s.user)!
+  const setUser = useAuthStore((s) => s.setUser)
+  const save = useMutation({ meta: { toast: 'common.saved' }, mutationFn: (on: boolean) => meApi.preferences({ marketingOptIn: on }), onSuccess: setUser })
+  const on = save.isPending ? !!save.variables : user.marketingOptIn !== false
+  return (
+    <section className="card flex items-center justify-between gap-4 p-5 sm:p-6">
+      <div className="min-w-0">
+        <div className="font-medium">{t('me.profile.channelMail')}</div>
+        <p className="mt-1 text-sm font-light text-fg-muted">{t('me.profile.channelMailHint')}</p>
+      </div>
+      <Switch checked={on} disabled={save.isPending} label={t('me.profile.channelMail')} onChange={(v) => save.mutate(v)} />
+    </section>
+  )
+}
+
 const SELLER_KEYS = { name: 'brand.legal_name', taxNo: 'brand.tax_registration_no' } as const
 
 /** Interpreter only: the seller details shown on the terms page, in the footer and on the payment receipt. */
@@ -216,6 +234,7 @@ export function ProfilePage() {
       </div>
       <PersonalCard />
       {!interpreter && <PushCard />}
+      {!interpreter && <ChannelMailCard />}
       {interpreter && <SellerCard />}
       {/* how this account signs in, then where: methods → fingerprint / face (#passkeys) → devices (#devices) */}
       <SignInMethods interpreter={interpreter} />

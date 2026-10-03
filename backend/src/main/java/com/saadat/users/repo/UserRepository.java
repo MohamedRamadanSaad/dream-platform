@@ -25,6 +25,9 @@ public interface UserRepository extends JpaRepository<User, UUID> {
     /** Active users of {@code role} who opted in to news e-mails (marketing_opt_in). */
     List<User> findByRoleAndMarketingOptInTrueAndDeletedAtIsNull(Role role);
 
+    /** Channel e-mail recipients, oldest accounts first (a capped run continues in the same order). */
+    List<User> findByRoleAndMarketingOptInTrueAndDeletedAtIsNullOrderByCreatedAtAsc(Role role);
+
     /**
      * {@code SELECT ... FROM users WHERE id = ? FOR UPDATE} — serializes credit consumption per user
      * (contract rule 2). Must be called inside a transaction.

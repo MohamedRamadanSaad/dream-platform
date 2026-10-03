@@ -53,6 +53,8 @@ export interface UserDto {
   countryName: string
   onboarded: boolean
   createdAt: string
+  /** New-video e-mails on. */
+  marketingOptIn: boolean
 }
 export interface AuthResponse {
   accessToken: string

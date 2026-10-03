@@ -9,6 +9,7 @@ import { AppShell } from '@/components/layout'
 import LandingPage from '@/features/public/LandingPage'
 import LoginPage, { OnboardingPage, MagicCallbackPage } from '@/features/auth/LoginPage'
 import { StaticPage } from '@/features/public/StaticPage'
+import { UnsubscribePage } from '@/features/public/UnsubscribePage'
 import { UserDreamsPage } from '@/features/user/DreamsPage'
 import { NewDreamPage } from '@/features/user/NewDreamPage'
 import { DreamDetailPage } from '@/features/user/DreamDetailPage'
@@ -120,6 +121,7 @@ export const router = createBrowserRouter([{ element: <RootShell />, children: [
   { path: '/auth/callback', element: <MagicCallbackPage /> },
   { path: '/terms', element: <StaticPage kind="terms" /> },
   { path: '/privacy', element: <StaticPage kind="privacy" /> },
+  { path: '/unsubscribe', element: <UnsubscribePage /> },
   { path: '/courses', element: <CoursesPage publicView /> },
   { path: '/checkout/mock/:orderId', element: <MockCheckoutPage /> },
   {

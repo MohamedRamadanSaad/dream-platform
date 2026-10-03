@@ -24,5 +24,7 @@ public record UserDto(
         String countryCode,
         String countryName,
         boolean onboarded,
-        Instant createdAt) {
+        Instant createdAt,
+        /** New-video e-mails on (users.marketing_opt_in). */
+        boolean marketingOptIn) {
 }
