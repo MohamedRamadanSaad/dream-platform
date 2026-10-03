@@ -1,4 +1,4 @@
--- V23: Kashier replaces Paymob as the Egyptian gateway (EGP). Only test orders ever used PAYMOB.
+-- V24: Kashier replaces Paymob as the Egyptian gateway (EGP). Only test orders ever used PAYMOB.
 -- Drop whatever CHECK constraint guards orders.provider (named by PostgreSQL in V4), then re-add it.
 DO $$
 DECLARE c record;
