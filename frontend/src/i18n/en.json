@@ -1138,7 +1138,6 @@
           "h": "Storage in your browser",
           "p": [
             "One cookie keeps you signed in, and no page can read it.",
-            "Two small cookies for statistics only: a random number for your browser, so a returning visitor counts once (kept for one year), and a visit number that ends after 30 minutes without browsing. They do not hold your name or email.",
             "Local storage for your sign-in, language and theme.",
             "We do not use any advertising or commercial tracking tools."
           ]
