@@ -586,6 +586,53 @@ export interface MailThemeRequest { theme: string }
 /** GET /admin/mail/preview (text/html). */
 export interface MailPreviewQuery { template: string; theme?: string; locale: Locale }
 
+// ---------- support mailbox tickets (/admin/support/tickets) ----------
+
+/** NEW → IN_PROGRESS (more updates allowed) → CLOSED (final); NEW → CLOSED directly. */
+export type SupportTicketStatus = 'NEW' | 'IN_PROGRESS' | 'CLOSED'
+export type SupportTicketAction = 'IN_PROGRESS' | 'CLOSED'
+/** E-mail outcome of an interpreter message (LOGGED = no SMTP configured; DISABLED = that e-mail is switched off). */
+export type SupportEmailStatus = 'QUEUED' | 'SENT' | 'FAILED' | 'LOGGED' | 'DISABLED'
+
+/**
+ * One e-mail a person sent to the support mailbox. The message body is never stored: only the sender, the subject
+ * and when it arrived. `number` is the human ticket number (#1001…). `lastMessage`/`lastMessageAt` = the
+ * interpreter's latest message (null while NEW).
+ */
+export interface SupportTicket {
+  id: string
+  number: number
+  fromEmail: string
+  fromName: string | null
+  subject: string | null
+  receivedAt: string
+  status: SupportTicketStatus
+  updatedAt: string
+  closedAt: string | null
+  lastMessage: string | null
+  lastMessageAt: string | null
+  eventsCount: number
+}
+
+/** One interpreter message on a ticket (oldest first in the detail). */
+export interface SupportTicketEvent {
+  id: string
+  action: SupportTicketAction
+  message: string
+  createdAt: string
+  actorName: string | null
+  emailStatus: SupportEmailStatus | null
+}
+
+/** GET /admin/support/tickets/{id} */
+export interface SupportTicketDetail extends SupportTicket { events: SupportTicketEvent[] }
+
+/** GET /admin/support/tickets/counts */
+export interface SupportTicketCounts { new: number; inProgress: number; closed: number }
+
+/** POST /admin/support/tickets/{id}/in-progress and /close — trimmed, 1..2000 characters; e-mailed to the sender. */
+export interface SupportTicketMessageRequest { message: string }
+
 /** GET /admin/dreams/export — `from/to` filter the submitted date; `q` searches name, e-mail and dream text. */
 export type DreamsExportQuery = {
   status?: DreamStatus

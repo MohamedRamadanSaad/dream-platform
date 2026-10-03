@@ -143,6 +143,16 @@ export const adminApi = {
     http.put<T.MailTemplateRow>(`/admin/mail/templates/${encodeURIComponent(template)}/theme`, { theme } satisfies T.MailThemeRequest),
   setMailDefaultTheme: (theme: string) => http.put<T.MailThemeRequest>('/admin/mail/theme-default', { theme } satisfies T.MailThemeRequest),
   mailPreview: (q: T.MailPreviewQuery) => getText('/admin/mail/preview', { ...q }),
+
+  /** Support mailbox tickets (newest first). Each action e-mails the sender with the interpreter's message. */
+  supportTickets: (status: T.SupportTicketStatus, page = 0, size = 20) =>
+    http.get<T.Page<T.SupportTicket>>('/admin/support/tickets', { status, page, size }),
+  supportTicketCounts: () => http.get<T.SupportTicketCounts>('/admin/support/tickets/counts'),
+  supportTicket: (id: string) => http.get<T.SupportTicketDetail>(`/admin/support/tickets/${id}`),
+  supportTicketInProgress: (id: string, message: string) =>
+    http.post<T.SupportTicketDetail>(`/admin/support/tickets/${id}/in-progress`, { message } satisfies T.SupportTicketMessageRequest),
+  supportTicketClose: (id: string, message: string) =>
+    http.post<T.SupportTicketDetail>(`/admin/support/tickets/${id}/close`, { message } satisfies T.SupportTicketMessageRequest),
 }
 
 /** Binary reports (PDF / Excel): fetched with the Bearer token and saved under the server's file name. */

@@ -375,6 +375,7 @@
       "testimonials": "Reviews",
       "orders": "Payments",
       "emails": "E-mails",
+      "support": "Support messages",
       "more": "More",
       "profile": "My account"
     },
@@ -820,6 +821,14 @@
         "passkey-added": {
           "label": "Fingerprint or face sign-in added",
           "desc": "To the user or to you, when fingerprint or face sign-in is added to the account, with a link to the account page."
+        },
+        "support-in-progress": {
+          "label": "Support: in progress",
+          "desc": "To the sender of a support message when it moves to “In progress”, with your message."
+        },
+        "support-closed": {
+          "label": "Support: ticket closed",
+          "desc": "To the sender of a support message when the ticket is closed, with your message."
         }
       },
       "toSupport": "Replies to support e-mails",
@@ -848,6 +857,74 @@
         "en": "English",
         "theme": "Design in the preview",
         "frame": "Preview of “{{name}}”"
+      }
+    },
+    "support": {
+      "title": "Support messages",
+      "lead": "Every e-mail people send to the support address. We show the sender, the subject and the time only, not the message text.",
+      "tabs": {
+        "new": "New",
+        "inProgress": "In progress",
+        "closed": "Closed"
+      },
+      "empty": {
+        "new": "No new messages.",
+        "inProgress": "Nothing is in progress.",
+        "closed": "No closed tickets."
+      },
+      "status": {
+        "NEW": "New",
+        "IN_PROGRESS": "In progress",
+        "CLOSED": "Closed"
+      },
+      "number": "Ticket #{{n}}",
+      "noSubject": "No subject",
+      "received": "Received {{date}}",
+      "closedOn": "Closed {{date}}",
+      "lastReply": "Your last reply · {{when}}",
+      "loadMore": "Show more",
+      "actions": {
+        "inProgress": "In progress",
+        "update": "Send update",
+        "close": "Close ticket"
+      },
+      "dialog": {
+        "inProgressTitle": "Mark as in progress",
+        "updateTitle": "Send an update",
+        "closeTitle": "Close ticket",
+        "inProgressLead": "The ticket moves to “In progress”. The sender gets an e-mail saying we are working on the request, with your message.",
+        "updateLead": "The sender gets a new e-mail with your message. The ticket stays “In progress”.",
+        "closeLead": "The ticket will be closed for good. The sender gets an e-mail saying it is closed, with your message.",
+        "to": "To",
+        "messageLabel": "Your message to the sender",
+        "placeholder": "Write your message here…",
+        "counter": "{{n}} / {{max}}",
+        "required": "Please write a message first.",
+        "tooLong": "The message is longer than {{max}} characters.",
+        "send": "Send",
+        "closeSend": "Close and send",
+        "alreadyClosed": "This ticket is already closed."
+      },
+      "toast": {
+        "sent": "Your message was sent to the sender",
+        "emailFailed": "The ticket was updated, but the e-mail could not be sent.",
+        "emailOff": "The ticket was updated. This e-mail is switched off on the E-mails page."
+      },
+      "history": {
+        "show": "Reply history ({{n}})",
+        "hide": "Hide history",
+        "action": {
+          "IN_PROGRESS": "In progress",
+          "CLOSED": "Closed the ticket"
+        },
+        "by": "by {{name}}",
+        "email": {
+          "QUEUED": "E-mail waiting",
+          "SENT": "E-mail sent",
+          "LOGGED": "E-mail logged (sending is not set up)",
+          "FAILED": "E-mail failed",
+          "DISABLED": "This e-mail is switched off"
+        }
       }
     },
     "status": {

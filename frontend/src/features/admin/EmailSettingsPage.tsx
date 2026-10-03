@@ -18,7 +18,7 @@ type GroupId = 'user' | 'you' | 'support'
 const GROUPS: { id: GroupId; icon: IconName; templates: string[] }[] = [
   { id: 'user', icon: 'user', templates: ['magic-link', 'new-sign-in', 'passkey-added', 'welcome', 'dream-received', 'interpreter-question', 'reply-reminder', 'interpretation-ready', 'testimonial-request', 'testimonial-approved', 'payment-receipt', 'payment-failed', 'credits-adjusted', 'dream-cancelled', 'youtube-new-video', 'account-deleted'] },
   { id: 'you', icon: 'bell', templates: ['dream-submitted', 'user-replied', 'new-user', 'testimonial-received', 'payment-suspicious', 'interpreter-digest'] },
-  { id: 'support', icon: 'chat', templates: ['support-auto-reply'] },
+  { id: 'support', icon: 'chat', templates: ['support-auto-reply', 'support-in-progress', 'support-closed'] },
 ]
 const GROUP_TEXT: Record<GroupId, { title: string; lead: string }> = {
   user: { title: 'admin.emails.toUser', lead: 'admin.emails.toUserLead' },

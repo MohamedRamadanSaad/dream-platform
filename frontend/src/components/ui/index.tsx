@@ -51,7 +51,7 @@ export function ErrorBox({ message, onRetry }: { message?: string; onRetry?: () 
   return <div className="card border-danger/30 p-6 text-center"><p className="text-danger mb-3">{message || t('common.error')}</p>{onRetry && <Button variant="ghost" size="sm" onClick={onRetry}>{t('common.retry')}</Button>}</div>
 }
 
-export function Tabs<T extends string>({ value, onChange, items }: { value: T; onChange: (v: T) => void; items: { value: T; label: string; count?: number; tone?: 'danger' }[] }) {
+export function Tabs<T extends string>({ value, onChange, items }: { value: T; onChange: (v: T) => void; items: { value: T; label: string; count?: number | string; tone?: 'danger' }[] }) {
   return (
     // the line sits on the outer box; the inner row scrolls sideways only (a 1px vertical overflow used to
     // show a stray vertical scrollbar on Windows) and overlaps the line so the active tab's gold bar covers it

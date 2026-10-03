@@ -45,3 +45,25 @@ Rules:
    `List-Id` (`mailing-list`); already auto-replied within `mail.auto_reply_cooldown_hours` (`cooldown`, from
    `email_log`); switched off (`disabled`); body not JSON (`invalid-payload`). The sender is found leniently: the first
    e-mail address under a key `from`, then `envelope_from`, then `sender`, at any depth.
+
+## Support tickets (support mailbox)
+
+Every e-mail that a person sends to the support mailbox (it passes the auto-reply guards: not `no-sender`,
+`own-address`, `automated-sender`, `auto-submitted`, `bulk`, `mailing-list`) opens a ticket, even when the auto-reply
+is skipped for its cooldown or switched off. Only the sender (e-mail + display name), the subject and the received time
+are stored, never the body. Repeated deliveries: same `Message-ID` = one ticket; without a Message-ID, the same sender +
+subject within 2 minutes = one ticket. Interpreter-only routes:
+
+| Method | Route | Body / query | Response |
+|---|---|---|---|
+| GET | `/admin/support/tickets` | `status=NEW\|IN_PROGRESS\|CLOSED`, `page`, `size` | `Page<SupportTicket>` newest first |
+| GET | `/admin/support/tickets/counts` | — | `{new, inProgress, closed}` |
+| GET | `/admin/support/tickets/{id}` | — | `SupportTicketDetail` (ticket + `events[]` oldest first) |
+| POST | `/admin/support/tickets/{id}/in-progress` | `{message}` (trimmed, 1..2000) | `SupportTicketDetail`; 409 `TICKET_CLOSED` when closed |
+| POST | `/admin/support/tickets/{id}/close` | `{message}` | `SupportTicketDetail`; 409 `TICKET_CLOSED` when already closed |
+
+Rules: NEW → IN_PROGRESS (more updates allowed) → CLOSED (final); NEW → CLOSED directly. Each action e-mails the
+sender synchronously (`support-in-progress` / `support-closed`: one bilingual e-mail, the interpreter's message escaped
+with its line breaks, sent as a reply in the sender's thread via `In-Reply-To`/`References`), stores the outcome on the
+event (`emailStatus` SENT / LOGGED / FAILED / DISABLED) and is audited. The action succeeds whatever the e-mail outcome.
+Blank or too long message → 400 (`MESSAGE_REQUIRED` / `MESSAGE_TOO_LONG`), unknown ticket → 404.

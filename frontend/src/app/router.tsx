@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 import { createBrowserRouter, Navigate, Outlet, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useQuery } from '@tanstack/react-query'
-import { meApi } from '@/api/endpoints'
+import { adminApi, meApi } from '@/api/endpoints'
 import { Skeleton } from '@/components/ui'
 import { useAuthStore, isInterpreter } from './auth-store'
 import { AppShell } from '@/components/layout'
@@ -27,6 +27,7 @@ import { UsersPage, User360Page } from '@/features/admin/UsersPage'
 import { TestimonialsAdminPage } from '@/features/admin/TestimonialsAdminPage'
 import { OrdersAdminPage } from '@/features/admin/OrdersAdminPage'
 import { EmailSettingsPage } from '@/features/admin/EmailSettingsPage'
+import { SupportTicketsPage, SUPPORT_COUNTS_KEY } from '@/features/admin/SupportTicketsPage'
 import { PasskeyOffer } from '@/features/account/PasskeyOffer'
 import { usePageTracking } from './usePageTracking'
 
@@ -93,6 +94,8 @@ function UserLayout() {
 
 function AdminLayout() {
   const { t } = useTranslation()
+  // badge on "Support messages": how many tickets are still NEW (refreshed every minute)
+  const support = useQuery({ queryKey: SUPPORT_COUNTS_KEY, queryFn: adminApi.supportTicketCounts, refetchInterval: 60_000 })
   return (
     <AppShell admin items={[
       { to: '/admin', label: t('admin.nav.dashboard'), icon: 'chart', end: true },
@@ -104,6 +107,7 @@ function AdminLayout() {
       { to: '/admin/testimonials', label: t('admin.nav.testimonials'), icon: 'quote' },
       { to: '/admin/orders', label: t('admin.nav.orders'), icon: 'wallet' },
       { to: '/admin/emails', label: t('admin.nav.emails'), icon: 'mail' },
+      { to: '/admin/support', label: t('admin.nav.support'), icon: 'chat', badge: support.data?.new },
       { to: '/admin/notifications', label: t('me.nav.notifications'), icon: 'bell' },
       { to: '/admin/profile', label: t('admin.nav.profile'), icon: 'account' },
     ]}><PasskeyOffer /><Outlet /></AppShell>
@@ -153,6 +157,7 @@ export const router = createBrowserRouter([{ element: <RootShell />, children: [
         { path: 'testimonials', element: <TestimonialsAdminPage /> },
         { path: 'orders', element: <OrdersAdminPage /> },
         { path: 'emails', element: <EmailSettingsPage /> },
+        { path: 'support', element: <SupportTicketsPage /> },
         { path: 'notifications', element: <NotificationsPage /> },
         { path: 'profile', element: <ProfilePage /> },
         // server-side insight links point at /admin/queue — the queue lives at /admin/dreams

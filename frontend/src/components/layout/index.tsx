@@ -191,7 +191,13 @@ export function Footer() {
   )
 }
 
-export function AppShell({ items, children, admin }: { items: { to: string; label: string; icon: IconName; end?: boolean }[]; children: React.ReactNode; admin?: boolean }) {
+/** Small count on a nav entry (e.g. new support messages); hidden when 0. */
+function NavBadge({ n, className }: { n?: number; className?: string }) {
+  if (!n) return null
+  return <span className={cn('flex h-4 min-w-4 items-center justify-center rounded-full bg-gold px-1 text-[10px] font-bold leading-none text-night', className)}>{n > 99 ? '99+' : n}</span>
+}
+
+export function AppShell({ items, children, admin }: { items: { to: string; label: string; icon: IconName; end?: boolean; badge?: number }[]; children: React.ReactNode; admin?: boolean }) {
   const { t } = useTranslation()
   const { pathname } = useLocation()
   const { signOut, pending: signingOut } = useSignOut()
@@ -222,7 +228,7 @@ export function AppShell({ items, children, admin }: { items: { to: string; labe
         <nav className="flex flex-col gap-1">
           {ordered.map((it) => (
             <NavLink key={it.to} to={it.to} end={it.end} className={({ isActive }) => cn('group flex items-center gap-3 rounded-xl px-3 py-3 text-sm transition-colors', isActive ? 'bg-navy text-pearl' : 'text-pearl/60 hover:bg-navy/60 hover:text-pearl')}>
-              {({ isActive }) => <><span className={cn(isActive ? 'text-gold' : 'text-current')}><Icon name={it.icon} size={18} active={isActive} /></span>{it.label}</>}
+              {({ isActive }) => <><span className={cn(isActive ? 'text-gold' : 'text-current')}><Icon name={it.icon} size={18} active={isActive} /></span>{it.label}<NavBadge n={it.badge} className="ms-auto" /></>}
             </NavLink>
           ))}
         </nav>
@@ -253,18 +259,18 @@ export function AppShell({ items, children, admin }: { items: { to: string; labe
         <nav className="pb-safe fixed bottom-0 inset-x-0 z-30 flex border-t border-line bg-bg/95 backdrop-blur md:hidden">
           {lead.map((it) => (
             <NavLink key={it.to} to={it.to} end={it.end} className={({ isActive }) => cn('flex flex-1 flex-col items-center gap-1 py-2 text-[11px]', isActive ? 'text-gold-ink' : 'text-fg-muted')}>
-              {({ isActive }) => <><Icon name={it.icon} size={20} active={isActive} />{it.label}</>}
+              {({ isActive }) => <><span className="relative"><Icon name={it.icon} size={20} active={isActive} /><NavBadge n={it.badge} className="absolute -top-1.5 -end-2.5" /></span>{it.label}</>}
             </NavLink>
           ))}
           {overflow && (
             <button type="button" onClick={() => setMoreOpen((v) => !v)} aria-expanded={moreOpen} aria-controls="more-sheet"
               className={cn('flex flex-1 flex-col items-center gap-1 py-2 text-[11px]', restActive || moreOpen ? 'text-gold-ink' : 'text-fg-muted')}>
-              <Icon name="menu" size={20} active={moreOpen || restActive} />{t('admin.nav.more')}
+              <span className="relative"><Icon name="menu" size={20} active={moreOpen || restActive} />{rest.some((it) => it.badge) && <span aria-hidden="true" className="absolute -top-0.5 -end-1 h-2 w-2 rounded-full bg-gold" />}</span>{t('admin.nav.more')}
             </button>
           )}
           {account && [account].map((it) => (
             <NavLink key={it.to} to={it.to} end={it.end} className={({ isActive }) => cn('flex flex-1 flex-col items-center gap-1 py-2 text-[11px]', isActive ? 'text-gold-ink' : 'text-fg-muted')}>
-              {({ isActive }) => <><Icon name={it.icon} size={20} active={isActive} />{it.label}</>}
+              {({ isActive }) => <><span className="relative"><Icon name={it.icon} size={20} active={isActive} /><NavBadge n={it.badge} className="absolute -top-1.5 -end-2.5" /></span>{it.label}</>}
             </NavLink>
           ))}
         </nav>
@@ -275,7 +281,7 @@ export function AppShell({ items, children, admin }: { items: { to: string; labe
               <div className="grid grid-cols-3 gap-1">
                 {rest.map((it) => (
                   <NavLink key={it.to} to={it.to} end={it.end} className={({ isActive }) => cn('flex flex-col items-center gap-1.5 rounded-xl px-2 py-3 text-center text-[11px] leading-tight transition-colors', isActive ? 'bg-gold/10 text-gold-ink' : 'text-fg-muted hover:bg-surface-2')}>
-                    {({ isActive }) => <><Icon name={it.icon} size={20} active={isActive} />{it.label}</>}
+                    {({ isActive }) => <><span className="relative"><Icon name={it.icon} size={20} active={isActive} /><NavBadge n={it.badge} className="absolute -top-1.5 -end-2.5" /></span>{it.label}</>}
                   </NavLink>
                 ))}
               </div>

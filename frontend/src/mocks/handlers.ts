@@ -5,6 +5,7 @@ import { db, resolvePrice, applyPromotion, balanceOf, toSummary, toDetail, uid, 
 import { buildInsights, buildTraffic, deviceOf } from './analytics'
 import { attachment, dreamsCsv, tinyPdf } from './reports'
 import { defaultThemeKey, isMailTemplate, isMailTheme, mailPreviewHtml, mailTemplateRow, mailTemplateRows, mailThemes } from './mail'
+import { supportAction, supportCounts, supportDetail, supportList } from './support'
 import { endSession, listDevices, removeDevice, removeOtherDevices, startSession } from './devices'
 import { finishRegistration, finishSignIn, listPasskeys, registrationOptions, removePasskey, signInOptions } from './passkeys'
 
@@ -469,7 +470,28 @@ export const handlers = [
     const locale: T.Locale = q.get('locale') === 'en' ? 'en' : 'ar'
     return new HttpResponse(mailPreviewHtml(template, theme, locale), { headers: { 'Content-Type': 'text/html; charset=utf-8' } })
   })),
-  http.get(u('/admin/dreams'), wrap(async ({ request }) => {
+  // ---------- support mailbox tickets (counts before :id) ----------
+  http.get(u('/admin/support/tickets/counts'), wrap(async ({ request }) => { requireAdmin(request); return HttpResponse.json(supportCounts()) })),
+  http.get(u('/admin/support/tickets'), wrap(async ({ request }) => {
+    requireAdmin(request)
+    const q = new URL(request.url).searchParams
+    const st = q.get('status')
+    const status = st === 'NEW' || st === 'IN_PROGRESS' || st === 'CLOSED' ? st : null
+    return HttpResponse.json(page(supportList(status), q))
+  })),
+  http.get(u('/admin/support/tickets/:id'), wrap(async ({ request, params }) => {
+    requireAdmin(request)
+    const t = supportDetail(String(params.id))
+    return t ? HttpResponse.json(t) : problem(404, 'Not found')
+  })),
+  ...(['in-progress', 'close'] as const).map((path) => http.post(u(`/admin/support/tickets/:id/${path}`), wrap(async ({ request, params }) => {
+    const me = requireAdmin(request)
+    const body = (await request.json().catch(() => ({}))) as Partial<T.SupportTicketMessageRequest>
+    const r = supportAction(String(params.id), path === 'close' ? 'CLOSED' : 'IN_PROGRESS', body.message, me.name || me.email)
+    if (!r.ok) return problem(r.status, r.status === 409 ? 'Conflict' : r.status === 404 ? 'Not found' : 'Bad Request', r.detail, r.code ? { code: r.code } : {})
+    return HttpResponse.json(r.ticket)
+  }))),
+  http.get(u('/admin/dreams'),wrap(async ({ request }) => {
     requireAdmin(request)
     const q = new URL(request.url).searchParams
     const st = q.get('status')
