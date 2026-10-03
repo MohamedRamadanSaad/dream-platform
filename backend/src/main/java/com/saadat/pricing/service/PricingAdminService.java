@@ -169,7 +169,8 @@ public class PricingAdminService {
         CountryGroup g = new CountryGroup();
         g.setName(dto.name().trim());
         g.setCreatedAt(clock.instant());
-        groupRepository.save(g);
+        // flushed now: the JPQL update below does not flush the pending insert, and countries.group_id is an FK
+        groupRepository.saveAndFlush(g);
         if (!codes.isEmpty()) {
             // a country belongs to one group: assigning moves it out of its previous group
             countryRepository.assignGroup(g.getId(), codes);
