@@ -19,7 +19,7 @@ export function StaticPage({ kind }: { kind: 'terms' | 'privacy' }) {
   const sections = t(`static.${kind}.sections`, { returnObjects: true }) as Section[]
   const legal = useQuery({ queryKey: ['public', 'legal'], queryFn: publicApi.legal, staleTime: 10 * 60_000 }).data
   const email = legal?.supportEmail || FALLBACK_EMAIL
-  const seller = legal ? ([['name', legal.name, false], ['address', legal.address, false], ['taxNo', legal.taxRegistrationNo, true]] as const).filter(([, v]) => !!v) : []
+  const seller = legal ? ([['name', legal.name, false], ['taxNo', legal.taxRegistrationNo, true]] as const).filter(([, v]) => !!v) : []
   useEffect(() => {
     const before = document.title
     document.title = `${title} | ${t('brand')}`

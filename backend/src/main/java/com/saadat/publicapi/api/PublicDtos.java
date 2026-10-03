@@ -23,7 +23,7 @@ public final class PublicDtos {
     }
 
     /** {@code GET /public/legal}: seller details (empty strings when not set). */
-    public record LegalInfo(String name, String address, String taxRegistrationNo, String supportEmail) {
+    public record LegalInfo(String name, String taxRegistrationNo, String supportEmail) {
     }
 
     /** {@code GET /public/push-key}: the VAPID public key (empty when push is not configured). */

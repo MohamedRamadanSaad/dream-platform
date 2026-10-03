@@ -557,7 +557,7 @@ export interface InsightsResponse {
 export type SettingsMap = Record<string, string>
 
 /** GET /public/legal: seller details (empty strings when not set). */
-export interface LegalInfo { name: string; address: string; taxRegistrationNo: string; supportEmail: string }
+export interface LegalInfo { name: string; taxRegistrationNo: string; supportEmail: string }
 
 /** GET /admin/mail/themes — one e-mail theme (header/footer images + colours). Image URLs are absolute. */
 export interface MailThemeDto {

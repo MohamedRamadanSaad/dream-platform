@@ -20,7 +20,6 @@ public final class SettingKeys {
     /** Seller details required for online sales (Egyptian consumer protection law 181/2018): shown on the terms
      *  page, in the footer and on the payment receipt. Empty values are simply not shown. */
     public static final String BRAND_LEGAL_NAME = "brand.legal_name";
-    public static final String BRAND_LEGAL_ADDRESS = "brand.legal_address";
     public static final String BRAND_TAX_REGISTRATION_NO = "brand.tax_registration_no";
     public static final String BRAND_YOUTUBE_URL = "brand.youtube_url";
     /** Empty until provided; the YouTube poller skips when empty. */
@@ -170,7 +169,7 @@ public final class SettingKeys {
     public static final List<String> ALL = List.of(
             BRAND_NAME_AR, BRAND_NAME_EN, BRAND_TAGLINE_AR, BRAND_TAGLINE_EN, BRAND_SUPPORT_EMAIL,
             BRAND_YOUTUBE_URL, BRAND_YOUTUBE_CHANNEL_ID,
-            BRAND_LEGAL_NAME, BRAND_LEGAL_ADDRESS, BRAND_TAX_REGISTRATION_NO,
+            BRAND_LEGAL_NAME, BRAND_TAX_REGISTRATION_NO,
             WAIT_BUSY, WAIT_NORMAL_HOURS, WAIT_BUSY_MIN_DAYS, WAIT_BUSY_MAX_DAYS, WAIT_MESSAGE_AR, WAIT_MESSAGE_EN,
             WAIT_AUTO_RESET_AT,
             DREAMS_MIN_CHARS, DREAMS_MAX_CHARS, DREAMS_DRAFT_LIMIT, DREAMS_REPLY_REMINDER_HOURS,

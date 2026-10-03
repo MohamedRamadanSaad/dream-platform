@@ -122,7 +122,7 @@ export const handlers = [
     })
     return HttpResponse.json({ countryCode: cc, countryName: (locale.startsWith('en') ? c?.nameEn : c?.nameAr) ?? cc, currency: packages[0]?.currency ?? 'USD', packages } satisfies T.Catalog)
   })),
-  http.get(u('/public/legal'), wrap(async () => HttpResponse.json({ name: db.settings['brand.legal_name'] ?? '', address: db.settings['brand.legal_address'] ?? '', taxRegistrationNo: db.settings['brand.tax_registration_no'] ?? '', supportEmail: 'support@saadatu-aldarein.com' }))),
+  http.get(u('/public/legal'), wrap(async () => HttpResponse.json({ name: db.settings['brand.legal_name'] ?? '', taxRegistrationNo: db.settings['brand.tax_registration_no'] ?? '', supportEmail: 'support@saadatu-aldarein.com' }))),
   http.get(u('/public/wait-time'), wrap(async ({ request }) => HttpResponse.json(waitTimePublic(request.headers.get('accept-language') ?? 'ar')))),
   http.get(u('/public/testimonials'), wrap(async () => HttpResponse.json({ items: [
     { id: 't1', name: 'أم محمد', rating: 5, comment: 'تحقق والحمد لله بعد أسبوعين، وكان التفسير هادئاً ومطمئناً.', date: helpers.daysAgo(20) },

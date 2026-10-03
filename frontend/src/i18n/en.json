@@ -949,7 +949,6 @@
       "title": "Seller details",
       "lead": "Shown on the terms page, at the bottom of the site and in the payment receipt email. Leave a field empty to hide it.",
       "name": "Name as on the tax card",
-      "address": "Address or governorate",
       "taxNo": "Tax registration no.",
       "save": "Save"
     }
@@ -1155,7 +1154,6 @@
     "seller": {
       "title": "Service provider details",
       "name": "Name",
-      "address": "Address",
       "taxNo": "Tax registration no.",
       "email": "Email"
     }

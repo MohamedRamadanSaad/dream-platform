@@ -95,7 +95,6 @@ public class PublicInfoController {
     public PublicDtos.LegalInfo legal() {
         return new PublicDtos.LegalInfo(
                 settings.getString(SettingKeys.BRAND_LEGAL_NAME, "").trim(),
-                settings.getString(SettingKeys.BRAND_LEGAL_ADDRESS, "").trim(),
                 settings.getString(SettingKeys.BRAND_TAX_REGISTRATION_NO, "").trim(),
                 settings.getString(SettingKeys.BRAND_SUPPORT_EMAIL, "").trim());
     }

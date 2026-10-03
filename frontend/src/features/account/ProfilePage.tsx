@@ -165,7 +165,7 @@ function PushCard() {
   )
 }
 
-const SELLER_KEYS = { name: 'brand.legal_name', address: 'brand.legal_address', taxNo: 'brand.tax_registration_no' } as const
+const SELLER_KEYS = { name: 'brand.legal_name', taxNo: 'brand.tax_registration_no' } as const
 
 /** Interpreter only: the seller details shown on the terms page, in the footer and on the payment receipt. */
 function SellerCard() {
@@ -184,8 +184,7 @@ function SellerCard() {
       <h2 id="seller-title" className="font-display text-xl">{t('admin.legal.title')}</h2>
       <p className="mt-1 text-sm font-light text-fg-muted">{t('admin.legal.lead')}</p>
       <div className="mt-5 grid gap-5 sm:grid-cols-2">
-        <Field label={t('admin.legal.name')} className="sm:col-span-2"><Input dir="auto" value={value('name')} onChange={(e) => setDraft((d) => ({ ...d, [SELLER_KEYS.name]: e.target.value }))} /></Field>
-        <Field label={t('admin.legal.address')}><Input dir="auto" value={value('address')} onChange={(e) => setDraft((d) => ({ ...d, [SELLER_KEYS.address]: e.target.value }))} /></Field>
+        <Field label={t('admin.legal.name')}><Input dir="auto" value={value('name')} onChange={(e) => setDraft((d) => ({ ...d, [SELLER_KEYS.name]: e.target.value }))} /></Field>
         <Field label={t('admin.legal.taxNo')}><Input dir="ltr" inputMode="numeric" value={value('taxNo')} onChange={(e) => setDraft((d) => ({ ...d, [SELLER_KEYS.taxNo]: e.target.value }))} /></Field>
       </div>
       <div className="mt-6 flex justify-end"><Button disabled={!Object.keys(changes).length} loading={save.isPending} onClick={() => save.mutate()}>{t('admin.legal.save')}</Button></div>
