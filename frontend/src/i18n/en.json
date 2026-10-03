@@ -9,7 +9,9 @@
     "courses": "Courses",
     "login": "Sign in",
     "youtube": "YouTube channel",
-    "youtubeNew": "{{count}} new videos on the channel"
+    "youtubeNew_one": "{{count}} new video on the channel",
+    "youtubeNew_other": "{{count}} new videos on the channel",
+    "youtubeChannel": "Open the channel"
   },
   "hero": {
     "title1": "Dream interpretation:",
@@ -1130,12 +1132,6 @@
           "p": [
             "You can delete your account from My account. When you do, we remove your name, email, sign-in methods and notification subscription, and sign you out on every device.",
             "We keep the records of dreams and payments for accounting, linked to an account that no longer has your name or email."
-          ]
-        },
-        {
-          "h": "Channel emails",
-          "p": [
-            "We only send new video alerts if you agree to them, and you can turn them off at any time."
           ]
         },
         {

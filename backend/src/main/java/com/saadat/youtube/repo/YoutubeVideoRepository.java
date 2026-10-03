@@ -12,4 +12,6 @@ public interface YoutubeVideoRepository extends JpaRepository<YoutubeVideo, Stri
     List<YoutubeVideo> findTop5ByOrderByPublishedAtDesc();
 
     List<YoutubeVideo> findTop5ByPublishedAtAfterOrderByPublishedAtDesc(Instant since);
+
+    List<YoutubeVideo> findByPublishedAtAfterOrderByPublishedAtDesc(Instant since, org.springframework.data.domain.Pageable page);
 }

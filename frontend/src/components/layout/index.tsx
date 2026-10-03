@@ -5,7 +5,8 @@ import { useAuthStore, isInterpreter } from '@/app/auth-store'
 import { useSignOut } from '@/app/session'
 import { applyLocale } from '@/i18n'
 import { Icon, type IconName } from '@/components/icons/Icon'
-import { cn } from '@/lib/utils'
+import { cn, fmtDate } from '@/lib/utils'
+import type { YoutubeUnseen, YoutubeVideoDto } from '@/api/types'
 import { Avatar } from '@/components/ui/Avatar'
 import { useQuery } from '@tanstack/react-query'
 import { meApi, notificationsApi, publicApi, youtubeApi } from '@/api/endpoints'
@@ -26,21 +27,72 @@ export function YoutubeLogo({ size = 20, className }: { size?: number; className
   )
 }
 
+/**
+ * YouTube button with the number of videos published since the user last pressed it (from the day the account was
+ * created for a user who never pressed it). Every press records the time on the server.
+ * 0 new: opens the channel. 1 new: opens that video. Several: opens a list of their titles, each linking to the video.
+ */
 export function YoutubeButton({ dark }: { dark?: boolean }) {
   const { t } = useTranslation()
   const user = useAuthStore((s) => s.user)
+  const locale = useAuthStore((s) => s.locale)
   const qc = useQueryClient()
   const { data } = useQuery({ queryKey: ['youtube', 'unseen'], queryFn: youtubeApi.unseen, enabled: !!user, refetchInterval: 120_000, staleTime: 60_000 })
-  const seen = useMutation({ mutationFn: youtubeApi.seen, meta: { toast: false }, onSuccess: () => qc.setQueryData(['youtube', 'unseen'], (old: { count: number; latest: unknown[] } | undefined) => (old ? { ...old, count: 0 } : old)) })
+  const seen = useMutation({
+    mutationFn: youtubeApi.seen,
+    meta: { toast: false },
+    onSuccess: () => qc.setQueryData<YoutubeUnseen>(['youtube', 'unseen'], { count: 0, latest: [] }),
+  })
+  // the list keeps what was new at the moment of the press (the server count is already 0 after it)
+  const [list, setList] = useState<YoutubeVideoDto[] | null>(null)
+  const box = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    if (!list) return
+    const onDown = (e: MouseEvent) => { if (!box.current?.contains(e.target as Node)) setList(null) }
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setList(null) }
+    document.addEventListener('mousedown', onDown)
+    window.addEventListener('keydown', onKey)
+    return () => { document.removeEventListener('mousedown', onDown); window.removeEventListener('keydown', onKey) }
+  }, [list])
+
   const count = data?.count ?? 0
-  const href = data?.latest?.[0]?.url && count > 0 ? data.latest[0].url : YT
-  return (
-    <a href={href} target="_blank" rel="noreferrer" onClick={() => { if (count > 0) seen.mutate() }} className={cn('btn btn-sm relative gap-2 border', dark ? 'border-navy text-gold-soft hover:border-gold' : 'border-line text-fg hover:border-gold')} aria-label={t('nav.youtube')} title={count > 0 ? t('nav.youtubeNew', { count }) : undefined}>
-      <YoutubeLogo size={15} />
-      <span className="hidden sm:inline">{t('nav.youtube')}</span>
-      {count > 0 && <span className="pulse-ring absolute -top-1 -end-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#FF0000] px-1 text-[10px] font-bold text-white">{count > 9 ? '9+' : count}</span>}
-    </a>
-  )
+  const videos = data?.latest ?? []
+  const press = () => { if (user) seen.mutate() }
+  const cls = cn('btn btn-sm relative gap-2 border', dark ? 'border-navy text-gold-soft hover:border-gold' : 'border-line text-fg hover:border-gold', list && 'border-gold')
+  const badge = count > 0 && <span className="pulse-ring absolute -top-1 -end-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#FF0000] px-1 text-[10px] font-bold text-white">{count > 9 ? '9+' : count}</span>
+  const inner = <><YoutubeLogo size={15} /><span className="hidden sm:inline">{t('nav.youtube')}</span>{badge}</>
+  const title = count > 0 ? t('nav.youtubeNew', { count }) : t('nav.youtube')
+
+  if (list || (count > 1 && videos.length > 1)) {
+    return (
+      <div ref={box} className="relative">
+        <button type="button" className={cls} aria-haspopup="true" aria-expanded={!!list} aria-label={title} title={title}
+          onClick={() => { if (list) { setList(null) } else { setList(videos); press() } }}>{inner}</button>
+        {list && (
+          <div className="modal-panel fixed inset-x-4 top-[4.5rem] z-50 overflow-hidden rounded-2xl border border-line bg-surface text-fg shadow-calm sm:absolute sm:inset-x-auto sm:end-0 sm:top-full sm:mt-2 sm:w-[22rem]">
+            <div className="border-b border-line px-4 py-3 text-sm font-medium">{t('nav.youtubeNew', { count: list.length })}</div>
+            <ul className="max-h-80 overflow-y-auto overscroll-contain p-1.5">
+              {list.map((v) => (
+                <li key={v.id}>
+                  <a href={v.url} target="_blank" rel="noreferrer" onClick={() => setList(null)} className="flex items-start gap-3 rounded-xl px-3 py-2.5 transition-colors hover:bg-surface-2">
+                    <span className="mt-0.5"><YoutubeLogo size={14} /></span>
+                    <span className="min-w-0 flex-1">
+                      <span dir="auto" className="line-clamp-2 block text-sm leading-relaxed">{v.title}</span>
+                      <span className="mt-0.5 block text-xs text-fg-dim">{fmtDate(v.publishedAt, locale)}</span>
+                    </span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+            <a href={YT} target="_blank" rel="noreferrer" onClick={() => setList(null)} className="block border-t border-line px-4 py-3 text-center text-xs font-medium text-gold-ink hover:bg-surface-2">{t('nav.youtubeChannel')}</a>
+          </div>
+        )}
+      </div>
+    )
+  }
+  // one new video opens it directly; otherwise the channel
+  const href = count >= 1 && videos[0]?.url ? videos[0].url : YT
+  return <a href={href} target="_blank" rel="noreferrer" onClick={press} className={cls} aria-label={title} title={title}>{inner}</a>
 }
 
 const LANGS = [

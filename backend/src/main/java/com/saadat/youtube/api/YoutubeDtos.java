@@ -16,7 +16,7 @@ public final class YoutubeDtos {
         }
     }
 
-    /** {@code GET /youtube/unseen}: {@code count} is capped (badge shows "9+"), {@code latest} = newest videos. */
+    /** {@code GET /youtube/unseen}: {@code count} = new videos since the last press, {@code latest} = those videos. */
     public record YoutubeUnseen(long count, List<YoutubeVideoDto> latest) {
     }
 

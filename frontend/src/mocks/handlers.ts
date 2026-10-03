@@ -356,9 +356,10 @@ export const handlers = [
   // ---------- youtube as notification ----------
   http.get(u('/youtube/unseen'), wrap(async ({ request }) => {
     const me = requireUser(request)
-    const seenAt = ytSeen[me.id] ?? 0
+    // like the server: since the last press, else since the account was created
+    const seenAt = ytSeen[me.id] ?? new Date(me.createdAt).getTime()
     const unseen = ytVideos.filter((v) => new Date(v.publishedAt).getTime() > seenAt)
-    return HttpResponse.json({ count: unseen.length, latest: ytVideos.slice(0, 5) } satisfies T.YoutubeUnseen)
+    return HttpResponse.json({ count: unseen.length, latest: unseen.slice(0, 20) } satisfies T.YoutubeUnseen)
   })),
   http.post(u('/youtube/seen'), wrap(async ({ request }) => {
     const me = requireUser(request)

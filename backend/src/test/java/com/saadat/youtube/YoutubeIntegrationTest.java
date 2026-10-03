@@ -24,16 +24,24 @@ class YoutubeIntegrationTest extends IntegrationTestBase {
 
     @Test
     void unseenCountDropsAfterSeenAndCountsNewerVideos() throws Exception {
-        User user = createUser("yt", Role.USER);
         Instant now = Instant.now();
+        // the account is older than both videos: they count as new until the button is pressed
+        User user = new User();
+        user.setEmail("yt-" + java.util.UUID.randomUUID() + "@example.com");
+        user.setName("yt");
+        user.setRole(Role.USER);
+        user.setOnboarded(true);
+        user.setCountryCode("SA");
+        user.setCreatedAt(now.minus(3, ChronoUnit.DAYS));
+        user = userRepository.save(user);
         videoRepository.save(video("vidPast0001", now.minus(2, ChronoUnit.DAYS)));
         videoRepository.save(video("vidPast0002", now.minus(1, ChronoUnit.DAYS)));
 
         mvc.perform(get(ApiPaths.Youtube.UNSEEN).header(HttpHeaders.AUTHORIZATION, bearer(user)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.count").isNumber())
-                .andExpect(jsonPath("$.latest").isArray())
-                .andExpect(jsonPath("$.latest[0].id").isNotEmpty())
+                .andExpect(jsonPath("$.count").value(2))
+                .andExpect(jsonPath("$.latest.length()").value(2))
+                .andExpect(jsonPath("$.latest[0].id").value("vidPast0002"))
                 .andExpect(jsonPath("$.latest[0].url").isNotEmpty())
                 .andExpect(jsonPath("$.latest[0].publishedAt").isNotEmpty());
 
@@ -42,7 +50,8 @@ class YoutubeIntegrationTest extends IntegrationTestBase {
 
         mvc.perform(get(ApiPaths.Youtube.UNSEEN).header(HttpHeaders.AUTHORIZATION, bearer(user)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.count").value(0));
+                .andExpect(jsonPath("$.count").value(0))
+                .andExpect(jsonPath("$.latest.length()").value(0));
 
         // a video published after the "seen" marker counts again
         videoRepository.save(video("vidFuture01", now.plus(1, ChronoUnit.HOURS)));
@@ -74,3 +83,4 @@ class YoutubeIntegrationTest extends IntegrationTestBase {
         return v;
     }
 }
+
