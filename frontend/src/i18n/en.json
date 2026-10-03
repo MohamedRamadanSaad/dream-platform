@@ -214,7 +214,8 @@
         "SUBMIT": "Dream submitted",
         "REFUND": "Refund",
         "MANUAL": "Added by the interpreter",
-        "BONUS": "Gift"
+        "BONUS": "Gift",
+        "EXPIRE": "Expired"
       },
       "invoiceNo": "Invoice number",
       "copy": "Copy invoice number",
@@ -366,6 +367,11 @@
       "title": "Notifications",
       "readAll": "Mark all as read",
       "empty": "No notifications"
+    },
+    "expiry": {
+      "notice_one": "{{count}} credit expires on {{date}}",
+      "notice_other": "{{count}} credits expire on {{date}}",
+      "use": "Use it now"
     }
   },
   "admin": {
@@ -554,7 +560,8 @@
         "SUBMIT": "Submitted",
         "REFUND": "Refund",
         "MANUAL": "Manual",
-        "BONUS": "Gift"
+        "BONUS": "Gift",
+        "EXPIRE": "Expired"
       },
       "reason": "Reason",
       "draftHidden": "[Draft, hidden until it is submitted]",

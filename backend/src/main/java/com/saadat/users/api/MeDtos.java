@@ -36,7 +36,12 @@ public final class MeDtos {
             long interpreted,
             int credits,
             long unreadNotifications,
-            WaitTime waitTime) {
+            WaitTime waitTime,
+            NextCreditExpiry nextExpiry) {
+    }
+
+    /** The soonest credit expiry within the notice window ({@code credits.expiry_notice_days}); null otherwise. */
+    public record NextCreditExpiry(int credits, java.time.Instant at) {
     }
 
     /**

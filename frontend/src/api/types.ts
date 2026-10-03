@@ -243,7 +243,7 @@ export interface TestimonialRequest {
 export interface CreditLedgerEntry {
   id: string
   delta: number
-  reason: 'PURCHASE' | 'SUBMIT' | 'REFUND' | 'MANUAL' | 'BONUS'
+  reason: 'PURCHASE' | 'SUBMIT' | 'REFUND' | 'MANUAL' | 'BONUS' | 'EXPIRE'
   orderId: string | null
   dreamId: string | null
   createdAt: string
@@ -304,6 +304,8 @@ export interface DashboardSummary {
   credits: number
   unreadNotifications: number
   waitTime: WaitTime
+  /** Soonest credit expiry within the notice window, else null. */
+  nextExpiry: { credits: number; at: string } | null
 }
 export interface PreferencesRequest {
   locale?: Locale

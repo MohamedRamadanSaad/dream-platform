@@ -6,5 +6,7 @@ public enum LedgerReason {
     SUBMIT,
     REFUND,
     MANUAL,
-    BONUS
+    BONUS,
+    /** Unused part of an expired purchase (negative; source_id = that purchase row). */
+    EXPIRE
 }

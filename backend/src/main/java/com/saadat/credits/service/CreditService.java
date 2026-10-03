@@ -10,6 +10,7 @@ import com.saadat.payments.domain.CreditLedgerEntry;
 import com.saadat.payments.repo.CreditLedgerRepository;
 import com.saadat.users.repo.UserRepository;
 import java.time.Clock;
+import java.time.Instant;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -27,6 +28,7 @@ public class CreditService {
     private final CreditLedgerRepository ledgerRepository;
     private final UserRepository userRepository;
     private final Clock clock;
+    private final CreditExpiryService expiryService;
 
     @Transactional(readOnly = true)
     public int balance(UUID userId) {
@@ -47,6 +49,8 @@ public class CreditService {
     @Transactional(propagation = org.springframework.transaction.annotation.Propagation.MANDATORY)
     public int lockAndGetBalance(UUID userId) {
         userRepository.findByIdForUpdate(userId).orElseThrow(() -> NotFoundException.of("User", userId));
+        // purchases past their expiry are written off first, so an expired credit is never spent
+        expiryService.expireDue(userId);
         return ledgerRepository.balance(userId);
     }
 
@@ -88,6 +92,14 @@ public class CreditService {
             throw NotFoundException.of("User", userId);
         }
         return save(userId, delta, reason, orderId, dreamId, note, createdBy);
+    }
+
+    /** Credits of a paid order; they expire at {@code expiresAt} (null = never). */
+    @Transactional
+    public CreditLedgerEntry addPurchase(UUID userId, int credits, UUID orderId, Instant expiresAt) {
+        CreditLedgerEntry e = add(userId, credits, LedgerReason.PURCHASE, orderId, null, null);
+        e.setExpiresAt(expiresAt);
+        return ledgerRepository.save(e);
     }
 
     private CreditLedgerEntry save(UUID userId, int delta, LedgerReason reason, UUID orderId, UUID dreamId,

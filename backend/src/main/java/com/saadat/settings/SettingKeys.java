@@ -57,6 +57,8 @@ public final class SettingKeys {
 
     // ---- orders ----
     public static final String ORDERS_EXPIRE_MINUTES = "orders.expire_minutes";
+    /** The user sees their next credit expiry when it is within N days. */
+    public static final String CREDITS_EXPIRY_NOTICE_DAYS = "credits.expiry_notice_days";
 
     // ---- interpreter ----
     /** Comma-separated list of e-mails that get role INTERPRETER on first login. */
@@ -172,7 +174,7 @@ public final class SettingKeys {
             AUTH_MAGIC_TTL_MINUTES, AUTH_ACCESS_TTL_MINUTES, AUTH_REFRESH_TTL_DAYS, AUTH_SESSION_TTL_HOURS,
             AUTH_KNOWN_DEVICE_DAYS,
             AUTH_PASSKEY_CHALLENGE_TTL_SECONDS,
-            ORDERS_EXPIRE_MINUTES,
+            ORDERS_EXPIRE_MINUTES, CREDITS_EXPIRY_NOTICE_DAYS,
             INTERPRETER_EMAILS, INTERPRETER_DIGEST_HOUR,
             PRICING_GLOBAL_CURRENCY, PRICING_DEFAULT_COUNTRY, PRICING_FX_TO_USD,
             YOUTUBE_POLL_MINUTES,

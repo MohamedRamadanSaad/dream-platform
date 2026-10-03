@@ -53,6 +53,18 @@ public class CreditLedgerEntry {
     @Column(name = "note", columnDefinition = "text")
     private String note;
 
+    /** Purchases only: when the unused part expires (null = never). */
+    @Column(name = "expires_at")
+    private Instant expiresAt;
+
+    /** EXPIRE rows only: the purchase row that expired. */
+    @Column(name = "source_id")
+    private UUID sourceId;
+
+    /** Purchases only: set once the expiry job has handled this purchase (EXPIRE row written or nothing left). */
+    @Column(name = "expiry_settled_at")
+    private Instant expirySettledAt;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 

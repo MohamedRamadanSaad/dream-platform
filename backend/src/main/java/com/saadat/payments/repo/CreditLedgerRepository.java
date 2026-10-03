@@ -19,6 +19,12 @@ public interface CreditLedgerRepository extends JpaRepository<CreditLedgerEntry,
 
     List<CreditLedgerEntry> findByUserIdOrderByCreatedAtDesc(UUID userId);
 
+    List<CreditLedgerEntry> findByUserIdOrderByCreatedAtAsc(UUID userId);
+
+    /** Users owning at least one purchase that is past expiry and not settled yet (CreditExpiryJob). */
+    @Query("select distinct l.userId from CreditLedgerEntry l where l.expiresAt <= :now and l.expirySettledAt is null")
+    List<UUID> findUserIdsWithDueExpiry(@Param("now") java.time.Instant now);
+
     Page<CreditLedgerEntry> findByUserIdOrderByCreatedAtDesc(UUID userId, Pageable pageable);
 
     Optional<CreditLedgerEntry> findByOrderIdAndReason(UUID orderId, LedgerReason reason);

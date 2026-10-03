@@ -7,6 +7,7 @@ import { ErrorBox, Skeleton, StatusBadge } from '@/components/ui'
 import { Icon } from '@/components/icons/Icon'
 import { PageEnter } from '@/components/motion'
 import { arrowNext, fmtDate, fmtMoney } from '@/lib/utils'
+import { CreditExpiryNotice } from './CreditExpiryNotice'
 import { toast } from '@/components/ui/Toaster'
 
 /** The order id is the invoice number (same as in the receipt e-mail); one tap copies it for a support e-mail. */
@@ -40,6 +41,7 @@ export function PaymentsPage() {
         <div className="text-gold"><Icon name="star" size={40} active strokeWidth={1.2} /></div>
         <Link to="/me/packages" className="btn btn-sm btn-gold">{t('me.nav.packages')}</Link>
       </div>
+      <CreditExpiryNotice />
       <section>
         <h2 className="mb-3 font-display text-2xl">{t('me.payments.history')}</h2>
         {orders.isLoading ? <Skeleton className="h-40" /> : orders.isError ? <ErrorBox onRetry={() => orders.refetch()} /> : (

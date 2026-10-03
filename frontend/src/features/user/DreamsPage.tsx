@@ -11,6 +11,7 @@ import { PageEnter, StaggerGroup } from '@/components/motion'
 import { arrowNext, cn, fmtDate, timeAgo } from '@/lib/utils'
 import type { DreamStatus, DreamSummary } from '@/api/types'
 import { replyTimeText } from '@/lib/waitTime'
+import { CreditExpiryNotice } from './CreditExpiryNotice'
 import { ApiError } from '@/api/client'
 
 type Tab = 'DRAFT' | 'IN_REVIEW' | 'AWAITING_USER_REPLY' | 'INTERPRETED'
@@ -78,6 +79,7 @@ export function UserDreamsPage() {
         <Link to="/me/new" className="btn btn-md btn-gold"><Icon name="plus" size={16} />{t('me.nav.new')}</Link>
       </div>
 
+      <CreditExpiryNotice className="mb-4" withLink />
       {dash.data?.waitTime && (
         <div className="card mb-6 flex items-center gap-3 p-4 text-sm">
           <span className="pulse-ring h-2 w-2 shrink-0 rounded-full bg-gold" />

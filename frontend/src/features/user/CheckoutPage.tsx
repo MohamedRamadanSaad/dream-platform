@@ -10,6 +10,7 @@ import { PageEnter, StaggerGroup } from '@/components/motion'
 import { PackageCard } from '@/features/public/LandingPage'
 import { arrowBack, fmtMoney } from '@/lib/utils'
 import { ApiError } from '@/api/client'
+import { CreditExpiryNotice } from './CreditExpiryNotice'
 import type { PackageDto } from '@/api/types'
 
 export function PackagesPage() {
@@ -24,6 +25,7 @@ export function PackagesPage() {
       <h1 className="font-display text-4xl">{t('packages.title')}</h1>
       <p className="mb-2 text-sm font-light text-fg-muted">{t('packages.lead')}</p>
       {data && <div className="chip mb-8 border border-line bg-surface text-xs text-fg-muted"><Icon name="globe" size={14} />{t('packages.shownFor', { country: data.countryName })}</div>}
+      <CreditExpiryNotice className="mb-6" />
       {dreams && <div className="card mb-6 border-gold/40 bg-gold/5 p-4 text-sm">{t('me.needMore', { n: dreams.split(',').length })}</div>}
       {isLoading ? <div className="grid gap-6 md:grid-cols-3">{[1, 2, 3].map((i) => <Skeleton key={i} className="h-80" />)}</div>
         : isError ? <ErrorBox onRetry={() => refetch()} />

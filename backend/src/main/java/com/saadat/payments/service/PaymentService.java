@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.saadat.common.audit.AuditService;
 import com.saadat.common.domain.CountrySource;
-import com.saadat.common.domain.LedgerReason;
 import com.saadat.common.domain.Locale;
 import com.saadat.common.domain.NotificationType;
 import com.saadat.common.domain.OrderStatus;
@@ -251,7 +250,7 @@ public class PaymentService {
         order.setFailureReason(null);
         orderRepository.save(order);
 
-        creditService.add(order.getUserId(), order.getCredits(), LedgerReason.PURCHASE, order.getId(), null, null);
+        creditService.addPurchase(order.getUserId(), order.getCredits(), order.getId(), purchaseExpiry(order));
         couponService.redeem(order.getCouponId(), order.getUserId(), order.getId());
         promotionService.recordUse(order.getPromotionId());
 
@@ -403,5 +402,17 @@ public class PaymentService {
             log.warn("Unreadable checkout_intent: {}", e.getMessage());
             return List.of();
         }
+    }
+
+    /** Paid credits expire after the package's validity (months from payment); null = never (no validity / no package). */
+    private Instant purchaseExpiry(Order order) {
+        if (order.getPackageId() == null || order.getPaidAt() == null) {
+            return null;
+        }
+        Integer months = packageRepository.findById(order.getPackageId()).map(DreamPackage::getValidityMonths).orElse(null);
+        if (months == null || months <= 0) {
+            return null;
+        }
+        return order.getPaidAt().atZone(java.time.ZoneOffset.UTC).plusMonths(months).toInstant();
     }
 }

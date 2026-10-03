@@ -22,6 +22,9 @@ import java.time.Clock;
 import java.util.Map;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
+import com.saadat.credits.service.CreditExpiryService;
+import com.saadat.credits.service.CreditLots;
+import com.saadat.users.api.MeDtos;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -46,14 +49,16 @@ public class AccountService {
     private final EventMailer eventMailer;
     private final Clock clock;
     private final PasskeyRepository passkeyRepository;
+    private final CreditExpiryService creditExpiryService;
 
     public AccountService(UserRepository userRepository, AuthIdentityRepository identityRepository,
                           RefreshTokenService refreshTokenService, PushSubscriptionService pushSubscriptionService,
                           DreamRepository dreamRepository, CreditLedgerRepository creditLedgerRepository,
                           NotificationRepository notificationRepository, WaitTimeView waitTimeView,
                           UserDtoMapper mapper, EventMailer eventMailer, Clock clock,
-                          PasskeyRepository passkeyRepository) {
+                          PasskeyRepository passkeyRepository, CreditExpiryService creditExpiryService) {
         this.passkeyRepository = passkeyRepository;
+        this.creditExpiryService = creditExpiryService;
         this.userRepository = userRepository;
         this.identityRepository = identityRepository;
         this.refreshTokenService = refreshTokenService;
@@ -130,13 +135,16 @@ public class AccountService {
     public DashboardSummary dashboard(UUID userId, Locale requestLocale) {
         User user = requireActive(userId);
         Locale locale = requestLocale != null ? requestLocale : user.getLocale();
+        CreditExpiryService.View credits = creditExpiryService.view(userId);
+        CreditLots.NextExpiry next = credits.nextExpiry();
         return new DashboardSummary(
                 dreamRepository.countByUserIdAndStatus(userId, DreamStatus.DRAFT),
                 dreamRepository.countByUserIdAndStatus(userId, DreamStatus.IN_REVIEW),
                 dreamRepository.countByUserIdAndStatus(userId, DreamStatus.AWAITING_USER_REPLY),
                 dreamRepository.countByUserIdAndStatus(userId, DreamStatus.INTERPRETED),
-                creditLedgerRepository.balance(userId),
+                credits.balance(),
                 notificationRepository.countByUserIdAndReadAtIsNull(userId),
-                waitTimeView.current(locale));
+                waitTimeView.current(locale),
+                next == null ? null : new MeDtos.NextCreditExpiry(next.credits(), next.at()));
     }
 }

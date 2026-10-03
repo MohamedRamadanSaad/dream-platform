@@ -158,6 +158,7 @@ export const handlers = [
       credits: balanceOf(me.id),
       unreadNotifications: db.notifications.filter((n) => n.userId === me.id && !n.readAt).length,
       waitTime: waitTimePublic(request.headers.get('accept-language') ?? 'ar'),
+      nextExpiry: balanceOf(me.id) > 0 ? { credits: Math.min(2, balanceOf(me.id)), at: new Date(Date.now() + 24 * 864e5).toISOString() } : null,
     }
     return HttpResponse.json(s)
   })),
