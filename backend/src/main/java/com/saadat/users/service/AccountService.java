@@ -50,13 +50,16 @@ public class AccountService {
     private final Clock clock;
     private final PasskeyRepository passkeyRepository;
     private final CreditExpiryService creditExpiryService;
+    private final DashboardActivity dashboardActivity;
 
     public AccountService(UserRepository userRepository, AuthIdentityRepository identityRepository,
                           RefreshTokenService refreshTokenService, PushSubscriptionService pushSubscriptionService,
                           DreamRepository dreamRepository, CreditLedgerRepository creditLedgerRepository,
                           NotificationRepository notificationRepository, WaitTimeView waitTimeView,
                           UserDtoMapper mapper, EventMailer eventMailer, Clock clock,
-                          PasskeyRepository passkeyRepository, CreditExpiryService creditExpiryService) {
+                          PasskeyRepository passkeyRepository, CreditExpiryService creditExpiryService,
+                          DashboardActivity dashboardActivity) {
+        this.dashboardActivity = dashboardActivity;
         this.passkeyRepository = passkeyRepository;
         this.creditExpiryService = creditExpiryService;
         this.userRepository = userRepository;
@@ -133,6 +136,12 @@ public class AccountService {
 
     @Transactional(readOnly = true)
     public DashboardSummary dashboard(UUID userId, Locale requestLocale) {
+        return dashboard(userId, requestLocale, null);
+    }
+
+    /** @param currentVisit the SPA's visit id (cookie {@code saadat_sid}), so this visit is not "the last visit" */
+    @Transactional(readOnly = true)
+    public DashboardSummary dashboard(UUID userId, Locale requestLocale, String currentVisit) {
         User user = requireActive(userId);
         Locale locale = requestLocale != null ? requestLocale : user.getLocale();
         CreditExpiryService.View credits = creditExpiryService.view(userId);
@@ -145,6 +154,9 @@ public class AccountService {
                 credits.balance(),
                 notificationRepository.countByUserIdAndReadAtIsNull(userId),
                 waitTimeView.current(locale),
-                next == null ? null : new MeDtos.NextCreditExpiry(next.credits(), next.at()));
+                next == null ? null : new MeDtos.NextCreditExpiry(next.credits(), next.at()),
+                dashboardActivity.usedCredits(userId),
+                dashboardActivity.lastVisitAt(userId, currentVisit),
+                dashboardActivity.lastPackage(userId, locale));
     }
 }

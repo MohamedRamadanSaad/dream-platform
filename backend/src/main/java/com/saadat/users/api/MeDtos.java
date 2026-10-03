@@ -37,7 +37,18 @@ public final class MeDtos {
             int credits,
             long unreadNotifications,
             WaitTime waitTime,
-            NextCreditExpiry nextExpiry) {
+            NextCreditExpiry nextExpiry,
+            long usedCredits,
+            java.time.Instant lastVisitAt,
+            LastPackage lastPackage) {
+    }
+
+    /**
+     * The latest package the user paid for (null when none). {@code name} is in the request language when the
+     * package still exists, else the name stored on the order.
+     */
+    public record LastPackage(UUID orderId, String name, int credits, java.math.BigDecimal amount,
+                              com.saadat.common.domain.Currency currency, java.time.Instant paidAt) {
     }
 
     /** The soonest credit expiry within the notice window ({@code credits.expiry_notice_days}); null otherwise. */

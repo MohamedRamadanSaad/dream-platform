@@ -35,6 +35,9 @@ public interface OrderRepository extends JpaRepository<Order, UUID> {
 
     List<Order> findByUserIdAndStatus(UUID userId, OrderStatus status);
 
+    /** The user's latest order in {@code status} (user dashboard: the last package bought). */
+    Optional<Order> findFirstByUserIdAndStatusOrderByPaidAtDescCreatedAtDesc(UUID userId, OrderStatus status);
+
     long countByStatus(OrderStatus status);
 
     /** Row lock for webhook confirmation. */

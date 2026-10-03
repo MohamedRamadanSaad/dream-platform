@@ -19,6 +19,15 @@ public interface CreditLedgerRepository extends JpaRepository<CreditLedgerEntry,
 
     List<CreditLedgerEntry> findByUserIdOrderByCreatedAtDesc(UUID userId);
 
+    /**
+     * Net credits that went to dreams: the dream debits ({@code submit}, negative) plus the dream refunds
+     * ({@code refund} rows linked to a dream, positive). Minus this value = credits used so far.
+     */
+    @Query("select coalesce(sum(l.delta), 0) from CreditLedgerEntry l where l.userId = :userId "
+            + "and (l.reason = :submit or (l.reason = :refund and l.dreamId is not null))")
+    long netDreamCredits(@Param("userId") UUID userId, @Param("submit") LedgerReason submit,
+                         @Param("refund") LedgerReason refund);
+
     List<CreditLedgerEntry> findByUserIdOrderByCreatedAtAsc(UUID userId);
 
     /** Users owning at least one purchase that is past expiry and not settled yet (CreditExpiryJob). */

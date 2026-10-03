@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /** {@link ApiPaths.Me} routes owned by the users package (credits/orders live in payments/credits). */
@@ -49,8 +50,9 @@ public class MeAccountController {
 
     @GetMapping(ApiPaths.Me.DASHBOARD)
     public DashboardSummary dashboard(
-            @RequestHeader(value = HttpHeaders.ACCEPT_LANGUAGE, required = false) String acceptLanguage) {
+            @RequestHeader(value = HttpHeaders.ACCEPT_LANGUAGE, required = false) String acceptLanguage,
+            @RequestParam(value = "visit", required = false) String visit) {
         Locale requestLocale = acceptLanguage == null || acceptLanguage.isBlank() ? null : Locale.fromTag(acceptLanguage);
-        return accountService.dashboard(AuthPrincipal.current().userId(), requestLocale);
+        return accountService.dashboard(AuthPrincipal.current().userId(), requestLocale, visit);
     }
 }
