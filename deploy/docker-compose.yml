@@ -32,6 +32,8 @@ services:
       POSTGRES_DB: ${POSTGRES_DB:-dreams}
       POSTGRES_USER: ${POSTGRES_USER:-dreams}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    # loopback only: reachable from the server itself (and an SSH tunnel), never from the internet
+    ports: ["127.0.0.1:5432:5432"]
     volumes:
       - pg_data:/var/lib/postgresql/data
     healthcheck:
