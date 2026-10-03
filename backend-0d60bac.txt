@@ -1,5 +1,0 @@
-### commit 0d60bac3d2e9e72d02f91965adf18a411b472526 run 37098465816 Sat Oct  3 05:01:42 UTC 2026
-## tests
-## failures
-## build.log (errors + tail)
-...
