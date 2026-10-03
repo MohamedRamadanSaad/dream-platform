@@ -18,6 +18,11 @@ import org.springframework.transaction.annotation.Transactional;
 /**
  * Server-side price resolution (contract rule 1): COUNTRY → GROUP → CONTINENT → GLOBAL.
  * The first scope that has a rule for the package wins.
+ *
+ * <p>Currency rule (owner, 2026-10-03): a visitor only ever sees prices in his country's currency
+ * ({@code countries.default_currency}: EGP for Egypt, USD for every other country). Rules in another currency are
+ * skipped, so an EGP price set on a continent or a group never reaches a non-Egyptian visitor and a USD fallback
+ * never reaches Egypt; a package without a price in that currency is simply not offered there.
  */
 @Service
 @RequiredArgsConstructor
@@ -50,6 +55,10 @@ public class PriceResolver {
     public static Optional<Resolved> pick(Country country, List<PriceRule> rules) {
         if (rules == null || rules.isEmpty()) {
             return Optional.empty();
+        }
+        Currency expected = country == null ? null : country.getDefaultCurrency();
+        if (expected != null) {
+            rules = rules.stream().filter(r -> r.getCurrency() == expected).toList();
         }
         Optional<PriceRule> hit = Optional.empty();
         if (country != null) {

@@ -7,6 +7,9 @@ import com.saadat.common.domain.PromotionType;
 import com.saadat.common.error.ConflictException;
 import com.saadat.common.error.NotFoundException;
 import com.saadat.common.error.ValidationException;
+import com.saadat.settings.SettingsService;
+import com.saadat.settings.SettingKeys;
+import com.saadat.common.domain.Currency;
 import com.saadat.pricing.api.AdminPackageDto;
 import com.saadat.pricing.api.CountryDto;
 import com.saadat.pricing.api.CountryGroupDto;
@@ -57,6 +60,7 @@ public class PricingAdminService {
     private final PromotionRepository promotionRepository;
     private final CouponRepository couponRepository;
     private final AuditService auditService;
+    private final SettingsService settingsService;
     private final Clock clock;
 
     // ================================================================== packages
@@ -290,6 +294,30 @@ public class PricingAdminService {
         auditService.record(actor, "PRICE_RULE_DELETE", "price_rules", id.toString(), before, null);
     }
 
+    /**
+     * A visitor only sees prices in his country's currency (PriceResolver), so a rule in another currency would never
+     * be shown: COUNTRY rules must use that country's currency, GROUP / CONTINENT rules the currency of at least one
+     * of their countries, GLOBAL rules the global currency setting.
+     */
+    private void checkCurrency(PriceScope scope, String scopeId, Currency currency) {
+        boolean ok = switch (scope) {
+            case COUNTRY -> countryRepository.findById(scopeId)
+                    .map(c -> c.getDefaultCurrency() == currency).orElse(true);
+            case GROUP -> {
+                List<Country> members = countryRepository.findByGroupId(UUID.fromString(scopeId));
+                yield members.isEmpty() || members.stream().anyMatch(c -> c.getDefaultCurrency() == currency);
+            }
+            case CONTINENT -> countryRepository.findAllByOrderByNameEnAsc().stream()
+                    .filter(c -> c.getContinent() != null && c.getContinent().name().equalsIgnoreCase(scopeId))
+                    .anyMatch(c -> c.getDefaultCurrency() == currency);
+            case GLOBAL -> currency.name().equals(settingsService.getString(SettingKeys.PRICING_GLOBAL_CURRENCY).trim());
+        };
+        if (!ok) {
+            throw new ValidationException("Currency " + currency + " is not used by the countries of this price",
+                    "CURRENCY_MISMATCH");
+        }
+    }
+
     private PriceRuleDto normalizeRule(PriceRuleDto d) {
         if (d.scope() == null || d.packageId() == null || d.currency() == null || d.price() == null) {
             throw new ValidationException("scope, packageId, price and currency are required", "INVALID_PRICE_RULE");
@@ -299,6 +327,7 @@ public class PricingAdminService {
         }
         findPackage(d.packageId());
         String scopeId = normalizeScopeId(d.scope(), d.scopeId());
+        checkCurrency(d.scope(), scopeId, d.currency());
         return new PriceRuleDto(d.id(), d.scope(), scopeId, d.packageId(), d.price(), d.currency());
     }
 

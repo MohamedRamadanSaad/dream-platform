@@ -21,7 +21,7 @@ class PriceResolverTest {
 
     private static final PriceRule GLOBAL = rule(PriceScope.GLOBAL, null, "15", Currency.USD);
     private static final PriceRule EUROPE = rule(PriceScope.CONTINENT, "EU", "19", Currency.USD);
-    private static final PriceRule GULF_GROUP = rule(PriceScope.GROUP, GULF.toString(), "49", Currency.SAR);
+    private static final PriceRule GULF_GROUP = rule(PriceScope.GROUP, GULF.toString(), "7", Currency.USD);
     private static final PriceRule EGYPT = rule(PriceScope.COUNTRY, "EG", "199", Currency.EGP);
     private static final List<PriceRule> ALL = List.of(GLOBAL, EUROPE, GULF_GROUP, EGYPT);
 
@@ -45,8 +45,8 @@ class PriceResolverTest {
         Country sa = country("SA", Continent.EU, GULF); // continent deliberately has a rule too
         PriceResolver.Resolved r = PriceResolver.pick(sa, ALL).orElseThrow();
         assertThat(r.scope()).isEqualTo(PriceScope.GROUP);
-        assertThat(r.price()).isEqualByComparingTo("49");
-        assertThat(r.currency()).isEqualTo(Currency.SAR);
+        assertThat(r.price()).isEqualByComparingTo("7");
+        assertThat(r.currency()).isEqualTo(Currency.USD);
     }
 
     @Test
@@ -80,13 +80,35 @@ class PriceResolverTest {
         assertThat(PriceResolver.pick(country("US", Continent.NA, null), List.of(EGYPT))).isEmpty();
     }
 
+    @Test
+    void egyptOnlyEverSeesEgyptianPounds() {
+        Country eg = country("EG", Continent.AF, GULF);
+        // no EGP price for this package: the USD group / continent / global prices are NOT offered in Egypt
+        assertThat(PriceResolver.pick(eg, List.of(GLOBAL, GULF_GROUP,
+                rule(PriceScope.CONTINENT, "AF", "9", Currency.USD)))).isEmpty();
+        assertThat(PriceResolver.pick(eg, ALL).orElseThrow().currency()).isEqualTo(Currency.EGP);
+    }
+
+    @Test
+    void everyOtherCountryOnlySeesDollars() {
+        PriceRule africaInPounds = rule(PriceScope.CONTINENT, "AF", "150", Currency.EGP);
+        Country ng = country("NG", Continent.AF, null);
+        PriceResolver.Resolved r = PriceResolver.pick(ng, List.of(africaInPounds, GLOBAL)).orElseThrow();
+        assertThat(r.currency()).isEqualTo(Currency.USD);
+        assertThat(r.scope()).isEqualTo(PriceScope.GLOBAL);
+        for (String code : List.of("SA", "AE", "KW", "DE", "US", "MA", "NG")) {
+            Country c = country(code, Continent.AS, "SA".equals(code) || "AE".equals(code) || "KW".equals(code) ? GULF : null);
+            assertThat(PriceResolver.pick(c, ALL).orElseThrow().currency()).as(code).isEqualTo(Currency.USD);
+        }
+    }
+
     private static Country country(String code, Continent continent, UUID groupId) {
         Country c = new Country();
         c.setCode(code);
         c.setNameAr(code);
         c.setNameEn(code);
         c.setContinent(continent);
-        c.setDefaultCurrency(Currency.USD);
+        c.setDefaultCurrency("EG".equals(code) ? Currency.EGP : Currency.USD);
         c.setGroupId(groupId);
         return c;
     }
