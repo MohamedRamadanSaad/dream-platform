@@ -1,37 +1,48 @@
 import { useEffect } from 'react'
+import { Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { publicApi } from '@/api/endpoints'
 import { useTranslation } from 'react-i18next'
 import { PublicHeader, Footer } from '@/components/layout'
 import { useAuthStore } from '@/app/auth-store'
 import { fmtDay, fmtNum } from '@/lib/utils'
+import { Icon } from '@/components/icons/Icon'
 
 const FALLBACK_EMAIL = 'support@saadatu-aldarein.com'
-/** Change when the text of either page changes. */
-const UPDATED = '2026-10-03'
+type Kind = 'terms' | 'privacy' | 'refund'
+/** Change a page's date when its text changes. */
+const UPDATED: Record<Kind, string> = { terms: '2026-10-09', privacy: '2026-10-03', refund: '2026-10-09' }
 
 type Section = { h: string; p: string[] }
 
-export function StaticPage({ kind }: { kind: 'terms' | 'privacy' }) {
+const legalQuery = { queryKey: ['public', 'legal'], queryFn: publicApi.legal, staleTime: 10 * 60_000 }
+
+/** Sets the tab title while a page is open and starts it at the top. */
+function usePageTitle(title: string, key: string) {
   const { t } = useTranslation()
-  const locale = useAuthStore((s) => s.locale)
-  const title = t(kind === 'terms' ? 'static.termsTitle' : 'static.privacyTitle')
-  const sections = t(`static.${kind}.sections`, { returnObjects: true }) as Section[]
-  const legal = useQuery({ queryKey: ['public', 'legal'], queryFn: publicApi.legal, staleTime: 10 * 60_000 }).data
-  const email = legal?.supportEmail || FALLBACK_EMAIL
-  const seller = legal ? ([['name', legal.name, false], ['taxNo', legal.taxRegistrationNo, true]] as const).filter(([, v]) => !!v) : []
   useEffect(() => {
     const before = document.title
     document.title = `${title} | ${t('brand')}`
     return () => { document.title = before }
   }, [title, t])
-  useEffect(() => { window.scrollTo(0, 0) }, [kind])
+  useEffect(() => { window.scrollTo(0, 0) }, [key])
+}
+
+export function StaticPage({ kind }: { kind: Kind }) {
+  const { t } = useTranslation()
+  const locale = useAuthStore((s) => s.locale)
+  const title = t(`static.${kind}Title`)
+  const sections = t(`static.${kind}.sections`, { returnObjects: true }) as Section[]
+  const legal = useQuery(legalQuery).data
+  const email = legal?.supportEmail || FALLBACK_EMAIL
+  const seller = legal ? ([['name', legal.name, false], ['taxNo', legal.taxRegistrationNo, true]] as const).filter(([, v]) => !!v) : []
+  usePageTitle(title, kind)
   return (
     <div className="flex min-h-[100dvh] flex-col">
       <div className="bg-night"><PublicHeader /></div>
       <main className="mx-auto w-full max-w-3xl flex-1 px-5 py-12 md:py-16">
         <h1 className="font-display text-4xl md:text-5xl">{title}</h1>
-        <p className="mt-3 text-sm text-fg-dim">{t('static.updated', { date: fmtDay(UPDATED, locale, { day: 'numeric', month: 'long', year: 'numeric' }) })}</p>
+        <p className="mt-3 text-sm text-fg-dim">{t('static.updated', { date: fmtDay(UPDATED[kind], locale, { day: 'numeric', month: 'long', year: 'numeric' }) })}</p>
         <p className="mt-8 text-lg font-light leading-loose text-fg-muted">{t(`static.${kind}.intro`)}</p>
 
         <div className="mt-10 space-y-5">
@@ -71,12 +82,65 @@ export function StaticPage({ kind }: { kind: 'terms' | 'privacy' }) {
         <div className="mt-10 flex flex-wrap items-center justify-between gap-3 rounded-xl2 bg-night px-6 py-5 text-pearl">
           <span className="text-sm text-pearl/70">{t('static.contactLabel')}</span>
           <a href={`mailto:${email}`} dir="ltr" className="font-medium text-gold-soft hover:text-gold">{email}</a>
+          {kind === 'refund' && legal?.supportPhone && (
+            <Link to="/contact" className="w-full text-sm text-pearl/60 hover:text-pearl">{t('footer.contact')}</Link>
+          )}
         </div>
 
         {/* attribution required by the free DB-IP country database (CC BY 4.0) */}
         {kind === 'privacy' && (
           <p className="mt-6 text-xs text-fg-dim"><a href="https://db-ip.com" target="_blank" rel="noreferrer" className="hover:text-fg-muted">{t('static.geoCredit')}</a></p>
         )}
+      </main>
+      <Footer />
+    </div>
+  )
+}
+
+/** Contact us: the support phone with its hours, and the support e-mail (both from the dashboard settings). */
+export function ContactPage() {
+  const { t } = useTranslation()
+  const locale = useAuthStore((s) => s.locale)
+  const title = t('static.contactTitle')
+  const legal = useQuery(legalQuery).data
+  const email = legal?.supportEmail || FALLBACK_EMAIL
+  const phone = legal?.supportPhone ?? ''
+  const hours = (locale === 'ar' ? legal?.supportHoursAr : legal?.supportHoursEn) || ''
+  usePageTitle(title, 'contact')
+  return (
+    <div className="flex min-h-[100dvh] flex-col">
+      <div className="bg-night"><PublicHeader /></div>
+      <main className="mx-auto w-full max-w-3xl flex-1 px-5 py-12 md:py-16">
+        <h1 className="font-display text-4xl md:text-5xl">{title}</h1>
+        <p className="mt-6 text-lg font-light leading-loose text-fg-muted">{t('static.contact.lead')}</p>
+
+        <div className="mt-8 grid gap-5 md:grid-cols-2">
+          {phone && (
+            <section className="card flex flex-col gap-4 p-6 md:p-7">
+              <div className="flex items-center gap-3">
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gold/15 text-gold-ink"><Icon name="phone" size={20} /></span>
+                <h2 className="font-display text-xl md:text-2xl">{t('static.contact.phone')}</h2>
+              </div>
+              <a href={`tel:${phone.replace(/[^+\d]/g, '')}`} dir="ltr" className="text-start text-2xl font-medium tabular-nums tracking-wide text-fg hover:text-gold-ink">{phone}</a>
+              {hours && <p className="flex items-center gap-2 text-sm text-fg-muted"><Icon name="clock" size={16} />{t('static.contact.hours', { hours })}</p>}
+              <a href={`tel:${phone.replace(/[^+\d]/g, '')}`} className="btn btn-md btn-gold mt-auto w-full">{t('static.contact.call')}</a>
+            </section>
+          )}
+          <section className="card flex flex-col gap-4 p-6 md:p-7">
+            <div className="flex items-center gap-3">
+              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gold/15 text-gold-ink"><Icon name="mail" size={20} /></span>
+              <h2 className="font-display text-xl md:text-2xl">{t(phone ? 'static.contact.emailAlt' : 'static.contact.email')}</h2>
+            </div>
+            <a href={`mailto:${email}`} dir="ltr" className="break-all text-start text-lg font-medium text-fg hover:text-gold-ink">{email}</a>
+            <p className="text-sm text-fg-muted">{t('static.contact.emailNote')}</p>
+            <a href={`mailto:${email}`} className="btn btn-md btn-ghost mt-auto w-full border-fg text-fg">{t('static.contact.write')}</a>
+          </section>
+        </div>
+
+        <p className="mt-8 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-fg-muted">
+          <Icon name="shield" size={16} />{t('static.contact.refundNote')}
+          <Link to="/refund-policy" className="font-medium text-gold-ink underline-offset-4 hover:underline">{t('static.contact.refundLink')}</Link>
+        </p>
       </main>
       <Footer />
     </div>

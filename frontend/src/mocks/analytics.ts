@@ -23,7 +23,7 @@ function rand(seed: string) {
 const HISTORY_START = '2025-08-01'
 const COUNTRY_SHARE: Record<string, number> = { EG: 0.31, SA: 0.26, AE: 0.08, KW: 0.05, MA: 0.05, JO: 0.04, DZ: 0.04, DE: 0.03, US: 0.03, GB: 0.025, QA: 0.02, TN: 0.015, FR: 0.015, TR: 0.01, OM: 0.01, BH: 0.01, CA: 0.005, AU: 0.005 }
 const DEVICE_SHARE: Record<T.DeviceType, number> = { MOBILE: 0.71, DESKTOP: 0.23, TABLET: 0.06 }
-const PAGE_SHARE: Record<string, number> = { '/': 0.36, '/me': 0.13, '/login': 0.1, '/me/new': 0.08, '/me/packages': 0.07, '/courses': 0.05, '/me/payments': 0.04, '/me/notifications': 0.035, '/me/profile': 0.03, '/onboarding': 0.025, '/me/checkout': 0.02, '/terms': 0.015, '/privacy': 0.01 }
+const PAGE_SHARE: Record<string, number> = { '/': 0.36, '/me': 0.13, '/login': 0.1, '/me/new': 0.08, '/me/packages': 0.07, '/courses': 0.05, '/me/payments': 0.04, '/me/notifications': 0.035, '/me/profile': 0.03, '/onboarding': 0.025, '/me/checkout': 0.02, '/terms': 0.015, '/privacy': 0.01, '/refund-policy': 0.008, '/contact': 0.006 }
 const REFERRER_SHARE: [string, number][] = [['', 0.44], ['google.com', 0.21], ['youtube.com', 0.19], ['facebook.com', 0.06], ['instagram.com', 0.04], ['t.co', 0.025], ['wa.me', 0.02], ['bing.com', 0.015]]
 // evenings are the busiest (business time zone), with a smaller bump after midday
 const HOUR_WEIGHT = [3.2, 2.1, 1.4, 1, 0.8, 1, 1.6, 2.4, 3, 3.4, 3.8, 4.2, 4.8, 5.4, 5, 4.4, 4.3, 4.8, 5.4, 6.4, 7.4, 8.6, 8.1, 5.6]

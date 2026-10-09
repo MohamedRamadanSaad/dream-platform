@@ -583,8 +583,8 @@ export interface InsightsResponse {
 /** GET/PUT /admin/settings — raw key/value map (BOOL values are 'true' / 'false'). PUT sends only changed keys. */
 export type SettingsMap = Record<string, string>
 
-/** GET /public/legal: seller details (empty strings when not set). */
-export interface LegalInfo { name: string; taxRegistrationNo: string; supportEmail: string }
+/** GET /public/legal: seller details and support contacts (empty strings when not set). */
+export interface LegalInfo { name: string; taxRegistrationNo: string; supportEmail: string; supportPhone: string; supportHoursAr: string; supportHoursEn: string }
 
 /** GET /admin/mail/themes — one e-mail theme (header/footer images + colours). Image URLs are absolute. */
 export interface MailThemeDto {

@@ -96,7 +96,10 @@ public class PublicInfoController {
         return new PublicDtos.LegalInfo(
                 settings.getString(SettingKeys.BRAND_LEGAL_NAME, "").trim(),
                 settings.getString(SettingKeys.BRAND_TAX_REGISTRATION_NO, "").trim(),
-                settings.getString(SettingKeys.BRAND_SUPPORT_EMAIL, "").trim());
+                settings.getString(SettingKeys.BRAND_SUPPORT_EMAIL, "").trim(),
+                settings.getString(SettingKeys.BRAND_SUPPORT_PHONE, "").trim(),
+                settings.getString(SettingKeys.BRAND_SUPPORT_HOURS_AR, "").trim(),
+                settings.getString(SettingKeys.BRAND_SUPPORT_HOURS_EN, "").trim());
     }
 
     @GetMapping(ApiPaths.Public.PUSH_KEY)

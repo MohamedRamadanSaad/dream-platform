@@ -85,7 +85,8 @@
     "endsInDH": "Offer ends in {{d}}, {{h}}",
     "endsInD": "Offer ends in {{d}}",
     "endsInH": "Offer ends in {{h}}",
-    "endsSoon": "Offer ends in less than an hour"
+    "endsSoon": "Offer ends in less than an hour",
+    "refundLink": "Read our refund policy"
   },
   "testimonials": {
     "title": "What people say",
@@ -97,9 +98,10 @@
     "rights": "© {{year}} Interpreter Fatema | Balanced dream interpretation, deep and realistic",
     "terms": "Terms",
     "privacy": "Privacy",
-    "contact": "Contact",
+    "contact": "Contact us",
     "youtube": "YouTube",
-    "taxNo": "Tax registration no."
+    "taxNo": "Tax registration no.",
+    "refund": "Refund policy"
   },
   "auth": {
     "title": "Welcome",
@@ -774,7 +776,9 @@
         "myCourses": "My courses",
         "courses": "Courses",
         "terms": "Terms",
-        "privacy": "Privacy"
+        "privacy": "Privacy",
+        "refund": "Refund policy",
+        "contact": "Contact us"
       },
       "pageRange": "{{from}} to {{to}} of {{total}}",
       "prevPage": "Previous page",
@@ -1026,9 +1030,12 @@
     },
     "legal": {
       "title": "Seller details",
-      "lead": "Shown on the terms page, at the bottom of the site and in the payment receipt email. Leave a field empty to hide it.",
+      "lead": "Shown on the terms and contact pages, at the bottom of the site and in the payment receipt email. Leave a field empty to hide it.",
       "name": "Name as on the tax card",
       "taxNo": "Tax registration no.",
+      "phone": "Support phone",
+      "hoursAr": "Phone hours in Arabic",
+      "hoursEn": "Phone hours in English",
       "save": "Save"
     }
   },
@@ -1104,7 +1111,8 @@
             "A credit used for a dream that has been interpreted cannot be refunded.",
             "For a payment problem or a refund request, email our support address from the email you use to sign in.",
             "Type the invoice number in your message, as shown in your payment receipt email or on the Payments page, describe the problem briefly, and attach screenshots or proof.",
-            "We review every complete request and reply with a decision as soon as possible, within 2 working days."
+            "We review every complete request and reply with a decision as soon as possible, within 2 working days.",
+            "See the Refund policy page for full details of what can and cannot be refunded."
           ]
         },
         {
@@ -1230,6 +1238,58 @@
       "name": "Name",
       "taxNo": "Tax registration no.",
       "email": "Email"
+    },
+    "refundTitle": "Refund policy",
+    "contactTitle": "Contact us",
+    "refund": {
+      "intro": "We want you to buy with peace of mind. This page explains when you get your money back, when you do not, and how to ask.",
+      "sections": [
+        {
+          "h": "What we refund",
+          "p": [
+            "If you paid and the credits were not added to your account, we add them or refund the full amount, whichever you choose.",
+            "If you were charged more than once for the same order, we refund the extra charge in full.",
+            "If you have not used any credit from a package and you ask within 14 days of payment, we refund its full price.",
+            "If your dream is cancelled before it is interpreted, its credit goes back to your account automatically so you can use it for another dream."
+          ]
+        },
+        {
+          "h": "What we do not refund",
+          "p": [
+            "A credit used for a dream that has been interpreted.",
+            "Expired credits. Credits are valid for 12 months from the payment date unless stated otherwise when you buy.",
+            "A package with some of its credits already used, or paid more than 14 days ago."
+          ]
+        },
+        {
+          "h": "How to ask for a refund",
+          "p": [
+            "Email our support address from the email you use to sign in, or call us during the support hours shown on the Contact us page.",
+            "Type the invoice number, as shown in your payment receipt email or on the Payments page, describe the problem briefly, and attach screenshots or proof."
+          ]
+        },
+        {
+          "h": "Review and when the money arrives",
+          "p": [
+            "We review every complete request and reply with a decision within 2 working days.",
+            "Once approved, the money goes back to the same payment method you used, through the payment provider.",
+            "It usually arrives within 5 to 14 working days, depending on your bank or wallet.",
+            "When a refund is approved, the matching credits are removed from your account."
+          ]
+        }
+      ]
+    },
+    "contact": {
+      "lead": "To reach technical support",
+      "phone": "Call us",
+      "hours": "Available {{hours}}",
+      "call": "Call now",
+      "email": "Email us",
+      "emailAlt": "Or email us",
+      "emailNote": "We reply as soon as possible, within 2 working days.",
+      "write": "Send an email",
+      "refundNote": "Need a refund? First read our",
+      "refundLink": "refund policy"
     }
   },
   "courses": {

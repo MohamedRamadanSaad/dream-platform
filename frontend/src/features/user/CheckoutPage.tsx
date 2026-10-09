@@ -7,7 +7,7 @@ import { useAuthStore } from '@/app/auth-store'
 import { Button, ErrorBox, Input, Label, Skeleton } from '@/components/ui'
 import { Icon } from '@/components/icons/Icon'
 import { PageEnter, StaggerGroup } from '@/components/motion'
-import { PackageCard } from '@/features/public/LandingPage'
+import { PackageCard, RefundPolicyLink } from '@/features/public/LandingPage'
 import { arrowBack, fmtMoney } from '@/lib/utils'
 import { ApiError } from '@/api/client'
 import { CreditExpiryNotice } from './CreditExpiryNotice'
@@ -30,6 +30,7 @@ export function PackagesPage() {
       {isLoading ? <div className="grid gap-6 md:grid-cols-3">{[1, 2, 3].map((i) => <Skeleton key={i} className="h-80" />)}</div>
         : isError ? <ErrorBox onRetry={() => refetch()} />
         : <StaggerGroup className="grid gap-6 md:grid-cols-3">{data!.packages.map((p, i) => <PackageCard key={p.id} p={p} featured={i === 1} onChoose={choose} />)}</StaggerGroup>}
+      <RefundPolicyLink className="mt-8" />
     </PageEnter>
   )
 }

@@ -152,6 +152,18 @@ function Countdown({ iso }: { iso: string }) {
   return <span>{text}</span>
 }
 
+/** Small link under the packages to the refund policy. */
+export function RefundPolicyLink({ className }: { className?: string }) {
+  const { t } = useTranslation()
+  return (
+    <div className={cn('flex justify-center', className)}>
+      <Link to="/refund-policy" className="inline-flex items-center gap-1.5 text-xs text-fg-dim underline-offset-4 transition-colors hover:text-fg-muted hover:underline">
+        <Icon name="shield" size={14} />{t('packages.refundLink')}
+      </Link>
+    </div>
+  )
+}
+
 export function PackageCard({ p, featured, onChoose }: { p: PackageDto; featured?: boolean; onChoose: (p: PackageDto) => void }) {
   const { t } = useTranslation()
   const locale = useAuthStore((s) => s.locale)
@@ -196,6 +208,7 @@ export function PackagesSection({ onChoose }: { onChoose: (p: PackageDto) => voi
           {data?.packages.map((p, i) => <PackageCard key={p.id} p={p} featured={i === 1} onChoose={onChoose} />)}
         </StaggerGroup>
       )}
+      <RefundPolicyLink className="mt-12" />
     </section>
   )
 }

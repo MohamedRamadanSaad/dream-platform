@@ -17,6 +17,10 @@ public final class SettingKeys {
     public static final String BRAND_TAGLINE_AR = "brand.tagline.ar";
     public static final String BRAND_TAGLINE_EN = "brand.tagline.en";
     public static final String BRAND_SUPPORT_EMAIL = "brand.support_email";
+    /** Support phone shown on the contact page (international format; empty hides it), and when it answers. */
+    public static final String BRAND_SUPPORT_PHONE = "brand.support_phone";
+    public static final String BRAND_SUPPORT_HOURS_AR = "brand.support_hours.ar";
+    public static final String BRAND_SUPPORT_HOURS_EN = "brand.support_hours.en";
     /** Seller details required for online sales (Egyptian consumer protection law 181/2018): shown on the terms
      *  page, in the footer and on the payment receipt. Empty values are simply not shown. */
     public static final String BRAND_LEGAL_NAME = "brand.legal_name";
@@ -174,6 +178,7 @@ public final class SettingKeys {
             BRAND_NAME_AR, BRAND_NAME_EN, BRAND_TAGLINE_AR, BRAND_TAGLINE_EN, BRAND_SUPPORT_EMAIL,
             BRAND_YOUTUBE_URL, BRAND_YOUTUBE_CHANNEL_ID, YOUTUBE_MAIL_DAILY_LIMIT,
             BRAND_LEGAL_NAME, BRAND_TAX_REGISTRATION_NO,
+            BRAND_SUPPORT_PHONE, BRAND_SUPPORT_HOURS_AR, BRAND_SUPPORT_HOURS_EN,
             WAIT_BUSY, WAIT_NORMAL_HOURS, WAIT_BUSY_MIN_DAYS, WAIT_BUSY_MAX_DAYS, WAIT_MESSAGE_AR, WAIT_MESSAGE_EN,
             WAIT_AUTO_RESET_AT,
             DREAMS_MIN_CHARS, DREAMS_MAX_CHARS, DREAMS_DRAFT_LIMIT, DREAMS_REPLY_REMINDER_HOURS,

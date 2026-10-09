@@ -52,6 +52,16 @@ class PublicInfoControllerIntegrationTest extends IntegrationTestBase {
     }
 
     @Test
+    void legalCarriesTheSupportContacts() throws Exception {
+        mvc.perform(get(ApiPaths.Public.LEGAL))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.supportEmail").value(settings.getString(SettingKeys.BRAND_SUPPORT_EMAIL).trim()))
+                .andExpect(jsonPath("$.supportPhone").value("+201096452764"))
+                .andExpect(jsonPath("$.supportHoursAr").value(settings.getString(SettingKeys.BRAND_SUPPORT_HOURS_AR)))
+                .andExpect(jsonPath("$.supportHoursEn").value("2 PM to 6 PM, Egypt time"));
+    }
+
+    @Test
     void firstNameOnly() {
         assertThat(PublicInfoController.firstName("  أم محمد  ")).isEqualTo("أم محمد");
         assertThat(PublicInfoController.firstName("Sara Ahmed")).isEqualTo("Sara");

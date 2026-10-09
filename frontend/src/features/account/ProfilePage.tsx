@@ -183,7 +183,7 @@ function ChannelMailCard() {
   )
 }
 
-const SELLER_KEYS = { name: 'brand.legal_name', taxNo: 'brand.tax_registration_no' } as const
+const SELLER_KEYS = { name: 'brand.legal_name', taxNo: 'brand.tax_registration_no', phone: 'brand.support_phone', hoursAr: 'brand.support_hours.ar', hoursEn: 'brand.support_hours.en' } as const
 
 /** Interpreter only: the seller details shown on the terms page, in the footer and on the payment receipt. */
 function SellerCard() {
@@ -204,6 +204,9 @@ function SellerCard() {
       <div className="mt-5 grid gap-5 sm:grid-cols-2">
         <Field label={t('admin.legal.name')}><Input dir="auto" value={value('name')} onChange={(e) => setDraft((d) => ({ ...d, [SELLER_KEYS.name]: e.target.value }))} /></Field>
         <Field label={t('admin.legal.taxNo')}><Input dir="ltr" inputMode="numeric" value={value('taxNo')} onChange={(e) => setDraft((d) => ({ ...d, [SELLER_KEYS.taxNo]: e.target.value }))} /></Field>
+        <Field label={t('admin.legal.phone')}><Input dir="ltr" type="tel" inputMode="tel" value={value('phone')} onChange={(e) => setDraft((d) => ({ ...d, [SELLER_KEYS.phone]: e.target.value }))} /></Field>
+        <Field label={t('admin.legal.hoursAr')}><Input dir="rtl" value={value('hoursAr')} onChange={(e) => setDraft((d) => ({ ...d, [SELLER_KEYS.hoursAr]: e.target.value }))} /></Field>
+        <Field label={t('admin.legal.hoursEn')}><Input dir="ltr" value={value('hoursEn')} onChange={(e) => setDraft((d) => ({ ...d, [SELLER_KEYS.hoursEn]: e.target.value }))} /></Field>
       </div>
       <div className="mt-6 flex justify-end"><Button disabled={!Object.keys(changes).length} loading={save.isPending} onClick={() => save.mutate()}>{t('admin.legal.save')}</Button></div>
     </section>

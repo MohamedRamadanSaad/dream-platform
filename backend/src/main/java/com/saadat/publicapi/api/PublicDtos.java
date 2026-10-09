@@ -22,8 +22,9 @@ public final class PublicDtos {
     public record PublicStats(String subscribers, String views, String videos, long interpreted) {
     }
 
-    /** {@code GET /public/legal}: seller details (empty strings when not set). */
-    public record LegalInfo(String name, String taxRegistrationNo, String supportEmail) {
+    /** {@code GET /public/legal}: seller details and support contacts (empty strings when not set). */
+    public record LegalInfo(String name, String taxRegistrationNo, String supportEmail,
+                            String supportPhone, String supportHoursAr, String supportHoursEn) {
     }
 
     /** {@code GET /public/push-key}: the VAPID public key (empty when push is not configured). */

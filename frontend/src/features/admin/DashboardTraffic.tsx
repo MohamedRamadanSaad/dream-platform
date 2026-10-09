@@ -40,7 +40,7 @@ const PAGE_KEYS: [RegExp, string][] = [
   [/^\/me$/, 'myDreams'], [/^\/me\/new$/, 'newDream'], [/^\/me\/dreams\/[^/]+\/edit$/, 'dreamEdit'], [/^\/me\/dreams\/[^/]+$/, 'dreamDetail'],
   [/^\/me\/packages$/, 'packages'], [/^\/me\/checkout$/, 'checkout'], [/^\/checkout\//, 'checkout'], [/^\/me\/payments$/, 'payments'],
   [/^\/me\/profile$/, 'profile'], [/^\/me\/notifications$/, 'notifications'], [/^\/me\/courses$/, 'myCourses'], [/^\/courses$/, 'courses'],
-  [/^\/terms$/, 'terms'], [/^\/privacy$/, 'privacy'],
+  [/^\/terms$/, 'terms'], [/^\/privacy$/, 'privacy'], [/^\/refund-policy$/, 'refund'], [/^\/contact$/, 'contact'],
 ]
 function usePageName() {
   const { t } = useTranslation()

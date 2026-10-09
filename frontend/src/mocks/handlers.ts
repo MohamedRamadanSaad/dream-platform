@@ -129,7 +129,7 @@ export const handlers = [
     usr.marketingOptIn = false
     return new HttpResponse(null, { status: 204 })
   })),
-  http.get(u('/public/legal'), wrap(async () => HttpResponse.json({ name: db.settings['brand.legal_name'] ?? '', taxRegistrationNo: db.settings['brand.tax_registration_no'] ?? '', supportEmail: 'support@saadatu-aldarein.com' }))),
+  http.get(u('/public/legal'), wrap(async () => HttpResponse.json({ name: db.settings['brand.legal_name'] ?? '', taxRegistrationNo: db.settings['brand.tax_registration_no'] ?? '', supportEmail: 'support@saadatu-aldarein.com', supportPhone: db.settings['brand.support_phone'] ?? '', supportHoursAr: db.settings['brand.support_hours.ar'] ?? '', supportHoursEn: db.settings['brand.support_hours.en'] ?? '' }))),
   http.get(u('/public/wait-time'), wrap(async ({ request }) => HttpResponse.json(waitTimePublic(request.headers.get('accept-language') ?? 'ar')))),
   http.get(u('/public/testimonials'), wrap(async () => HttpResponse.json({ items: [
     { id: 't1', name: 'أم محمد', rating: 5, comment: 'تحقق والحمد لله بعد أسبوعين، وكان التفسير هادئاً ومطمئناً.', date: helpers.daysAgo(20) },

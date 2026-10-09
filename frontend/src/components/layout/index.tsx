@@ -243,7 +243,13 @@ export function Footer() {
           <div className="text-sm text-pearl/60">{t('tagline')}</div>
         </div>
         <div className="flex flex-col gap-2 text-sm md:items-end">
-          <div className="flex gap-6"><a href={YT} target="_blank" rel="noreferrer" className="text-gold-soft">{t('footer.youtube')}</a><Link to="/terms" className="hover:text-pearl">{t('footer.terms')}</Link><Link to="/privacy" className="hover:text-pearl">{t('footer.privacy')}</Link></div>
+          <nav className="flex flex-wrap gap-x-6 gap-y-2 md:justify-end">
+            <a href={YT} target="_blank" rel="noreferrer" className="text-gold-soft">{t('footer.youtube')}</a>
+            <Link to="/terms" className="hover:text-pearl">{t('footer.terms')}</Link>
+            <Link to="/refund-policy" className="hover:text-pearl">{t('footer.refund')}</Link>
+            <Link to="/contact" className="hover:text-pearl">{t('footer.contact')}</Link>
+            <Link to="/privacy" className="hover:text-pearl">{t('footer.privacy')}</Link>
+          </nav>
           <div className="text-pearl/50">{t('footer.rights', { year: new Date().getFullYear() })}</div>
           <TaxLine />
         </div>
