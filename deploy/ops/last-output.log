@@ -1,46 +1,17 @@
-### Wed Oct 14 16:26:09 UTC 2026 — commit f4900ea
-=== backend mode (non-secret keys only)
-SPRING_PROFILES_ACTIVE=prod
-PAYMENTS_MOCK=false
-backend-1  | {"ts":"2026-10-14T16:23:10.876Z","level":"INFO","logger":"com.saadat.SaadatApplication","thread":"main","msg":"The following 1 profile is active: \"prod\""}
-=== checks after the reset
-     name      |            email             |    role     | country_code 
----------------+------------------------------+-------------+--------------
- محمد رمضان    | m.ramadansaad@gmail.com      | USER        | EG
- المعبرة فاطمة | support@saadatu-aldarein.com | INTERPRETER | EG
-(2 rows)
-
- orders | ledger | dreams | testimonials | notifications 
---------+--------+--------+--------------+---------------
-      0 |      0 |      0 |            0 |             0
-(1 row)
-
- page_views | visitors | visits | views_without_visitor 
-------------+----------+--------+-----------------------
-        694 |       60 |    118 |                    60
-(1 row)
-
- views | dashboard_visitors | visits 
--------+--------------------+--------
-   694 |                 88 |    118
-(1 row)
-
- sessions_with_two_visitors 
-----------------------------
-                          1
-(1 row)
-
-   last_row_without_visitor    |    first_row_with_visitor    |           last_view           
--------------------------------+------------------------------+-------------------------------
- 2026-10-03 09:12:31.881976+00 | 2026-10-02 12:14:06.32193+00 | 2026-10-14 15:57:06.921369+00
-(1 row)
-
- visitor  | visits | views 
-----------+--------+-------
- be614116 |     17 |   123
- b79f4176 |      7 |   114
- owner-2  |      5 |    43
- 217c76cf |      4 |    16
- owner-1  |      4 |    67
+### Wed Oct 14 16:27:03 UTC 2026 — commit bf684b2
+     visitor_id      |          first_seen           |           last_seen           | views | visits | device  | ref |                                                                                                         paths                                                                                                         | country | users 
+---------------------+-------------------------------+-------------------------------+-------+--------+---------+-----+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------+-------
+ owner-1             | 2026-10-02 12:14:06.32193+00  | 2026-10-03 05:54:24.101359+00 |    67 |      4 | MOBILE  |     | / /courses /login /me /me/courses /me/dreams/248e40c0-e1a5-4acd-997d-a0933165e270 /me/new /me/notifications /me/packages /me/payments /me/profile /onboarding /privacy /terms                                         | SA      |     2
+ owner-2             | 2026-10-02 12:35:10.803168+00 | 2026-10-02 20:59:03.769534+00 |    43 |      5 | MOBILE  |     | / /checkout/mock/c2a6e396-efe1-4d1a-a7a5-cb49f8d7b5fb /login /me /me/checkout /me/courses /me/dreams/248e40c0-e1a5-4acd-997d-a0933165e270 /me/new /me/notifications /me/packages /me/payments /me/profile /onboarding | SA      |     2
+ mutec7gi-9chggr0e0k | 2026-10-04 05:44:43.643032+00 | 2026-10-04 05:44:43.643032+00 |     1 |      1 | DESKTOP |     | /                                                                                                                                                                                                                     | US      |     0
+ mutiroi4-23ld9q7e5t | 2026-10-04 07:46:36.066015+00 | 2026-10-04 07:46:36.066015+00 |     1 |      1 | DESKTOP |     | /                                                                                                                                                                                                                     | US      |     0
+ muvsz4a9-tstmi254mq | 2026-10-05 22:09:59.521037+00 | 2026-10-05 22:09:59.521037+00 |     1 |      1 | DESKTOP |     | /                                                                                                                                                                                                                     | US      |     0
 (5 rows)
+
+              session_id              | visitor_id |              min              |              max              | count 
+--------------------------------------+------------+-------------------------------+-------------------------------+-------
+ b96167ff-722d-49b6-9555-1ea635a94eb1 | owner-1    | 2026-10-02 21:03:09.317737+00 | 2026-10-02 21:43:10.781341+00 |    18
+ b96167ff-722d-49b6-9555-1ea635a94eb1 | owner-2    | 2026-10-02 20:14:56.669098+00 | 2026-10-02 20:59:03.769534+00 |    34
+ b96167ff-722d-49b6-9555-1ea635a94eb1 |            | 2026-10-02 19:39:44.856124+00 | 2026-10-02 20:37:28.518836+00 |    15
+(3 rows)
 
