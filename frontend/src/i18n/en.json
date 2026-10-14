@@ -105,16 +105,16 @@
   },
   "auth": {
     "title": "Welcome",
-    "lead": "Sign in with Google or with a link sent to your email. No password needed.",
+    "lead": "Type your email to get a 6-digit sign-in code, or sign in with Google. No password needed.",
     "google": "Continue with Google",
     "or": "or",
     "email": "Email",
-    "sendLink": "Send me a sign-in link",
-    "sent": "We sent a sign-in link to your email",
-    "sentHint": "The link works for 15 minutes. You can also type the code:",
+    "sendLink": "Send me the sign-in code",
+    "sent": "We sent a sign-in code to your email",
+    "sentHint": "Type the 6-digit code, or tap the link in the email. It works for 15 minutes.",
     "code": "Sign-in code",
     "verify": "Sign in",
-    "noPassword": "No password. One link signs you in",
+    "noPassword": "No password. One code signs you in",
     "onboardingTitle": "One last step",
     "onboardingLead": "We need your name and gender, because the interpretation can be different for men and women.",
     "name": "Name",
@@ -145,7 +145,14 @@
     },
     "notYou": "Not you? Use another email",
     "errors": {
-      "USE_MAGIC_LINK": "This e-mail already signs in with an e-mail code. Type it in the box above and we will send you a sign-in code."
+      "USE_MAGIC_LINK": "This e-mail already signs in with an e-mail code. Type it in the box above and we will send you a sign-in code.",
+      "INTERPRETER_USE_MAGIC": "Interpreter accounts sign in with the email code only. Type your email above.",
+      "EMAIL_NOT_VERIFIED": "This Google account's email is not verified. Please sign in with the email code.",
+      "IDENTITY_LINKED": "This Google account is linked to another account here.",
+      "ACCOUNT_UNAVAILABLE": "This account is not available. Contact us if this is a mistake.",
+      "MAGIC_LINK_INVALID": "The code is not correct. Check it and try again.",
+      "MAGIC_LINK_EXPIRED": "The code has expired. Ask for a new one.",
+      "MAGIC_LINK_TOO_MANY_ATTEMPTS": "Too many tries. Ask for a new code."
     }
   },
   "me": {
@@ -1168,7 +1175,9 @@
       "saved": "InstaPay account saved",
       "errors": {
         "INVALID_ADDRESS": "The address must look like name@instapay.",
-        "INVALID_LINK": "The link must start with https://ipn.eg/S/ as InstaPay copies it."
+        "INVALID_LINK": "The link must start with https://ipn.eg/S/ as InstaPay copies it.",
+        "REFERENCE_CHANGED": "The buyer just changed the reference number. Check the new number in your InstaPay history, then accept.",
+        "NOT_PENDING": "This transfer is no longer waiting for review."
       }
     }
   },

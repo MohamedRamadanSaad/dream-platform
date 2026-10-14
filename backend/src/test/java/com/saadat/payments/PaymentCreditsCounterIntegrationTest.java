@@ -124,7 +124,8 @@ class PaymentCreditsCounterIntegrationTest extends IntegrationTestBase {
                         .content(objectMapper.writeValueAsString(Map.of("reference", reference, "senderName", "BUYER NAME"))))
                 .andExpect(status().isOk());
         mvc.perform(post(ApiPaths.Admin.INSTAPAY_TRANSFERS + "/" + orderId + "/approve")
-                        .header("Authorization", bearer(interpreter)))
+                        .header("Authorization", bearer(interpreter)).contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"reference\":\"" + reference + "\"}"))
                 .andExpect(status().isOk());
         return orderId;
     }

@@ -72,6 +72,7 @@ class PrelaunchResetScriptIntegrationTest extends IntegrationTestBase {
         long users = count("users");
         long packages = count("packages");
         long settings = count("app_settings");
+        long seenVideos = count("youtube_seen");
 
         TransactionTemplate tx = new TransactionTemplate(txManager);
         tx.executeWithoutResult(status -> {
@@ -92,6 +93,7 @@ class PrelaunchResetScriptIntegrationTest extends IntegrationTestBase {
             assertThat(count("page_views where visitor_id = '" + visitor + "'")).isEqualTo(1);
             assertThat(count("packages")).isEqualTo(packages).isPositive();
             assertThat(count("app_settings")).isEqualTo(settings).isPositive();
+            assertThat(count("youtube_seen")).isEqualTo(seenVideos);
             status.setRollbackOnly();
         });
 

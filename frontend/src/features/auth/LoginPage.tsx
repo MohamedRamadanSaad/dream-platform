@@ -119,8 +119,8 @@ export default function LoginPage() {
   // server codes with their own wording (USE_MAGIC_LINK: this e-mail opened its account with the e-mail code)
   const errorText = (e: unknown) => { const code = (e as ApiError).problem?.code; return code && i18n.exists(`auth.errors.${code}`) ? t(`auth.errors.${code}`) : (e as ApiError).message }
   const google = useMutation({ mutationFn: authApi.google, onSuccess: (r, v) => finish(r, v.rememberMe ?? true, 'google'), onError: (e) => setErr(errorText(e)) })
-  const magic = useMutation({ mutationFn: authApi.magicRequest, onSuccess: () => setSent(true), onError: (e) => setErr((e as ApiError).message) })
-  const verify = useMutation({ mutationFn: authApi.magicVerify, onSuccess: (r, v) => finish(r, v.rememberMe ?? true, 'email'), onError: (e) => setErr((e as ApiError).message) })
+  const magic = useMutation({ mutationFn: authApi.magicRequest, onSuccess: () => setSent(true), onError: (e) => setErr(errorText(e)) })
+  const verify = useMutation({ mutationFn: authApi.magicVerify, onSuccess: (r, v) => finish(r, v.rememberMe ?? true, 'email'), onError: (e) => setErr(errorText(e)) })
 
   const isInterpreterEmail = email.trim().toLowerCase().endsWith(INTERPRETER_DOMAIN)
   // the link in the e-mail opens a new page: it reads the choice saved here (see MagicCallbackPage)

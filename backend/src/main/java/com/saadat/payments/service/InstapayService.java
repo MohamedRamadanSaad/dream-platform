@@ -169,10 +169,18 @@ public class InstapayService {
                 OrderStatus.PENDING_REVIEW));
     }
 
-    /** The money arrived: the same confirmation path as a gateway webhook (credits, coupon, dreams, receipt). */
+    /**
+     * The money arrived: the same confirmation path as a gateway webhook (credits, coupon, dreams, receipt). The
+     * interpreter sends back the reference she checked; a reference changed by the buyer since then is refused.
+     */
     @Transactional
-    public InstapayDtos.TransferRow approve(UUID interpreterId, UUID orderId) {
+    public InstapayDtos.TransferRow approve(UUID interpreterId, UUID orderId, String checkedReference) {
         Order order = pendingForUpdate(orderId);
+        // the buyer may edit a pending transfer: approve only the reference the interpreter actually checked
+        String checked = checkedReference == null ? "" : checkedReference.replaceAll("\\s", "");
+        if (!checked.equals(order.getTransferReference())) {
+            throw new ConflictException("The transfer reference was changed, check it again", "REFERENCE_CHANGED");
+        }
         order.setReviewedBy(interpreterId);
         order.setReviewedAt(clock.instant());
         // flushed first: confirm() reloads the row under lock

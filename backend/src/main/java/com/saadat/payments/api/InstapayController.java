@@ -41,8 +41,9 @@ public class InstapayController {
     }
 
     @PostMapping(ApiPaths.Admin.INSTAPAY_TRANSFER_APPROVE)
-    public InstapayDtos.TransferRow approve(@PathVariable UUID id) {
-        return instapayService.approve(AuthPrincipal.current().userId(), id);
+    public InstapayDtos.TransferRow approve(@PathVariable UUID id,
+                                            @Valid @RequestBody InstapayDtos.ApproveRequest body) {
+        return instapayService.approve(AuthPrincipal.current().userId(), id, body.reference());
     }
 
     @PostMapping(ApiPaths.Admin.INSTAPAY_TRANSFER_REJECT)

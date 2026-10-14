@@ -34,6 +34,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.ResultActions;
 
 /**
@@ -101,7 +102,7 @@ class InstapayFlowIntegrationTest extends IntegrationTestBase {
                 .header("Authorization", bearer(interpreter))).andExpect(status().isOk()));
         assertThat(list.get("pending").findValuesAsText("orderId")).contains(orderId.toString());
 
-        mvc.perform(post(approvePath(orderId)).header("Authorization", bearer(interpreter)))
+        mvc.perform(approve(orderId).header("Authorization", bearer(interpreter)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("SUCCESS"));
         Order paid = orderRepository.findById(orderId).orElseThrow();
@@ -113,7 +114,7 @@ class InstapayFlowIntegrationTest extends IntegrationTestBase {
         assertThat(dreamRepository.findById(draft).orElseThrow().getStatus()).isEqualTo(DreamStatus.IN_REVIEW);
 
         // a second click is refused and changes nothing
-        mvc.perform(post(approvePath(orderId)).header("Authorization", bearer(interpreter)))
+        mvc.perform(approve(orderId).header("Authorization", bearer(interpreter)))
                 .andExpect(status().isConflict());
         assertThat(creditService.balance(buyer.getId())).isZero();
     }
@@ -128,7 +129,7 @@ class InstapayFlowIntegrationTest extends IntegrationTestBase {
         submit(buyer, orderId, uniqueReference(), "SARA HASSAN", List.of(draft))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.attachedDreams").value(1));
-        mvc.perform(post(approvePath(orderId)).header("Authorization", bearer(interpreter)))
+        mvc.perform(approve(orderId).header("Authorization", bearer(interpreter)))
                 .andExpect(status().isOk());
         assertThat(dreamRepository.findById(draft).orElseThrow().getStatus()).isEqualTo(DreamStatus.IN_REVIEW);
 
@@ -180,9 +181,27 @@ class InstapayFlowIntegrationTest extends IntegrationTestBase {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("PENDING_REVIEW"))
                 .andExpect(jsonPath("$.reviewNote").isEmpty());
-        mvc.perform(post(approvePath(orderId)).header("Authorization", bearer(interpreter)))
+        mvc.perform(approve(orderId).header("Authorization", bearer(interpreter)))
                 .andExpect(status().isOk());
         assertThat(creditService.balance(buyer.getId())).isEqualTo(1);
+    }
+
+    @Test
+    void aReferenceChangedAfterTheInterpreterLookedIsNotApproved() throws Exception {
+        User buyer = egyptian("insta-swap");
+        User interpreter = createUser("insta-swap-interpreter", Role.INTERPRETER);
+        UUID orderId = UUID.fromString(checkout(buyer, null).get("orderId").asText());
+        String seen = uniqueReference();
+        submit(buyer, orderId, seen, "REAL SENDER", null).andExpect(status().isOk());
+        // the buyer swaps the reference while the interpreter is checking the old one
+        submit(buyer, orderId, uniqueReference(), "REAL SENDER", null).andExpect(status().isOk());
+
+        mvc.perform(post(approvePath(orderId)).header("Authorization", bearer(interpreter))
+                        .contentType(MediaType.APPLICATION_JSON).content("{\"reference\":\"" + seen + "\"}"))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.code").value("REFERENCE_CHANGED"));
+        assertThat(creditService.balance(buyer.getId())).isZero();
+        assertThat(orderRepository.findById(orderId).orElseThrow().getStatus()).isEqualTo(OrderStatus.PENDING_REVIEW);
     }
 
     @Test
@@ -194,7 +213,7 @@ class InstapayFlowIntegrationTest extends IntegrationTestBase {
         mvc.perform(get(ApiPaths.Me.ORDERS + "/" + orderId + "/instapay").header("Authorization", bearer(stranger)))
                 .andExpect(status().isNotFound());
         submit(buyer, orderId, uniqueReference(), "OWNER NAME", null).andExpect(status().isOk());
-        mvc.perform(post(approvePath(orderId)).header("Authorization", bearer(buyer)))
+        mvc.perform(approve(orderId).header("Authorization", bearer(buyer)))
                 .andExpect(status().isForbidden());
         mvc.perform(get(ApiPaths.Admin.INSTAPAY_SETTINGS).header("Authorization", bearer(buyer)))
                 .andExpect(status().isForbidden());
@@ -256,6 +275,13 @@ class InstapayFlowIntegrationTest extends IntegrationTestBase {
         User user = createUser(name, Role.USER);
         user.setCountryCode("EG");
         return userRepository.save(user);
+    }
+
+    /** Approve with the reference the interpreter sees (the current one). */
+    private MockHttpServletRequestBuilder approve(UUID orderId) {
+        String ref = orderRepository.findById(orderId).map(Order::getTransferReference).orElse(null);
+        return post(approvePath(orderId)).contentType(MediaType.APPLICATION_JSON)
+                .content("{\"reference\":\"" + (ref == null ? "" : ref) + "\"}");
     }
 
     private static String approvePath(UUID orderId) {

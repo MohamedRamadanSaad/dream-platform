@@ -77,6 +77,13 @@ public final class InstapayDtos {
     public record Counts(long pending) {
     }
 
+    /**
+     * POST /admin/payments/instapay/transfers/{id}/approve: the reference the interpreter checked in her InstaPay
+     * history. If the buyer changed it meanwhile, the approval is refused (409 REFERENCE_CHANGED).
+     */
+    public record ApproveRequest(@NotBlank @Size(max = 64) String reference) {
+    }
+
     /** POST /admin/payments/instapay/transfers/{id}/reject. */
     public record RejectRequest(@Size(max = 500) String note) {
     }

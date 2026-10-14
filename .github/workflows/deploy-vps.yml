@@ -140,8 +140,9 @@ jobs:
           else
             echo "::warning::push keys could not be generated on the server (web push stays off)"
           fi
-      # Real payments (PAYMENTS_MOCK=false) when the repository variable PAYMENTS_LIVE is "true"; otherwise the current
-      # mock setting is left as it is. Egypt pays by InstaPay transfer (settings in the database, no keys needed).
+      # Live mode when the repository variable PAYMENTS_LIVE is "true": PAYMENTS_MOCK=false and the prod profile (its
+      # safety check refuses to start with mock payments or mock sign-in; Swagger off). Otherwise nothing is changed.
+      # Egypt pays by InstaPay transfer (settings in the database, no keys needed).
       - name: payment mode
         env:
           PAYMENTS_LIVE: ${{ vars.PAYMENTS_LIVE || 'false' }}
@@ -149,9 +150,9 @@ jobs:
           if [ "$PAYMENTS_LIVE" != "true" ]; then
             echo "PAYMENTS_LIVE is not true: payment mode not changed"; exit 0
           fi
-          result=$(printf 'PAYMENTS_MOCK=false\n' \
+          result=$(printf 'PAYMENTS_MOCK=false\nSPRING_PROFILES_ACTIVE=prod\n' \
             | ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "bash /opt/saadat/deploy/ops/setenv.sh /opt/saadat/deploy/backend.env")
-          echo "payment mode: $result (PAYMENTS_MOCK=false)"
+          echo "payment mode: $result (PAYMENTS_MOCK=false, SPRING_PROFILES_ACTIVE=prod)"
           if [ "$result" = "updated" ]; then
             ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "touch /opt/saadat/deploy/.recreate-backend"
           fi

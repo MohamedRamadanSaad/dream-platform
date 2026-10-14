@@ -142,7 +142,7 @@ export const adminApi = {
   /** InstaPay transfers waiting for the interpreter (oldest first) and the latest decisions. */
   instapayTransfers: () => http.get<T.InstapayTransferList>('/admin/payments/instapay/transfers'),
   instapayCounts: () => http.get<{ pending: number }>('/admin/payments/instapay/transfers/counts'),
-  approveTransfer: (orderId: string) => http.post<T.InstapayTransferRow>(`/admin/payments/instapay/transfers/${orderId}/approve`),
+  approveTransfer: (orderId: string, reference: string) => http.post<T.InstapayTransferRow>(`/admin/payments/instapay/transfers/${orderId}/approve`, { reference }),
   rejectTransfer: (orderId: string, note: string) => http.post<T.InstapayTransferRow>(`/admin/payments/instapay/transfers/${orderId}/reject`, { note }),
   instapaySettings: () => http.get<T.InstapaySettings>('/admin/payments/instapay/settings'),
   saveInstapaySettings: (body: T.InstapaySettings) => http.put<T.InstapaySettings>('/admin/payments/instapay/settings', body),

@@ -43,8 +43,9 @@ CONFIRM=RESET-PRODUCTION RESET_SQL=prelaunch-reset.sql bash /opt/saadat/deploy/o
 ```
 
 Same backup first. Clears orders, credit_ledger, coupon_redemptions, dreams (with messages, interpretations,
-testimonials), notifications, email_log, audit_log, magic_links, passkey_challenges, youtube_seen; offers back to 0
-uses. **Keeps** every account and its sign-in methods and sessions, and `page_views` (visitor and visit statistics).
+testimonials), notifications, email_log, audit_log, magic_links, passkey_challenges; offers back to 0
+uses. **Keeps** every account and its sign-in methods and sessions, `page_views` (visitor and visit statistics) and
+`youtube_seen` (so the YouTube badge does not light up again for videos people already saw).
 Tested by `PrelaunchResetScriptIntegrationTest`.
 
 ## Connecting to the production database

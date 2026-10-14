@@ -33,9 +33,14 @@ export function InstapayTransfersPanel() {
     qc.invalidateQueries({ queryKey: INSTAPAY_COUNTS_KEY })
     qc.invalidateQueries({ queryKey: ['admin', 'orders'] })
   }
-  const errorText = (e: unknown) => (e as ApiError).problem?.detail ?? (e as Error).message
+  const errorText = (e: unknown) => {
+    const code = (e as ApiError).problem?.code
+    if (code && t(`admin.instapay.errors.${code}`, { defaultValue: '' })) return t(`admin.instapay.errors.${code}`)
+    return (e as ApiError).problem?.detail ?? (e as Error).message
+  }
   const accept = useMutation({
-    mutationFn: (id: string) => adminApi.approveTransfer(id),
+    // the reference the interpreter checked goes with the approval: if the buyer changed it meanwhile, it is refused
+    mutationFn: (r: InstapayTransferRow) => adminApi.approveTransfer(r.orderId, r.reference ?? ''),
     onSuccess: () => { toast.success(t('admin.instapay.accepted')); setAccepting(null); refresh() },
     onError: (e) => { toast.error(errorText(e)); refresh() },
   })
@@ -114,7 +119,7 @@ export function InstapayTransfersPanel() {
       )}
 
       <Modal open={!!accepting} onClose={() => setAccepting(null)} title={t('admin.instapay.acceptTitle')} size="sm" focusField={false}
-        footer={<><Button variant="ghost" onClick={() => setAccepting(null)}>{t('common.cancel')}</Button><Button loading={accept.isPending} onClick={() => accepting && accept.mutate(accepting.orderId)}>{t('admin.instapay.acceptConfirm')}</Button></>}>
+        footer={<><Button variant="ghost" onClick={() => setAccepting(null)}>{t('common.cancel')}</Button><Button loading={accept.isPending} onClick={() => accepting && accept.mutate(accepting)}>{t('admin.instapay.acceptConfirm')}</Button></>}>
         {accepting && <p className="text-sm leading-relaxed">{t('admin.instapay.acceptBody', { amount: `\u2068${fmtMoney(accepting.amount, accepting.currency, locale)}\u2069`, reference: `\u2068${accepting.reference ?? ''}\u2069` })}</p>}
       </Modal>
       <Modal open={!!rejecting} onClose={() => setRejecting(null)} title={t('admin.instapay.rejectTitle')} size="sm"

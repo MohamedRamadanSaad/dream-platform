@@ -442,6 +442,8 @@ export const handlers = [
     requireAdmin(request)
     const o = pendingTransfer(String(params.id))
     const m = instapayMeta.get(o.id)!
+    const b = (await request.json().catch(() => ({}))) as { reference?: string }
+    if ((b.reference ?? '').replace(/\s/g, '') !== m.reference) return problem(409, 'Conflict', 'The transfer reference was changed, check it again', { code: 'REFERENCE_CHANGED' })
     m.reviewedAt = helpers.now()
     o.providerRef = `INSTAPAY-REF-${m.reference}`
     completeOrder(o, m.dreamIds)

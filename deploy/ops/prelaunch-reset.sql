@@ -5,9 +5,10 @@
 --
 -- KEPT: users and their sign-in methods (auth_identities, passkeys, refresh_tokens, user_sessions), page_views (visitor
 --       and visit statistics), push_subscriptions, support tickets, user_notes, and all fixed data (app_settings,
---       countries, country_groups, packages, price_rules, promotions, coupons, youtube_videos, flyway_schema_history).
+--       countries, country_groups, packages, price_rules, promotions, coupons, youtube_videos, flyway_schema_history),
+--       youtube_seen (which channel videos each user already saw, so the YouTube badge does not light up again).
 -- CLEARED: orders, credit_ledger, coupon_redemptions; dreams with their messages, interpretations and testimonials;
---          notifications, email_log, audit_log, magic_links, passkey_challenges, youtube_seen.
+--          notifications, email_log, audit_log, magic_links, passkey_challenges.
 
 BEGIN;
 
@@ -23,8 +24,7 @@ TRUNCATE TABLE
     email_log,
     audit_log,
     magic_links,
-    passkey_challenges,
-    youtube_seen;
+    passkey_challenges;
 
 -- offers start again from zero uses
 UPDATE promotions SET used_count = 0;
