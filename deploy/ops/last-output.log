@@ -1,0 +1,34 @@
+### Wed Oct 14 16:25:14 UTC 2026 — commit 49a150c
+=== backend mode (non-secret keys only)
+SPRING_PROFILES_ACTIVE=prod
+PAYMENTS_MOCK=false
+backend-1  | {"ts":"2026-10-14T16:23:10.876Z","level":"INFO","logger":"com.saadat.SaadatApplication","thread":"main","msg":"The following 1 profile is active: \"prod\""}
+=== save points
+total 160
+drwxrwxr-x 2 deploy deploy   4096 Oct 14 16:24 .
+drwxr-xr-x 8 deploy deploy   4096 Oct 14 16:25 ..
+-rw-rw-r-- 1 deploy deploy 155186 Oct 14 16:24 before-go-live-20261014-162428.dump
+=== checks after the reset
+ERROR:  column "deleted" does not exist
+LINE 1: ... name, email, role, country_code from users where deleted = ...
+                                                             ^
+HINT:  Perhaps you meant to reference the column "users.deleted_at".
+ orders | ledger | dreams | testimonials | notifications 
+--------+--------+--------+--------------+---------------
+      0 |      0 |      0 |            0 |             0
+(1 row)
+
+ page_views | visitors | visits | views_without_visitor 
+------------+----------+--------+-----------------------
+        694 |       60 |    118 |                    60
+(1 row)
+
+               key                |                   value                    
+----------------------------------+--------------------------------------------
+ payments.instapay.address        | vcbow1694@instapay
+ payments.instapay.enabled        | true
+ payments.instapay.expire_hours   | 24
+ payments.instapay.link           | https://ipn.eg/S/vcbow1694/instapay/3F76CH
+ payments.instapay.recipient_name | 
+(5 rows)
+
