@@ -10,8 +10,8 @@ import java.time.Instant;
 import java.util.UUID;
 
 /**
- * types.ts OrderDto. {@code provider} is always KASHIER | MOR (contract): orders paid through the local mock
- * provider are shown as the gateway their currency would use. {@code providerRef} is the provider's
+ * types.ts OrderDto. Orders paid through the local mock provider are shown as the provider their currency would
+ * use (INSTAPAY for EGP); KASHIER only appears on old test orders. {@code providerRef} is the provider's
  * transaction id once paid.
  */
 public record OrderDto(

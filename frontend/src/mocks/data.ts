@@ -73,7 +73,7 @@ export const db = {
     { id: 'r4', scope: 'COUNTRY', scopeId: 'EG', packageId: 'p1', price: 199, currency: 'EGP' },
     { id: 'r5', scope: 'COUNTRY', scopeId: 'EG', packageId: 'p2', price: 349, currency: 'EGP' },
     { id: 'r6', scope: 'COUNTRY', scopeId: 'EG', packageId: 'p3', price: 499, currency: 'EGP' },
-    // Gulf group (in USD since V30: Kashier never takes SAR)
+    // Gulf group (in USD since V30)
     { id: 'r7', scope: 'GROUP', scopeId: 'g1', packageId: 'p1', price: 7, currency: 'USD' },
     { id: 'r8', scope: 'GROUP', scopeId: 'g1', packageId: 'p2', price: 12, currency: 'USD' },
     { id: 'r9', scope: 'GROUP', scopeId: 'g1', packageId: 'p3', price: 23, currency: 'USD' },

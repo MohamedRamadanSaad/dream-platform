@@ -8,8 +8,6 @@ import com.saadat.common.error.UnauthorizedException;
 import com.saadat.payments.domain.Order;
 import com.saadat.payments.provider.MockPaymentProvider;
 import com.saadat.payments.provider.MorProvider;
-import com.saadat.payments.provider.KashierProvider;
-import com.saadat.payments.provider.WebhookEvent;
 import com.saadat.payments.repo.OrderRepository;
 import com.saadat.payments.service.PaymentService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -34,30 +32,9 @@ import org.springframework.web.bind.annotation.RestController;
 public class WebhookController {
 
     private final PaymentService paymentService;
-    private final KashierProvider kashierProvider;
     private final MorProvider morProvider;
     private final MockPaymentProvider mockProvider;
     private final OrderRepository orderRepository;
-
-    /**
-     * Kashier webhook: JSON {@code {event, data}}, signature in header {@code x-kashier-signature}. Only a successful
-     * {@code pay} reaches {@link PaymentService#confirm}; other verified events are acknowledged and logged.
-     */
-    @PostMapping(ApiPaths.Webhooks.KASHIER)
-    public ResponseEntity<Void> kashier(@RequestBody(required = false) String body, HttpServletRequest request) {
-        if (!kashierProvider.verifySignature(request, body)) {
-            log.warn("Kashier webhook with invalid signature rejected");
-            throw new UnauthorizedException("Invalid signature", "INVALID_SIGNATURE");
-        }
-        if (!kashierProvider.isPaymentResult(body)) {
-            log.info("Kashier webhook {} acknowledged without action", kashierProvider.describe(body));
-            return ResponseEntity.ok().build();
-        }
-        WebhookEvent event = kashierProvider.parseWebhook(request, body);
-        PaymentService.ConfirmOutcome outcome = paymentService.confirm(event);
-        log.info("Kashier webhook txn={} → {}", event.providerTxnId(), outcome);
-        return ResponseEntity.ok().build();
-    }
 
     /** TODO(mor): implement once the merchant-of-record vendor is configured (see MorProvider). */
     @PostMapping(ApiPaths.Webhooks.MOR)

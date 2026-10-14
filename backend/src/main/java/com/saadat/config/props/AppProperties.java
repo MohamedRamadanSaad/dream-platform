@@ -107,41 +107,7 @@ public class AppProperties {
         private boolean mock = false;
 
         @Valid
-        private Kashier kashier = new Kashier();
-
-        @Valid
         private Mor mor = new Mor();
-    }
-
-    /** Kashier (Egypt). Keys and MID from the Kashier dashboard → Integration; test and live keys differ. */
-    @Getter
-    @Setter
-    public static class Kashier {
-        /** Merchant id, e.g. MID-12345-678 (shown under the account name in the dashboard). */
-        private String merchantId = "";
-        /** Payment API Key: signs nothing we send, verifies the webhook signature (x-kashier-signature). */
-        private String apiKey = "";
-        /** Secret Key: Authorization header of the payment-session API call. */
-        private String secretKey = "";
-        /** "test" or "live" — must match the keys. */
-        private String mode = "test";
-        /** Optional override of the API host; empty → https://test-api.kashier.io or https://api.kashier.io. */
-        private String baseUrl = "";
-
-        public boolean isConfigured() {
-            return notBlank(merchantId) && notBlank(apiKey) && notBlank(secretKey);
-        }
-
-        public boolean isLive() {
-            return "live".equalsIgnoreCase(mode == null ? "" : mode.trim());
-        }
-
-        public String resolvedBaseUrl() {
-            if (notBlank(baseUrl)) {
-                return baseUrl.trim().replaceAll("/+$", "");
-            }
-            return isLive() ? "https://api.kashier.io" : "https://test-api.kashier.io";
-        }
     }
 
     @Getter

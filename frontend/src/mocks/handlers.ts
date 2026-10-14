@@ -377,17 +377,13 @@ export const handlers = [
       if (!c) return problem(422, 'Invalid coupon', 'كود الخصم غير صالح')
       price = c.type === 'PERCENT' ? Math.round(price * (1 - c.value / 100)) : Math.max(0, price - c.value)
     }
-    const instapay = r.currency === 'EGP' && db.settings['payments.instapay.enabled'] === 'true'
-    const order: MockOrder = { id: uid(), userId: me.id, packageName: pkg.nameAr, credits: pkg.credits, amount: price, currency: r.currency, status: 'INITIATED', provider: instapay ? 'INSTAPAY' : r.currency === 'SAR' ? 'MOR' : 'KASHIER', providerRef: null, countryCode: me.countryCode, createdAt: helpers.now(), paidAt: null }
+    // like production: no payment method outside Egypt yet
+    if (r.currency !== 'EGP' || db.settings['payments.instapay.enabled'] !== 'true') return problem(422, 'Unprocessable', 'Payment is available inside Egypt only for now', { code: 'PAYMENT_EGYPT_ONLY' })
+    const order: MockOrder = { id: uid(), userId: me.id, packageName: pkg.nameAr, credits: pkg.credits, amount: price, currency: r.currency, status: 'INITIATED', provider: 'INSTAPAY', providerRef: null, countryCode: me.countryCode, createdAt: helpers.now(), paidAt: null }
     db.orders.unshift(order)
-    if (instapay) {
-      const hours = Number(db.settings['payments.instapay.expire_hours'] ?? 24)
-      instapayMeta.set(order.id, { dreamIds: b.dreamIds ?? [], reference: null, senderName: null, submittedAt: null, reviewedAt: null, reviewNote: null, expiresAt: new Date(Date.now() + hours * 36e5).toISOString() })
-      return HttpResponse.json({ orderId: order.id, provider: 'INSTAPAY', checkoutUrl: `/me/checkout/instapay/${order.id}`, amount: price, currency: r.currency, expiresAt: instapayMeta.get(order.id)!.expiresAt } satisfies T.CheckoutResponse)
-    }
-    // mock: simulate webhook success after 4s, then auto-submit selected drafts
-    setTimeout(() => completeOrder(order, b.dreamIds ?? []), 4000)
-    return HttpResponse.json({ orderId: order.id, provider: order.provider, checkoutUrl: `/checkout/mock/${order.id}`, amount: price, currency: r.currency, expiresAt: new Date(Date.now() + 30 * 6e4).toISOString() } satisfies T.CheckoutResponse)
+    const hours = Number(db.settings['payments.instapay.expire_hours'] ?? 24)
+    instapayMeta.set(order.id, { dreamIds: b.dreamIds ?? [], reference: null, senderName: null, submittedAt: null, reviewedAt: null, reviewNote: null, expiresAt: new Date(Date.now() + hours * 36e5).toISOString() })
+    return HttpResponse.json({ orderId: order.id, provider: 'INSTAPAY', checkoutUrl: `/me/checkout/instapay/${order.id}`, amount: price, currency: r.currency, expiresAt: instapayMeta.get(order.id)!.expiresAt } satisfies T.CheckoutResponse)
   })),
 
 

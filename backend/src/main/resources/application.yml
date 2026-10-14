@@ -113,12 +113,6 @@ app:
     refresh-cookie-same-site: Lax
   payments:
     mock: false
-    kashier:
-      merchant-id: ${KASHIER_MERCHANT_ID:}
-      api-key: ${KASHIER_API_KEY:}
-      secret-key: ${KASHIER_SECRET_KEY:}
-      mode: ${KASHIER_MODE:test}
-      base-url: ${KASHIER_BASE_URL:}
     mor:
       api-key: ${MOR_API_KEY:}
       store-id: ${MOR_STORE_ID:}

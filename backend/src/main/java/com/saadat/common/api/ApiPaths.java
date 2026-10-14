@@ -222,7 +222,6 @@ public final class ApiPaths {
     public static final class Webhooks {
         public static final String ROOT = "/webhooks";
         public static final String ALL = ROOT + "/**";
-        public static final String KASHIER = ROOT + "/kashier";
         public static final String MOR = ROOT + "/mor";
         /** Only functional when app.payments.mock=true (the controller must enforce it). */
         public static final String MOCK = ROOT + "/mock/{orderId}";

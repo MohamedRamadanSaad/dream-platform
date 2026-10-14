@@ -264,13 +264,12 @@
         "NO_PRICE": "This package is not available in your country right now. Please choose another one.",
         "INVALID_COUPON": "This discount code is not valid or has expired.",
         "PAYMENT_PROVIDER_ERROR": "We could not reach the payment page right now. Nothing was charged. Please try again shortly.",
-        "NOT_CONFIGURED": "Payment is not available right now. Nothing was charged. Please try again shortly."
+        "NOT_CONFIGURED": "Payment is not available right now. Nothing was charged. Please try again shortly.",
+        "PAYMENT_EGYPT_ONLY": "For now, payment is available from inside Egypt only. We are working on other countries soon."
       },
       "title": "Checkout",
-      "secure": "Secure payment. We never store your card details.",
       "coupon": "Coupon code",
       "apply": "Apply",
-      "pay": "Pay {{amount}} {{currency}}",
       "waiting": "Waiting for the payment to be confirmed…",
       "success": "Paid. Your credits have been added.",
       "failed": "Payment was not completed",
@@ -280,7 +279,6 @@
       "mockNote": "On the live site, the payment provider’s window shows here. Credits are added only when a signed webhook arrives.",
       "autoSubmit_one": "1 dream will be submitted automatically after payment",
       "autoSubmit_other": "{{count}} dreams will be submitted automatically after payment",
-      "methods": "Cards · Apple Pay · Google Pay",
       "methodsEg": "Instant transfer with InstaPay from any bank or wallet in Egypt",
       "instapay": {
         "title": "Checkout",
@@ -357,7 +355,9 @@
         }
       },
       "secureEg": "We never ask for your bank details. You transfer from your own app.",
-      "continue": "Continue {{amount}}"
+      "continue": "Continue {{amount}}",
+      "egyptOnly": "For now, payment is available from inside Egypt only, by InstaPay transfer. We are working on card payment for other countries soon.",
+      "contactUs": "Contact us"
     },
     "profile": {
       "title": "Account",

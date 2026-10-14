@@ -2,17 +2,23 @@ package com.saadat.payments.provider;
 
 import com.saadat.common.domain.Currency;
 import com.saadat.common.domain.PaymentProviderType;
+import com.saadat.common.error.ValidationException;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import org.springframework.stereotype.Component;
 
 /**
- * Picks the provider for a currency: EGP → INSTAPAY while it is on (a manual transfer is safe in every profile, so
- * it wins over the mock); mock (when enabled) → MOCK; EGP and USD → KASHIER; SAR → MOR (Kashier never takes SAR).
+ * Picks the provider for a currency. For now payment is taken inside Egypt only: EGP → INSTAPAY while it is on (a
+ * manual transfer is safe in every profile, so it wins over the mock); outside production the mock takes the rest;
+ * otherwise checkout is refused with 422 PAYMENT_EGYPT_ONLY before any order is saved. A bank gateway (NBE) will be
+ * added here once it is approved.
  */
 @Component
 public class ProviderRegistry {
+
+    /** Checkout refused: no payment method outside Egypt yet. */
+    public static final String CODE_EGYPT_ONLY = "PAYMENT_EGYPT_ONLY";
 
     private final Map<PaymentProviderType, PaymentProvider> providers = new EnumMap<>(PaymentProviderType.class);
     private final MockPaymentProvider mockProvider;
@@ -34,7 +40,7 @@ public class ProviderRegistry {
         if (mockProvider.isEnabled()) {
             return mockProvider;
         }
-        return get(nominal(currency));
+        throw new ValidationException("Payment is available inside Egypt only for now", CODE_EGYPT_ONLY);
     }
 
     public PaymentProvider get(PaymentProviderType type) {
@@ -45,8 +51,8 @@ public class ProviderRegistry {
         return p;
     }
 
-    /** The real gateway for a currency, regardless of mock mode (what the SPA shows as provider). */
+    /** How an order paid through the local mock is shown: the provider its currency would use in production. */
     public static PaymentProviderType nominal(Currency currency) {
-        return currency == Currency.EGP || currency == Currency.USD ? PaymentProviderType.KASHIER : PaymentProviderType.MOR;
+        return currency == Currency.EGP ? PaymentProviderType.INSTAPAY : PaymentProviderType.MOR;
     }
 }

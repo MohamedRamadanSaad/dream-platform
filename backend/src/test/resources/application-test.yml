@@ -24,11 +24,6 @@ app:
     refresh-cookie-secure: false
   payments:
     mock: true
-    kashier:
-      merchant-id: MID-0-1
-      api-key: test-kashier-api-key
-      secret-key: test-kashier-secret-key
-      mode: test
   mail:
     webhook-secret: test-mail-webhook-secret
   youtube:
