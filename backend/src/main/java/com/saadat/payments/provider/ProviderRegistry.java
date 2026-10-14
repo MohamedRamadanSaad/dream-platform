@@ -7,21 +7,30 @@ import java.util.List;
 import java.util.Map;
 import org.springframework.stereotype.Component;
 
-/** Picks the provider for a currency: mock (when enabled) → MOCK; EGP and USD → KASHIER; SAR → MOR (Kashier never takes SAR). */
+/**
+ * Picks the provider for a currency: EGP → INSTAPAY while it is on (a manual transfer is safe in every profile, so
+ * it wins over the mock); mock (when enabled) → MOCK; EGP and USD → KASHIER; SAR → MOR (Kashier never takes SAR).
+ */
 @Component
 public class ProviderRegistry {
 
     private final Map<PaymentProviderType, PaymentProvider> providers = new EnumMap<>(PaymentProviderType.class);
     private final MockPaymentProvider mockProvider;
+    private final InstapayProvider instapayProvider;
 
-    public ProviderRegistry(List<PaymentProvider> all, MockPaymentProvider mockProvider) {
+    public ProviderRegistry(List<PaymentProvider> all, MockPaymentProvider mockProvider,
+                            InstapayProvider instapayProvider) {
         for (PaymentProvider p : all) {
             providers.put(p.type(), p);
         }
         this.mockProvider = mockProvider;
+        this.instapayProvider = instapayProvider;
     }
 
     public PaymentProvider forCurrency(Currency currency) {
+        if (currency == Currency.EGP && instapayProvider.isEnabled()) {
+            return instapayProvider;
+        }
         if (mockProvider.isEnabled()) {
             return mockProvider;
         }

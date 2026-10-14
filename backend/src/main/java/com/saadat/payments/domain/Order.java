@@ -118,6 +118,28 @@ public class Order {
     @Column(name = "expires_at", nullable = false)
     private Instant expiresAt;
 
+    /** InstaPay: the transfer reference number the buyer typed (digits only), unique among live orders (V34). */
+    @Column(name = "transfer_reference", length = 32)
+    private String transferReference;
+
+    /** InstaPay: the sender's name as InstaPay shows it to the receiver. */
+    @Column(name = "transfer_sender_name", length = 120)
+    private String transferSenderName;
+
+    @Column(name = "transfer_submitted_at")
+    private Instant transferSubmittedAt;
+
+    /** The interpreter who accepted or rejected the InstaPay transfer. */
+    @Column(name = "reviewed_by")
+    private UUID reviewedBy;
+
+    @Column(name = "reviewed_at")
+    private Instant reviewedAt;
+
+    /** Why the transfer was rejected (shown to the buyer). */
+    @Column(name = "review_note", columnDefinition = "text")
+    private String reviewNote;
+
     @PrePersist
     void onCreate() {
         if (createdAt == null) {

@@ -5,6 +5,7 @@ import { useAuthStore } from '@/app/auth-store'
 import { Button, Skeleton, StatusBadge } from '@/components/ui'
 import { PageEnter } from '@/components/motion'
 import { fmtDate, fmtMoney } from '@/lib/utils'
+import { InstapaySettingsCard, InstapayTransfersPanel } from './InstapayAdmin'
 
 export function OrdersAdminPage() {
   const { t } = useTranslation()
@@ -23,6 +24,10 @@ export function OrdersAdminPage() {
   return (
     <PageEnter>
       <div className="mb-6 flex items-center justify-between"><h1 className="font-display text-4xl">{t('admin.orders.title')}</h1><Button size="sm" variant="ghost" onClick={exportCsv}>{t('admin.orders.export')}</Button></div>
+      <div className="mb-8 space-y-6">
+        <InstapayTransfersPanel />
+        <InstapaySettingsCard />
+      </div>
       {q.isLoading ? <Skeleton className="h-64" /> : (
         <div className="card overflow-x-auto p-0"><table className="w-full text-sm">
           <thead className="text-xs text-fg-dim"><tr className="border-b border-line">{[t('admin.orders.user'), t('admin.orders.package'), t('admin.orders.amount'), t('admin.orders.status'), t('admin.orders.provider'), t('common.country'), t('admin.orders.date')].map((h) => <th key={h} className="px-4 py-3 text-start font-normal">{h}</th>)}</tr></thead>

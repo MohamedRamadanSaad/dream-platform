@@ -60,6 +60,8 @@ public final class ApiPaths {
         public static final String CREDITS = ROOT + "/credits";
         public static final String ORDERS = ROOT + "/orders";
         public static final String ORDER = ORDERS + "/{id}";
+        /** GET: the InstaPay payment page of one of the caller's orders; POST {reference, senderName, dreamIds}. */
+        public static final String ORDER_INSTAPAY = ORDER + "/instapay";
         /** PDF of all the caller's non-draft dreams with their interpretations. */
         public static final String DREAMS_PDF = ROOT + "/dreams/pdf";
         /** GET: the caller's signed-in devices (active refresh-token families), most recently active first. */
@@ -178,6 +180,17 @@ public final class ApiPaths {
         public static final String TESTIMONIAL = TESTIMONIALS + "/{id}";
 
         public static final String ORDERS = ROOT + "/orders";
+
+        /** GET/PUT the receiving InstaPay account (address, link, receiver name, hours to pay, on/off). */
+        public static final String INSTAPAY_SETTINGS = ROOT + "/payments/instapay/settings";
+        /** GET {pending, reviewed}: transfers waiting for the interpreter, then the latest decisions. */
+        public static final String INSTAPAY_TRANSFERS = ROOT + "/payments/instapay/transfers";
+        /** GET {pending}: badge count. */
+        public static final String INSTAPAY_TRANSFER_COUNTS = INSTAPAY_TRANSFERS + "/counts";
+        /** POST: the money arrived → credits added, attached dreams submitted (409 when not pending). */
+        public static final String INSTAPAY_TRANSFER_APPROVE = INSTAPAY_TRANSFERS + "/{id}/approve";
+        /** POST {note}: no matching transfer → FAILED, the buyer is told and may correct it. */
+        public static final String INSTAPAY_TRANSFER_REJECT = INSTAPAY_TRANSFERS + "/{id}/reject";
 
         public static final String YOUTUBE_REFRESH = ROOT + "/youtube/refresh";
 

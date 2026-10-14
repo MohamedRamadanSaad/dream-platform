@@ -15,6 +15,7 @@ import { NewDreamPage } from '@/features/user/NewDreamPage'
 import { DreamDetailPage } from '@/features/user/DreamDetailPage'
 import { PackagesPage, CheckoutPage, MockCheckoutPage } from '@/features/user/CheckoutPage'
 import { PaymentsPage } from '@/features/user/PaymentsPage'
+import { InstapayPage } from '@/features/user/InstapayPage'
 import { NotificationsPage } from '@/features/user/NotificationsPage'
 import { ProfilePage } from '@/features/account/ProfilePage'
 import { CoursesPage } from '@/features/user/CoursesPage'
@@ -27,6 +28,7 @@ import { WaitTimePage } from '@/features/admin/WaitTimePage'
 import { UsersPage, User360Page } from '@/features/admin/UsersPage'
 import { TestimonialsAdminPage } from '@/features/admin/TestimonialsAdminPage'
 import { OrdersAdminPage } from '@/features/admin/OrdersAdminPage'
+import { INSTAPAY_COUNTS_KEY } from '@/features/admin/InstapayAdmin'
 import { EmailSettingsPage } from '@/features/admin/EmailSettingsPage'
 import { SupportTicketsPage, SUPPORT_COUNTS_KEY } from '@/features/admin/SupportTicketsPage'
 import { PasskeyOffer } from '@/features/account/PasskeyOffer'
@@ -97,6 +99,8 @@ function AdminLayout() {
   const { t } = useTranslation()
   // badge on "Support messages": how many tickets are still NEW (refreshed every minute)
   const support = useQuery({ queryKey: SUPPORT_COUNTS_KEY, queryFn: adminApi.supportTicketCounts, refetchInterval: 60_000 })
+  // badge on "Payments": InstaPay transfers waiting for confirmation
+  const transfers = useQuery({ queryKey: INSTAPAY_COUNTS_KEY, queryFn: adminApi.instapayCounts, refetchInterval: 60_000 })
   return (
     <AppShell admin items={[
       { to: '/admin', label: t('admin.nav.dashboard'), icon: 'chart', end: true },
@@ -106,7 +110,7 @@ function AdminLayout() {
       { to: '/admin/packages', label: t('admin.nav.packages'), icon: 'gift' },
       { to: '/admin/wait-time', label: t('admin.nav.waitTime'), icon: 'clock' },
       { to: '/admin/testimonials', label: t('admin.nav.testimonials'), icon: 'quote' },
-      { to: '/admin/orders', label: t('admin.nav.orders'), icon: 'wallet' },
+      { to: '/admin/orders', label: t('admin.nav.orders'), icon: 'wallet', badge: transfers.data?.pending },
       { to: '/admin/emails', label: t('admin.nav.emails'), icon: 'mail' },
       { to: '/admin/support', label: t('admin.nav.support'), icon: 'chat', badge: support.data?.new },
       { to: '/admin/notifications', label: t('me.nav.notifications'), icon: 'bell' },
@@ -139,6 +143,7 @@ export const router = createBrowserRouter([{ element: <RootShell />, children: [
         { path: 'dreams/:id/edit', element: <NewDreamPage /> },
         { path: 'packages', element: <PackagesPage /> },
         { path: 'checkout', element: <CheckoutPage /> },
+        { path: 'checkout/instapay/:orderId', element: <InstapayPage /> },
         { path: 'payments', element: <PaymentsPage /> },
         { path: 'notifications', element: <NotificationsPage /> },
         { path: 'profile', element: <ProfilePage /> },

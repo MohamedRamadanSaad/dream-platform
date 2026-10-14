@@ -48,7 +48,11 @@ export function CheckoutPage() {
   const pkg = catalog?.packages.find((p) => p.id === packageId)
   const create = useMutation({
     mutationFn: () => checkoutApi.create({ packageId, couponCode: coupon || undefined, dreamIds }),
-    onSuccess: (r) => { window.location.href = r.checkoutUrl.startsWith('http') ? r.checkoutUrl : r.checkoutUrl + `?return=${encodeURIComponent('/me/payments')}` },
+    onSuccess: (r) => {
+      // InstaPay is the site's own payment page: stay inside the app
+      if (r.provider === 'INSTAPAY') { navigate(new URL(r.checkoutUrl, window.location.origin).pathname); return }
+      window.location.href = r.checkoutUrl.startsWith('http') ? r.checkoutUrl : r.checkoutUrl + `?return=${encodeURIComponent('/me/payments')}`
+    },
     onError: (e) => {
       const err = e as ApiError
       const code = err.problem?.code
@@ -60,14 +64,14 @@ export function CheckoutPage() {
     <PageEnter className="mx-auto max-w-lg">
       <Link to="/me/packages" className="text-sm text-fg-muted">{arrowBack(locale)} {t('common.back')}</Link>
       <h1 className="mt-2 font-display text-4xl">{t('me.checkout.title')}</h1>
-      <p className="mb-6 text-sm font-light text-fg-muted"><Icon name="shield" size={14} className="inline" /> {t('me.checkout.secure')}</p>
+      <p className="mb-6 text-sm font-light text-fg-muted"><Icon name="shield" size={14} className="inline" /> {pkg?.currency === 'EGP' ? t('me.checkout.secureEg') : t('me.checkout.secure')}</p>
       {!pkg ? <Skeleton className="h-40" /> : (
         <div className="card p-6">
           <div className="flex items-center justify-between"><div><div className="font-display text-2xl">{pkg.name}</div><div className="text-xs text-fg-dim">{t('packages.dreams', { count: pkg.credits })}</div></div><div className="text-3xl font-medium">{fmtMoney(pkg.price, pkg.currency, locale)}</div></div>
           {dreamIds?.length ? <div className="mt-3 text-xs text-fg-muted">{t('me.checkout.autoSubmit', { count: dreamIds.length, n: dreamIds.length })}</div> : null}
           <div className="mt-6"><Label>{t('me.checkout.coupon')}</Label><div className="flex gap-2"><Input dir="ltr" value={coupon} onChange={(e) => setCoupon(e.target.value.toUpperCase())} placeholder="CODE" /></div></div>
           {err && <p className="mt-3 text-sm text-danger">{err}</p>}
-          <Button className="mt-6 w-full" size="lg" loading={create.isPending} onClick={() => { setErr(null); create.mutate() }}>{t('me.checkout.pay', { amount: fmtMoney(pkg.price, pkg.currency, locale), currency: '' })}</Button>
+          <Button className="mt-6 w-full" size="lg" loading={create.isPending} onClick={() => { setErr(null); create.mutate() }}>{pkg.currency === 'EGP' ? t('me.checkout.continue', { amount: fmtMoney(pkg.price, pkg.currency, locale) }) : t('me.checkout.pay', { amount: fmtMoney(pkg.price, pkg.currency, locale), currency: '' })}</Button>
           <p className="mt-3 text-center text-xs text-fg-dim">{pkg.currency === 'EGP' ? t('me.checkout.methodsEg') : t('me.checkout.methods')}</p>
         </div>
       )}

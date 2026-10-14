@@ -67,6 +67,12 @@ export const checkoutApi = {
   order: (id: string) => http.get<T.OrderDto>(`/me/orders/${id}`),
 }
 
+/** Manual InstaPay transfer (Egypt): the payment page of one order, and sending the transfer details. */
+export const instapayApi = {
+  view: (orderId: string) => http.get<T.InstapayOrderView>(`/me/orders/${orderId}/instapay`),
+  submit: (orderId: string, body: T.InstapaySubmitRequest) => http.post<T.InstapayOrderView>(`/me/orders/${orderId}/instapay`, body),
+}
+
 export const notificationsApi = {
   list: (page = 0, size = 20) => http.get<T.Page<T.NotificationDto>>('/notifications', { page, size }),
   readAll: () => http.post<void>('/notifications/read-all'),
@@ -133,6 +139,13 @@ export const adminApi = {
   testimonials: (approved?: boolean) => http.get<T.Page<T.AdminTestimonialRow>>('/admin/testimonials', { approved }),
   setTestimonial: (id: string, approved: boolean) => http.patch<void>(`/admin/testimonials/${id}`, { approved }),
   orders: (page = 0, size = 20) => http.get<T.Page<T.OrderDto & { userName: string }>>('/admin/orders', { page, size }),
+  /** InstaPay transfers waiting for the interpreter (oldest first) and the latest decisions. */
+  instapayTransfers: () => http.get<T.InstapayTransferList>('/admin/payments/instapay/transfers'),
+  instapayCounts: () => http.get<{ pending: number }>('/admin/payments/instapay/transfers/counts'),
+  approveTransfer: (orderId: string) => http.post<T.InstapayTransferRow>(`/admin/payments/instapay/transfers/${orderId}/approve`),
+  rejectTransfer: (orderId: string, note: string) => http.post<T.InstapayTransferRow>(`/admin/payments/instapay/transfers/${orderId}/reject`, { note }),
+  instapaySettings: () => http.get<T.InstapaySettings>('/admin/payments/instapay/settings'),
+  saveInstapaySettings: (body: T.InstapaySettings) => http.put<T.InstapaySettings>('/admin/payments/instapay/settings', body),
 
   traffic: (q: T.TrafficQuery = {}) => http.get<T.TrafficReport>('/admin/analytics/traffic', q),
   insights: () => http.get<T.InsightsResponse>('/admin/analytics/insights'),

@@ -1,6 +1,7 @@
 package com.saadat.payments.repo;
 
 import com.saadat.common.domain.OrderStatus;
+import com.saadat.common.domain.PaymentProviderType;
 import com.saadat.payments.domain.Order;
 import jakarta.persistence.LockModeType;
 import java.time.Instant;
@@ -39,6 +40,19 @@ public interface OrderRepository extends JpaRepository<Order, UUID> {
     Optional<Order> findFirstByUserIdAndStatusOrderByPaidAtDescCreatedAtDesc(UUID userId, OrderStatus status);
 
     long countByStatus(OrderStatus status);
+
+    /** InstaPay review queue (oldest transfer first). */
+    List<Order> findByProviderAndStatusOrderByTransferSubmittedAtAsc(PaymentProviderType provider, OrderStatus status);
+
+    /** Recently reviewed InstaPay transfers (newest decision first). */
+    List<Order> findTop50ByProviderAndStatusInAndReviewedAtIsNotNullOrderByReviewedAtDesc(
+            PaymentProviderType provider, Collection<OrderStatus> statuses);
+
+    long countByProviderAndStatus(PaymentProviderType provider, OrderStatus status);
+
+    /** Another live order already holds this InstaPay reference (V34 unique index, checked first for a clear error). */
+    boolean existsByTransferReferenceAndStatusInAndIdNot(String transferReference, Collection<OrderStatus> statuses,
+                                                         UUID id);
 
     /** Row lock for webhook confirmation. */
     @Lock(LockModeType.PESSIMISTIC_WRITE)

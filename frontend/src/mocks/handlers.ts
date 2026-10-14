@@ -56,6 +56,56 @@ const wrap = (fn: (info: { request: Request; params: Record<string, string | rea
     try { return await fn(info) } catch (e) { if (e instanceof Response) return e; throw e }
   }
 
+
+// ---------- payments: shared success path + InstaPay manual transfers ----------
+type MockOrder = T.OrderDto & { userId: string }
+type InstapayMeta = { dreamIds: string[]; reference: string | null; senderName: string | null; submittedAt: string | null; reviewedAt: string | null; reviewNote: string | null; expiresAt: string }
+const instapayMeta = new Map<string, InstapayMeta>()
+
+/** What a confirmed payment does: credits, receipt notification, then the attached drafts are submitted. */
+function completeOrder(order: MockOrder, dreamIds: string[]) {
+  order.status = 'SUCCESS'; order.paidAt = helpers.now(); order.providerRef ??= `${order.provider}-${uid().toUpperCase()}`
+  db.ledger.push({ id: uid(), userId: order.userId, delta: order.credits, reason: 'PURCHASE', orderId: order.id, dreamId: null, createdAt: helpers.now() })
+  db.notifications.unshift({ id: uid(), userId: order.userId, type: 'PAYMENT_SUCCESS', title: 'تم الدفع', body: `أُضيفت ${order.credits} رؤى إلى رصيدك.`, link: '/me/payments', createdAt: helpers.now(), readAt: null })
+  const hours = db.waitTime.busy ? db.waitTime.busyMaxDays * 24 : db.waitTime.normalHours
+  for (const id of dreamIds) {
+    const d = db.dreams.find((x) => x.id === id && x.userId === order.userId && x.status === 'DRAFT')
+    if (!d || balanceOf(order.userId) < 1) continue
+    const entry = { id: uid(), userId: order.userId, delta: -1, reason: 'SUBMIT' as const, orderId: order.id, dreamId: d.id, createdAt: helpers.now() }
+    db.ledger.push(entry)
+    Object.assign(d, { status: 'IN_REVIEW', submittedAt: helpers.now(), expectedBy: new Date(Date.now() + hours * 36e5).toISOString(), credit: { ledgerEntryId: entry.id, orderId: order.id } })
+  }
+}
+
+// preview: one transfer already waits for the interpreter (Egyptian user u4)
+{
+  const seeded: MockOrder = { id: 'o-ip1', userId: 'u4', packageName: 'تفسير ثلاث رؤى', credits: 3, amount: 450, currency: 'EGP', status: 'PENDING_REVIEW', provider: 'INSTAPAY', providerRef: null, countryCode: 'EG', createdAt: helpers.daysAgo(0, 1), paidAt: null }
+  db.orders.unshift(seeded)
+  instapayMeta.set(seeded.id, { dreamIds: [], reference: '202311580274', senderName: 'MONA ABDALLAH', submittedAt: helpers.daysAgo(0, 1), reviewedAt: null, reviewNote: null, expiresAt: helpers.daysAhead(1) })
+}
+
+const instapayView = (o: MockOrder): T.InstapayOrderView => {
+  const m = instapayMeta.get(o.id)!
+  return {
+    orderId: o.id, status: o.status, packageName: o.packageName, credits: o.credits, amount: o.amount, currency: o.currency,
+    address: db.settings['payments.instapay.address'] ?? '', link: db.settings['payments.instapay.link'] ?? '', recipientName: db.settings['payments.instapay.recipient_name'] ?? '',
+    createdAt: o.createdAt, expiresAt: m.expiresAt, reference: m.reference, senderName: m.senderName, submittedAt: m.submittedAt, reviewNote: m.reviewNote, attachedDreams: m.dreamIds.length,
+  }
+}
+const transferRow = (o: MockOrder): T.InstapayTransferRow => {
+  const m = instapayMeta.get(o.id)!
+  const usr = db.users.find((x) => x.id === o.userId)
+  return { orderId: o.id, userId: o.userId, userName: usr?.name ?? '', userEmail: usr?.email ?? '', packageName: o.packageName, credits: o.credits, amount: o.amount, currency: o.currency, status: o.status, reference: m.reference, senderName: m.senderName, createdAt: o.createdAt, submittedAt: m.submittedAt, reviewedAt: m.reviewedAt, reviewNote: m.reviewNote, attachedDreams: m.dreamIds.length }
+}
+const toDigits = (raw: string) => raw.replace(/[\u0660-\u0669]/g, (d) => String(d.charCodeAt(0) - 0x660)).replace(/[\u06f0-\u06f9]/g, (d) => String(d.charCodeAt(0) - 0x6f0)).replace(/[\s-]/g, '')
+const instapayOrders = () => (db.orders as MockOrder[]).filter((o) => o.provider === 'INSTAPAY' && instapayMeta.has(o.id))
+const pendingTransfer = (id: string) => {
+  const o = instapayOrders().find((x) => x.id === id)
+  if (!o) throw problem(404, 'Not found')
+  if (o.status !== 'PENDING_REVIEW') throw problem(409, 'Conflict', 'This transfer was already reviewed', { code: 'NOT_PENDING' })
+  return o
+}
+
 const waitTimePublic = (locale: string): T.WaitTime => {
   const w = db.waitTime
   return { busy: w.busy, minDays: w.busyMinDays, maxDays: w.busyMaxDays, hours: w.normalHours, message: locale.startsWith('en') ? w.messageEn : w.messageAr }
@@ -327,25 +377,97 @@ export const handlers = [
       if (!c) return problem(422, 'Invalid coupon', 'كود الخصم غير صالح')
       price = c.type === 'PERCENT' ? Math.round(price * (1 - c.value / 100)) : Math.max(0, price - c.value)
     }
-    const order: T.OrderDto & { userId: string } = { id: uid(), userId: me.id, packageName: pkg.nameAr, credits: pkg.credits, amount: price, currency: r.currency, status: 'INITIATED', provider: r.currency === 'SAR' ? 'MOR' : 'KASHIER', providerRef: null, countryCode: me.countryCode, createdAt: helpers.now(), paidAt: null }
+    const instapay = r.currency === 'EGP' && db.settings['payments.instapay.enabled'] === 'true'
+    const order: MockOrder = { id: uid(), userId: me.id, packageName: pkg.nameAr, credits: pkg.credits, amount: price, currency: r.currency, status: 'INITIATED', provider: instapay ? 'INSTAPAY' : r.currency === 'SAR' ? 'MOR' : 'KASHIER', providerRef: null, countryCode: me.countryCode, createdAt: helpers.now(), paidAt: null }
     db.orders.unshift(order)
+    if (instapay) {
+      const hours = Number(db.settings['payments.instapay.expire_hours'] ?? 24)
+      instapayMeta.set(order.id, { dreamIds: b.dreamIds ?? [], reference: null, senderName: null, submittedAt: null, reviewedAt: null, reviewNote: null, expiresAt: new Date(Date.now() + hours * 36e5).toISOString() })
+      return HttpResponse.json({ orderId: order.id, provider: 'INSTAPAY', checkoutUrl: `/me/checkout/instapay/${order.id}`, amount: price, currency: r.currency, expiresAt: instapayMeta.get(order.id)!.expiresAt } satisfies T.CheckoutResponse)
+    }
     // mock: simulate webhook success after 4s, then auto-submit selected drafts
-    setTimeout(() => {
-      order.status = 'SUCCESS'; order.paidAt = helpers.now(); order.providerRef = `${order.provider}-${uid().toUpperCase()}`
-      db.ledger.push({ id: uid(), userId: me.id, delta: pkg.credits, reason: 'PURCHASE', orderId: order.id, dreamId: null, createdAt: helpers.now() })
-      db.notifications.unshift({ id: uid(), userId: me.id, type: 'PAYMENT_SUCCESS', title: 'تم الدفع', body: `أُضيفت ${pkg.credits} رؤى إلى رصيدك.`, link: '/me/payments', createdAt: helpers.now(), readAt: null })
-      if (b.dreamIds?.length) {
-        const hours = db.waitTime.busy ? db.waitTime.busyMaxDays * 24 : db.waitTime.normalHours
-        for (const id of b.dreamIds) {
-          const d = db.dreams.find((x) => x.id === id && x.userId === me.id && x.status === 'DRAFT')
-          if (!d || balanceOf(me.id) < 1) continue
-          const entry = { id: uid(), userId: me.id, delta: -1, reason: 'SUBMIT' as const, orderId: order.id, dreamId: d.id, createdAt: helpers.now() }
-          db.ledger.push(entry)
-          Object.assign(d, { status: 'IN_REVIEW', submittedAt: helpers.now(), expectedBy: new Date(Date.now() + hours * 36e5).toISOString(), credit: { ledgerEntryId: entry.id, orderId: order.id } })
-        }
-      }
-    }, 4000)
+    setTimeout(() => completeOrder(order, b.dreamIds ?? []), 4000)
     return HttpResponse.json({ orderId: order.id, provider: order.provider, checkoutUrl: `/checkout/mock/${order.id}`, amount: price, currency: r.currency, expiresAt: new Date(Date.now() + 30 * 6e4).toISOString() } satisfies T.CheckoutResponse)
+  })),
+
+
+  // ---------- InstaPay (manual transfer, Egypt) ----------
+  http.get(u('/me/orders/:id/instapay'), wrap(async ({ request, params }) => {
+    const me = requireUser(request)
+    const o = instapayOrders().find((x) => x.id === params.id && x.userId === me.id)
+    if (!o) return problem(404, 'Not found')
+    const m = instapayMeta.get(o.id)!
+    if (o.status === 'INITIATED' && m.expiresAt < helpers.now()) o.status = 'EXPIRED'
+    return HttpResponse.json(instapayView(o))
+  })),
+  http.post(u('/me/orders/:id/instapay'), wrap(async ({ request, params }) => {
+    const me = requireUser(request)
+    const o = instapayOrders().find((x) => x.id === params.id && x.userId === me.id)
+    if (!o) return problem(404, 'Not found')
+    const m = instapayMeta.get(o.id)!
+    const b = (await request.json()) as T.InstapaySubmitRequest
+    const reopened = o.status === 'FAILED' && !!m.reference
+    if (o.status === 'INITIATED' && m.expiresAt < helpers.now()) { o.status = 'EXPIRED'; return problem(409, 'Conflict', 'Order expired', { code: 'ORDER_EXPIRED' }) }
+    if (o.status !== 'INITIATED' && o.status !== 'PENDING_REVIEW' && !reopened) return problem(409, 'Conflict', 'Closed', { code: 'ORDER_CLOSED' })
+    const ref = toDigits(b.reference)
+    if (!/^\d{6,24}$/.test(ref)) return problem(422, 'Unprocessable', 'Bad reference', { code: 'INVALID_REFERENCE' })
+    if ((b.senderName ?? '').trim().length < 3) return problem(422, 'Unprocessable', 'Bad sender', { code: 'INVALID_SENDER' })
+    const taken = instapayOrders().some((x) => x.id !== o.id && instapayMeta.get(x.id)!.reference === ref && ['PENDING_REVIEW', 'SUCCESS', 'SUSPICIOUS', 'REFUNDED'].includes(x.status))
+    if (taken) return problem(409, 'Conflict', 'Reference used', { code: 'DUPLICATE_REFERENCE' })
+    for (const id of b.dreamIds ?? []) if (!m.dreamIds.includes(id)) m.dreamIds.push(id)
+    const first = o.status === 'INITIATED' || reopened
+    Object.assign(m, { reference: ref, senderName: b.senderName.trim(), submittedAt: first ? helpers.now() : m.submittedAt ?? helpers.now() }, reopened ? { reviewNote: null, reviewedAt: null } : {})
+    o.status = 'PENDING_REVIEW'
+    if (first) {
+      for (const it of db.users.filter((x) => x.role === 'INTERPRETER')) {
+        db.notifications.unshift({ id: uid(), userId: it.id, type: 'TRANSFER_SUBMITTED', title: 'تحويل إنستاباي بانتظار التأكيد', body: `أرسل ${me.name} تحويلاً بمبلغ ${o.amount} ${o.currency}، الرقم المرجعي ${ref}.`, link: '/admin/orders', createdAt: helpers.now(), readAt: null })
+      }
+    }
+    return HttpResponse.json(instapayView(o))
+  })),
+  http.get(u('/admin/payments/instapay/transfers/counts'), wrap(async ({ request }) => {
+    requireAdmin(request)
+    return HttpResponse.json({ pending: instapayOrders().filter((o) => o.status === 'PENDING_REVIEW').length })
+  })),
+  http.get(u('/admin/payments/instapay/transfers'), wrap(async ({ request }) => {
+    requireAdmin(request)
+    const all = instapayOrders()
+    const pending = all.filter((o) => o.status === 'PENDING_REVIEW').sort((a, b) => (instapayMeta.get(a.id)!.submittedAt ?? '').localeCompare(instapayMeta.get(b.id)!.submittedAt ?? ''))
+    const reviewed = all.filter((o) => instapayMeta.get(o.id)!.reviewedAt).sort((a, b) => instapayMeta.get(b.id)!.reviewedAt!.localeCompare(instapayMeta.get(a.id)!.reviewedAt!)).slice(0, 50)
+    return HttpResponse.json({ pending: pending.map(transferRow), reviewed: reviewed.map(transferRow) } satisfies T.InstapayTransferList)
+  })),
+  http.post(u('/admin/payments/instapay/transfers/:id/approve'), wrap(async ({ request, params }) => {
+    requireAdmin(request)
+    const o = pendingTransfer(String(params.id))
+    const m = instapayMeta.get(o.id)!
+    m.reviewedAt = helpers.now()
+    o.providerRef = `INSTAPAY-REF-${m.reference}`
+    completeOrder(o, m.dreamIds)
+    return HttpResponse.json(transferRow(o))
+  })),
+  http.post(u('/admin/payments/instapay/transfers/:id/reject'), wrap(async ({ request, params }) => {
+    requireAdmin(request)
+    const o = pendingTransfer(String(params.id))
+    const m = instapayMeta.get(o.id)!
+    const b = (await request.json().catch(() => ({}))) as { note?: string }
+    Object.assign(m, { reviewedAt: helpers.now(), reviewNote: b.note?.trim() || null })
+    o.status = 'FAILED'
+    db.notifications.unshift({ id: uid(), userId: o.userId, type: 'PAYMENT_REJECTED', title: 'لم نجد تحويلك', body: `لم نجد تحويلاً مطابقاً لطلب ${o.packageName}، ولم يُضف أي رصيد.`, link: `/me/checkout/instapay/${o.id}`, createdAt: helpers.now(), readAt: null })
+    return HttpResponse.json(transferRow(o))
+  })),
+  http.get(u('/admin/payments/instapay/settings'), wrap(async ({ request }) => {
+    requireAdmin(request)
+    const st = db.settings
+    return HttpResponse.json({ enabled: st['payments.instapay.enabled'] === 'true', address: st['payments.instapay.address'] ?? '', link: st['payments.instapay.link'] ?? '', recipientName: st['payments.instapay.recipient_name'] ?? '', expireHours: Number(st['payments.instapay.expire_hours'] ?? 24) } satisfies T.InstapaySettings)
+  })),
+  http.put(u('/admin/payments/instapay/settings'), wrap(async ({ request }) => {
+    requireAdmin(request)
+    const b = (await request.json()) as T.InstapaySettings
+    const address = b.address.trim().toLowerCase()
+    if (!/^[a-z0-9][a-z0-9._-]{1,62}@instapay$/.test(address)) return problem(422, 'Unprocessable', 'Bad address', { code: 'INVALID_ADDRESS' })
+    if (!/^https:\/\/ipn\.eg\/S\/[A-Za-z0-9._-]+\/instapay\/[A-Za-z0-9]+$/.test(b.link.trim())) return problem(422, 'Unprocessable', 'Bad link', { code: 'INVALID_LINK' })
+    Object.assign(db.settings, { 'payments.instapay.enabled': String(b.enabled), 'payments.instapay.address': address, 'payments.instapay.link': b.link.trim(), 'payments.instapay.recipient_name': (b.recipientName ?? '').trim(), 'payments.instapay.expire_hours': String(b.expireHours) })
+    return HttpResponse.json({ ...b, address, link: b.link.trim(), recipientName: (b.recipientName ?? '').trim() })
   })),
 
   // ---------- notifications ----------

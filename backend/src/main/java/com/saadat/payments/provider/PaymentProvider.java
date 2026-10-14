@@ -4,6 +4,8 @@ import com.saadat.common.domain.PaymentProviderType;
 import com.saadat.payments.domain.Order;
 import com.saadat.users.domain.User;
 import jakarta.servlet.http.HttpServletRequest;
+import java.time.Duration;
+import java.util.Optional;
 
 /** A payment gateway. Implementations never decide order state; {@code PaymentService.confirm} does. */
 public interface PaymentProvider {
@@ -12,6 +14,11 @@ public interface PaymentProvider {
 
     /** Creates the provider-side checkout for a persisted INITIATED order. */
     CheckoutSession createCheckout(Order order, User user);
+
+    /** How long the order waits for payment; empty = setting {@code orders.expire_minutes}. */
+    default Optional<Duration> checkoutTtl() {
+        return Optional.empty();
+    }
 
     /** Verifies the webhook's authenticity (signature/HMAC). */
     boolean verifySignature(HttpServletRequest request, String body);

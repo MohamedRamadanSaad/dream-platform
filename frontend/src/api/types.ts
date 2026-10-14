@@ -1,7 +1,9 @@
 // Single source of truth for the API contract. Mirrors docs/BUILD_PACK.md and docs/SPEC_v2.md.
 
 export type DreamStatus = 'DRAFT' | 'IN_REVIEW' | 'AWAITING_USER_REPLY' | 'INTERPRETED' | 'CANCELLED'
-export type OrderStatus = 'INITIATED' | 'SUCCESS' | 'FAILED' | 'EXPIRED' | 'REFUNDED' | 'SUSPICIOUS'
+export type OrderStatus = 'INITIATED' | 'PENDING_REVIEW' | 'SUCCESS' | 'FAILED' | 'EXPIRED' | 'REFUNDED' | 'SUSPICIOUS'
+/** INSTAPAY: manual transfer inside Egypt, confirmed by the interpreter. */
+export type PaymentProvider = 'KASHIER' | 'MOR' | 'INSTAPAY'
 export type Role = 'USER' | 'INTERPRETER'
 export type AuthProvider = 'GOOGLE' | 'MAGIC_LINK'
 export type Gender = 'FEMALE' | 'MALE'
@@ -18,6 +20,8 @@ export type NotificationType =
   | 'PAYMENT_SUCCESS'
   | 'PROMOTION'
   | 'YOUTUBE_VIDEO'
+  | 'TRANSFER_SUBMITTED'
+  | 'PAYMENT_REJECTED'
 
 export interface ApiProblem {
   type: string
@@ -261,7 +265,7 @@ export interface CheckoutRequest {
 }
 export interface CheckoutResponse {
   orderId: string
-  provider: 'KASHIER' | 'MOR'
+  provider: PaymentProvider
   checkoutUrl: string
   amount: number
   currency: Currency
@@ -274,11 +278,66 @@ export interface OrderDto {
   amount: number
   currency: Currency
   status: OrderStatus
-  provider: 'KASHIER' | 'MOR'
+  provider: PaymentProvider
   providerRef: string | null
   countryCode: string
   createdAt: string
   paidAt: string | null
+}
+
+// ---------- InstaPay (manual transfer, Egypt) ----------
+/** GET /me/orders/{id}/instapay: the payment page. The receiving account is the interpreter's current setting. */
+export interface InstapayOrderView {
+  orderId: string
+  status: OrderStatus
+  packageName: string
+  credits: number
+  amount: number
+  currency: Currency
+  address: string
+  link: string
+  recipientName: string
+  createdAt: string
+  expiresAt: string
+  reference: string | null
+  senderName: string | null
+  submittedAt: string | null
+  reviewNote: string | null
+  attachedDreams: number
+}
+export interface InstapaySubmitRequest {
+  reference: string
+  senderName: string
+  dreamIds?: string[]
+}
+export interface InstapayTransferRow {
+  orderId: string
+  userId: string
+  userName: string
+  userEmail: string
+  packageName: string
+  credits: number
+  amount: number
+  currency: Currency
+  status: OrderStatus
+  reference: string | null
+  senderName: string | null
+  createdAt: string
+  submittedAt: string | null
+  reviewedAt: string | null
+  reviewNote: string | null
+  attachedDreams: number
+}
+export interface InstapayTransferList {
+  pending: InstapayTransferRow[]
+  reviewed: InstapayTransferRow[]
+}
+export interface InstapaySettings {
+  enabled: boolean
+  address: string
+  link: string
+  recipientName: string
+  expireHours: number
 }
 
 // ---------- Notifications ----------

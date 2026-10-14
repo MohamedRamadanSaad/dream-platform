@@ -82,3 +82,25 @@ sender synchronously (`support-in-progress` / `support-closed`: one bilingual e-
 with its line breaks, sent as a reply in the sender's thread via `In-Reply-To`/`References`), stores the outcome on the
 event (`emailStatus` SENT / LOGGED / FAILED / DISABLED) and is audited. The action succeeds whatever the e-mail outcome.
 Blank or too long message → 400 (`MESSAGE_REQUIRED` / `MESSAGE_TOO_LONG`), unknown ticket → 404.
+
+## InstaPay manual transfers (Egypt, EGP), V34
+
+Kashier refused the activity, so EGP checkouts (while `payments.instapay.enabled`) create an `INSTAPAY` order whose
+`checkoutUrl` is the site's own page `/me/checkout/instapay/{orderId}`. Credits are added only when the interpreter
+accepts; acceptance goes through `PaymentService.confirm` (txn id `INSTAPAY-REF-<reference>`), so coupons, receipt
+e-mail and the auto-submit of attached drafts behave exactly like a gateway payment.
+
+| Route | Body / result |
+|---|---|
+| `GET /me/orders/{id}/instapay` | `InstapayOrderView`: amount, receiving `address` + `link` (read from settings on every call), status, reference, sender, `attachedDreams`, `reviewNote` |
+| `POST /me/orders/{id}/instapay` | `{reference, senderName, dreamIds?}`; INITIATED (not expired) or PENDING_REVIEW or rejected → `PENDING_REVIEW`. Errors: 422 `INVALID_REFERENCE` / `INVALID_SENDER` / `INVALID_DREAMS`, 409 `DUPLICATE_REFERENCE` / `ORDER_EXPIRED` / `ORDER_CLOSED` |
+| `GET /admin/payments/instapay/transfers` | `{pending[], reviewed[]}` (pending oldest first, last 50 decisions) |
+| `GET /admin/payments/instapay/transfers/counts` | `{pending}` (nav badge on Payments) |
+| `POST /admin/payments/instapay/transfers/{id}/approve` | → SUCCESS, credits, attached dreams submitted; 409 `NOT_PENDING` |
+| `POST /admin/payments/instapay/transfers/{id}/reject` | `{note}` → FAILED (`TRANSFER_REJECTED`), user notified (in-app, push, payment-failed e-mail) and may resend corrected details |
+| `GET/PUT /admin/payments/instapay/settings` | `{enabled, address, link, recipientName, expireHours}`; address must be `name@instapay`, link `https://ipn.eg/S/...` (422 `INVALID_ADDRESS` / `INVALID_LINK`) |
+
+Rules: one reference pays one order (partial unique index on live statuses); reference digits are normalised (Arabic
+digits, spaces); InstaPay orders expire after `payments.instapay.expire_hours` (default 24) when no details were sent.
+New order status `PENDING_REVIEW`, provider `INSTAPAY`, notification types `TRANSFER_SUBMITTED` (interpreters) and
+`PAYMENT_REJECTED` (payer).

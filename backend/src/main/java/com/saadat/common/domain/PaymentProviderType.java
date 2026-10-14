@@ -4,5 +4,7 @@ package com.saadat.common.domain;
 public enum PaymentProviderType {
     KASHIER,
     MOR,
-    MOCK
+    MOCK,
+    /** Manual InstaPay transfer inside Egypt (EGP), confirmed by the interpreter (V34). */
+    INSTAPAY
 }

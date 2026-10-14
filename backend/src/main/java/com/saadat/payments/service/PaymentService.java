@@ -177,7 +177,8 @@ public class PaymentService {
         order.setCountryCode(countryCode);
         order.setCountrySource(countrySource);
         order.setCreatedAt(now);
-        order.setExpiresAt(now.plus(Duration.ofMinutes(settingsService.getInt(SettingKeys.ORDERS_EXPIRE_MINUTES))));
+        order.setExpiresAt(now.plus(provider.checkoutTtl()
+                .orElseGet(() -> Duration.ofMinutes(settingsService.getInt(SettingKeys.ORDERS_EXPIRE_MINUTES)))));
         order = orderRepository.save(order);
 
         CheckoutSession session;
@@ -374,7 +375,7 @@ public class PaymentService {
 
     // ================================================================== checkout_intent
 
-    private String intentJson(List<UUID> dreamIds) {
+    String intentJson(List<UUID> dreamIds) {
         List<UUID> ids = dreamIds == null ? List.of() : new ArrayList<>(new LinkedHashSet<>(dreamIds));
         if (ids.isEmpty()) {
             return null;

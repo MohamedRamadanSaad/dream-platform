@@ -65,6 +65,18 @@ public final class SettingKeys {
     /** The user sees their next credit expiry when it is within N days. */
     public static final String CREDITS_EXPIRY_NOTICE_DAYS = "credits.expiry_notice_days";
 
+    // ---- InstaPay manual transfers (V34): the receiving account, editable from the Orders page ----
+    /** Egyptian (EGP) buyers pay by InstaPay transfer; false sends EGP to the card gateway again. */
+    public static final String INSTAPAY_ENABLED = "payments.instapay.enabled";
+    /** Instant payment address (IPA) such as name@instapay. */
+    public static final String INSTAPAY_ADDRESS = "payments.instapay.address";
+    /** https://ipn.eg/S/... payment link of the same account; the QR code is drawn from it. */
+    public static final String INSTAPAY_LINK = "payments.instapay.link";
+    /** Receiver name shown to the buyer (empty hides it). */
+    public static final String INSTAPAY_RECIPIENT_NAME = "payments.instapay.recipient_name";
+    /** Hours an InstaPay order waits for the transfer details before it expires. */
+    public static final String INSTAPAY_EXPIRE_HOURS = "payments.instapay.expire_hours";
+
     // ---- interpreter ----
     /** Comma-separated list of e-mails that get role INTERPRETER on first login. */
     public static final String INTERPRETER_EMAILS = "interpreter.emails";
@@ -187,6 +199,7 @@ public final class SettingKeys {
             AUTH_KNOWN_DEVICE_DAYS,
             AUTH_PASSKEY_CHALLENGE_TTL_SECONDS,
             ORDERS_EXPIRE_MINUTES, CREDITS_EXPIRY_NOTICE_DAYS,
+            INSTAPAY_ENABLED, INSTAPAY_ADDRESS, INSTAPAY_LINK, INSTAPAY_RECIPIENT_NAME, INSTAPAY_EXPIRE_HOURS,
             INTERPRETER_EMAILS, INTERPRETER_DIGEST_HOUR,
             PRICING_GLOBAL_CURRENCY, PRICING_DEFAULT_COUNTRY, PRICING_FX_TO_USD,
             YOUTUBE_POLL_MINUTES,

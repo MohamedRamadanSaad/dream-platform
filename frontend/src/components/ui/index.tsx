@@ -34,7 +34,7 @@ export const Kicker = ({ children }: { children: ReactNode }) => <div className=
 
 const statusColor: Record<DreamStatus | OrderStatus, string> = {
   DRAFT: 'bg-surface-2 text-fg-muted', IN_REVIEW: 'bg-info/10 text-info', AWAITING_USER_REPLY: 'bg-danger/10 text-danger', INTERPRETED: 'bg-success/10 text-success', CANCELLED: 'bg-surface-2 text-fg-dim',
-  INITIATED: 'bg-warn/10 text-warn', SUCCESS: 'bg-success/10 text-success', FAILED: 'bg-danger/10 text-danger', EXPIRED: 'bg-surface-2 text-fg-dim', REFUNDED: 'bg-info/10 text-info', SUSPICIOUS: 'bg-warn/10 text-warn',
+  INITIATED: 'bg-warn/10 text-warn', PENDING_REVIEW: 'bg-info/10 text-info', SUCCESS: 'bg-success/10 text-success', FAILED: 'bg-danger/10 text-danger', EXPIRED: 'bg-surface-2 text-fg-dim', REFUNDED: 'bg-info/10 text-info', SUSPICIOUS: 'bg-warn/10 text-warn',
 }
 /** `interpreter` words a dream's status from the interpreter's side ("waiting for the user's reply" instead of "waiting for your reply"). */
 export function StatusBadge({ status, kind = 'dream', audience = 'user' }: { status: DreamStatus | OrderStatus; kind?: 'dream' | 'order'; audience?: 'user' | 'interpreter' }) {

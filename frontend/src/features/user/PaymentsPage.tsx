@@ -57,7 +57,11 @@ export function PaymentsPage() {
             {orders.data!.items.map((o) => (
               <div key={o.id} className="flex items-center justify-between gap-4 p-4">
                 <div className="min-w-0"><div className="text-sm">{o.packageName} · {fmtMoney(o.amount, o.currency, locale)}</div><div className="text-xs text-fg-dim">{fmtDate(o.createdAt, locale, true)}</div><InvoiceNo id={o.id} /></div>
-                <div className="text-end"><StatusBadge status={o.status} kind="order" />{(o.status === 'FAILED' || o.status === 'EXPIRED') && <div><Link to="/me/packages" className="text-xs text-gold-ink">{t('me.payments.retry')} {arrowNext(locale)}</Link></div>}</div>
+                <div className="text-end"><StatusBadge status={o.status} kind="order" />
+                  {o.provider === 'INSTAPAY' && (o.status === 'INITIATED' || o.status === 'PENDING_REVIEW' || o.status === 'FAILED')
+                    ? <div><Link to={`/me/checkout/instapay/${o.id}`} className="text-xs text-gold-ink">{t('me.payments.openOrder')} {arrowNext(locale)}</Link></div>
+                    : (o.status === 'FAILED' || o.status === 'EXPIRED') && <div><Link to="/me/packages" className="text-xs text-gold-ink">{t('me.payments.retry')} {arrowNext(locale)}</Link></div>}
+                </div>
               </div>
             ))}
             {orders.data!.items.length === 0 && <div className="p-6 text-center text-fg-muted">{t('common.none')}</div>}
