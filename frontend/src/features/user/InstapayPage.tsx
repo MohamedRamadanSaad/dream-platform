@@ -160,6 +160,15 @@ function AmountCard({ v, locale }: { v: InstapayOrderView; locale: string }) {
           <CopyIcon /> {t('me.checkout.instapay.copy')}
         </Button>
       </div>
+      {/* the interpreter compares the money received with the package price: a different amount is rejected */}
+      <div role="note" className="space-y-1.5 rounded-xl border border-gold/60 bg-gold/10 p-3 text-sm leading-relaxed">
+        <div className="flex items-center gap-2 font-medium text-gold-ink">
+          <Icon name="alert" size={18} className="shrink-0" />
+          <span>{t('me.checkout.instapay.reviewTitle')}</span>
+        </div>
+        <p>{t('me.checkout.instapay.reviewBody')}</p>
+        <p className="text-fg-muted">{t('me.checkout.instapay.reviewAfter')}</p>
+      </div>
       <div className="flex items-start gap-2 rounded-xl bg-surface-2 p-3 text-xs leading-relaxed text-fg-muted">
         <Icon name="info" size={16} className="mt-0.5 shrink-0 text-gold-ink" />
         <span>{t('me.checkout.instapay.amountNote')}</span>
