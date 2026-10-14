@@ -1,18 +1,15 @@
-### Wed Oct 14 16:25:14 UTC 2026 — commit 49a150c
+### Wed Oct 14 16:26:09 UTC 2026 — commit f4900ea
 === backend mode (non-secret keys only)
 SPRING_PROFILES_ACTIVE=prod
 PAYMENTS_MOCK=false
 backend-1  | {"ts":"2026-10-14T16:23:10.876Z","level":"INFO","logger":"com.saadat.SaadatApplication","thread":"main","msg":"The following 1 profile is active: \"prod\""}
-=== save points
-total 160
-drwxrwxr-x 2 deploy deploy   4096 Oct 14 16:24 .
-drwxr-xr-x 8 deploy deploy   4096 Oct 14 16:25 ..
--rw-rw-r-- 1 deploy deploy 155186 Oct 14 16:24 before-go-live-20261014-162428.dump
 === checks after the reset
-ERROR:  column "deleted" does not exist
-LINE 1: ... name, email, role, country_code from users where deleted = ...
-                                                             ^
-HINT:  Perhaps you meant to reference the column "users.deleted_at".
+     name      |            email             |    role     | country_code 
+---------------+------------------------------+-------------+--------------
+ محمد رمضان    | m.ramadansaad@gmail.com      | USER        | EG
+ المعبرة فاطمة | support@saadatu-aldarein.com | INTERPRETER | EG
+(2 rows)
+
  orders | ledger | dreams | testimonials | notifications 
 --------+--------+--------+--------------+---------------
       0 |      0 |      0 |            0 |             0
@@ -23,12 +20,27 @@ HINT:  Perhaps you meant to reference the column "users.deleted_at".
         694 |       60 |    118 |                    60
 (1 row)
 
-               key                |                   value                    
-----------------------------------+--------------------------------------------
- payments.instapay.address        | vcbow1694@instapay
- payments.instapay.enabled        | true
- payments.instapay.expire_hours   | 24
- payments.instapay.link           | https://ipn.eg/S/vcbow1694/instapay/3F76CH
- payments.instapay.recipient_name | 
+ views | dashboard_visitors | visits 
+-------+--------------------+--------
+   694 |                 88 |    118
+(1 row)
+
+ sessions_with_two_visitors 
+----------------------------
+                          1
+(1 row)
+
+   last_row_without_visitor    |    first_row_with_visitor    |           last_view           
+-------------------------------+------------------------------+-------------------------------
+ 2026-10-03 09:12:31.881976+00 | 2026-10-02 12:14:06.32193+00 | 2026-10-14 15:57:06.921369+00
+(1 row)
+
+ visitor  | visits | views 
+----------+--------+-------
+ be614116 |     17 |   123
+ b79f4176 |      7 |   114
+ owner-2  |      5 |    43
+ 217c76cf |      4 |    16
+ owner-1  |      4 |    67
 (5 rows)
 
