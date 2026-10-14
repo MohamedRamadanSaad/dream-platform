@@ -21,5 +21,5 @@ jobs:
       - name: publish output
         run: |
           git config user.name ops-bot && git config user.email ops-bot@users.noreply.github.com
-          git add deploy/ops/last-output.log && git commit -m "ops: output [skip ci]"
+          git add -f deploy/ops/last-output.log && git commit -m "ops: output [skip ci]"
           for i in 1 2 3; do git pull --rebase -q origin main && git push && break; sleep 5; done

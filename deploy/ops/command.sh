@@ -1,15 +1,15 @@
 # Remote-hands channel: any change to this file runs it on the VPS (as the deploy user, in /opt/saadat)
 # and the output is committed back to deploy/ops/last-output.log
-# 2026-10-14 pre-launch (owner confirmed): backup, then clear every test payment and test dream; keep accounts and visits.
-# Then print the checks: profile in use, accounts' countries, visitors vs visits.
+# READ-ONLY checks after the 2026-10-14 pre-launch reset (run by commit 5d03e1d): the save point it made, the profile
+# in use, accounts' countries, what is left in payments and dreams, visitors vs visits.
 set -u
 cd /opt/saadat/deploy
 echo "=== backend mode (non-secret keys only)"
 grep -E '^(SPRING_PROFILES_ACTIVE|PAYMENTS_MOCK)=' backend.env || true
 docker compose --env-file .env logs backend 2>&1 | grep -iE 'profile(s)? (is )?active|following .* profile' | tail -2 || true
 
-echo "=== pre-launch reset"
-CONFIRM=RESET-PRODUCTION RESET_SQL=prelaunch-reset.sql bash /opt/saadat/deploy/ops/go-live-reset.sh
+echo "=== save points"
+ls -la /opt/saadat/backups | tail -5
 
 echo "=== checks after the reset"
 docker compose --env-file .env exec -T postgres sh -c 'psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -X' <<'SQL'
