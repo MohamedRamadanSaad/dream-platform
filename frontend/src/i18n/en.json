@@ -143,7 +143,10 @@
       "invalid": "We couldn't sign you in with this fingerprint or face. Please sign in with Google or an email code, then add it again from your account page.",
       "failed": "Fingerprint or face sign-in didn't work this time. Try again, or choose another way."
     },
-    "notYou": "Not you? Use another email"
+    "notYou": "Not you? Use another email",
+    "errors": {
+      "USE_MAGIC_LINK": "This e-mail already signs in with an e-mail code. Type it in the box above and we will send you a sign-in code."
+    }
   },
   "me": {
     "greeting": "Peace be upon you, {{name}}",

@@ -35,6 +35,18 @@ the real schema and rolls back).
 
 The account `support@saadatu-aldarein.com` is set to Egypt (also done once by migration V32).
 
+### Pre-launch variant (payments only, 2026-10-14)
+
+```
+RESET_SQL=prelaunch-reset.sql bash /opt/saadat/deploy/ops/go-live-reset.sh                            # dry run
+CONFIRM=RESET-PRODUCTION RESET_SQL=prelaunch-reset.sql bash /opt/saadat/deploy/ops/go-live-reset.sh   # backup, then reset
+```
+
+Same backup first. Clears orders, credit_ledger, coupon_redemptions, dreams (with messages, interpretations,
+testimonials), notifications, email_log, audit_log, magic_links, passkey_challenges, youtube_seen; offers back to 0
+uses. **Keeps** every account and its sign-in methods and sessions, and `page_views` (visitor and visit statistics).
+Tested by `PrelaunchResetScriptIntegrationTest`.
+
 ## Connecting to the production database
 
 PostgreSQL 16 runs in Docker on the VPS and listens on the server's loopback only (`127.0.0.1:5432`), never on the

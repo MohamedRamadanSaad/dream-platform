@@ -2,6 +2,9 @@
 # Go-live reset of the production database (owner's request, 2026-10-03).
 #
 #   bash go-live-reset.sh              → DRY RUN: takes a backup and prints how many rows each table has. Changes nothing.
+#   RESET_SQL=prelaunch-reset.sql …    → the pre-launch variant: clears payments, test dreams and logs but keeps the
+#                                        accounts and the visits (default go-live-reset.sql also removes visitor accounts
+#                                        and page views).
 #   CONFIRM=RESET-PRODUCTION bash go-live-reset.sh
 #                                      → takes a backup (the save point), then runs go-live-reset.sql in one transaction
 #                                        and prints the counts after.
@@ -12,6 +15,8 @@
 #   docker compose --env-file .env start backend
 set -euo pipefail
 here=$(cd "$(dirname "$0")" && pwd)
+sql_file=${RESET_SQL:-go-live-reset.sql}
+case "$sql_file" in go-live-reset.sql|prelaunch-reset.sql) ;; *) echo "RESET_SQL must be go-live-reset.sql or prelaunch-reset.sql"; exit 1;; esac
 cd /opt/saadat/deploy
 dc() { docker compose --env-file .env "$@"; }
 psql_q() { dc exec -T postgres sh -c 'psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -v ON_ERROR_STOP=1 -X -q "$@"' -- "$@"; }
@@ -22,6 +27,8 @@ counts() {
     union all select 'dreams', count(*) from dreams
     union all select 'orders', count(*) from orders
     union all select 'credit_ledger', count(*) from credit_ledger
+    union all select 'coupon_redemptions', count(*) from coupon_redemptions
+    union all select 'audit_log', count(*) from audit_log
     union all select 'page_views', count(*) from page_views
     union all select 'notifications', count(*) from notifications
     union all select 'support_tickets', count(*) from support_tickets
@@ -47,11 +54,15 @@ echo "--- rows now"
 counts
 
 if [ "${CONFIRM:-}" != "RESET-PRODUCTION" ]; then
-  echo "--- DRY RUN: nothing changed. Run again with CONFIRM=RESET-PRODUCTION to clear the test data."
+  echo "--- DRY RUN ($sql_file): nothing changed. Run again with CONFIRM=RESET-PRODUCTION to clear the test data."
   exit 0
 fi
 
-dc exec -T postgres sh -c 'psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -v ON_ERROR_STOP=1 -X -q' < "$here/go-live-reset.sql"
+dc exec -T postgres sh -c 'psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -v ON_ERROR_STOP=1 -X -q' < "$here/$sql_file"
 echo "--- rows after the reset"
 counts
-echo "done. Visitors and their sessions are gone; interpreter accounts must sign in again."
+if [ "$sql_file" = go-live-reset.sql ]; then
+  echo "done. Visitors and their sessions are gone; interpreter accounts must sign in again."
+else
+  echo "done ($sql_file). Payments, test dreams and logs are gone; accounts and visits are kept."
+fi

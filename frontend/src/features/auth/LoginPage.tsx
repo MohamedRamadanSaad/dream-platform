@@ -106,7 +106,7 @@ function PasskeySignIn({ remember, onStart, onSignedIn }: { remember: boolean; o
 }
 
 export default function LoginPage() {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const finish = useFinishLogin()
   const [rememberedEmail, setRememberedEmail] = useState(readLastEmail)
   const [email, setEmail] = useState(rememberedEmail)
@@ -116,7 +116,9 @@ export default function LoginPage() {
   const [remember, setRemember] = useState(readRememberMe)
   const choose = (v: boolean) => { setRemember(v); saveRememberMe(v) }
 
-  const google = useMutation({ mutationFn: authApi.google, onSuccess: (r, v) => finish(r, v.rememberMe ?? true, 'google'), onError: (e) => setErr((e as ApiError).message) })
+  // server codes with their own wording (USE_MAGIC_LINK: this e-mail opened its account with the e-mail code)
+  const errorText = (e: unknown) => { const code = (e as ApiError).problem?.code; return code && i18n.exists(`auth.errors.${code}`) ? t(`auth.errors.${code}`) : (e as ApiError).message }
+  const google = useMutation({ mutationFn: authApi.google, onSuccess: (r, v) => finish(r, v.rememberMe ?? true, 'google'), onError: (e) => setErr(errorText(e)) })
   const magic = useMutation({ mutationFn: authApi.magicRequest, onSuccess: () => setSent(true), onError: (e) => setErr((e as ApiError).message) })
   const verify = useMutation({ mutationFn: authApi.magicVerify, onSuccess: (r, v) => finish(r, v.rememberMe ?? true, 'email'), onError: (e) => setErr((e as ApiError).message) })
 
@@ -135,18 +137,7 @@ export default function LoginPage() {
         <p className="mt-2 mb-8 text-center text-sm font-light text-pearl/60">{t('auth.lead')}</p>
         <div className="card w-full bg-surface p-5 text-fg sm:p-6">
           <PasskeySignIn remember={remember} onStart={() => setErr(null)} onSignedIn={(r, rem) => finish(r, rem, 'passkey')} />
-          {isInterpreterEmail ? (
-            <p className="mb-5 rounded-xl border border-gold/40 bg-gold/10 p-3 text-center text-xs text-gold-ink">{t('auth.interpreterDomainHint')}</p>
-          ) : GOOGLE_ID && !MOCKS ? (
-            <GoogleOAuthProvider clientId={GOOGLE_ID}>
-              <div className="flex justify-center"><GoogleLogin onSuccess={(c) => c.credential && google.mutate({ idToken: c.credential, rememberMe: remember })} onError={() => setErr(t('common.error'))} shape="pill" width="320" /></div>
-            </GoogleOAuthProvider>
-          ) : (
-            <Button variant="ghost" className="w-full bg-white text-[#222] border-[#e5e5e5]" loading={google.isPending} onClick={() => google.mutate({ idToken: 'mock', rememberMe: remember })}>
-              <GoogleG /> {t('auth.google')}
-            </Button>
-          )}
-          {!isInterpreterEmail && <div className="my-5 flex items-center gap-3 text-xs text-fg-dim"><span className="h-px flex-1 bg-line" />{t('auth.or')}<span className="h-px flex-1 bg-line" /></div>}
+          {isInterpreterEmail && <p className="mb-5 rounded-xl border border-gold/40 bg-gold/10 p-3 text-center text-xs text-gold-ink">{t('auth.interpreterDomainHint')}</p>}
           {!sent ? (
             <form onSubmit={submitEmail} className="flex flex-col gap-3">
               <Label>{t('auth.email')}</Label>
@@ -155,7 +146,7 @@ export default function LoginPage() {
                 <button type="button" className="self-start text-xs text-fg-muted underline-offset-2 hover:text-fg hover:underline"
                   onClick={() => { forgetLastEmail(); setRememberedEmail(''); setEmail('') }}>{t('auth.notYou')}</button>
               )}
-              <Button type="submit" variant="ghost" loading={magic.isPending}>{t('auth.sendLink')} ✦</Button>
+              <Button type="submit" loading={magic.isPending}>{t('auth.sendLink')} ✦</Button>
               <p className="text-center text-xs text-fg-dim">{t('auth.noPassword')}</p>
             </form>
           ) : (
@@ -166,6 +157,16 @@ export default function LoginPage() {
               <Button type="submit" loading={verify.isPending}>{t('auth.verify')}</Button>
               {MOCKS && <p className="text-[11px] text-fg-dim">{t('auth.mockHint', { email: 'fatema@saadatu-aldarein.com' })}</p>}
             </form>
+          )}
+          {!isInterpreterEmail && <div className="my-5 flex items-center gap-3 text-xs text-fg-dim"><span className="h-px flex-1 bg-line" />{t('auth.or')}<span className="h-px flex-1 bg-line" /></div>}
+          {isInterpreterEmail ? null : GOOGLE_ID && !MOCKS ? (
+            <GoogleOAuthProvider clientId={GOOGLE_ID}>
+              <div className="flex justify-center"><GoogleLogin onSuccess={(c) => c.credential && google.mutate({ idToken: c.credential, rememberMe: remember })} onError={() => setErr(t('common.error'))} shape="pill" width="320" /></div>
+            </GoogleOAuthProvider>
+          ) : (
+            <Button variant="ghost" className="w-full bg-white text-[#222] border-[#e5e5e5]" loading={google.isPending} onClick={() => google.mutate({ idToken: 'mock', rememberMe: remember })}>
+              <GoogleG /> {t('auth.google')}
+            </Button>
           )}
           <RememberMe checked={remember} onChange={choose} />
           {err && <p className="mt-4 text-center text-sm text-danger">{err}</p>}

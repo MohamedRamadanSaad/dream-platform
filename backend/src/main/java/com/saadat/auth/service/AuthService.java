@@ -64,6 +64,8 @@ public class AuthService {
     public static final String CODE_ACCOUNT_UNAVAILABLE = "ACCOUNT_UNAVAILABLE";
     /** Interpreter-domain e-mails must use the magic link/code, never Google. */
     public static final String CODE_INTERPRETER_USE_MAGIC = "INTERPRETER_USE_MAGIC";
+    /** Google sign-in for an e-mail whose account was opened with the e-mail code (409). */
+    public static final String CODE_USE_MAGIC_LINK = "USE_MAGIC_LINK";
 
     private static final int USER_AGENT_MAX = 512;
     private static final int NAME_MAX = 200;
@@ -125,6 +127,14 @@ public class AuthService {
             user = userRepository.findById(linked.get().getUserId()).filter(u -> !u.isDeleted()).orElse(null);
         }
         if (user == null) {
+            // Google sign-ins are capped by Google, so an account opened with the e-mail code stays on the e-mail
+            // code: Google never takes over (or links to) an existing account that has no Google sign-in yet.
+            Optional<User> byEmail = userRepository.findByEmailIgnoreCase(MagicLinkService.normalizeEmail(identity.email()))
+                    .filter(u -> !u.isDeleted());
+            if (byEmail.isPresent() && !identityRepository.existsByUserIdAndProvider(byEmail.get().getId(),
+                    AuthProvider.GOOGLE)) {
+                throw new ConflictException("This e-mail already signs in with the e-mail code", CODE_USE_MAGIC_LINK);
+            }
             user = findOrCreate(identity.email(), identity.name(), ctx);
         }
         return complete(user, AuthProvider.GOOGLE, identity.subject(), rememberMe, ctx);

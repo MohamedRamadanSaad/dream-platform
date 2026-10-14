@@ -4,11 +4,13 @@ import com.saadat.common.error.UnauthorizedException;
 
 /**
  * Local/test only (installed when {@code app.auth.allow-mock=true}): the literal idToken {@code "mock"} logs in
- * as {@code app.auth.mock-email}; any other token goes to the real verifier.
+ * as {@code app.auth.mock-email}, {@code "mock:<e-mail>"} as that e-mail (tests); any other token goes to the real
+ * verifier.
  */
 public class MockGoogleTokenVerifier implements GoogleTokenVerifier {
 
     public static final String MOCK_TOKEN = "mock";
+    public static final String MOCK_EMAIL_PREFIX = "mock:";
     private static final String SUBJECT_PREFIX = "mock-";
 
     private final GoogleTokenVerifier delegate;
@@ -26,6 +28,10 @@ public class MockGoogleTokenVerifier implements GoogleTokenVerifier {
                 throw new UnauthorizedException("Mock login is not configured (app.auth.mock-email)");
             }
             return new GoogleIdentity(SUBJECT_PREFIX + MagicLinkService.normalizeEmail(mockEmail), mockEmail, true, "");
+        }
+        if (idToken != null && idToken.startsWith(MOCK_EMAIL_PREFIX) && idToken.length() > MOCK_EMAIL_PREFIX.length()) {
+            String email = MagicLinkService.normalizeEmail(idToken.substring(MOCK_EMAIL_PREFIX.length()));
+            return new GoogleIdentity(SUBJECT_PREFIX + email, email, true, "");
         }
         return delegate.verify(idToken);
     }
