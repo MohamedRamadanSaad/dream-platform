@@ -431,6 +431,13 @@ export interface AdminDreamDetail extends DreamDetail {
     provider: string
     providerRef: string
     countryCode: string
+    /** Dreams the package gave (bonus included). */
+    credits: number
+    /** Dreams this same payment can still pay for. */
+    creditsLeft: number
+    /** This dream's place among the payment's dreams (1 = first; 0 = unknown). */
+    dreamNumber: number
+    creditsExpired: boolean
   } | null
 }
 export interface InterpretationRequest {

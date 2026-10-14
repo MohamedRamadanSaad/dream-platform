@@ -3,8 +3,6 @@ package com.saadat.dreams.service;
 import com.saadat.common.api.PageResponse;
 import com.saadat.common.api.Pages;
 import com.saadat.common.domain.DreamStatus;
-import com.saadat.common.domain.LedgerReason;
-import com.saadat.common.domain.OrderStatus;
 import com.saadat.common.domain.Role;
 import com.saadat.common.error.ApiException;
 import com.saadat.common.error.ConflictException;
@@ -28,8 +26,6 @@ import com.saadat.mail.FrontendPaths;
 import com.saadat.mail.MailService;
 import com.saadat.mail.MailTemplates;
 import com.saadat.payments.domain.CreditLedgerEntry;
-import com.saadat.payments.domain.Order;
-import com.saadat.payments.repo.OrderRepository;
 import com.saadat.settings.SettingKeys;
 import com.saadat.settings.SettingsService;
 import com.saadat.users.domain.User;
@@ -38,7 +34,6 @@ import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -68,7 +63,6 @@ public class DreamService {
     private final DreamRepository dreamRepository;
     private final DreamMessageRepository messageRepository;
     private final TestimonialRepository testimonialRepository;
-    private final OrderRepository orderRepository;
     private final CreditService creditService;
     private final SettingsService settingsService;
     private final DreamMapper mapper;
@@ -190,10 +184,10 @@ public class DreamService {
     private List<UUID> doSubmit(UUID userId, List<Dream> drafts, UUID orderId) {
         Instant now = clock.instant();
         int slaHours = currentSlaHours();
-        UUID payingOrder = orderId != null ? orderId : latestPaidOrderId(userId);
         List<UUID> submitted = new ArrayList<>();
         for (Dream d : drafts) {
-            CreditLedgerEntry entry = creditService.consume(userId, 1, LedgerReason.SUBMIT, d.getId(), payingOrder);
+            // the credit comes from the payment that holds it (its order id travels with the dream)
+            CreditLedgerEntry entry = creditService.consumeForDream(userId, d.getId());
             d.setStatus(DreamStatus.IN_REVIEW);
             d.setSubmittedAt(now);
             d.setSlaHoursSnapshot(slaHours);
@@ -215,14 +209,6 @@ public class DreamService {
         return settingsService.getInt(SettingKeys.WAIT_NORMAL_HOURS);
     }
 
-    /** Links a plain submit to the user's most recent paid order (for the interpreter's payment view). */
-    private UUID latestPaidOrderId(UUID userId) {
-        return orderRepository.findByUserIdAndStatus(userId, OrderStatus.SUCCESS).stream()
-                .filter(o -> o.getPaidAt() != null)
-                .max(Comparator.comparing(Order::getPaidAt))
-                .map(Order::getId)
-                .orElse(null);
-    }
 
     // ================================================================== messages & testimonial
 

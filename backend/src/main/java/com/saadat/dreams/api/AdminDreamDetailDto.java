@@ -30,6 +30,10 @@ public record AdminDreamDetailDto(
     public record UserRef(UUID id, String name, String email, String countryCode, Integer age) {
     }
 
+    /**
+     * The payment that paid this dream. {@code credits} = dreams the package gave, {@code dreamNumber} = this dream's
+     * place among them (1 = first), {@code creditsLeft} = dreams the same payment can still pay for.
+     */
     public record PaymentRef(
             UUID orderId,
             String payerName,
@@ -40,7 +44,11 @@ public record AdminDreamDetailDto(
             Currency currency,
             String provider,
             String providerRef,
-            String countryCode) {
+            String countryCode,
+            int credits,
+            int creditsLeft,
+            int dreamNumber,
+            boolean creditsExpired) {
     }
 
     public static AdminDreamDetailDto of(DreamDetailDto d, UserRef user, PaymentRef payment) {

@@ -577,7 +577,12 @@
       "awaitingNote": "بانتظار رد المستخدم، وعدّاد المدة متوقف.",
       "amount": "المبلغ",
       "noOrder": "رصيد يدوي / بلا أمر شراء",
-      "timerPaused": "المدة متوقفة"
+      "timerPaused": "المدة متوقفة",
+      "orderNo": "رقم الدفع",
+      "orderCredits": "رصيد هذا الدفع",
+      "dreamOf": "هذه الرؤيا {{n}} من {{total}}",
+      "creditsLeft": "المتبقي: {{n}}",
+      "creditsExpired": "انتهت صلاحية رصيده"
     },
     "pricing": {
       "gaps": {

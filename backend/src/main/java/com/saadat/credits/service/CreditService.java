@@ -11,6 +11,7 @@ import com.saadat.payments.repo.CreditLedgerRepository;
 import com.saadat.users.repo.UserRepository;
 import java.time.Clock;
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -68,6 +69,29 @@ public class CreditService {
             throw new PaymentRequiredException(n - balance);
         }
         return save(userId, -n, reason, orderId, dreamId, null, null);
+    }
+
+    /**
+     * One credit for a dream (SUBMIT), taken from the lot that holds it: the purchase (or refund) whose credits are
+     * spent first. The row carries that lot ({@code source_id}) and its order ({@code order_id}), so every dream of a
+     * 3-dream package points at the same payment, and the payment's counter goes 3 → 2 → 1 → 0. Credits given by hand
+     * (MANUAL / BONUS) have no order. Locks the user row; 402 INSUFFICIENT_CREDITS when nothing is left.
+     */
+    @Transactional
+    public CreditLedgerEntry consumeForDream(UUID userId, UUID dreamId) {
+        int balance = lockAndGetBalance(userId);
+        if (balance < 1) {
+            throw new PaymentRequiredException(1 - balance);
+        }
+        List<CreditLedgerEntry> rows = ledgerRepository.findByUserIdOrderByCreatedAtAsc(userId);
+        CreditLots.Lot lot = CreditLots.nextToSpend(CreditLots.replay(CreditExpiryService.toEntries(rows)),
+                clock.instant());
+        CreditLedgerEntry source = lot == null ? null
+                : rows.stream().filter(r -> r.getId().equals(lot.id())).findFirst().orElse(null);
+        CreditLedgerEntry e = save(userId, -1, LedgerReason.SUBMIT, source == null ? null : source.getOrderId(),
+                dreamId, null, null);
+        e.setSourceId(source == null ? null : source.getId());
+        return ledgerRepository.save(e);
     }
 
     /** Credits (or, for MANUAL corrections, debits) the ledger. A negative delta may not overdraw. */

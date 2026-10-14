@@ -551,7 +551,12 @@
       "awaitingNote": "Waiting for the user to reply. The timer is paused.",
       "amount": "Amount",
       "noOrder": "Manual credit (no purchase)",
-      "timerPaused": "Timer paused"
+      "timerPaused": "Timer paused",
+      "orderNo": "Payment number",
+      "orderCredits": "This payment's credits",
+      "dreamOf": "This is dream {{n}} of {{total}}",
+      "creditsLeft": "Left: {{n}}",
+      "creditsExpired": "Its credits have expired"
     },
     "pricing": {
       "gaps": {

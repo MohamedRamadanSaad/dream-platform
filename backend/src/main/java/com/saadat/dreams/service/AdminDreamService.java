@@ -11,6 +11,7 @@ import com.saadat.common.domain.Role;
 import com.saadat.common.error.ConflictException;
 import com.saadat.common.error.NotFoundException;
 import com.saadat.credits.service.CreditService;
+import com.saadat.credits.service.OrderCredits;
 import com.saadat.dreams.api.AdminDreamDetailDto;
 import com.saadat.dreams.api.AdminDreamRow;
 import com.saadat.dreams.api.AdminTestimonialRow;
@@ -67,6 +68,7 @@ public class AdminDreamService {
     private final OrderRepository orderRepository;
     private final UserRepository userRepository;
     private final CreditService creditService;
+    private final OrderCredits orderCredits;
     private final AuditService auditService;
     private final DreamMapper mapper;
     private final DreamNotifier notifier;
@@ -110,10 +112,10 @@ public class AdminDreamService {
         User owner = userRepository.findById(d.getUserId())
                 .orElseThrow(() -> new NotFoundException("Dream owner not found"));
         AdminDreamDetailDto.UserRef userRef = new AdminDreamDetailDto.UserRef(owner.getId(), owner.getName(), owner.getEmail(), owner.getCountryCode(), Ages.of(owner.getBirthDate()));
-        return AdminDreamDetailDto.of(detail, userRef, payment(detail.credit()));
+        return AdminDreamDetailDto.of(detail, userRef, payment(detail.credit(), d.getId()));
     }
 
-    private AdminDreamDetailDto.PaymentRef payment(DreamDetailDto.CreditRef credit) {
+    private AdminDreamDetailDto.PaymentRef payment(DreamDetailDto.CreditRef credit, UUID dreamId) {
         if (credit == null || credit.orderId() == null) {
             return null;
         }
@@ -122,12 +124,15 @@ public class AdminDreamService {
             return null;
         }
         User payer = userRepository.findById(o.getUserId()).orElse(null);
+        OrderCredits.Usage usage = orderCredits.of(o.getUserId(), o.getId());
         String ref = o.getProviderTxnId() != null ? o.getProviderTxnId()
                 : (o.getProviderOrderId() != null ? o.getProviderOrderId() : "");
         return new AdminDreamDetailDto.PaymentRef(o.getId(), payer == null ? "" : payer.getName(),
                 payer == null ? "" : payer.getEmail(), o.getPaidAt() != null ? o.getPaidAt() : o.getCreatedAt(),
                 o.getPackageNameSnapshot(), o.getAmount(), o.getCurrency(), OrderDto.displayProvider(o).name(), ref,
-                o.getCountryCode());
+                o.getCountryCode(), usage == null ? o.getCredits() : usage.credits(),
+                usage == null ? 0 : usage.remaining(), usage == null ? 0 : usage.numberOf(dreamId),
+                usage != null && usage.expired());
     }
 
     // ================================================================== transitions

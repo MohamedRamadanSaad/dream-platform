@@ -84,6 +84,12 @@ function completeOrder(order: MockOrder, dreamIds: string[]) {
   instapayMeta.set(seeded.id, { dreamIds: [], reference: '202311580274', senderName: 'MONA ABDALLAH', submittedAt: helpers.daysAgo(0, 1), reviewedAt: null, reviewNote: null, expiresAt: helpers.daysAhead(1) })
 }
 
+/** The payment's counter as the backend computes it: dreams that used it (oldest first) and what is left. */
+const orderCounter = (orderId: string, credits: number, dreamId: string) => {
+  const used = db.ledger.filter((l) => l.orderId === orderId && l.reason === 'SUBMIT' && l.dreamId).sort((a, b) => a.createdAt.localeCompare(b.createdAt)).map((l) => l.dreamId!)
+  return { credits, creditsLeft: Math.max(0, credits - used.length), dreamNumber: used.indexOf(dreamId) + 1, creditsExpired: false }
+}
+
 const instapayView = (o: MockOrder): T.InstapayOrderView => {
   const m = instapayMeta.get(o.id)!
   return {
@@ -649,7 +655,7 @@ export const handlers = [
     const order = d.credit?.orderId ? db.orders.find((o) => o.id === d.credit!.orderId) : null
     d.messages.forEach((m) => { if (m.senderRole === 'USER') m.readAt ??= helpers.now() })
     const r: T.AdminDreamDetail = { ...toDetail(d), user: { id: usr.id, name: usr.name, email: usr.email, countryCode: usr.countryCode, age: usr.age },
-      payment: order ? { orderId: order.id, payerName: usr.name, payerEmail: usr.email, paidAt: order.paidAt ?? order.createdAt, packageName: order.packageName, amount: order.amount, currency: order.currency, provider: order.provider, providerRef: order.providerRef ?? '-', countryCode: order.countryCode } : null }
+      payment: order ? { orderId: order.id, payerName: usr.name, payerEmail: usr.email, paidAt: order.paidAt ?? order.createdAt, packageName: order.packageName, amount: order.amount, currency: order.currency, provider: order.provider, providerRef: order.providerRef ?? '-', countryCode: order.countryCode, ...orderCounter(order.id, order.credits, d.id) } : null }
     return HttpResponse.json(r)
   })),
   http.post(u('/admin/dreams/:id/messages'), wrap(async ({ request, params }) => {

@@ -17,6 +17,7 @@ import java.util.UUID;
  *   <li>Every positive row is a lot: PURCHASE (expires at {@code expiresAt}, null = never), MANUAL / BONUS / REFUND
  *       (never expire; a refund returns a credit as a fresh, non-expiring one).</li>
  *   <li>An EXPIRE row empties its {@code sourceId} lot.</li>
+ *   <li>A debit that names its lot ({@code sourceId}, set on every dream since V36) is taken from that lot.</li>
  *   <li>Any other negative row (SUBMIT, MANUAL correction) spends from lots still valid at that moment, the soonest
  *       to expire first, never-expiring lots last, older first on ties. If the valid lots cannot cover it (history from
  *       before expiry was enforced), the rest is taken from already expired lots so the totals always add up.</li>
@@ -105,7 +106,17 @@ public final class CreditLots {
                     lot.remaining = Math.max(0, lot.remaining + e.delta());
                 }
             } else {
-                spend(lots, -e.delta(), e.createdAt());
+                // a dream's debit names the lot it was taken from (sourceId): that lot pays first
+                int amount = -e.delta();
+                Lot source = e.sourceId() == null ? null : byId.get(e.sourceId());
+                if (source != null) {
+                    int n = Math.min(amount, source.remaining);
+                    source.remaining -= n;
+                    amount -= n;
+                }
+                if (amount > 0) {
+                    spend(lots, amount, e.createdAt());
+                }
             }
         }
         return lots;
@@ -131,6 +142,15 @@ public final class CreditLots {
             left -= n;
         }
         return left;
+    }
+
+    /**
+     * The lot the next credit is taken from at {@code at}: the soonest-expiring valid lot (never-expiring last, older
+     * first); null when nothing is left.
+     */
+    public static Lot nextToSpend(List<Lot> lots, Instant at) {
+        return lots.stream().filter(l -> l.remaining > 0 && l.validAt(at)).min(SPEND_ORDER)
+                .orElseGet(() -> lots.stream().filter(l -> l.remaining > 0).min(SPEND_ORDER).orElse(null));
     }
 
     /** Lots past expiry at {@code now} that the job has not settled yet (remaining may be 0). */
