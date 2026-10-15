@@ -1,5 +1,6 @@
 // "Recommendations for you" and "Your activity" — both from GET /admin/analytics/insights (server-localised).
-import { useState, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from 'react'
+import { Chevron } from '@/components/ui/Pager'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useQuery } from '@tanstack/react-query'
@@ -55,35 +56,87 @@ function InsightCard({ item }: { item: Insight }) {
   )
 }
 
-export function InsightsSection() {
+/**
+ * Recommendations as a horizontal swipe row: CSS scroll-snap, one card about 85% wide on phones, three on desktop.
+ * The dots follow the scroll (IntersectionObserver on each card); arrows on wide screens step one card and point
+ * along the reading direction. In RTL the row scrolls the other way, so scrolling uses each card's own position.
+ */
+function InsightsRow({ items }: { items: Insight[] }) {
   const { t } = useTranslation()
   const locale = useAuthStore((s) => s.locale)
+  const rowRef = useRef<HTMLDivElement>(null)
+  const [visible, setVisible] = useState<boolean[]>(() => items.map((_, i) => i === 0))
+  const sig = items.map((x) => x.id).join('|')
+
+  useEffect(() => {
+    const row = rowRef.current
+    if (!row || typeof IntersectionObserver === 'undefined') return
+    const cards = Array.from(row.querySelectorAll<HTMLElement>('[data-slide]'))
+    const seen = cards.map((_, i) => i === 0)
+    const io = new IntersectionObserver((entries) => {
+      for (const e of entries) seen[Number((e.target as HTMLElement).dataset.slide)] = e.intersectionRatio >= 0.6
+      setVisible([...seen])
+    }, { root: row, threshold: [0, 0.6, 1] })
+    cards.forEach((c) => io.observe(c))
+    return () => io.disconnect()
+  }, [sig])
+
+  const first = Math.max(0, visible.indexOf(true))
+  const last = Math.max(first, visible.lastIndexOf(true))
+  const goTo = (i: number) => {
+    const card = rowRef.current?.querySelector<HTMLElement>(`[data-slide="${Math.max(0, Math.min(items.length - 1, i))}"]`)
+    // the card's start edge goes to the row's start (scroll padding included), in either direction; the page stays put
+    card?.scrollIntoView({ behavior: 'smooth', inline: 'start', block: 'nearest' })
+  }
+  const step = Math.max(1, last - first + 1)
+  const onKey = (e: KeyboardEvent) => {
+    const fwd = locale === 'ar' ? 'ArrowLeft' : 'ArrowRight', back = locale === 'ar' ? 'ArrowRight' : 'ArrowLeft'
+    if (e.key === fwd) { e.preventDefault(); goTo(first + 1) }
+    else if (e.key === back) { e.preventDefault(); goTo(first - 1) }
+  }
+  const arrow = 'hidden h-10 w-10 items-center justify-center rounded-full border border-line bg-surface text-fg-muted shadow-calm transition-colors hover:border-gold hover:text-fg disabled:pointer-events-none disabled:opacity-0 md:flex'
+  return (
+    <div className="relative">
+      <div ref={rowRef} role="region" aria-roledescription="carousel" aria-label={t('admin.insights.title')} tabIndex={0} onKeyDown={onKey}
+        className="no-scrollbar -mx-4 flex snap-x snap-mandatory scroll-px-4 gap-3 overflow-x-auto px-4 pb-2 outline-none focus-visible:ring-2 focus-visible:ring-gold/60 md:mx-0 md:scroll-px-0 md:gap-4 md:px-0">
+        {items.map((it, i) => (
+          <div key={it.id} data-slide={i} role="group" aria-roledescription="slide" aria-label={t('admin.insights.slide', { n: fmtNum(i + 1, locale), total: fmtNum(items.length, locale) })}
+            className="w-[85%] shrink-0 snap-start sm:w-[calc((100%-0.75rem)/2)] lg:w-[calc((100%-2rem)/3)]">
+            <InsightCard item={it} />
+          </div>
+        ))}
+      </div>
+      {items.length > 1 && (
+        <div className="mt-3 flex items-center justify-center gap-3">
+          <button type="button" className={arrow} onClick={() => goTo(first - step)} disabled={first === 0} aria-label={t('admin.insights.prev')} title={t('admin.insights.prev')}><Chevron next={false} size={16} /></button>
+          <div className="flex items-center gap-1.5" aria-hidden="true">
+            {items.map((it, i) => (
+              <button key={it.id} type="button" tabIndex={-1} onClick={() => goTo(i)}
+                className={cn('h-1.5 rounded-full transition-all duration-300', i >= first && i <= last ? 'w-5 bg-gold' : 'w-1.5 bg-line hover:bg-fg-dim')} />
+            ))}
+          </div>
+          <button type="button" className={arrow} onClick={() => goTo(first + step)} disabled={last >= items.length - 1} aria-label={t('admin.insights.next')} title={t('admin.insights.next')}><Chevron next size={16} /></button>
+        </div>
+      )}
+    </div>
+  )
+}
+
+export function InsightsSection() {
+  const { t } = useTranslation()
   const q = useInsights()
-  const [all, setAll] = useState(false)
   const items = q.data?.items ?? []
-  const shown = all ? items : items.slice(0, 4)
   return (
     <section aria-labelledby="insights-title">
       <SectionHeader id="insights-title" icon="sparkle" title={t('admin.insights.title')} lead={t('admin.insights.lead')} />
       {q.isLoading ? (
-        <div className="grid gap-4 md:grid-cols-2">{[1, 2, 3, 4].map((i) => <Skeleton key={i} className="h-36" />)}</div>
+        <div className="flex gap-4 overflow-hidden">{[1, 2, 3].map((i) => <Skeleton key={i} className="h-40 w-[85%] shrink-0 sm:w-1/2 lg:w-1/3" />)}</div>
       ) : q.isError ? (
         <ErrorBox onRetry={() => q.refetch()} />
       ) : !items.length ? (
         <div className="card flex items-center gap-4 p-6 text-fg-muted"><span className="text-gold-ink"><Icon name="moon" size={26} /></span>{t('admin.insights.empty')}</div>
       ) : (
-        <>
-          <StaggerGroup className="grid gap-4 md:grid-cols-2" stagger={0.07}>
-            {shown.map((it) => <InsightCard key={it.id} item={it} />)}
-          </StaggerGroup>
-          {items.length > 4 && (
-            <div className="mt-3 flex justify-center">
-              <button type="button" onClick={() => setAll((v) => !v)} aria-expanded={all} className="rounded-full px-4 py-2 text-sm text-gold-ink hover:bg-gold/10 dark:text-gold">
-                {all ? t('admin.insights.showLess') : t('admin.insights.showMore', { n: fmtNum(items.length - 4, locale) })}
-              </button>
-            </div>
-          )}
-        </>
+        <InsightsRow items={items} />
       )}
     </section>
   )

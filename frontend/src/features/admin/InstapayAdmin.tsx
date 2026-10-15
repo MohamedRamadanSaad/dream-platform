@@ -1,135 +1,93 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query'
 import { adminApi } from '@/api/endpoints'
 import { ApiError } from '@/api/client'
 import { useAuthStore } from '@/app/auth-store'
-import { Button, ErrorBox, Input, Label, Modal, Skeleton, StatusBadge, Switch, Textarea } from '@/components/ui'
-import { Icon } from '@/components/icons/Icon'
+import { Button, ErrorBox, Input, Label, Modal, Skeleton, Switch, Textarea } from '@/components/ui'
 import { toast } from '@/components/ui/Toaster'
-import { fmtDate, fmtMoney, timeAgo } from '@/lib/utils'
+import { fmtMoney } from '@/lib/utils'
 import { InstapayQr } from '@/features/user/InstapayPage'
-import type { InstapaySettings, InstapayTransferRow } from '@/api/types'
+import type { Currency, InstapaySettings } from '@/api/types'
 
 export const INSTAPAY_COUNTS_KEY = ['admin', 'instapay', 'counts'] as const
-const TRANSFERS_KEY = ['admin', 'instapay', 'transfers'] as const
 
-async function copy(text: string, done: string) {
-  try { await navigator.clipboard.writeText(text); toast.success(done) } catch { /* the number stays selectable */ }
+/** Every list that changes when a transfer is approved or rejected. */
+export function invalidateAfterReview(qc: QueryClient, orderId?: string) {
+  qc.invalidateQueries({ queryKey: INSTAPAY_COUNTS_KEY })
+  qc.invalidateQueries({ queryKey: ['admin', 'orders'] })
+  qc.invalidateQueries({ queryKey: ['admin', 'summary'] })
+  qc.invalidateQueries({ queryKey: ['admin', 'dreams'] })
+  if (orderId) qc.invalidateQueries({ queryKey: ['admin', 'order', orderId] })
 }
 
-/** InstaPay transfers waiting for the interpreter: accept when the money is in her InstaPay history, else reject. */
-export function InstapayTransfersPanel() {
+/** The server's reason, worded for the interpreter when it has a known code. */
+export function useInstapayErrorText() {
+  const { t, i18n } = useTranslation()
+  return (e: unknown) => {
+    const code = (e as ApiError).problem?.code
+    if (code && i18n.exists(`admin.instapay.errors.${code}`)) return t(`admin.instapay.errors.${code}`)
+    return (e as ApiError).problem?.detail ?? (e as Error).message
+  }
+}
+
+/**
+ * Approve (the reference she checked goes with the approval: if the buyer changed it meanwhile, it is refused)
+ * and reject (with a note the buyer sees) for one InstaPay transfer.
+ */
+export function TransferReviewModals({ orderId, orderNumber, amount, currency, reference, mode, onClose, onDone }: {
+  orderId: string; orderNumber: string; amount: number; currency: Currency; reference: string; mode: 'approve' | 'reject' | null; onClose: () => void; onDone?: () => void
+}) {
   const { t } = useTranslation()
   const locale = useAuthStore((s) => s.locale)
   const qc = useQueryClient()
-  const q = useQuery({ queryKey: TRANSFERS_KEY, queryFn: adminApi.instapayTransfers, refetchInterval: 60_000 })
-  const [accepting, setAccepting] = useState<InstapayTransferRow | null>(null)
-  const [rejecting, setRejecting] = useState<InstapayTransferRow | null>(null)
+  const errorText = useInstapayErrorText()
   const [note, setNote] = useState('')
-
-  const refresh = () => {
-    qc.invalidateQueries({ queryKey: TRANSFERS_KEY })
-    qc.invalidateQueries({ queryKey: INSTAPAY_COUNTS_KEY })
-    qc.invalidateQueries({ queryKey: ['admin', 'orders'] })
-  }
-  const errorText = (e: unknown) => {
-    const code = (e as ApiError).problem?.code
-    if (code && t(`admin.instapay.errors.${code}`, { defaultValue: '' })) return t(`admin.instapay.errors.${code}`)
-    return (e as ApiError).problem?.detail ?? (e as Error).message
-  }
+  useEffect(() => { if (mode === 'reject') setNote('') }, [mode])
   const accept = useMutation({
-    // the reference the interpreter checked goes with the approval: if the buyer changed it meanwhile, it is refused
-    mutationFn: (r: InstapayTransferRow) => adminApi.approveTransfer(r.orderId, r.reference ?? ''),
-    onSuccess: () => { toast.success(t('admin.instapay.accepted')); setAccepting(null); refresh() },
-    onError: (e) => { toast.error(errorText(e)); refresh() },
+    mutationFn: () => adminApi.approveTransfer(orderId, reference),
+    meta: { toast: false },
+    onSuccess: () => { toast.success(t('admin.instapay.accepted')); onClose(); invalidateAfterReview(qc, orderId); onDone?.() },
+    onError: (e) => { toast.error(errorText(e)); invalidateAfterReview(qc, orderId) },
   })
   const reject = useMutation({
-    mutationFn: ({ id, note }: { id: string; note: string }) => adminApi.rejectTransfer(id, note),
-    onSuccess: () => { toast.success(t('admin.instapay.rejected')); setRejecting(null); setNote(''); refresh() },
-    onError: (e) => { toast.error(errorText(e)); refresh() },
+    mutationFn: () => adminApi.rejectTransfer(orderId, note.trim()),
+    meta: { toast: false },
+    onSuccess: () => { toast.success(t('admin.instapay.rejected')); onClose(); invalidateAfterReview(qc, orderId); onDone?.() },
+    onError: (e) => { toast.error(errorText(e)); invalidateAfterReview(qc, orderId) },
   })
-
-  const pending = q.data?.pending ?? []
   return (
-    <section aria-labelledby="ip-pending" className="space-y-3">
-      <div>
-        <h2 id="ip-pending" className="flex items-center gap-2 font-display text-2xl">
-          {t('admin.instapay.title')}
-          {pending.length > 0 && <span className="chip bg-gold/15 font-medium text-gold-ink">{pending.length}</span>}
-        </h2>
-        <p className="text-sm text-fg-muted">{t('admin.instapay.lead')}</p>
-      </div>
-      {q.isLoading ? <Skeleton className="h-32" /> : q.isError ? <ErrorBox onRetry={() => q.refetch()} /> : pending.length === 0 ? (
-        <div className="card p-6 text-center text-sm text-fg-muted">{t('admin.instapay.empty')}</div>
-      ) : (
-        <div className="grid gap-3 lg:grid-cols-2">
-          {pending.map((r) => (
-            <article key={r.orderId} className="card space-y-4 p-5">
-              <div className="flex items-start justify-between gap-3">
-                <div className="min-w-0">
-                  <div className="truncate font-medium">{r.userName}</div>
-                  <div dir="ltr" className="truncate text-start text-xs text-fg-dim">{r.userEmail}</div>
-                  <div className="mt-1 text-xs text-fg-dim">{t('admin.instapay.orderNo')}: <span dir="ltr" className="select-all font-mono font-medium text-fg-muted">{r.orderNumber}</span></div>
-                </div>
-                <div className="text-end">
-                  <div dir="ltr" className="font-mono text-xl font-semibold">{fmtMoney(r.amount, r.currency, locale)}</div>
-                  <div className="text-xs text-fg-dim">{r.submittedAt ? t('admin.instapay.submitted', { time: timeAgo(r.submittedAt, locale) }) : ''}</div>
-                </div>
-              </div>
-              <dl className="grid gap-3 text-sm sm:grid-cols-2">
-                <div>
-                  <dt className="text-xs text-fg-dim">{t('admin.instapay.reference')}</dt>
-                  <dd className="flex items-center gap-1">
-                    <span dir="ltr" className="select-all font-mono tracking-wider">{r.reference}</span>
-                    <button type="button" onClick={() => void copy(r.reference ?? '', t('me.payments.copied'))} aria-label={t('admin.instapay.copyRef')} title={t('admin.instapay.copyRef')} className="flex h-9 w-9 items-center justify-center rounded-lg text-fg-dim hover:bg-surface-2 hover:text-fg">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2" /><path d="M5 15V6a2 2 0 0 1 2-2h9" /></svg>
-                    </button>
-                  </dd>
-                </div>
-                <div><dt className="text-xs text-fg-dim">{t('admin.instapay.sender')}</dt><dd dir="ltr" className="text-start">{r.senderName}</dd></div>
-                <div><dt className="text-xs text-fg-dim">{t('admin.instapay.package')}</dt><dd>{r.packageName}</dd></div>
-                {r.attachedDreams > 0 && <div className="flex items-end"><span className="chip bg-gold/10 text-gold-ink"><Icon name="moon" size={13} />{t('admin.instapay.dreams', { n: r.attachedDreams })}</span></div>}
-              </dl>
-              <div className="flex gap-2">
-                <Button className="min-h-11 flex-1" onClick={() => setAccepting(r)}>{t('admin.instapay.accept')}</Button>
-                <Button variant="ghost" className="min-h-11" onClick={() => { setNote(''); setRejecting(r) }}>{t('admin.instapay.reject')}</Button>
-              </div>
-            </article>
-          ))}
+    <>
+      <Modal open={mode === 'approve'} onClose={onClose} title={t('admin.instapay.acceptTitle')} size="sm" focusField={false}
+        footer={<><Button variant="ghost" onClick={onClose}>{t('common.cancel')}</Button><Button loading={accept.isPending} onClick={() => accept.mutate()}>{t('admin.instapay.acceptConfirm')}</Button></>}>
+        <p className="mb-2 text-xs text-fg-dim">{t('admin.instapay.orderNo')}: <span dir="ltr" className="select-all font-mono font-medium text-fg-muted">{orderNumber}</span></p>
+        <p className="text-sm leading-relaxed">{t('admin.instapay.acceptBody', { amount: `\u2068${fmtMoney(amount, currency, locale)}\u2069`, reference: `\u2068${reference}\u2069` })}</p>
+        <div className="mt-4 rounded-xl border border-gold/40 bg-gold/5 p-4">
+          <div className="text-xs text-fg-dim">{t('admin.order.approveRef')}</div>
+          <div className="mt-1 flex items-center justify-between gap-2">
+            <span dir="ltr" className="select-all font-mono text-xl tracking-wider">{reference}</span>
+            <CopyButton text={reference} label={t('admin.instapay.copyRef')} />
+          </div>
         </div>
-      )}
-
-      {q.data && (
-        <details className="card p-0">
-          <summary className="cursor-pointer px-5 py-3 text-sm text-fg-muted">{t('admin.instapay.reviewed')} ({q.data.reviewed.length})</summary>
-          {q.data.reviewed.length === 0 ? <div className="px-5 pb-4 text-sm text-fg-dim">{t('admin.instapay.reviewedEmpty')}</div> : (
-            <ul className="divide-y divide-line border-t border-line">
-              {q.data.reviewed.map((r) => (
-                <li key={r.orderId} className="flex flex-wrap items-center justify-between gap-3 px-5 py-3 text-sm">
-                  <div className="min-w-0">
-                    <div className="truncate">{r.userName} · <span dir="ltr">{fmtMoney(r.amount, r.currency, locale)}</span></div>
-                    <div className="text-xs text-fg-dim"><span dir="ltr" className="select-all font-mono text-fg-muted">{r.orderNumber}</span> · <span dir="ltr" className="font-mono">{r.reference}</span>{r.reviewedAt ? ` · ${fmtDate(r.reviewedAt, locale, true)}` : ''}{r.reviewNote ? ` · ${r.reviewNote}` : ''}</div>
-                  </div>
-                  <StatusBadge status={r.status} kind="order" />
-                </li>
-              ))}
-            </ul>
-          )}
-        </details>
-      )}
-
-      <Modal open={!!accepting} onClose={() => setAccepting(null)} title={t('admin.instapay.acceptTitle')} size="sm" focusField={false}
-        footer={<><Button variant="ghost" onClick={() => setAccepting(null)}>{t('common.cancel')}</Button><Button loading={accept.isPending} onClick={() => accepting && accept.mutate(accepting)}>{t('admin.instapay.acceptConfirm')}</Button></>}>
-        {accepting && <p className="text-sm leading-relaxed">{t('admin.instapay.acceptBody', { amount: `\u2068${fmtMoney(accepting.amount, accepting.currency, locale)}\u2069`, reference: `\u2068${accepting.reference ?? ''}\u2069` })}</p>}
       </Modal>
-      <Modal open={!!rejecting} onClose={() => setRejecting(null)} title={t('admin.instapay.rejectTitle')} size="sm"
-        footer={<><Button variant="ghost" onClick={() => setRejecting(null)}>{t('common.cancel')}</Button><Button variant="ghost" className="border-danger text-danger" loading={reject.isPending} onClick={() => rejecting && reject.mutate({ id: rejecting.orderId, note })}>{t('admin.instapay.rejectConfirm')}</Button></>}>
+      <Modal open={mode === 'reject'} onClose={onClose} title={t('admin.instapay.rejectTitle')} size="sm"
+        footer={<><Button variant="ghost" onClick={onClose}>{t('common.cancel')}</Button><Button variant="ghost" className="border-danger text-danger" loading={reject.isPending} onClick={() => reject.mutate()}>{t('admin.instapay.rejectConfirm')}</Button></>}>
         <p className="mb-4 text-sm leading-relaxed text-fg-muted">{t('admin.instapay.rejectBody')}</p>
         <label htmlFor="ip-note"><Label>{t('admin.instapay.rejectNote')}</Label></label>
         <Textarea id="ip-note" rows={3} maxLength={500} value={note} onChange={(e) => setNote(e.target.value)} placeholder={t('admin.instapay.rejectNotePlaceholder')} />
       </Modal>
-    </section>
+    </>
+  )
+}
+
+/** Small copy button (copied text confirmed with a toast; the value stays selectable when the clipboard is blocked). */
+export function CopyButton({ text, label, done }: { text: string; label: string; done?: string }) {
+  const { t } = useTranslation()
+  return (
+    <button type="button" onClick={async () => { try { await navigator.clipboard.writeText(text); toast.success(done ?? t('common.copied')) } catch { /* stays selectable */ } }}
+      aria-label={label} title={label} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-fg-dim transition-colors hover:bg-surface-2 hover:text-fg">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2" /><path d="M5 15V6a2 2 0 0 1 2-2h9" /></svg>
+    </button>
   )
 }
 

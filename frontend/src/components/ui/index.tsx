@@ -32,12 +32,14 @@ export const H1 = ({ children, className }: { children: ReactNode; className?: s
 export const H2 = ({ children, className }: { children: ReactNode; className?: string }) => <h2 className={cn('font-display text-3xl md:text-4xl text-fg', className)}>{children}</h2>
 export const Kicker = ({ children }: { children: ReactNode }) => <div className="text-[13px] font-medium text-gold-ink ltr:text-xs ltr:tracking-[.15em]">{children}</div>
 
-const statusColor: Record<DreamStatus | OrderStatus, string> = {
-  DRAFT: 'bg-surface-2 text-fg-muted', IN_REVIEW: 'bg-info/10 text-info', AWAITING_USER_REPLY: 'bg-danger/10 text-danger', INTERPRETED: 'bg-success/10 text-success', CANCELLED: 'bg-surface-2 text-fg-dim',
+const statusColor: Record<DreamStatus | OrderStatus | 'PENDING_PAYMENT' | 'PAYMENT_REJECTED', string> = {
+  DRAFT: 'bg-surface-2 text-fg-muted', IN_REVIEW: 'bg-info/10 text-info', IN_PROGRESS: 'bg-gold/15 text-gold-ink', PENDING_PAYMENT: 'bg-warn/10 text-warn', PAYMENT_REJECTED: 'bg-danger/10 text-danger', AWAITING_USER_REPLY: 'bg-danger/10 text-danger', INTERPRETED: 'bg-success/10 text-success', CANCELLED: 'bg-surface-2 text-fg-dim',
   INITIATED: 'bg-warn/10 text-warn', PENDING_REVIEW: 'bg-info/10 text-info', SUCCESS: 'bg-success/10 text-success', FAILED: 'bg-danger/10 text-danger', EXPIRED: 'bg-surface-2 text-fg-dim', REFUNDED: 'bg-info/10 text-info', SUSPICIOUS: 'bg-warn/10 text-warn',
 }
 /** `interpreter` words a dream's status from the interpreter's side ("waiting for the user's reply" instead of "waiting for your reply"). */
-export function StatusBadge({ status, kind = 'dream', audience = 'user' }: { status: DreamStatus | OrderStatus; kind?: 'dream' | 'order'; audience?: 'user' | 'interpreter' }) {
+/** PENDING_PAYMENT / PAYMENT_REJECTED are virtual dream states: a draft attached to a payment under review or rejected. */
+export type BadgeStatus = DreamStatus | OrderStatus | 'PENDING_PAYMENT' | 'PAYMENT_REJECTED'
+export function StatusBadge({ status, kind = 'dream', audience = 'user' }: { status: BadgeStatus; kind?: 'dream' | 'order'; audience?: 'user' | 'interpreter' }) {
   const { t } = useTranslation()
   return <span className={cn('chip font-medium', statusColor[status])}><span className="h-1.5 w-1.5 rounded-full bg-current" />{t(kind === 'order' ? `me.orderStatus.${status}` : audience === 'interpreter' ? `admin.status.${status}` : `me.status.${status}`)}</span>
 }
@@ -176,10 +178,10 @@ export function Switch({ checked, onChange, label, disabled }: { checked: boolea
   )
 }
 
-export function Stat({ label, value, tone, icon }: { label: string; value: ReactNode; tone?: 'gold' | 'danger' | 'night'; icon?: ReactNode }) {
+export function Stat({ label, value, tone, icon, className }: { label: string; value: ReactNode; tone?: 'gold' | 'danger' | 'night'; icon?: ReactNode; className?: string }) {
   return (
-    <div className={cn('card p-5 flex items-center justify-between gap-3', tone === 'gold' && 'border-gold/50', tone === 'danger' && 'border-danger/30 bg-danger/5', tone === 'night' && 'bg-night text-pearl border-navy')}>
-      <div><div className={cn('text-xs', tone === 'night' ? 'text-gold-soft/70' : 'text-fg-muted')}>{label}</div><div className="mt-1 text-3xl font-display">{value}</div></div>
+    <div className={cn('card p-5 flex items-center justify-between gap-3', tone === 'gold' && 'border-gold/50', tone === 'danger' && 'border-danger/40 bg-danger/5', tone === 'night' && 'bg-night text-pearl border-navy', className)}>
+      <div className="min-w-0"><div className={cn('text-xs', tone === 'night' ? 'text-gold-soft/70' : tone === 'danger' ? 'text-bad-ink' : 'text-fg-muted')}>{label}</div><div className="mt-1 text-3xl font-display">{value}</div></div>
       {icon && <div className={cn('hidden sm:block', tone === 'night' ? 'text-gold' : 'text-gold-ink')}>{icon}</div>}
     </div>
   )

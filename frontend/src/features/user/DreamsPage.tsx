@@ -4,19 +4,23 @@ import { useTranslation } from 'react-i18next'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { dreamsApi, meApi, reportsApi } from '@/api/endpoints'
 import { useAuthStore } from '@/app/auth-store'
-import { Button, Empty, ErrorBox, Skeleton, StatusBadge, Tabs } from '@/components/ui'
+import { Button, Empty, ErrorBox, Skeleton, StatusBadge, Tabs, type BadgeStatus } from '@/components/ui'
 import { DownloadButton } from '@/components/ui/DownloadButton'
 import { Icon } from '@/components/icons/Icon'
 import { PageEnter, StaggerGroup } from '@/components/motion'
 import { arrowNext, cn, fmtDate, timeAgo } from '@/lib/utils'
-import type { DreamStatus, DreamSummary } from '@/api/types'
+import type { DreamSummary } from '@/api/types'
 import { replyTimeText } from '@/lib/waitTime'
 import { CreditExpiryNotice } from './CreditExpiryNotice'
 import { UserOverview } from './UserOverview'
 import { ApiError } from '@/api/client'
 
-type Tab = 'DRAFT' | 'IN_REVIEW' | 'AWAITING_USER_REPLY' | 'INTERPRETED'
-const TABS: Tab[] = ['DRAFT', 'IN_REVIEW', 'AWAITING_USER_REPLY', 'INTERPRETED']
+type Tab = 'DRAFT' | 'PENDING_PAYMENT' | 'IN_REVIEW' | 'IN_PROGRESS' | 'AWAITING_USER_REPLY' | 'INTERPRETED'
+const TABS: Tab[] = ['DRAFT', 'PENDING_PAYMENT', 'IN_REVIEW', 'IN_PROGRESS', 'AWAITING_USER_REPLY', 'INTERPRETED']
+const EMPTY_KEY: Record<Tab, string> = { DRAFT: 'drafts', PENDING_PAYMENT: 'pendingPayment', IN_REVIEW: 'inReview', IN_PROGRESS: 'inProgress', AWAITING_USER_REPLY: 'awaiting', INTERPRETED: 'interpreted' }
+
+/** A draft attached to a payment shows the payment's state instead of "draft". */
+export const dreamBadge = (d: DreamSummary): BadgeStatus => (d.payment ? (d.payment.status === 'REJECTED' ? 'PAYMENT_REJECTED' : 'PENDING_PAYMENT') : d.status)
 
 export function DreamRow({ d, selectable, selected, onToggle }: { d: DreamSummary; selectable?: boolean; selected?: boolean; onToggle?: () => void }) {
   const { t } = useTranslation()
@@ -24,13 +28,27 @@ export function DreamRow({ d, selectable, selected, onToggle }: { d: DreamSummar
   const inner = (
     <>
       <div className="mb-2 flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2"><StatusBadge status={d.status} />{d.unreadMessages > 0 && <span className="chip bg-danger/10 text-danger"><Icon name="chat" size={12} />{d.unreadMessages}</span>}</div>
-        <span className="text-xs text-fg-dim">{timeAgo(d.createdAt, locale)}</span>
+        <div className="flex flex-wrap items-center gap-2"><StatusBadge status={dreamBadge(d)} />{d.unreadMessages > 0 && <span className="chip bg-danger/10 text-danger"><Icon name="chat" size={12} />{d.unreadMessages}</span>}</div>
+        <span className="shrink-0 text-xs text-fg-dim">{timeAgo(d.createdAt, locale)}</span>
       </div>
       <p className="line-clamp-2 leading-relaxed text-fg">{d.excerpt}</p>
-      {d.status === 'IN_REVIEW' && d.expectedBy && <div className="mt-2 text-xs text-fg-dim">{t('me.detail.expected')}: {fmtDate(d.expectedBy, locale)}</div>}
+      {(d.status === 'IN_REVIEW' || d.status === 'IN_PROGRESS') && d.expectedBy && <div className="mt-2 text-xs text-fg-dim">{t('me.detail.expected')}: {fmtDate(d.expectedBy, locale)}</div>}
     </>
   )
+  if (d.payment) {
+    // not selectable: it waits for its payment; the card opens the dream, the link opens the payment
+    const rejected = d.payment.status === 'REJECTED'
+    return (
+      <div className={cn('card flex flex-col p-5', rejected ? 'border-danger/30' : 'border-warn/30')}>
+        <Link to={`/me/dreams/${d.id}`} className="block rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-gold">{inner}</Link>
+        <div className="mt-3 space-y-2 border-t border-line pt-3 text-xs">
+          <p className={rejected ? 'text-bad-ink' : 'text-fg-muted'}>{t(rejected ? 'me.dreamPayment.rejected' : 'me.dreamPayment.underReview')}</p>
+          {rejected && d.payment.reviewNote && <p className="text-fg-muted">{t('me.dreamPayment.reason', { note: d.payment.reviewNote })}</p>}
+          <Link to={`/me/checkout/instapay/${d.payment.orderId}`} className="inline-flex items-center gap-1.5 font-medium text-gold-ink hover:underline dark:text-gold">{t('me.dreamPayment.open')} <span aria-hidden="true">{arrowNext(locale)}</span></Link>
+        </div>
+      </div>
+    )
+  }
   if (selectable) {
     return (
       <label className={cn('card card-hover flex cursor-pointer gap-4 p-5', selected && 'border-gold bg-gold/5')}>
@@ -65,7 +83,7 @@ export function UserDreamsPage() {
   }
 
   const dash = useQuery({ queryKey: ['me', 'dashboard'], queryFn: meApi.dashboard })
-  const list = useQuery({ queryKey: ['dreams', tab], queryFn: () => dreamsApi.list(tab as DreamStatus, 0, 50) })
+  const list = useQuery({ queryKey: ['dreams', tab], queryFn: () => dreamsApi.list(tab, 0, 50) })
   const submit = useMutation({
     mutationFn: dreamsApi.submit,
     onSuccess: () => { setSelected([]); qc.invalidateQueries({ queryKey: ['dreams'] }); qc.invalidateQueries({ queryKey: ['me'] }); qc.invalidateQueries({ queryKey: ['notifications'] }); setTab('IN_REVIEW') },
@@ -76,7 +94,9 @@ export function UserDreamsPage() {
   const items = list.data?.items ?? []
   const tabs = useMemo(() => [
     { value: 'DRAFT' as Tab, label: t('me.tabs.drafts'), count: dash.data?.drafts },
+    { value: 'PENDING_PAYMENT' as Tab, label: t('me.tabs.pendingPayment'), count: dash.data?.pendingPayment },
     { value: 'IN_REVIEW' as Tab, label: t('me.tabs.inReview'), count: dash.data?.inReview },
+    { value: 'IN_PROGRESS' as Tab, label: t('me.tabs.inProgress'), count: dash.data?.inProgress },
     { value: 'AWAITING_USER_REPLY' as Tab, label: t('me.tabs.awaiting'), count: dash.data?.awaitingReply, tone: dash.data?.awaitingReply ? 'danger' as const : undefined },
     { value: 'INTERPRETED' as Tab, label: t('me.tabs.interpreted'), count: dash.data?.interpreted },
   ], [t, dash.data])
@@ -124,10 +144,10 @@ export function UserDreamsPage() {
         ) : list.isError ? (
           <ErrorBox onRetry={() => list.refetch()} />
         ) : items.length === 0 ? (
-          <Empty text={t(`me.empty.${tab === 'DRAFT' ? 'drafts' : tab === 'IN_REVIEW' ? 'inReview' : tab === 'AWAITING_USER_REPLY' ? 'awaiting' : 'interpreted'}`)} action={tab === 'DRAFT' ? <Link to="/me/new" className="btn btn-sm btn-gold">{t('me.nav.new')}</Link> : undefined} />
+          <Empty text={t(`me.empty.${EMPTY_KEY[tab]}`)} action={tab === 'DRAFT' ? <Link to="/me/new" className="btn btn-sm btn-gold">{t('me.nav.new')}</Link> : undefined} />
         ) : (
           <StaggerGroup className="grid gap-4 md:grid-cols-2" stagger={0.06}>
-            {items.map((d) => <DreamRow key={d.id} d={d} selectable={tab === 'DRAFT'} selected={selected.includes(d.id)} onToggle={() => toggle(d.id)} />)}
+            {items.map((d) => <DreamRow key={d.id} d={d} selectable={tab === 'DRAFT' && !d.payment} selected={selected.includes(d.id)} onToggle={() => toggle(d.id)} />)}
           </StaggerGroup>
         )}
       </div>

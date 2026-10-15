@@ -236,7 +236,9 @@
       "drafts": "Drafts",
       "inReview": "In review",
       "awaiting": "Waiting for your reply",
-      "interpreted": "Interpretations"
+      "interpreted": "Interpretations",
+      "pendingPayment": "Attached to a payment",
+      "inProgress": "Being interpreted"
     },
     "nav": {
       "dreams": "My dreams",
@@ -254,7 +256,9 @@
       "drafts": "No drafts yet. Write your dream and it will be saved here.",
       "inReview": "Nothing in review.",
       "awaiting": "No questions waiting for your reply.",
-      "interpreted": "No interpretations yet."
+      "interpreted": "No interpretations yet.",
+      "pendingPayment": "No dreams are waiting for a payment.",
+      "inProgress": "The interpreter has not started any of your dreams yet."
     },
     "newDream": {
       "title": "New dream",
@@ -264,7 +268,12 @@
       "saveDraft": "Save as draft",
       "saveAndSubmit": "Save and submit",
       "saved": "Draft saved",
-      "autosave": "Saves automatically"
+      "autosave": "Saves automatically",
+      "editTitle": "Edit your dream",
+      "editLead": "You can change the text until the interpreter starts interpreting it.",
+      "saveChanges": "Save changes",
+      "changesSaved": "Changes saved",
+      "notEditable": "The interpreter has already started on this dream, so it can no longer be edited."
     },
     "detail": {
       "title": "Dream details",
@@ -280,14 +289,23 @@
       "rateCta": "Add your review",
       "rated": "Thank you for your review",
       "submittedAt": "Submitted on",
-      "download": "Download PDF"
+      "download": "Download PDF",
+      "inProgressTitle": "Being interpreted",
+      "inProgressText": "Expected within {{days}} (by {{date}}).",
+      "inProgressFinal": "The interpreter has started, so the text can no longer be changed.",
+      "editHint": "You can still edit the text until the interpreter starts.",
+      "pendingTitle": "Attached to a payment under review",
+      "rejectedTitle": "The payment was not confirmed"
     },
     "status": {
       "DRAFT": "Draft",
       "IN_REVIEW": "In review",
       "AWAITING_USER_REPLY": "Waiting for your reply",
       "INTERPRETED": "Interpreted",
-      "CANCELLED": "Cancelled"
+      "CANCELLED": "Cancelled",
+      "IN_PROGRESS": "Being interpreted",
+      "PENDING_PAYMENT": "Payment under review",
+      "PAYMENT_REJECTED": "Payment rejected"
     },
     "payments": {
       "title": "Payments",
@@ -553,6 +571,12 @@
       "notice_one": "{{count}} credit expires on {{date}}",
       "notice_other": "{{count}} credits expire on {{date}}",
       "use": "Use it now"
+    },
+    "dreamPayment": {
+      "open": "Open the payment",
+      "reason": "Reason: {{note}}",
+      "underReview": "It goes to the interpreter as soon as your payment is confirmed.",
+      "rejected": "Your transfer was not confirmed. Check the details and send them again."
     }
   },
   "admin": {
@@ -568,7 +592,8 @@
       "emails": "E-mails",
       "support": "Support messages",
       "more": "More",
-      "profile": "My account"
+      "profile": "My account",
+      "instapaySettings": "InstaPay settings"
     },
     "dashboard": {
       "title": "Interpreter dashboard",
@@ -577,7 +602,7 @@
       "overdue": "Overdue",
       "today": "Interpreted today",
       "avg": "Average reply time (hours)",
-      "revenue": "Revenue this month",
+      "revenue": "Revenue, last 30 days",
       "topVisits": "Top countries by visits",
       "topDreams": "Top countries by dreams",
       "topRevenue": "Top countries by revenue",
@@ -589,7 +614,12 @@
       },
       "lead": "Your day at a glance.",
       "topTitle": "Top countries",
-      "topLead": "Where visits, dreams and payments come from."
+      "topLead": "Where visits, dreams and payments come from.",
+      "pendingPayments": "Payments to review",
+      "inProgress": "Being interpreted",
+      "revenueRef": "Paid as {{list}}",
+      "countriesEmpty": "No data for this period.",
+      "countriesPager": "Pages of {{title}}"
     },
     "queue": {
       "title": "Dreams",
@@ -600,7 +630,8 @@
       "left": "left",
       "open": "Open",
       "overdueBy": "{{x}} overdue",
-      "within": "{{x}} left"
+      "within": "{{x}} left",
+      "edited": "Edited by the dreamer"
     },
     "dream": {
       "ask": "Send a question",
@@ -623,7 +654,19 @@
       "orderCredits": "This payment's credits",
       "dreamOf": "This is dream {{n}} of {{total}}",
       "creditsLeft": "Left: {{n}}",
-      "creditsExpired": "Its credits have expired"
+      "creditsExpired": "Its credits have expired",
+      "start": "Start interpreting",
+      "startTitle": "Start interpreting",
+      "startBody": "Once you start, the dreamer can no longer edit the text. Choose how many days you expect to need. The dreamer will see it.",
+      "startDays": "Expected days",
+      "startCustom": "Or type a number of days (1 to 30)",
+      "startConfirm": "Start now",
+      "started": "Interpreting started",
+      "startedAt": "Started {{time}}",
+      "expectedIn": "Expected within {{days}}, by {{date}}",
+      "editedByDreamer": "Edited by the dreamer {{time}}",
+      "editableHint": "The dreamer can still edit the text until you press “Start interpreting”.",
+      "daysOutOfRange": "Choose between 1 and 30 days."
     },
     "pricing": {
       "gaps": {
@@ -804,8 +847,27 @@
       "provider": "Provider",
       "date": "Date",
       "number": "Order no.",
-      "search": "Search by order number (like RN-15001), name or email",
-      "empty": "No matching orders."
+      "search": "Search by order number, like RN-15001 or 15001",
+      "empty": {
+        "REVIEW": "No payments are waiting for review.",
+        "DOMESTIC": "No payments from Egypt yet.",
+        "INTERNATIONAL": "No payments from outside Egypt yet."
+      },
+      "lead": "Open a payment to see its details and the dreams attached to it.",
+      "tabs": {
+        "REVIEW": "Needs review",
+        "DOMESTIC": "Domestic",
+        "INTERNATIONAL": "International"
+      },
+      "settled": "Settled",
+      "reference": "Reference",
+      "submitted": "Sent",
+      "dreams": "Dreams",
+      "dreamsN_one": "{{count}} dream",
+      "dreamsN_other": "{{count}} dreams",
+      "pager": "Pages of payments",
+      "open": "Open payment",
+      "noMatch": "No payment with this number in this tab."
     },
     "insights": {
       "title": "Recommendations for you",
@@ -826,7 +888,10 @@
       },
       "showMore": "Show {{n}} more",
       "showLess": "Show less",
-      "empty": "All is calm. There is nothing to suggest right now."
+      "empty": "All is calm. There is nothing to suggest right now.",
+      "prev": "Previous recommendation",
+      "next": "Next recommendation",
+      "slide": "Recommendation {{n}} of {{total}}"
     },
     "activity": {
       "title": "Your activity",
@@ -1183,7 +1248,10 @@
       "IN_REVIEW": "Waiting for your interpretation",
       "AWAITING_USER_REPLY": "Waiting for the user's reply",
       "INTERPRETED": "Interpreted",
-      "CANCELLED": "Cancelled"
+      "CANCELLED": "Cancelled",
+      "IN_PROGRESS": "Being interpreted",
+      "PENDING_PAYMENT": "Waiting for this payment",
+      "PAYMENT_REJECTED": "Payment rejected"
     },
     "legal": {
       "title": "Seller details",
@@ -1241,6 +1309,53 @@
         "NOT_PENDING": "This transfer is no longer waiting for review."
       },
       "orderNo": "Order number"
+    },
+    "instapaySettings": {
+      "title": "InstaPay settings",
+      "lead": "Set the receiving account once. Buyers in Egypt see it on the payment page."
+    },
+    "order": {
+      "title": "Payment details",
+      "back": "All payments",
+      "summary": "Summary",
+      "number": "Payment number",
+      "copyNumber": "Copy payment number",
+      "package": "Package",
+      "credits_one": "{{count}} dream",
+      "credits_other": "{{count}} dreams",
+      "amount": "Amount paid",
+      "settled": "Settled in EGP",
+      "notSettled": "Not settled yet",
+      "country": "Country",
+      "countrySource": "Detected by the server",
+      "created": "Created",
+      "paidAt": "Paid on",
+      "expiresAt": "Pay by",
+      "coupon": "Coupon",
+      "discount": "Discount",
+      "provider": "Payment method",
+      "providerRef": "Provider reference",
+      "failure": {
+        "TRANSFER_REJECTED": "Transfer rejected",
+        "other": "Failed: {{reason}}"
+      },
+      "user": "Buyer",
+      "userProfile": "Open the user profile",
+      "age": "{{n}} years",
+      "transfer": "InstaPay transfer",
+      "submitted": "Sent",
+      "reviewed": "Reviewed",
+      "reviewedBy": "Reviewed by {{name}}",
+      "note": "Note to the buyer",
+      "reviewHint": "Find the reference number in your InstaPay history, then accept only when the same amount arrived.",
+      "noTransfer": "No transfer details were sent for this payment.",
+      "dreams": "Attached dreams",
+      "dreamsLead": "Dreams waiting for this payment, and dreams paid by it.",
+      "dreamsEmpty": "No dreams are attached to this payment.",
+      "openDream": "Open the dream",
+      "showText": "Show the dream text",
+      "hideText": "Hide the dream text",
+      "approveRef": "Reference to confirm"
     }
   },
   "common": {
@@ -1276,7 +1391,14 @@
     "published": "Interpretation published",
     "langAr": "العربية",
     "langEn": "English",
-    "language": "Language"
+    "language": "Language",
+    "pager": {
+      "pageOf": "Page {{page}} of {{pages}}",
+      "prev": "Previous page",
+      "next": "Next page"
+    },
+    "copy": "Copy",
+    "copied": "Copied"
   },
   "static": {
     "terms": {

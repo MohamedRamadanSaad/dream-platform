@@ -255,7 +255,9 @@
       "drafts": "المسودات",
       "inReview": "جاري المراجعة",
       "awaiting": "بانتظار ردك",
-      "interpreted": "التفسيرات"
+      "interpreted": "التفسيرات",
+      "pendingPayment": "مرفقة بدفعة",
+      "inProgress": "جاري التعبير"
     },
     "nav": {
       "dreams": "رؤاي",
@@ -273,7 +275,9 @@
       "drafts": "لا مسودات بعد. اكتب رؤياك وستُحفظ هنا.",
       "inReview": "لا رؤى قيد المراجعة.",
       "awaiting": "لا استفسارات تنتظر ردك.",
-      "interpreted": "لم تُفسَّر رؤى بعد."
+      "interpreted": "لم تُفسَّر رؤى بعد.",
+      "pendingPayment": "لا توجد رؤى بانتظار تأكيد دفعة.",
+      "inProgress": "لم تبدأ المعبّرة تعبير أي رؤيا لك بعد."
     },
     "newDream": {
       "title": "رؤيا جديدة",
@@ -283,7 +287,12 @@
       "saveDraft": "حفظ كمسودة",
       "saveAndSubmit": "حفظ وتقديم",
       "saved": "حُفظت المسودة",
-      "autosave": "يُحفظ تلقائياً"
+      "autosave": "يُحفظ تلقائياً",
+      "editTitle": "تعديل الرؤيا",
+      "editLead": "يمكنك تعديل النص حتى تبدأ المعبّرة التعبير.",
+      "saveChanges": "حفظ التعديل",
+      "changesSaved": "تم حفظ التعديل",
+      "notEditable": "بدأت المعبّرة تعبير هذه الرؤيا، فلم يعد تعديلها ممكناً."
     },
     "detail": {
       "title": "تفاصيل الرؤيا",
@@ -299,14 +308,23 @@
       "rateCta": "أضف تقييمك",
       "rated": "شكراً لتقييمك",
       "submittedAt": "قُدّمت",
-      "download": "تحميل PDF"
+      "download": "تحميل PDF",
+      "inProgressTitle": "جاري التعبير",
+      "inProgressText": "المتوقع خلال {{days}} (قبل {{date}}).",
+      "inProgressFinal": "بدأت المعبّرة التعبير، فلا يمكن تعديل النص الآن.",
+      "editHint": "يمكنك تعديل النص حتى تبدأ المعبّرة التعبير.",
+      "pendingTitle": "مرفقة بدفعة قيد المراجعة",
+      "rejectedTitle": "لم يُؤكَّد الدفع"
     },
     "status": {
       "DRAFT": "مسودة",
       "IN_REVIEW": "جاري المراجعة",
       "AWAITING_USER_REPLY": "بانتظار ردك",
       "INTERPRETED": "تم التفسير",
-      "CANCELLED": "ملغاة"
+      "CANCELLED": "ملغاة",
+      "IN_PROGRESS": "جاري التعبير",
+      "PENDING_PAYMENT": "الدفع قيد المراجعة",
+      "PAYMENT_REJECTED": "لم يُقبل الدفع"
     },
     "payments": {
       "title": "مدفوعاتي",
@@ -583,6 +601,12 @@
       "notice_many": "تنتهي صلاحية {{count}} رؤيا من رصيدك في {{date}}",
       "notice_other": "تنتهي صلاحية {{count}} رؤيا من رصيدك في {{date}}",
       "use": "استخدمه الآن"
+    },
+    "dreamPayment": {
+      "open": "متابعة الدفع",
+      "reason": "السبب: {{note}}",
+      "underReview": "تصل إلى المعبّرة فور تأكيد الدفع.",
+      "rejected": "لم يُؤكَّد تحويلك. راجع البيانات وأرسلها مرة أخرى."
     }
   },
   "admin": {
@@ -598,7 +622,8 @@
       "emails": "الرسائل البريدية",
       "support": "رسائل الدعم الفني",
       "more": "المزيد",
-      "profile": "حسابي"
+      "profile": "حسابي",
+      "instapaySettings": "إعدادات إنستاباي"
     },
     "dashboard": {
       "title": "لوحة المعبّرة",
@@ -607,7 +632,7 @@
       "overdue": "متأخرة",
       "today": "فُسّرت اليوم",
       "avg": "متوسط الرد (ساعة)",
-      "revenue": "إيراد الشهر",
+      "revenue": "إيراد آخر 30 يوماً",
       "topVisits": "أكثر البلدان زيارة",
       "topDreams": "أكثر البلدان تقديماً للرؤى",
       "topRevenue": "أكبر البلدان في المدفوعات",
@@ -619,7 +644,12 @@
       },
       "lead": "يومك في لمحة.",
       "topTitle": "أكثر البلدان",
-      "topLead": "من أين تأتي الزيارات والرؤى والمدفوعات."
+      "topLead": "من أين تأتي الزيارات والرؤى والمدفوعات.",
+      "pendingPayments": "مدفوعات تحتاج مراجعة",
+      "inProgress": "جاري تعبيرها",
+      "revenueRef": "دُفعت بعملات: {{list}}",
+      "countriesEmpty": "لا توجد بيانات لهذه المدة.",
+      "countriesPager": "صفحات {{title}}"
     },
     "queue": {
       "title": "الرؤى",
@@ -630,7 +660,8 @@
       "left": "متبقٍ",
       "open": "فتح",
       "overdueBy": "متأخرة {{x}}",
-      "within": "خلال {{x}}"
+      "within": "خلال {{x}}",
+      "edited": "عدّلها صاحب الرؤيا"
     },
     "dream": {
       "ask": "أرسل استفساراً",
@@ -653,7 +684,19 @@
       "orderCredits": "رصيد هذا الدفع",
       "dreamOf": "هذه الرؤيا {{n}} من {{total}}",
       "creditsLeft": "المتبقي: {{n}}",
-      "creditsExpired": "انتهت صلاحية رصيده"
+      "creditsExpired": "انتهت صلاحية رصيده",
+      "start": "ابدئي التعبير",
+      "startTitle": "بدء التعبير",
+      "startBody": "بعد البدء لا يستطيع صاحب الرؤيا تعديل النص. اختاري عدد الأيام المتوقع، وسيظهر له.",
+      "startDays": "الأيام المتوقعة",
+      "startCustom": "أو اكتبي عدد الأيام (من 1 إلى 30)",
+      "startConfirm": "ابدئي الآن",
+      "started": "بدأ التعبير",
+      "startedAt": "بدأ {{time}}",
+      "expectedIn": "المتوقع خلال {{days}}، قبل {{date}}",
+      "editedByDreamer": "عدّلها صاحب الرؤيا {{time}}",
+      "editableHint": "يستطيع صاحب الرؤيا تعديل النص حتى تضغطي «ابدئي التعبير».",
+      "daysOutOfRange": "اختاري من 1 إلى 30 يوماً."
     },
     "pricing": {
       "gaps": {
@@ -842,8 +885,31 @@
       "provider": "المزوّد",
       "date": "التاريخ",
       "number": "رقم الطلب",
-      "search": "ابحث برقم الطلب (مثل RN-15001) أو الاسم أو البريد",
-      "empty": "لا توجد طلبات مطابقة."
+      "search": "ابحث برقم الطلب، مثل RN-15001 أو 15001",
+      "empty": {
+        "REVIEW": "لا توجد مدفوعات تنتظر المراجعة.",
+        "DOMESTIC": "لا توجد مدفوعات من مصر بعد.",
+        "INTERNATIONAL": "لا توجد مدفوعات من خارج مصر بعد."
+      },
+      "lead": "افتحي أي دفعة لتري تفاصيلها والرؤى المرفقة بها.",
+      "tabs": {
+        "REVIEW": "تحتاج مراجعة",
+        "DOMESTIC": "داخل مصر",
+        "INTERNATIONAL": "خارج مصر"
+      },
+      "settled": "المحصَّل",
+      "reference": "المرجع",
+      "submitted": "أُرسل",
+      "dreams": "الرؤى",
+      "dreamsN_zero": "{{count}} رؤيا",
+      "dreamsN_one": "رؤيا واحدة",
+      "dreamsN_two": "رؤيتان",
+      "dreamsN_few": "{{count}} رؤى",
+      "dreamsN_many": "{{count}} رؤيا",
+      "dreamsN_other": "{{count}} رؤيا",
+      "pager": "صفحات المدفوعات",
+      "open": "فتح الدفعة",
+      "noMatch": "لا توجد دفعة بهذا الرقم في هذا التبويب."
     },
     "insights": {
       "title": "توصيات لكِ",
@@ -864,7 +930,10 @@
       },
       "showMore": "عرض {{n}} أخرى",
       "showLess": "عرض أقل",
-      "empty": "كل شيء هادئ، لا توجد توصيات الآن."
+      "empty": "كل شيء هادئ، لا توجد توصيات الآن.",
+      "prev": "التوصية السابقة",
+      "next": "التوصية التالية",
+      "slide": "التوصية {{n}} من {{total}}"
     },
     "activity": {
       "title": "نشاطك",
@@ -1233,7 +1302,10 @@
       "IN_REVIEW": "بانتظار تعبيرك",
       "AWAITING_USER_REPLY": "بانتظار رد المستخدم",
       "INTERPRETED": "تم التفسير",
-      "CANCELLED": "ملغاة"
+      "CANCELLED": "ملغاة",
+      "IN_PROGRESS": "جاري التعبير",
+      "PENDING_PAYMENT": "بانتظار تأكيد الدفع",
+      "PAYMENT_REJECTED": "رُفض الدفع"
     },
     "legal": {
       "title": "بيانات البائع",
@@ -1291,6 +1363,57 @@
         "NOT_PENDING": "هذا التحويل لم يعد بانتظار المراجعة."
       },
       "orderNo": "رقم الطلب"
+    },
+    "instapaySettings": {
+      "title": "إعدادات إنستاباي",
+      "lead": "اضبطي الحساب المستقبِل مرة واحدة، ويراه المشترون من مصر في صفحة الدفع."
+    },
+    "order": {
+      "title": "تفاصيل الدفعة",
+      "back": "كل المدفوعات",
+      "summary": "الملخص",
+      "number": "رقم الدفعة",
+      "copyNumber": "نسخ رقم الدفعة",
+      "package": "الباقة",
+      "credits_zero": "{{count}} رؤيا",
+      "credits_one": "رؤيا واحدة",
+      "credits_two": "رؤيتان",
+      "credits_few": "{{count}} رؤى",
+      "credits_many": "{{count}} رؤيا",
+      "credits_other": "{{count}} رؤيا",
+      "amount": "المبلغ المدفوع",
+      "settled": "المبلغ بالجنيه",
+      "notSettled": "لم يُحتسب بعد",
+      "country": "البلد",
+      "countrySource": "حدّده الخادم",
+      "created": "أُنشئت",
+      "paidAt": "تاريخ الدفع",
+      "expiresAt": "آخر موعد للدفع",
+      "coupon": "كود الخصم",
+      "discount": "الخصم",
+      "provider": "طريقة الدفع",
+      "providerRef": "مرجع مزوّد الدفع",
+      "failure": {
+        "TRANSFER_REJECTED": "رُفض التحويل",
+        "other": "فشلت: {{reason}}"
+      },
+      "user": "المشتري",
+      "userProfile": "فتح ملف المستخدم",
+      "age": "{{n}} سنة",
+      "transfer": "تحويل إنستاباي",
+      "submitted": "أُرسل",
+      "reviewed": "رُوجع",
+      "reviewedBy": "راجعته {{name}}",
+      "note": "ملاحظة للمشتري",
+      "reviewHint": "ابحثي بالرقم المرجعي في سجل إنستاباي، ولا تقبلي إلا بعد التأكد من وصول المبلغ نفسه.",
+      "noTransfer": "لم تُرسل بيانات تحويل لهذه الدفعة.",
+      "dreams": "الرؤى المرفقة",
+      "dreamsLead": "الرؤى التي تنتظر هذه الدفعة، والرؤى المدفوعة منها.",
+      "dreamsEmpty": "لا توجد رؤى مرفقة بهذه الدفعة.",
+      "openDream": "فتح الرؤيا",
+      "showText": "عرض نص الرؤيا",
+      "hideText": "إخفاء نص الرؤيا",
+      "approveRef": "الرقم المرجعي المطلوب تأكيده"
     }
   },
   "common": {
@@ -1334,7 +1457,14 @@
     "published": "تم نشر التفسير",
     "langAr": "العربية",
     "langEn": "English",
-    "language": "اللغة"
+    "language": "اللغة",
+    "pager": {
+      "pageOf": "صفحة {{page}} من {{pages}}",
+      "prev": "الصفحة السابقة",
+      "next": "الصفحة التالية"
+    },
+    "copy": "نسخ",
+    "copied": "تم النسخ"
   },
   "static": {
     "terms": {

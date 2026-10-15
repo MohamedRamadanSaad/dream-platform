@@ -1,6 +1,8 @@
 // Single source of truth for the API contract. Mirrors docs/BUILD_PACK.md and docs/SPEC_v2.md.
 
-export type DreamStatus = 'DRAFT' | 'IN_REVIEW' | 'AWAITING_USER_REPLY' | 'INTERPRETED' | 'CANCELLED'
+export type DreamStatus = 'DRAFT' | 'IN_REVIEW' | 'IN_PROGRESS' | 'AWAITING_USER_REPLY' | 'INTERPRETED' | 'CANCELLED'
+/** GET /dreams?status= also takes the virtual PENDING_PAYMENT: drafts attached to a payment under review or rejected. */
+export type DreamListFilter = DreamStatus | 'PENDING_PAYMENT' | 'ALL'
 export type OrderStatus = 'INITIATED' | 'PENDING_REVIEW' | 'SUCCESS' | 'FAILED' | 'EXPIRED' | 'REFUNDED' | 'SUSPICIOUS'
 /** INSTAPAY: manual transfer inside Egypt, confirmed by the interpreter. */
 export type PaymentProvider = 'KASHIER' | 'MOR' | 'INSTAPAY'
@@ -243,6 +245,20 @@ export interface DreamSummary {
   interpretedAt: string | null
   expectedBy: string | null
   unreadMessages: number
+  /** When the interpreter pressed "Start interpreting" (status IN_PROGRESS from then on); null before. */
+  startedAt: string | null
+  /** Days the interpreter expects to need, chosen when she started. */
+  expectedDays: number | null
+  /** The user may still change the text: DRAFT, or IN_REVIEW before the interpreter started. */
+  editable: boolean
+  /** The payment this draft waits on (PENDING_REVIEW) or that was rejected; null otherwise. */
+  payment: DreamPaymentLink | null
+}
+export interface DreamPaymentLink {
+  orderId: string
+  status: 'PENDING_REVIEW' | 'REJECTED'
+  submittedAt: string | null
+  reviewNote: string | null
 }
 export interface DreamDetail extends DreamSummary {
   text: string
@@ -385,8 +401,13 @@ export interface PushSubscriptionRequest {
 
 // ---------- Me ----------
 export interface DashboardSummary {
+  /** Drafts not attached to a payment. */
   drafts: number
+  /** Drafts attached to a payment under review (or rejected). */
+  pendingPayment: number
   inReview: number
+  /** Started by the interpreter. */
+  inProgress: number
   awaitingReply: number
   interpreted: number
   credits: number
@@ -411,11 +432,17 @@ export interface PreferencesRequest {
 
 // ---------- Admin ----------
 export interface AdminSummary {
+  /** InstaPay transfers waiting for the interpreter. */
+  pendingPayments: number
   inReview: number
+  inProgress: number
   awaitingReply: number
   overdue: number
   interpretedToday: number
+  /** Per currency, buyers' own amounts: reference only. */
   revenue: { currency: Currency; amount: number }[]
+  /** Settled EGP total of the last 30 days. */
+  revenueEgp: number
   avgResponseHours: number
 }
 export interface CountryStat {
@@ -423,8 +450,11 @@ export interface CountryStat {
   countryName: string
   visits: number
   dreams: number
+  /** Settled EGP (the base currency). */
   revenueBase: number
   users: number
+  /** The buyers' own currencies: reference only. */
+  revenueByCurrency: { currency: Currency; amount: number }[]
 }
 export interface AdminCountryDashboard {
   period: '7d' | '30d' | '1y' | 'all'
@@ -444,8 +474,12 @@ export interface AdminDreamRow {
   slaDeadline: string
   overdue: boolean
   countryCode: string
+  startedAt: string | null
+  expectedDays: number | null
+  userEditedAt: string | null
 }
-export interface AdminDreamDetail extends DreamDetail {
+export interface AdminDreamDetail extends Omit<DreamDetail, 'payment'> {
+  userEditedAt: string | null
   user: { id: string; name: string; email: string; countryCode: string; age: number | null }
   payment: {
     orderId: string
@@ -470,6 +504,55 @@ export interface AdminDreamDetail extends DreamDetail {
 }
 export interface InterpretationRequest {
   text: string
+}
+/** POST /admin/dreams/{id}/start: IN_REVIEW → IN_PROGRESS (409 NOT_IN_REVIEW otherwise). */
+export interface StartDreamRequest {
+  expectedDays: number
+}
+
+// ---------- Admin orders (docs/UX_PAYMENTS_REVIEW_CONTRACT.md §3) ----------
+/** REVIEW = InstaPay transfers waiting (oldest first); DOMESTIC = Egypt; INTERNATIONAL = outside Egypt; ALL = every order. */
+export type OrderScope = 'REVIEW' | 'DOMESTIC' | 'INTERNATIONAL' | 'ALL'
+export interface AdminOrderRow extends OrderDto {
+  userName: string
+  userId: string
+  userEmail: string
+  settledAmountEgp: number | null
+  transferReference: string | null
+  transferSenderName: string | null
+  transferSubmittedAt: string | null
+  attachedDreams: number
+}
+export interface AdminOrderCounts {
+  review: number
+  domestic: number
+  international: number
+}
+export interface AdminOrderDetail {
+  id: string
+  /** Readable order number (e.g. RN-15001): the page title. */
+  orderNumber: string
+  status: OrderStatus
+  failureReason: string | null
+  provider: PaymentProvider
+  providerRef: string | null
+  packageName: string
+  credits: number
+  amount: number
+  currency: Currency
+  settledAmountEgp: number | null
+  discount: number
+  couponCode: string | null
+  countryCode: string
+  countrySource: string | null
+  createdAt: string
+  paidAt: string | null
+  expiresAt: string | null
+  transfer: { reference: string; senderName: string; submittedAt: string; reviewedAt: string | null; reviewedByName: string | null; reviewNote: string | null } | null
+  user: { id: string; name: string; email: string; countryCode: string; age: number | null }
+  dreams: { id: string; status: DreamStatus; text: string; createdAt: string; submittedAt: string | null }[]
+  /** INSTAPAY and PENDING_REVIEW. */
+  canReview: boolean
 }
 export interface WaitTimeSettings {
   busy: boolean

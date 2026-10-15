@@ -245,7 +245,7 @@ export function TrafficSection() {
               </StaggerGroup>
               <StaggerGroup className="space-y-4" stagger={0.08}>
                 <Panel title={t('admin.traffic.topCountries')}>
-                  <PagedBarList label={t('admin.traffic.topCountries')} empty={t('admin.traffic.noData')} rows={r.topCountries.map((c) => ({
+                  <PagedBarList label={t('admin.traffic.topCountries')} pageSize={7} empty={t('admin.traffic.noData')} rows={r.topCountries.map((c) => ({
                     key: c.countryCode, value: c.views, valueText: fmtNum(c.views, locale), sub: t('admin.traffic.visitorsN', { n: fmtNum(c.visitors, locale) }),
                     label: <><span aria-hidden="true" className="me-2">{flagEmoji(c.countryCode)}</span>{c.countryName}</>,
                   }))} />

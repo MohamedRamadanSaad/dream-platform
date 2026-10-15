@@ -8,22 +8,25 @@ import { Button, ErrorBox, Label, Skeleton, Stars, StatusBadge, Textarea } from 
 import { DownloadButton } from '@/components/ui/DownloadButton'
 import { Icon } from '@/components/icons/Icon'
 import { PageEnter } from '@/components/motion'
-import { arrowBack, cn, fmtDate } from '@/lib/utils'
+import { arrowBack, arrowNext, cn, fmtDate } from '@/lib/utils'
+import { dreamBadge } from './DreamsPage'
 import type { DreamDetail, DreamMessage } from '@/api/types'
 
-const STEPS: DreamDetail['status'][] = ['DRAFT', 'IN_REVIEW', 'INTERPRETED']
-export function Stepper({ status }: { status: DreamDetail['status'] }) {
+const STEPS: DreamDetail['status'][] = ['DRAFT', 'IN_REVIEW', 'IN_PROGRESS', 'INTERPRETED']
+export function Stepper({ status, started }: { status: DreamDetail['status']; started?: boolean }) {
   const { t } = useTranslation()
-  const idx = status === 'AWAITING_USER_REPLY' ? 1 : STEPS.indexOf(status)
+  // a question pauses the current step: before the start it is "in review", after it "being interpreted"
+  const pausedAt = started ? 2 : 1
+  const idx = status === 'AWAITING_USER_REPLY' ? pausedAt : STEPS.indexOf(status)
   return (
     <div className="flex items-center">
       {STEPS.map((s, i) => (
         <div key={s} className={cn('flex items-center', i < STEPS.length - 1 && 'flex-1')}>
           <div className="flex flex-col items-center gap-1.5">
             <div className={cn('h-3.5 w-3.5 rounded-full border-2 transition-all', i <= idx ? 'border-gold bg-gold' : 'border-line', i === idx && status !== 'INTERPRETED' && 'pulse-ring')} />
-            <span className={cn('whitespace-nowrap text-[11px] md:text-xs', i <= idx ? 'text-gold-ink' : 'text-fg-dim')}>{t(`me.status.${i === 1 && status === 'AWAITING_USER_REPLY' ? 'AWAITING_USER_REPLY' : s}`)}</span>
+            <span className={cn('whitespace-nowrap text-[11px] md:text-xs', i <= idx ? 'text-gold-ink' : 'text-fg-dim')}>{t(`me.status.${i === pausedAt && status === 'AWAITING_USER_REPLY' ? 'AWAITING_USER_REPLY' : s}`)}</span>
           </div>
-          {i < STEPS.length - 1 && <div className="relative mx-2 mb-5 h-0.5 flex-1 overflow-hidden bg-line"><div className="absolute inset-0 origin-right bg-gold transition-transform duration-700" style={{ transform: `scaleX(${i < idx ? 1 : 0})` }} /></div>}
+          {i < STEPS.length - 1 && <div className="relative mx-1.5 mb-5 h-0.5 min-w-3 flex-1 overflow-hidden bg-line sm:mx-2"><div className="absolute inset-0 bg-gold ltr:origin-left rtl:origin-right transition-transform duration-700" style={{ transform: `scaleX(${i < idx ? 1 : 0})` }} /></div>}
         </div>
       ))}
     </div>
@@ -67,17 +70,35 @@ export function DreamDetailPage() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="font-display text-3xl">{t('me.detail.title')}</h1>
         <div className="flex flex-wrap items-center gap-2">
-          <StatusBadge status={d.status} />
+          <StatusBadge status={dreamBadge(d)} />
           {d.status !== 'DRAFT' && <DownloadButton label={t('reports.pdf')} run={() => reportsApi.dreamPdf(d.id)} />}
         </div>
       </div>
-      {d.status !== 'DRAFT' && <div className="card p-5"><Stepper status={d.status} /></div>}
+      {d.status !== 'DRAFT' && d.status !== 'CANCELLED' && <div className="card overflow-x-auto p-5"><Stepper status={d.status} started={!!d.startedAt} /></div>}
+
+      {d.payment && (
+        <div className={cn('card flex flex-col gap-3 p-5 sm:flex-row sm:items-center', d.payment.status === 'REJECTED' ? 'border-danger/30 bg-danger/5' : 'border-warn/30 bg-warn/5')}>
+          <span className={d.payment.status === 'REJECTED' ? 'text-bad-ink' : 'text-warn'}><Icon name="wallet" size={26} /></span>
+          <div className="min-w-0 flex-1">
+            <div className="font-medium">{t(d.payment.status === 'REJECTED' ? 'me.detail.rejectedTitle' : 'me.detail.pendingTitle')}</div>
+            <p className="mt-0.5 text-sm font-light text-fg-muted">{t(d.payment.status === 'REJECTED' ? 'me.dreamPayment.rejected' : 'me.dreamPayment.underReview')}</p>
+            {d.payment.status === 'REJECTED' && d.payment.reviewNote && <p className="mt-1 text-sm text-fg-muted">{t('me.dreamPayment.reason', { note: d.payment.reviewNote })}</p>}
+          </div>
+          <Link to={`/me/checkout/instapay/${d.payment.orderId}`} className="btn btn-sm btn-ghost shrink-0">{t('me.dreamPayment.open')} <span aria-hidden="true">{arrowNext(locale)}</span></Link>
+        </div>
+      )}
 
       <div className="card p-6">
         <Label>{t('me.detail.dream')}</Label>
         <p className="whitespace-pre-wrap leading-loose">{d.text}</p>
         <div className="mt-4 text-xs text-fg-dim">{d.submittedAt ? `${t('me.detail.submittedAt')} ${fmtDate(d.submittedAt, locale, true)}` : fmtDate(d.createdAt, locale)}</div>
-        {d.status === 'DRAFT' && <div className="mt-4 flex gap-3"><Link to={`/me/dreams/${d.id}/edit`} className="btn btn-sm btn-ghost">{t('common.edit')}</Link><Link to={`/me?submit=${d.id}`} className="btn btn-sm btn-gold">{t('me.submitSelected', { n: 1 })}</Link></div>}
+        {d.editable && (
+          <div className="mt-4 flex flex-wrap items-center gap-3">
+            <Link to={`/me/dreams/${d.id}/edit`} className="btn btn-sm btn-ghost">{t('common.edit')}</Link>
+            {d.status === 'DRAFT' && !d.payment && <Link to={`/me?submit=${d.id}`} className="btn btn-sm btn-gold">{t('me.submitSelected', { n: 1 })}</Link>}
+            {d.status === 'IN_REVIEW' && <span className="text-xs text-fg-dim">{t('me.detail.editHint')}</span>}
+          </div>
+        )}
       </div>
 
       {(d.messages.length > 0 || d.status === 'AWAITING_USER_REPLY') && (
@@ -90,6 +111,15 @@ export function DreamDetailPage() {
               <div className="mt-3 flex justify-end"><Button size="sm" disabled={reply.trim().length < 2} loading={send.isPending} onClick={() => send.mutate()}>{t('me.detail.send')}</Button></div>
             </div>
           )}
+        </div>
+      )}
+
+      {d.status === 'IN_PROGRESS' && (
+        <div className="card flex flex-col items-center gap-2 border-gold/40 p-8 text-center">
+          <span className="text-gold-ink"><Icon name="sparkle" size={36} strokeWidth={1.2} /></span>
+          <div className="text-lg text-gold-ink">{t('me.detail.inProgressTitle')}</div>
+          {d.expectedDays != null && d.expectedBy && <div className="text-sm text-fg">{t('me.detail.inProgressText', { days: t('common.dayCount', { count: d.expectedDays }), date: fmtDate(d.expectedBy, locale) })}</div>}
+          <div className="text-xs font-light text-fg-muted">{t('me.detail.inProgressFinal')}</div>
         </div>
       )}
 

@@ -1,7 +1,7 @@
 import { http, HttpResponse, delay } from 'msw'
 import type * as T from '@/api/types'
 import { INTERPRETER_DOMAIN } from '@/lib/utils'
-import { db, resolvePrice, applyPromotion, balanceOf, toSummary, toDetail, uid, helpers, ytVideos, ytSeen } from './data'
+import { db, resolvePrice, applyPromotion, balanceOf, toSummary, toDetail, uid, helpers, ytVideos, ytSeen, orderMeta, attachedOrder, isEditable, toEgp, nextOrderNumber, type MockOrder, type MockDream, type OrderMeta } from './data'
 import { buildInsights, buildTraffic, deviceOf } from './analytics'
 import { attachment, dreamsCsv, tinyPdf } from './reports'
 import { defaultThemeKey, isMailTemplate, isMailTheme, mailPreviewHtml, mailTemplateRow, mailTemplateRows, mailThemes } from './mail'
@@ -60,18 +60,12 @@ const wrap = (fn: (info: { request: Request; params: Record<string, string | rea
 
 
 // ---------- payments: shared success path + InstaPay manual transfers ----------
-type MockOrder = T.OrderDto & { userId: string }
-type InstapayMeta = { dreamIds: string[]; reference: string | null; senderName: string | null; submittedAt: string | null; reviewedAt: string | null; reviewNote: string | null; expiresAt: string }
-const instapayMeta = new Map<string, InstapayMeta>()
-/** Readable order numbers like the server's: prefix (setting orders.number_prefix) + a sequence from 15001. */
-const nextOrderNumber = () => {
-  const max = Math.max(15000, ...db.orders.map((o) => Number(/(\d+)$/.exec(o.orderNumber ?? '')?.[1] ?? 0)))
-  return `${db.settings['orders.number_prefix'] || 'RN'}-${max + 1}`
-}
+const instapayMeta: Map<string, OrderMeta> = orderMeta
 
 /** What a confirmed payment does: credits, receipt notification, then the attached drafts are submitted. */
 function completeOrder(order: MockOrder, dreamIds: string[]) {
   order.status = 'SUCCESS'; order.paidAt = helpers.now(); order.providerRef ??= `${order.provider}-${uid().toUpperCase()}`
+  order.settledAmountEgp = toEgp(order.amount, order.currency); order.failureReason = null
   db.ledger.push({ id: uid(), userId: order.userId, delta: order.credits, reason: 'PURCHASE', orderId: order.id, dreamId: null, createdAt: helpers.now() })
   db.notifications.unshift({ id: uid(), userId: order.userId, type: 'PAYMENT_SUCCESS', title: 'تم الدفع', body: `أُضيفت ${order.credits} رؤى إلى رصيدك.`, link: '/me/payments', createdAt: helpers.now(), readAt: null })
   const hours = db.waitTime.busy ? db.waitTime.busyMaxDays * 24 : db.waitTime.normalHours
@@ -84,12 +78,43 @@ function completeOrder(order: MockOrder, dreamIds: string[]) {
   }
 }
 
-// preview: one transfer already waits for the interpreter (Egyptian user u4)
-{
-  const seeded: MockOrder = { id: 'o-ip1', orderNumber: nextOrderNumber(), userId: 'u4', packageName: 'تفسير ثلاث رؤى', credits: 3, amount: 450, currency: 'EGP', status: 'PENDING_REVIEW', provider: 'INSTAPAY', providerRef: null, countryCode: 'EG', createdAt: helpers.daysAgo(0, 1), paidAt: null }
-  db.orders.unshift(seeded)
-  instapayMeta.set(seeded.id, { dreamIds: [], reference: '202311580274', senderName: 'MONA ABDALLAH', submittedAt: helpers.daysAgo(0, 1), reviewedAt: null, reviewNote: null, expiresAt: helpers.daysAhead(1) })
+/** A dream lives in a live order when it is attached to it, or when its credit came from it. */
+const orderDreams = (o: MockOrder) => {
+  const ids = new Set(instapayMeta.get(o.id)?.dreamIds ?? [])
+  return db.dreams.filter((d) => ids.has(d.id) || d.credit?.orderId === o.id).sort((a, b) => a.createdAt.localeCompare(b.createdAt))
 }
+const adminOrderRow = (o: MockOrder): T.AdminOrderRow => {
+  const usr = db.users.find((x) => x.id === o.userId)
+  const m = instapayMeta.get(o.id)
+  return {
+    id: o.id, orderNumber: o.orderNumber, packageName: o.packageName, credits: o.credits, amount: o.amount, currency: o.currency, status: o.status, provider: o.provider, providerRef: o.providerRef, countryCode: o.countryCode, createdAt: o.createdAt, paidAt: o.paidAt,
+    userName: usr?.name ?? '', userId: o.userId, userEmail: usr?.email ?? '', settledAmountEgp: o.settledAmountEgp ?? null,
+    transferReference: m?.reference ?? null, transferSenderName: m?.senderName ?? null, transferSubmittedAt: m?.submittedAt ?? null, attachedDreams: orderDreams(o).length,
+  }
+}
+const scoped = (scope: string | null) => {
+  const all = db.orders as MockOrder[]
+  if (scope === 'REVIEW') return all.filter((o) => o.provider === 'INSTAPAY' && o.status === 'PENDING_REVIEW').sort((a, b) => (instapayMeta.get(a.id)?.submittedAt ?? a.createdAt).localeCompare(instapayMeta.get(b.id)?.submittedAt ?? b.createdAt))
+  const newest = (xs: MockOrder[]) => [...xs].sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+  if (scope === 'DOMESTIC') return newest(all.filter((o) => o.countryCode === 'EG'))
+  if (scope === 'INTERNATIONAL') return newest(all.filter((o) => o.countryCode !== 'EG'))
+  return newest(all)
+}
+const adminOrderDetail = (o: MockOrder): T.AdminOrderDetail => {
+  const usr = db.users.find((x) => x.id === o.userId)!
+  const m = instapayMeta.get(o.id)
+  return {
+    id: o.id, orderNumber: o.orderNumber, status: o.status, failureReason: o.failureReason ?? null, provider: o.provider, providerRef: o.providerRef, packageName: o.packageName, credits: o.credits, amount: o.amount, currency: o.currency,
+    settledAmountEgp: o.settledAmountEgp ?? null, discount: o.discount ?? 0, couponCode: o.couponCode ?? null, countryCode: o.countryCode, countrySource: o.countrySource ?? 'CF_IPCOUNTRY',
+    createdAt: o.createdAt, paidAt: o.paidAt, expiresAt: m?.expiresAt ?? null,
+    transfer: m?.reference ? { reference: m.reference, senderName: m.senderName ?? '', submittedAt: m.submittedAt ?? o.createdAt, reviewedAt: m.reviewedAt, reviewedByName: m.reviewedByName ?? null, reviewNote: m.reviewNote } : null,
+    user: { id: usr.id, name: usr.name, email: usr.email, countryCode: usr.countryCode, age: usr.age ?? null },
+    dreams: orderDreams(o).map((d) => ({ id: d.id, status: d.status, text: d.text, createdAt: d.createdAt, submittedAt: d.submittedAt })),
+    canReview: o.provider === 'INSTAPAY' && o.status === 'PENDING_REVIEW',
+  }
+}
+/** Dreams the interpreter has to work on (contract §1: IN_PROGRESS counts as open work too). */
+const OPEN: T.DreamStatus[] = ['IN_REVIEW', 'IN_PROGRESS']
 
 /** The payment's counter as the backend computes it: dreams that used it (oldest first) and what is left. */
 const orderCounter = (orderId: string, credits: number, dreamId: string) => {
@@ -268,8 +293,10 @@ export const handlers = [
     const me = requireUser(request)
     const mine = db.dreams.filter((d) => d.userId === me.id)
     const s: T.DashboardSummary = {
-      drafts: mine.filter((d) => d.status === 'DRAFT').length,
+      drafts: mine.filter((d) => d.status === 'DRAFT' && !attachedOrder(d)).length,
+      pendingPayment: mine.filter((d) => attachedOrder(d)).length,
       inReview: mine.filter((d) => d.status === 'IN_REVIEW').length,
+      inProgress: mine.filter((d) => d.status === 'IN_PROGRESS').length,
       awaitingReply: mine.filter((d) => d.status === 'AWAITING_USER_REPLY').length,
       interpreted: mine.filter((d) => d.status === 'INTERPRETED').length,
       credits: balanceOf(me.id),
@@ -336,7 +363,8 @@ export const handlers = [
     const me = requireUser(request)
     const q = new URL(request.url).searchParams
     const st = q.get('status')
-    const list = db.dreams.filter((d) => d.userId === me.id && (!st || d.status === st)).sort((a, b) => b.createdAt.localeCompare(a.createdAt)).map(toSummary)
+    const match = (d: MockDream) => st === 'PENDING_PAYMENT' ? !!attachedOrder(d) : st === 'DRAFT' ? d.status === 'DRAFT' && !attachedOrder(d) : (!st || d.status === st)
+    const list = db.dreams.filter((d) => d.userId === me.id && match(d)).sort((a, b) => b.createdAt.localeCompare(a.createdAt)).map(toSummary)
     return HttpResponse.json(page(list, q))
   })),
   http.get(u('/dreams/:id'), wrap(async ({ request, params }) => {
@@ -352,7 +380,7 @@ export const handlers = [
     if (!b.text || b.text.trim().length < 20) return problem(400, 'Validation failed', 'النص قصير جداً', { errors: { text: ['min 20'] } })
     const drafts = db.dreams.filter((d) => d.userId === me.id && d.status === 'DRAFT').length
     if (drafts >= 20) return problem(422, 'Draft limit', 'الحد الأقصى 20 مسودة')
-    const d = { id: uid(), userId: me.id, gender: b.gender, status: 'DRAFT' as T.DreamStatus, createdAt: helpers.now(), submittedAt: null, interpretedAt: null, expectedBy: null, text: b.text, messages: [], interpretation: null, testimonial: null, credit: null }
+    const d: MockDream = { id: uid(), userId: me.id, gender: b.gender, status: 'DRAFT', createdAt: helpers.now(), submittedAt: null, interpretedAt: null, expectedBy: null, text: b.text, messages: [], interpretation: null, testimonial: null, credit: null }
     db.dreams.unshift(d)
     return HttpResponse.json(toDetail(d), { status: 201 })
   })),
@@ -360,22 +388,26 @@ export const handlers = [
     const me = requireUser(request)
     const d = db.dreams.find((x) => x.id === params.id && x.userId === me.id)
     if (!d) return problem(404, 'Not found')
-    if (d.status !== 'DRAFT') return problem(409, 'Conflict', 'لا يمكن تعديل رؤيا مقدَّمة')
+    // DRAFT, or IN_REVIEW before the interpreter pressed "Start interpreting" (contract §1)
+    if (!isEditable(d)) return problem(409, 'Conflict', 'This dream can no longer be edited', { code: 'NOT_EDITABLE' })
     const b = (await request.json()) as T.DreamDraftRequest
-    Object.assign(d, { text: b.text, gender: b.gender })
+    if (!b.text || b.text.trim().length < 20) return problem(400, 'Validation failed', 'Text too short', { errors: { text: ['min 20'] } })
+    Object.assign(d, { text: b.text, gender: b.gender }, d.status === 'IN_REVIEW' ? { userEditedAt: helpers.now() } : {})
     return HttpResponse.json(toDetail(d))
   })),
   http.delete(u('/dreams/:id'), wrap(async ({ request, params }) => {
     const me = requireUser(request)
-    const i = db.dreams.findIndex((x) => x.id === params.id && x.userId === me.id && x.status === 'DRAFT')
+    const i = db.dreams.findIndex((x) => x.id === params.id && x.userId === me.id)
     if (i < 0) return problem(404, 'Not found')
+    if (db.dreams[i].status !== 'DRAFT') return problem(409, 'Conflict', 'Only drafts can be deleted', { code: 'NOT_DRAFT' })
+    if (attachedOrder(db.dreams[i])) return problem(409, 'Conflict', 'This draft is attached to a payment', { code: 'ATTACHED_TO_PAYMENT' })
     db.dreams.splice(i, 1)
     return new HttpResponse(null, { status: 204 })
   })),
   http.post(u('/dreams/submit'), wrap(async ({ request }) => {
     const me = requireUser(request)
     const b = (await request.json()) as T.SubmitDreamsRequest
-    const drafts = b.dreamIds.map((id) => db.dreams.find((d) => d.id === id && d.userId === me.id && d.status === 'DRAFT')).filter(Boolean) as typeof db.dreams
+    const drafts = b.dreamIds.map((id) => db.dreams.find((d) => d.id === id && d.userId === me.id && d.status === 'DRAFT' && !attachedOrder(d))).filter(Boolean) as MockDream[]
     if (drafts.length !== b.dreamIds.length) return problem(409, 'Conflict', 'بعض الرؤى ليست مسودات')
     const bal = balanceOf(me.id)
     if (bal < drafts.length) return problem(402, 'Payment required', `تحتاج ${drafts.length - bal} رؤيا إضافية`, { code: 'INSUFFICIENT_CREDITS' })
@@ -398,7 +430,7 @@ export const handlers = [
     const { body } = (await request.json()) as { body: string }
     const m: T.DreamMessage = { id: uid(), senderRole: 'USER', body, createdAt: helpers.now(), readAt: null }
     d.messages.push(m)
-    d.status = 'IN_REVIEW'
+    d.status = d.startedAt ? 'IN_PROGRESS' : 'IN_REVIEW'
     db.notifications.unshift({ id: uid(), userId: 'admin', type: 'USER_REPLIED', title: 'رد على استفسارك', body: `${me.name} ردّت على استفسارك.`, link: `/admin/dreams/${d.id}`, createdAt: helpers.now(), readAt: null })
     return HttpResponse.json(m, { status: 201 })
   })),
@@ -439,6 +471,8 @@ export const handlers = [
     }
     // like production: no payment method outside Egypt yet
     if (r.currency !== 'EGP' || db.settings['payments.instapay.enabled'] !== 'true') return problem(422, 'Unprocessable', 'Payment is available inside Egypt only for now', { code: 'PAYMENT_EGYPT_ONLY' })
+    const live = (b.dreamIds ?? []).find((id) => db.orders.some((o) => o.userId === me.id && (o.status === 'PENDING_REVIEW' || (o.status === 'INITIATED' && (instapayMeta.get(o.id)?.expiresAt ?? '') > helpers.now()) || (o.status === 'FAILED' && o.failureReason === 'TRANSFER_REJECTED')) && instapayMeta.get(o.id)?.dreamIds.includes(id)))
+    if (live) return problem(409, 'Conflict', 'This dream is already attached to another payment', { code: 'DREAM_ALREADY_ATTACHED' })
     const order: MockOrder = { id: uid(), orderNumber: nextOrderNumber(), userId: me.id, packageName: pkg.nameAr, credits: pkg.credits, amount: price, currency: r.currency, status: 'INITIATED', provider: 'INSTAPAY', providerRef: null, countryCode: me.countryCode, createdAt: helpers.now(), paidAt: null }
     db.orders.unshift(order)
     const hours = Number(db.settings['payments.instapay.expire_hours'] ?? 24)
@@ -473,10 +507,10 @@ export const handlers = [
     for (const id of b.dreamIds ?? []) if (!m.dreamIds.includes(id)) m.dreamIds.push(id)
     const first = o.status === 'INITIATED' || reopened
     Object.assign(m, { reference: ref, senderName: b.senderName.trim(), submittedAt: first ? helpers.now() : m.submittedAt ?? helpers.now() }, reopened ? { reviewNote: null, reviewedAt: null } : {})
-    o.status = 'PENDING_REVIEW'
+    o.status = 'PENDING_REVIEW'; o.failureReason = null
     if (first) {
       for (const it of db.users.filter((x) => x.role === 'INTERPRETER')) {
-        db.notifications.unshift({ id: uid(), userId: it.id, type: 'TRANSFER_SUBMITTED', title: 'تحويل إنستاباي بانتظار التأكيد', body: `أرسل ${me.name} تحويلاً بمبلغ ${o.amount} ${o.currency}، الرقم المرجعي ${ref}.`, link: '/admin/orders', createdAt: helpers.now(), readAt: null })
+        db.notifications.unshift({ id: uid(), userId: it.id, type: 'TRANSFER_SUBMITTED', title: 'تحويل إنستاباي بانتظار التأكيد', body: `أرسل ${me.name} تحويلاً بمبلغ ${o.amount} ${o.currency}، الرقم المرجعي ${ref}.`, link: `/admin/orders/${o.id}`, createdAt: helpers.now(), readAt: null })
       }
     }
     return HttpResponse.json(instapayView(o))
@@ -494,22 +528,24 @@ export const handlers = [
   })),
   http.post(u('/admin/payments/instapay/transfers/:id/approve'), wrap(async ({ request, params }) => {
     requireAdmin(request)
+    const me = requireAdmin(request)
     const o = pendingTransfer(String(params.id))
     const m = instapayMeta.get(o.id)!
     const b = (await request.json().catch(() => ({}))) as { reference?: string }
     if ((b.reference ?? '').replace(/\s/g, '') !== m.reference) return problem(409, 'Conflict', 'The transfer reference was changed, check it again', { code: 'REFERENCE_CHANGED' })
-    m.reviewedAt = helpers.now()
+    m.reviewedAt = helpers.now(); m.reviewedByName = me.name
     o.providerRef = `INSTAPAY-REF-${m.reference}`
     completeOrder(o, m.dreamIds)
     return HttpResponse.json(transferRow(o))
   })),
   http.post(u('/admin/payments/instapay/transfers/:id/reject'), wrap(async ({ request, params }) => {
     requireAdmin(request)
+    const me = requireAdmin(request)
     const o = pendingTransfer(String(params.id))
     const m = instapayMeta.get(o.id)!
     const b = (await request.json().catch(() => ({}))) as { note?: string }
-    Object.assign(m, { reviewedAt: helpers.now(), reviewNote: b.note?.trim() || null })
-    o.status = 'FAILED'
+    Object.assign(m, { reviewedAt: helpers.now(), reviewedByName: me.name, reviewNote: b.note?.trim() || null })
+    o.status = 'FAILED'; o.failureReason = 'TRANSFER_REJECTED'
     db.notifications.unshift({ id: uid(), userId: o.userId, type: 'PAYMENT_REJECTED', title: 'لم نجد تحويلك', body: `لم نجد تحويلاً مطابقاً لطلب ${o.packageName}، ولم يُضف أي رصيد.`, link: `/me/checkout/instapay/${o.id}`, createdAt: helpers.now(), readAt: null })
     return HttpResponse.json(transferRow(o))
   })),
@@ -566,12 +602,19 @@ export const handlers = [
   http.get(u('/admin/analytics/summary'), wrap(async ({ request }) => {
     requireAdmin(request)
     const all = db.dreams
+    const since = Date.now() - 30 * 864e5
+    const paid = (db.orders as MockOrder[]).filter((o) => o.status === 'SUCCESS' && o.paidAt && new Date(o.paidAt).getTime() >= since)
+    const byCur = new Map<T.Currency, number>()
+    for (const o of paid) byCur.set(o.currency, (byCur.get(o.currency) ?? 0) + o.amount)
     const s: T.AdminSummary = {
+      pendingPayments: instapayOrders().filter((o) => o.status === 'PENDING_REVIEW').length,
       inReview: all.filter((d) => d.status === 'IN_REVIEW').length,
+      inProgress: all.filter((d) => d.status === 'IN_PROGRESS').length,
       awaitingReply: all.filter((d) => d.status === 'AWAITING_USER_REPLY').length,
-      overdue: all.filter((d) => d.status === 'IN_REVIEW' && d.expectedBy && new Date(d.expectedBy) < new Date()).length,
+      overdue: all.filter((d) => OPEN.includes(d.status) && d.expectedBy && new Date(d.expectedBy) < new Date()).length,
       interpretedToday: 2,
-      revenue: [{ currency: 'SAR', amount: 3420 }, { currency: 'EGP', amount: 8950 }, { currency: 'USD', amount: 310 }],
+      revenue: [...byCur].map(([currency, amount]) => ({ currency, amount })).sort((a, b) => toEgp(b.amount, b.currency) - toEgp(a.amount, a.currency)),
+      revenueEgp: Math.round(paid.reduce((a, o) => a + (o.settledAmountEgp ?? toEgp(o.amount, o.currency)), 0) * 100) / 100,
       avgResponseHours: 31,
     }
     return HttpResponse.json(s)
@@ -580,20 +623,33 @@ export const handlers = [
     requireAdmin(request)
     const q = new URL(request.url).searchParams
     const en = lang(request).startsWith('en')
+    // preview extras on top of the seeded rows, so every list has more than one page (7 per page)
+    const EXTRA_DREAMS: Record<string, number> = { EG: 38, SA: 27, AE: 6, MA: 4, DE: 3, KW: 2, JO: 2, US: 1, TN: 1 }
+    const EXTRA_REVENUE: Record<string, [T.Currency, number][]> = {
+      EG: [['EGP', 18450]], SA: [['SAR', 1240]], AE: [['USD', 96]], KW: [['USD', 54]], DE: [['USD', 70]], MA: [['USD', 27]], US: [['USD', 39]], QA: [['USD', 15]],
+    }
     const stat = (cc: string): T.CountryStat => {
       const c = db.countries.find((x) => x.code === cc)
       const users = db.users.filter((x) => x.countryCode === cc && x.role === 'USER')
       const dreams = db.dreams.filter((d) => users.some((x) => x.id === d.userId) && d.status !== 'DRAFT').length
-      const rev = db.orders.filter((o) => o.countryCode === cc && o.status === 'SUCCESS').reduce((a, o) => a + (o.currency === 'SAR' ? o.amount * 3.75 : o.currency === 'EGP' ? o.amount * 0.021 : o.amount), 0)
-      return { countryCode: cc, countryName: (en ? c?.nameEn : c?.nameAr) ?? cc, visits: db.visits.filter((v) => v.countryCode === cc).reduce((a, v) => a + v.count, 0), dreams: dreams + (cc === 'EG' ? 38 : cc === 'SA' ? 27 : cc === 'AE' ? 6 : cc === 'MA' ? 4 : cc === 'DE' ? 3 : 1), revenueBase: Math.round(rev + (cc === 'EG' ? 620 : cc === 'SA' ? 910 : cc === 'AE' ? 190 : cc === 'MA' ? 60 : cc === 'DE' ? 70 : 15)), users: users.length + (cc === 'EG' ? 210 : cc === 'SA' ? 160 : 20) }
+      const byCur = new Map<T.Currency, number>()
+      for (const o of (db.orders as MockOrder[]).filter((x) => x.countryCode === cc && x.status === 'SUCCESS')) byCur.set(o.currency, (byCur.get(o.currency) ?? 0) + o.amount)
+      for (const [cur, amount] of EXTRA_REVENUE[cc] ?? []) byCur.set(cur, (byCur.get(cur) ?? 0) + amount)
+      const revenueByCurrency = [...byCur].map(([currency, amount]) => ({ currency, amount }))
+      return {
+        countryCode: cc, countryName: (en ? c?.nameEn : c?.nameAr) ?? cc, visits: db.visits.filter((v) => v.countryCode === cc).reduce((a, v) => a + v.count, 0),
+        dreams: dreams + (EXTRA_DREAMS[cc] ?? 0), revenueBase: Math.round(revenueByCurrency.reduce((a, r) => a + toEgp(r.amount, r.currency), 0)),
+        users: users.length + (cc === 'EG' ? 210 : cc === 'SA' ? 160 : 20), revenueByCurrency,
+      }
     }
-    const codes = [...new Set(db.visits.map((v) => v.countryCode))]
+    const codes = [...new Set([...db.visits.map((v) => v.countryCode), ...Object.keys(EXTRA_REVENUE)])]
     const stats = codes.map(stat)
+    // contract §5: only rows above zero for that metric, every row (no top-8 cut)
     const r: T.AdminCountryDashboard = {
-      period: (q.get('period') as T.AdminCountryDashboard['period']) ?? '30d', baseCurrency: 'USD',
-      topVisits: [...stats].sort((a, b) => b.visits - a.visits).slice(0, 8),
-      topDreams: [...stats].sort((a, b) => b.dreams - a.dreams).slice(0, 8),
-      topRevenue: [...stats].sort((a, b) => b.revenueBase - a.revenueBase).slice(0, 8),
+      period: (q.get('period') as T.AdminCountryDashboard['period']) ?? '30d', baseCurrency: 'EGP',
+      topVisits: stats.filter((x) => x.visits > 0).sort((a, b) => b.visits - a.visits),
+      topDreams: stats.filter((x) => x.dreams > 0).sort((a, b) => b.dreams - a.dreams),
+      topRevenue: stats.filter((x) => x.revenueBase > 0).sort((a, b) => b.revenueBase - a.revenueBase),
     }
     return HttpResponse.json(r)
   })),
@@ -699,7 +755,7 @@ export const handlers = [
     const st = q.get('status')
     const rows: T.AdminDreamRow[] = db.dreams.filter((d) => d.status !== 'DRAFT' && (!st || d.status === st)).map((d) => {
       const usr = db.users.find((x) => x.id === d.userId)!
-      return { id: d.id, userId: usr.id, userName: usr.name, gender: d.gender, excerpt: toSummary(d).excerpt, status: d.status, submittedAt: d.submittedAt!, slaDeadline: d.expectedBy!, overdue: d.status === 'IN_REVIEW' && !!d.expectedBy && new Date(d.expectedBy) < new Date(), countryCode: usr.countryCode }
+      return { id: d.id, userId: usr.id, userName: usr.name, gender: d.gender, excerpt: toSummary(d).excerpt, status: d.status, submittedAt: d.submittedAt!, slaDeadline: d.expectedBy!, overdue: OPEN.includes(d.status) && !!d.expectedBy && new Date(d.expectedBy) < new Date(), countryCode: usr.countryCode, startedAt: d.startedAt ?? null, expectedDays: d.expectedDays ?? null, userEditedAt: d.userEditedAt ?? null }
     }).sort((a, b) => a.submittedAt.localeCompare(b.submittedAt))
     return HttpResponse.json(page(rows, q))
   })),
@@ -710,14 +766,15 @@ export const handlers = [
     const usr = db.users.find((x) => x.id === d.userId)!
     const order = d.credit?.orderId ? db.orders.find((o) => o.id === d.credit!.orderId) : null
     d.messages.forEach((m) => { if (m.senderRole === 'USER') m.readAt ??= helpers.now() })
-    const r: T.AdminDreamDetail = { ...toDetail(d), user: { id: usr.id, name: usr.name, email: usr.email, countryCode: usr.countryCode, age: usr.age },
+    const { payment: _ignored, ...detail } = toDetail(d)
+    const r: T.AdminDreamDetail = { ...detail, userEditedAt: d.userEditedAt ?? null, user: { id: usr.id, name: usr.name, email: usr.email, countryCode: usr.countryCode, age: usr.age },
       payment: order ? { orderId: order.id, orderNumber: order.orderNumber, payerName: usr.name, payerEmail: usr.email, paidAt: order.paidAt ?? order.createdAt, packageName: order.packageName, amount: order.amount, currency: order.currency, provider: order.provider, providerRef: order.providerRef ?? '-', countryCode: order.countryCode, ...orderCounter(order.id, order.credits, d.id) } : null }
     return HttpResponse.json(r)
   })),
   http.post(u('/admin/dreams/:id/messages'), wrap(async ({ request, params }) => {
     requireAdmin(request)
     const d = db.dreams.find((x) => x.id === params.id)
-    if (!d || d.status !== 'IN_REVIEW') return problem(409, 'Conflict')
+    if (!d || !OPEN.includes(d.status)) return problem(409, 'Conflict')
     const { body } = (await request.json()) as { body: string }
     const m: T.DreamMessage = { id: uid(), senderRole: 'INTERPRETER', body, createdAt: helpers.now(), readAt: null }
     d.messages.push(m); d.status = 'AWAITING_USER_REPLY'
@@ -727,11 +784,27 @@ export const handlers = [
   http.post(u('/admin/dreams/:id/interpretation'), wrap(async ({ request, params }) => {
     requireAdmin(request)
     const d = db.dreams.find((x) => x.id === params.id)
-    if (!d || !['IN_REVIEW', 'AWAITING_USER_REPLY'].includes(d.status)) return problem(409, 'Conflict')
+    if (!d || !['IN_REVIEW', 'IN_PROGRESS', 'AWAITING_USER_REPLY'].includes(d.status)) return problem(409, 'Conflict')
     const { text } = (await request.json()) as T.InterpretationRequest
     d.interpretation = { text, interpretedAt: helpers.now() }; d.status = 'INTERPRETED'; d.interpretedAt = helpers.now()
     db.notifications.unshift({ id: uid(), userId: d.userId, type: 'INTERPRETATION_READY', title: 'تم تفسير رؤياك', body: 'التفسير جاهز الآن في حسابك.', link: `/me/dreams/${d.id}`, createdAt: helpers.now(), readAt: null })
     return new HttpResponse(null, { status: 204 })
+  })),
+  // "Start interpreting": the text becomes final and the user is told how many days it will take
+  http.post(u('/admin/dreams/:id/start'), wrap(async ({ request, params }) => {
+    requireAdmin(request)
+    const d = db.dreams.find((x) => x.id === params.id)
+    if (!d) return problem(404, 'Not found')
+    if (d.status !== 'IN_REVIEW') return problem(409, 'Conflict', 'Only a dream in review can be started', { code: 'NOT_IN_REVIEW' })
+    const b = (await request.json().catch(() => ({}))) as Partial<T.StartDreamRequest>
+    const days = Number(b.expectedDays)
+    if (!Number.isInteger(days) || days < 1 || days > 30) return problem(400, 'Validation failed', 'expectedDays must be 1..30', { errors: { expectedDays: ['1..30'] } })
+    Object.assign(d, { status: 'IN_PROGRESS', startedAt: helpers.now(), expectedDays: days, expectedBy: new Date(Date.now() + days * 864e5).toISOString() })
+    db.notifications.unshift({ id: uid(), userId: d.userId, type: 'DREAM_RECEIVED', title: 'بدأ تعبير رؤياك', body: `بدأت المعبّرة تعبير رؤياك، والمتوقع خلال ${days} أيام إن شاء الله.`, link: `/me/dreams/${d.id}`, createdAt: helpers.now(), readAt: null })
+    const usr = db.users.find((x) => x.id === d.userId)!
+    const order = d.credit?.orderId ? db.orders.find((o) => o.id === d.credit!.orderId) : null
+    const { payment: _ignored, ...detail } = toDetail(d)
+    return HttpResponse.json({ ...detail, userEditedAt: d.userEditedAt ?? null, user: { id: usr.id, name: usr.name, email: usr.email, countryCode: usr.countryCode, age: usr.age }, payment: order ? { orderId: order.id, orderNumber: order.orderNumber, payerName: usr.name, payerEmail: usr.email, paidAt: order.paidAt ?? order.createdAt, packageName: order.packageName, amount: order.amount, currency: order.currency, provider: order.provider, providerRef: order.providerRef ?? '-', countryCode: order.countryCode, ...orderCounter(order.id, order.credits, d.id) } : null } satisfies T.AdminDreamDetail)
   })),
   http.get(u('/admin/wait-time'), wrap(async ({ request }) => { requireAdmin(request); return HttpResponse.json(db.waitTime) })),
   http.put(u('/admin/wait-time'), wrap(async ({ request }) => { requireAdmin(request); Object.assign(db.waitTime, await request.json()); return HttpResponse.json(db.waitTime) })),
@@ -840,15 +913,23 @@ export const handlers = [
     return HttpResponse.json(page(rows, q))
   })),
   http.patch(u('/admin/testimonials/:id'), wrap(async ({ request, params }) => { requireAdmin(request); const d = db.dreams.find((x) => x.id === params.id); if (d?.testimonial) d.testimonial.approved = ((await request.json()) as { approved: boolean }).approved; return new HttpResponse(null, { status: 204 }) })),
+  // contract §3: counts and :id stay above the list's catch-all order
+  http.get(u('/admin/orders/counts'), wrap(async ({ request }) => {
+    requireAdmin(request)
+    return HttpResponse.json({ review: scoped('REVIEW').length, domestic: scoped('DOMESTIC').length, international: scoped('INTERNATIONAL').length } satisfies T.AdminOrderCounts)
+  })),
+  http.get(u('/admin/orders/:id'), wrap(async ({ request, params }) => {
+    requireAdmin(request)
+    const o = (db.orders as MockOrder[]).find((x) => x.id === params.id)
+    return o ? HttpResponse.json(adminOrderDetail(o)) : problem(404, 'Not found')
+  })),
   http.get(u('/admin/orders'), wrap(async ({ request }) => {
     requireAdmin(request); const q = new URL(request.url).searchParams
-    // like the server: the order number with or without its prefix (any case), or the user's name / e-mail
-    const qq = (q.get('q') ?? '').trim().toLowerCase()
-    const rows = db.orders.map((o) => {
-      const usr = db.users.find((x) => x.id === o.userId)
-      return { ...o, userName: usr?.name ?? '', email: usr?.email ?? '' }
-    }).filter((o) => !qq || o.orderNumber.toLowerCase() === qq || o.orderNumber.toLowerCase().endsWith(`-${qq}`) || o.orderNumber.toLowerCase().includes(qq) || o.userName.toLowerCase().includes(qq) || o.email.toLowerCase().includes(qq))
-      .map(({ email: _email, ...o }) => o)
-    return HttpResponse.json(page(rows.sort((a, b) => b.createdAt.localeCompare(a.createdAt)), q))
+    const raw = (q.get('q') ?? '').trim()
+    if (!raw) return HttpResponse.json(page(scoped(q.get('scope')).map(adminOrderRow), q))
+    // like the server (OrderNumbers.parseQuery): "15001", "rn-15001", "#RN 15001"; any other text finds nothing
+    const m = /^#?\s*(?:([A-Za-z][A-Za-z0-9]*?)\s*-?\s*)?(\d{1,18})$/.exec(raw)
+    const rows = !m ? [] : scoped(q.get('scope')).filter((o) => m[1] ? o.orderNumber.toUpperCase() === `${m[1].toUpperCase()}-${m[2]}` : o.orderNumber.endsWith(`-${m[2]}`))
+    return HttpResponse.json(page(rows.map(adminOrderRow), q))
   })),
 ]

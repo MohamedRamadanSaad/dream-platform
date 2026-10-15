@@ -6,6 +6,30 @@ const daysAgo = (d: number, h = 0) => new Date(Date.now() - d * 864e5 - h * 36e5
 const daysAhead = (d: number) => new Date(Date.now() + d * 864e5).toISOString()
 export const uid = () => Math.random().toString(36).slice(2, 10)
 
+export type MockOrder = T.OrderDto & {
+  userId: string
+  settledAmountEgp?: number | null
+  failureReason?: string | null
+  discount?: number
+  couponCode?: string | null
+  countrySource?: string | null
+}
+export type MockDream = Omit<T.DreamDetail, 'excerpt' | 'unreadMessages' | 'editable' | 'payment' | 'startedAt' | 'expectedDays'> & {
+  userId: string
+  startedAt?: string | null
+  expectedDays?: number | null
+  /** The dreamer changed the text while it waited for the interpreter. */
+  userEditedAt?: string | null
+}
+/** InstaPay transfer details of an order (the checkout intent's dreams, the buyer's reference, the review). */
+export type OrderMeta = { dreamIds: string[]; reference: string | null; senderName: string | null; submittedAt: string | null; reviewedAt: string | null; reviewedByName?: string | null; reviewNote: string | null; expiresAt: string }
+export const orderMeta = new Map<string, OrderMeta>()
+
+/** pricing.fx_to_usd: one unit of the currency in USD. */
+export const FX_TO_USD: Record<T.Currency, number> = { EGP: 0.0208, SAR: 0.2667, USD: 1 }
+/** The order amount in EGP (contract §4): EGP as is, else amount / fx[EGP] * fx[currency], rounded to 2 places. */
+export const toEgp = (amount: number, currency: T.Currency) => (currency === 'EGP' ? amount : Math.round((amount / FX_TO_USD.EGP) * FX_TO_USD[currency] * 100) / 100)
+
 export const db = {
   users: [
     {
@@ -20,6 +44,8 @@ export const db = {
     { id: 'u2', name: 'خالد العتيبي', email: 'khaled@example.com', gender: 'MALE', birthDate: '1995-11-02', age: 30, role: 'USER', providers: ['MAGIC_LINK'], locale: 'ar', countryCode: 'SA', countryName: 'السعودية', onboarded: true, createdAt: daysAgo(20), hasPassword: false, termsAccepted: true },
     { id: 'u3', name: 'Sara Ahmed', email: 'sara@example.de', gender: 'FEMALE', birthDate: '2001-07-21', age: 25, role: 'USER', providers: ['GOOGLE'], locale: 'en', countryCode: 'DE', countryName: 'ألمانيا', onboarded: true, createdAt: daysAgo(12), hasPassword: false, termsAccepted: true },
     { id: 'u4', name: 'منى عبد الله', email: 'mona@example.com', gender: 'FEMALE', role: 'USER', providers: ['GOOGLE', 'PASSWORD'], locale: 'ar', countryCode: 'EG', countryName: 'مصر', onboarded: true, createdAt: daysAgo(60), hasPassword: true, termsAccepted: true },
+    { id: 'u5', name: 'يوسف حسن', email: 'youssef.hassan@example.com', gender: 'MALE', birthDate: '1990-05-14', age: 36, role: 'USER', providers: ['MAGIC_LINK'], locale: 'ar', countryCode: 'EG', countryName: 'مصر', onboarded: true, createdAt: daysAgo(90), hasPassword: false, termsAccepted: true },
+    { id: 'u6', name: 'Omar Haddad', email: 'omar.haddad@example.com', gender: 'MALE', birthDate: '1985-09-30', age: 41, role: 'USER', providers: ['GOOGLE'], locale: 'en', countryCode: 'JO', countryName: 'الأردن', onboarded: true, createdAt: daysAgo(70), hasPassword: false, termsAccepted: true },
   ] as T.UserDto[],
 
   currentUserId: 'u1' as string,
@@ -105,7 +131,7 @@ export const db = {
     { id: 'o3', orderNumber: 'RN-15001', userId: 'u1', packageName: 'تفسير رؤيا واحدة', credits: 1, amount: 49, currency: 'SAR', status: 'FAILED', provider: 'MOR', providerRef: null, countryCode: 'SA', createdAt: daysAgo(15), paidAt: null },
     { id: 'o4', orderNumber: 'RN-15004', userId: 'u4', packageName: 'تفسير رؤيا واحدة', credits: 1, amount: 199, currency: 'EGP', status: 'SUCCESS', provider: 'KASHIER', providerRef: 'TX-249893122', countryCode: 'EG', createdAt: daysAgo(3), paidAt: daysAgo(3) },
     { id: 'o5', orderNumber: 'RN-15003', userId: 'u3', packageName: 'Two dreams', credits: 2, amount: 35, currency: 'USD', status: 'SUCCESS', provider: 'KASHIER', providerRef: 'TX-249893555', countryCode: 'DE', createdAt: daysAgo(5), paidAt: daysAgo(5) },
-  ] as (T.OrderDto & { userId: string })[],
+  ] as MockOrder[],
 
   dreams: [
     {
@@ -151,14 +177,28 @@ export const db = {
     // other users' dreams for the admin queue
     { id: 'd7', userId: 'u2', gender: 'MALE', status: 'IN_REVIEW', createdAt: daysAgo(4), submittedAt: daysAgo(3, 4), interpretedAt: null, expectedBy: daysAgo(0, 4), text: 'رأيت أنني أركب فرساً أبيض في صحراء واسعة ثم ظهرت واحة.', messages: [], interpretation: null, testimonial: null, credit: { ledgerEntryId: 'x', orderId: 'x' } },
     { id: 'd8', userId: 'u3', gender: 'FEMALE', status: 'IN_REVIEW', createdAt: daysAgo(1), submittedAt: daysAgo(0, 9), interpretedAt: null, expectedBy: daysAhead(2), text: 'I saw myself planting an olive tree in my grandmother\'s garden and it grew instantly.', messages: [], interpretation: null, testimonial: null, credit: { ledgerEntryId: 'x', orderId: 'o5' } },
-    { id: 'd9', userId: 'u4', gender: 'FEMALE', status: 'IN_REVIEW', createdAt: daysAgo(2), submittedAt: daysAgo(2), interpretedAt: null, expectedBy: daysAhead(1), text: 'رأيت أمي المتوفاة تعطيني رغيف خبز ساخن وتقول: كُلي ولا تخافي.', messages: [], interpretation: null, testimonial: null, credit: { ledgerEntryId: 'x', orderId: 'o4' } },
+    { id: 'd9', userId: 'u4', gender: 'FEMALE', status: 'IN_REVIEW', createdAt: daysAgo(2), submittedAt: daysAgo(2), interpretedAt: null, expectedBy: daysAhead(1), userEditedAt: daysAgo(0, 3), text: 'رأيت أمي المتوفاة تعطيني رغيف خبز ساخن وتقول: كُلي ولا تخافي.\nثم أخذتني من يدي إلى بيت جدي القديم وفتحت لي الباب.', messages: [], interpretation: null, testimonial: null, credit: { ledgerEntryId: 'x', orderId: 'o4' } },
     {
       id: 'd10', userId: 'u4', gender: 'FEMALE', status: 'AWAITING_USER_REPLY', createdAt: daysAgo(6), submittedAt: daysAgo(5), interpretedAt: null, expectedBy: daysAgo(2),
       text: 'رأيت أنني أفتح نافذة بيتنا فيدخل منها نور أبيض كثير، ثم أسمع صوت أبي يناديني باسمي.',
       messages: [{ id: 'm2', senderRole: 'INTERPRETER', body: 'هل والدك على قيد الحياة؟ وهل كان النور في الليل أم في النهار؟', createdAt: daysAgo(4), readAt: null }],
       interpretation: null, testimonial: null, credit: { ledgerEntryId: 'x', orderId: 'o4' },
     },
-  ] as (Omit<T.DreamDetail, 'excerpt' | 'unreadMessages'> & { userId: string })[],
+    // started by the interpreter ("Start interpreting"): final text, expected within 3 days
+    {
+      id: 'd15', userId: 'u1', gender: 'FEMALE', status: 'IN_PROGRESS', createdAt: daysAgo(3), submittedAt: daysAgo(2, 6), interpretedAt: null, expectedBy: new Date(Date.now() - 5 * 36e5 + 3 * 864e5).toISOString(),
+      startedAt: daysAgo(0, 5), expectedDays: 3,
+      text: 'رأيت أنني أسقي شجرة ليمون صغيرة أمام بيتنا، فأثمرت في الحال ثماراً كثيرة صفراء،\nوكان أبي يقطف منها ويوزّع على الجيران وهو يضحك.',
+      messages: [], interpretation: null, testimonial: null, credit: { ledgerEntryId: 'l4', orderId: 'o2' },
+    },
+    { id: 'd16', userId: 'u3', gender: 'FEMALE', status: 'IN_PROGRESS', createdAt: daysAgo(3), submittedAt: daysAgo(2), interpretedAt: null, expectedBy: daysAhead(4), startedAt: daysAgo(1), expectedDays: 5, text: 'I dreamt of a wide river with clear water. I crossed it on stones that appeared under my feet one by one.', messages: [], interpretation: null, testimonial: null, credit: { ledgerEntryId: 'x', orderId: 'o5' } },
+    // drafts attached to InstaPay transfers (see orderMeta below): not plain drafts any more
+    { id: 'd13', userId: 'u1', gender: 'FEMALE', status: 'DRAFT', createdAt: daysAgo(0, 7), submittedAt: null, interpretedAt: null, expectedBy: null, text: 'رأيت أنني في سوق قديم أشتري قماشاً أبيض، والبائع يرفض أن يأخذ الثمن ويقول: هذا لكِ منذ زمن.', messages: [], interpretation: null, testimonial: null, credit: null },
+    { id: 'd14', userId: 'u1', gender: 'FEMALE', status: 'DRAFT', createdAt: daysAgo(4), submittedAt: null, interpretedAt: null, expectedBy: null, text: 'رأيت قطة بيضاء تدخل غرفتي وتنام على سجادة الصلاة، ثم سمعت صوت مطر خفيف.', messages: [], interpretation: null, testimonial: null, credit: null },
+    { id: 'd11', userId: 'u4', gender: 'FEMALE', status: 'DRAFT', createdAt: daysAgo(0, 2), submittedAt: null, interpretedAt: null, expectedBy: null, text: 'رأيت أنني أصعد جبلاً أخضر مع أختي الكبرى، وفي القمة وجدنا بئراً ماؤها بارد وحلو، فشربنا حتى ارتوينا.\n\nثم نزلنا من طريق آخر لم أره من قبل، وكان مضيئاً كأنه نهار.', messages: [], interpretation: null, testimonial: null, credit: null },
+    { id: 'd12', userId: 'u4', gender: 'FEMALE', status: 'DRAFT', createdAt: daysAgo(0, 2), submittedAt: null, interpretedAt: null, expectedBy: null, text: 'رأيت جدتي رحمها الله تمشّط شعري وتقرأ آية الكرسي بصوت هادئ.', messages: [], interpretation: null, testimonial: null, credit: null },
+    { id: 'd17', userId: 'u5', gender: 'MALE', status: 'DRAFT', createdAt: daysAgo(1, 3), submittedAt: null, interpretedAt: null, expectedBy: null, text: 'رأيت أنني أبني بيتاً من الحجر الأبيض على شاطئ البحر، وكلما وضعت حجراً جاء طائر أبيض ووقف عليه.', messages: [], interpretation: null, testimonial: null, credit: null },
+  ] as MockDream[],
 
   notifications: [
     { id: 'n1', userId: 'u1', type: 'INTERPRETER_QUESTION', title: 'استفسار من المعبّرة', body: 'أرسلت المعبّرة سؤالاً عن رؤياك «البيت القديم». ردّك يساعد على تفسير أدق.', link: '/me/dreams/d3', createdAt: daysAgo(0, 6), readAt: null },
@@ -235,6 +275,53 @@ db.settings = {
 
 export const helpers = { now, daysAgo, daysAhead }
 
+/** Readable order numbers like the server's: prefix (setting orders.number_prefix) + a sequence from 15001. */
+export const nextOrderNumber = () => {
+  const max = Math.max(15000, ...db.orders.map((o) => Number(/(\d+)$/.exec(o.orderNumber ?? '')?.[1] ?? 0)))
+  return `${db.settings['orders.number_prefix'] || 'RN'}-${max + 1}`
+}
+
+// ---------- orders: InstaPay transfers waiting / rejected, and a history for the tabs and the pager ----------
+{
+  const seed = (o: Omit<MockOrder, 'orderNumber'>, m?: Partial<OrderMeta>) => {
+    db.orders.push(o as MockOrder)
+    if (o.provider === 'INSTAPAY') orderMeta.set(o.id, { dreamIds: [], reference: null, senderName: null, submittedAt: null, reviewedAt: null, reviewNote: null, expiresAt: daysAhead(1), ...m })
+  }
+  const base = { failureReason: null, discount: 0, couponCode: null, countrySource: 'CF_IPCOUNTRY', settledAmountEgp: null } as const
+  seed({ ...base, id: 'o-ip1', userId: 'u4', packageName: 'تفسير ثلاث رؤى', credits: 3, amount: 450, currency: 'EGP', status: 'PENDING_REVIEW', provider: 'INSTAPAY', providerRef: null, countryCode: 'EG', createdAt: daysAgo(0, 2), paidAt: null, discount: 49, couponCode: 'BARAKA10' },
+    { dreamIds: ['d11', 'd12'], reference: '202311580274', senderName: 'MONA ABDALLAH', submittedAt: daysAgo(0, 1) })
+  seed({ ...base, id: 'o-ip2', userId: 'u1', packageName: 'تفسير رؤيتين', credits: 2, amount: 349, currency: 'EGP', status: 'PENDING_REVIEW', provider: 'INSTAPAY', providerRef: null, countryCode: 'EG', createdAt: daysAgo(0, 8), paidAt: null },
+    { dreamIds: ['d13'], reference: '202311588812', senderName: 'UMM MOHAMED', submittedAt: daysAgo(0, 7) })
+  seed({ ...base, id: 'o-ip3', userId: 'u1', packageName: 'تفسير رؤيا واحدة', credits: 1, amount: 199, currency: 'EGP', status: 'FAILED', failureReason: 'TRANSFER_REJECTED', provider: 'INSTAPAY', providerRef: null, countryCode: 'EG', createdAt: daysAgo(4), paidAt: null },
+    { dreamIds: ['d14'], reference: '202311000017', senderName: 'UMM MOHAMED', submittedAt: daysAgo(4), reviewedAt: daysAgo(3), reviewedByName: 'المعبرة فاطمة', reviewNote: 'لم يصل تحويل بهذا الرقم المرجعي، راجعي الرقم في تطبيق إنستاباي.' })
+  seed({ ...base, id: 'o-ip4', userId: 'u5', packageName: 'تفسير رؤيا واحدة', credits: 1, amount: 199, currency: 'EGP', status: 'PENDING_REVIEW', provider: 'INSTAPAY', providerRef: null, countryCode: 'EG', createdAt: daysAgo(1, 4), paidAt: null },
+    { dreamIds: ['d17'], reference: '202311475530', senderName: 'YOUSSEF HASSAN', submittedAt: daysAgo(1, 3) })
+  // history: Egyptian InstaPay payments, Gulf / Europe / Jordan card payments (amounts in the buyer's currency)
+  const users = ['u4', 'u5', 'u2', 'u3', 'u6']
+  const plans = [
+    { name: 'تفسير رؤيا واحدة', credits: 1, EGP: 199, SAR: 49, USD: 15 },
+    { name: 'تفسير رؤيتين', credits: 2, EGP: 349, SAR: 89, USD: 27 },
+    { name: 'تفسير ثلاث رؤى', credits: 3, EGP: 499, SAR: 129, USD: 39 },
+  ]
+  const statuses: T.OrderStatus[] = ['SUCCESS', 'SUCCESS', 'SUCCESS', 'FAILED', 'SUCCESS', 'EXPIRED', 'SUCCESS', 'REFUNDED']
+  for (let i = 0; i < 34; i++) {
+    const userId = users[i % users.length]
+    const u = db.users.find((x) => x.id === userId)!
+    const cc = u.countryCode
+    const currency: T.Currency = cc === 'EG' ? 'EGP' : cc === 'SA' ? 'SAR' : 'USD'
+    const plan = plans[i % plans.length]
+    const status = statuses[i % statuses.length]
+    const at = daysAgo(6 + i * 2, i % 7)
+    const paid = status === 'SUCCESS' || status === 'REFUNDED'
+    const amount = plan[currency]
+    seed({ ...base, id: `o-h${i + 1}`, userId, packageName: plan.name, credits: plan.credits, amount, currency, status, provider: cc === 'EG' ? 'INSTAPAY' : 'MOR', providerRef: paid ? (cc === 'EG' ? `INSTAPAY-REF-2023${100000 + i * 731}` : `MOR-${70000 + i * 37}`) : null, countryCode: cc, createdAt: at, paidAt: paid ? at : null, settledAmountEgp: paid ? toEgp(amount, currency) : null },
+      cc === 'EG' && paid ? { reference: `2023${100000 + i * 731}`, senderName: u.name, submittedAt: at, reviewedAt: at, reviewedByName: 'المعبرة فاطمة' } : undefined)
+  }
+  for (const o of db.orders) if ((o.status === 'SUCCESS' || o.status === 'REFUNDED') && o.settledAmountEgp == null) o.settledAmountEgp = toEgp(o.amount, o.currency)
+  // readable numbers for the seeded orders, oldest first, after the fixed ones
+  for (const o of [...db.orders].filter((x) => !x.orderNumber).sort((a, b) => a.createdAt.localeCompare(b.createdAt))) o.orderNumber = nextOrderNumber()
+}
+
 // ---------- pricing resolution (same order as the spec) ----------
 export function resolvePrice(countryCode: string, packageId: string): { price: number; currency: T.Currency; scope: T.PriceScope } {
   const c = db.countries.find((x) => x.code === countryCode)
@@ -266,15 +353,31 @@ export function excerpt(text: string) {
   return text.length > 110 ? text.slice(0, 110) + '…' : text
 }
 
-export function toSummary(d: (typeof db.dreams)[number]): T.DreamSummary {
+/**
+ * The live order a DRAFT is attached to (contract §2): its id is in the intent of one of the user's orders that is
+ * PENDING_REVIEW, or FAILED with TRANSFER_REJECTED. The latest such order wins.
+ */
+export function attachedOrder(d: MockDream): MockOrder | null {
+  if (d.status !== 'DRAFT') return null
+  return db.orders
+    .filter((o) => o.userId === d.userId && (o.status === 'PENDING_REVIEW' || (o.status === 'FAILED' && o.failureReason === 'TRANSFER_REJECTED')) && orderMeta.get(o.id)?.dreamIds.includes(d.id))
+    .sort((a, b) => b.createdAt.localeCompare(a.createdAt))[0] ?? null
+}
+export const isEditable = (d: MockDream) => d.status === 'DRAFT' || (d.status === 'IN_REVIEW' && !d.startedAt)
+
+export function toSummary(d: MockDream): T.DreamSummary {
+  const o = attachedOrder(d)
+  const m = o ? orderMeta.get(o.id) : undefined
   return {
     id: d.id, excerpt: excerpt(d.text), status: d.status, createdAt: d.createdAt, submittedAt: d.submittedAt,
     interpretedAt: d.interpretedAt, expectedBy: d.expectedBy,
     unreadMessages: d.messages.filter((m) => m.senderRole === 'INTERPRETER' && !m.readAt).length,
+    startedAt: d.startedAt ?? null, expectedDays: d.expectedDays ?? null, editable: isEditable(d),
+    payment: o ? { orderId: o.id, status: o.status === 'PENDING_REVIEW' ? 'PENDING_REVIEW' : 'REJECTED', submittedAt: m?.submittedAt ?? null, reviewNote: m?.reviewNote ?? null } : null,
   }
 }
 
-export function toDetail(d: (typeof db.dreams)[number]): T.DreamDetail {
+export function toDetail(d: MockDream): T.DreamDetail {
   return { ...toSummary(d), text: d.text, gender: d.gender, interpretation: d.interpretation, messages: d.messages, testimonial: d.testimonial, credit: d.credit }
 }
 

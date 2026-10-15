@@ -11,11 +11,11 @@ import { PageEnter, StaggerGroup } from '@/components/motion'
 import { cn, flagEmoji, fmtDate, hoursLeft, toISODay } from '@/lib/utils'
 import type { DreamStatus, Gender } from '@/api/types'
 
-type Tab = 'IN_REVIEW' | 'AWAITING_USER_REPLY' | 'INTERPRETED' | 'CANCELLED'
+type Tab = 'IN_REVIEW' | 'IN_PROGRESS' | 'AWAITING_USER_REPLY' | 'INTERPRETED' | 'CANCELLED'
 
 interface ExportFilters { status: '' | Tab; from: string; to: string; country: string; gender: '' | Gender; q: string }
 const NO_FILTERS: ExportFilters = { status: '', from: '', to: '', country: '', gender: '', q: '' }
-const STATUS_LABEL: Record<Tab, string> = { IN_REVIEW: 'admin.status.IN_REVIEW', AWAITING_USER_REPLY: 'admin.status.AWAITING_USER_REPLY', INTERPRETED: 'admin.status.INTERPRETED', CANCELLED: 'admin.status.CANCELLED' }
+const STATUS_LABEL: Record<Tab, string> = { IN_REVIEW: 'admin.status.IN_REVIEW', IN_PROGRESS: 'admin.status.IN_PROGRESS', AWAITING_USER_REPLY: 'admin.status.AWAITING_USER_REPLY', INTERPRETED: 'admin.status.INTERPRETED', CANCELLED: 'admin.status.CANCELLED' }
 
 /** "Export to Excel": choose filters, then download GET /admin/dreams/export (one row per dream). */
 function ExportDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
@@ -87,7 +87,8 @@ export function AdminQueuePage() {
   const { t } = useTranslation()
   const locale = useAuthStore((s) => s.locale)
   const [params, setParams] = useSearchParams()
-  const tab = (params.get('status') as Tab) || 'IN_REVIEW'
+  const fromUrl = params.get('status') as Tab | null
+  const tab: Tab = fromUrl && fromUrl in STATUS_LABEL ? fromUrl : 'IN_REVIEW'
   const q = useQuery({ queryKey: ['admin', 'dreams', tab], queryFn: () => adminApi.dreams(tab as DreamStatus, 0, 50) })
   const [exportOpen, setExportOpen] = useState(false)
   return (
@@ -98,7 +99,7 @@ export function AdminQueuePage() {
       </div>
       <ExportDialog open={exportOpen} onClose={() => setExportOpen(false)} />
       <Tabs value={tab} onChange={(v) => setParams({ status: v })} items={[
-        { value: 'IN_REVIEW', label: t('admin.status.IN_REVIEW') }, { value: 'AWAITING_USER_REPLY', label: t('admin.status.AWAITING_USER_REPLY') },
+        { value: 'IN_REVIEW', label: t('admin.status.IN_REVIEW') }, { value: 'IN_PROGRESS', label: t('admin.status.IN_PROGRESS') }, { value: 'AWAITING_USER_REPLY', label: t('admin.status.AWAITING_USER_REPLY') },
         { value: 'INTERPRETED', label: t('admin.status.INTERPRETED') }, { value: 'CANCELLED', label: t('admin.status.CANCELLED') },
       ]} />
       <div className="mt-6">
@@ -109,7 +110,7 @@ export function AdminQueuePage() {
             {q.data.items.map((r) => (
               <Link key={r.id} to={`/admin/dreams/${r.id}`} className={cn('card card-hover flex flex-col gap-3 p-5 md:flex-row md:items-center', r.overdue && 'border-danger/40')}>
                 <div className="min-w-0 flex-1">
-                  <div className="mb-1 flex flex-wrap items-center gap-2 text-sm"><span className="font-medium">{r.userName}</span><span className="text-fg-dim">· {r.countryCode} · {t(r.gender === 'FEMALE' ? 'auth.female' : 'auth.male')}</span><StatusBadge status={r.status} audience="interpreter" /></div>
+                  <div className="mb-1 flex flex-wrap items-center gap-2 text-sm"><span className="font-medium">{r.userName}</span><span className="text-fg-dim">· {r.countryCode} · {t(r.gender === 'FEMALE' ? 'auth.female' : 'auth.male')}</span><StatusBadge status={r.status} audience="interpreter" />{r.userEditedAt && r.status === 'IN_REVIEW' && <span className="chip bg-warn/10 text-warn">{t('admin.queue.edited')}</span>}</div>
                   <p className="line-clamp-2 text-sm font-light text-fg-muted">{r.excerpt}</p>
                 </div>
                 <div className="flex items-center gap-3 text-xs text-fg-dim md:flex-col md:items-end">

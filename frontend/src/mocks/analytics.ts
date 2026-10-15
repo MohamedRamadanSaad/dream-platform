@@ -224,7 +224,7 @@ export function buildInsights(locale: string): T.InsightsResponse {
   const items: T.Insight[] = []
   const add = (id: string, kind: T.InsightKind, t: { title: string; body: string }, link: string | null = null) => items.push({ id, kind, ...t, link })
 
-  const overdue = db.dreams.filter((d) => d.status === 'IN_REVIEW' && d.expectedBy && new Date(d.expectedBy).getTime() < now).length
+  const overdue = db.dreams.filter((d) => (d.status === 'IN_REVIEW' || d.status === 'IN_PROGRESS') && d.expectedBy && new Date(d.expectedBy).getTime() < now).length
   if (overdue) add('overdue', 'WARNING', tx.overdue(fmt(overdue, ar)), '/admin/queue')
 
   const silent = db.dreams.filter((d) => {
@@ -233,7 +233,7 @@ export function buildInsights(locale: string): T.InsightsResponse {
   }).length
   if (silent) add('awaiting-users', 'INFO', tx.awaiting(fmt(silent, ar)))
 
-  const queue = db.dreams.filter((d) => d.status === 'IN_REVIEW').length
+  const queue = db.dreams.filter((d) => d.status === 'IN_REVIEW' || d.status === 'IN_PROGRESS').length
   const capacity = 3.2 * (slaHours / 24) // her 7-day average daily output × SLA days
   if (!w.busy && queue > capacity) add('busy-on', 'TIP', tx.busyOn, '/admin/wait-time')
   if (w.busy && queue < capacity / 2) add('busy-off', 'TIP', tx.busyOff, '/admin/wait-time')

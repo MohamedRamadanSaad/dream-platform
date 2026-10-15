@@ -1,51 +1,186 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type KeyboardEvent } from 'react'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { adminApi } from '@/api/endpoints'
 import { useAuthStore } from '@/app/auth-store'
-import { Button, Input, Skeleton, StatusBadge } from '@/components/ui'
+import { Button, Empty, ErrorBox, Input, Skeleton, StatusBadge, Tabs } from '@/components/ui'
+import { Pager, Chevron } from '@/components/ui/Pager'
+import { Avatar } from '@/components/ui/Avatar'
 import { Icon } from '@/components/icons/Icon'
 import { PageEnter } from '@/components/motion'
-import { fmtDate, fmtMoney } from '@/lib/utils'
-import { InstapaySettingsCard, InstapayTransfersPanel } from './InstapayAdmin'
+import { cn, flagEmoji, fmtDate, fmtMoney, fmtNum, timeAgo } from '@/lib/utils'
+import type { AdminOrderRow, OrderScope } from '@/api/types'
+
+type Tab = Exclude<OrderScope, 'ALL'>
+const TABS: Tab[] = ['REVIEW', 'DOMESTIC', 'INTERNATIONAL']
+const PAGE_SIZE = 20
+
+/** CSV of every order (scope ALL), fetched page by page. */
+async function exportCsv() {
+  const rows: AdminOrderRow[] = []
+  for (let page = 0; ; page++) {
+    const res = await adminApi.orders('ALL', page, 100)
+    rows.push(...res.items)
+    if (res.items.length === 0 || rows.length >= res.total) break
+  }
+  const head = 'orderNumber,id,user,email,package,amount,currency,settledEgp,status,provider,ref,transferRef,sender,country,createdAt,paidAt'
+  const csv = [head, ...rows.map((o) => [o.orderNumber, o.id, o.userName, o.userEmail, o.packageName, o.amount, o.currency, o.settledAmountEgp ?? '', o.status, o.provider, o.providerRef ?? '', o.transferReference ?? '', o.transferSenderName ?? '', o.countryCode, o.createdAt, o.paidAt ?? ''].map((x) => `"${String(x).replace(/"/g, '""')}"`).join(','))].join('\n')
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob(['﻿' + csv], { type: 'text/csv' })); a.download = 'orders.csv'; a.click()
+}
+
+/** Amount in the buyer's currency, with the settled EGP under it when the order was not paid in EGP. */
+function Amount({ o }: { o: AdminOrderRow }) {
+  const { t } = useTranslation()
+  const locale = useAuthStore((s) => s.locale)
+  return (
+    <span className="flex flex-col">
+      <span dir="ltr" className="text-start font-medium tabular-nums">{fmtMoney(o.amount, o.currency, locale)}</span>
+      {o.currency !== 'EGP' && o.settledAmountEgp != null && <span className="whitespace-nowrap text-[11px] text-fg-dim" title={t('admin.order.settled')}>{t('admin.orders.settled')} <span dir="ltr">{fmtMoney(o.settledAmountEgp, 'EGP', locale)}</span></span>}
+    </span>
+  )
+}
 
 export function OrdersAdminPage() {
   const { t } = useTranslation()
   const locale = useAuthStore((s) => s.locale)
-  const [search, setSearch] = useState('')
-  const [term, setTerm] = useState('')
-  // the server searches as the interpreter types (a short pause first)
-  useEffect(() => { const id = window.setTimeout(() => setTerm(search.trim()), 300); return () => window.clearTimeout(id) }, [search])
-  const q = useQuery({ queryKey: ['admin', 'orders', term], queryFn: () => adminApi.orders(0, 100, term), placeholderData: keepPreviousData })
-  const exportCsv = async () => {
-    const rows = []
-    for (let page = 0; ; page++) {
-      const res = await adminApi.orders(page, 100)
-      rows.push(...res.items)
-      if (res.items.length === 0 || rows.length >= res.total) break
-    }
-    const csv = ['orderNumber,id,user,package,amount,currency,status,provider,ref,country,createdAt,paidAt', ...rows.map((o) => [o.orderNumber, o.id, o.userName, o.packageName, o.amount, o.currency, o.status, o.provider, o.providerRef ?? '', o.countryCode, o.createdAt, o.paidAt ?? ''].map((x) => `"${String(x).replace(/"/g, '""')}"`).join(','))].join('\n')
-    const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob(['﻿' + csv], { type: 'text/csv' })); a.download = 'orders.csv'; a.click()
+  const navigate = useNavigate()
+  const [params, setParams] = useSearchParams()
+  const fromUrl = params.get('tab') as Tab | null
+  const tab: Tab = fromUrl && TABS.includes(fromUrl) ? fromUrl : 'REVIEW'
+  const page = Math.max(0, Number(params.get('page') ?? 1) - 1) || 0
+  const [exporting, setExporting] = useState(false)
+  // order-number search inside the current tab; the server searches after a short pause in typing
+  const [search, setSearch] = useState(params.get('q') ?? '')
+  const term = params.get('q') ?? ''
+  useEffect(() => {
+    const id = window.setTimeout(() => {
+      const v = search.trim()
+      if (v !== term) setParams((p) => { const n = new URLSearchParams(p); if (v) n.set('q', v); else n.delete('q'); n.delete('page'); return n }, { replace: true })
+    }, 300)
+    return () => window.clearTimeout(id)
+  }, [search]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  const counts = useQuery({ queryKey: ['admin', 'orders', 'counts'], queryFn: adminApi.orderCounts, refetchInterval: 60_000 })
+  const q = useQuery({ queryKey: ['admin', 'orders', tab, page, term], queryFn: () => adminApi.orders(tab, page, PAGE_SIZE, term), placeholderData: keepPreviousData })
+  const setTab = (v: Tab) => setParams((p) => { const n = new URLSearchParams(p); n.set('tab', v); n.delete('page'); return n }, { replace: true })
+  const setPage = (v: number) => {
+    setParams((p) => { const n = new URLSearchParams(p); if (v > 0) n.set('page', String(v + 1)); else n.delete('page'); return n })
+    window.scrollTo({ top: 0, behavior: 'smooth' })
   }
+  const c = counts.data
+  const items = q.data?.items ?? []
+  const pages = Math.max(1, Math.ceil((q.data?.total ?? 0) / PAGE_SIZE))
+  const open = (id: string) => navigate(`/admin/orders/${id}`)
+  const onRowKey = (e: KeyboardEvent, id: string) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(id) } }
+  const review = tab === 'REVIEW'
+
   return (
     <PageEnter>
-      <div className="mb-6 flex items-center justify-between"><h1 className="font-display text-4xl">{t('admin.orders.title')}</h1><Button size="sm" variant="ghost" onClick={exportCsv}>{t('admin.orders.export')}</Button></div>
-      <div className="mb-8 space-y-6">
-        <InstapayTransfersPanel />
-        <InstapaySettingsCard />
+      <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <h1 className="font-display text-4xl">{t('admin.orders.title')}</h1>
+          <p className="mt-1 text-sm font-light text-fg-muted">{t('admin.orders.lead')}</p>
+        </div>
+        <Button size="sm" variant="ghost" loading={exporting} onClick={async () => { setExporting(true); try { await exportCsv() } finally { setExporting(false) } }}>
+          <Icon name="download" size={15} />{t('admin.orders.export')}
+        </Button>
       </div>
-      <div className="relative mb-3 max-w-md">
+
+      <Tabs value={tab} onChange={setTab} items={[
+        { value: 'REVIEW', label: t('admin.orders.tabs.REVIEW'), count: c ? fmtNum(c.review, locale) : undefined, tone: c?.review ? 'danger' : undefined },
+        { value: 'DOMESTIC', label: t('admin.orders.tabs.DOMESTIC'), count: c ? fmtNum(c.domestic, locale) : undefined },
+        { value: 'INTERNATIONAL', label: t('admin.orders.tabs.INTERNATIONAL'), count: c ? fmtNum(c.international, locale) : undefined },
+      ]} />
+
+      <div className="relative mt-5 max-w-md">
         <span className="pointer-events-none absolute inset-y-0 start-3 flex items-center text-fg-dim"><Icon name="search" size={18} /></span>
         <Input type="search" value={search} onChange={(e) => setSearch(e.target.value)} placeholder={t('admin.orders.search')} aria-label={t('admin.orders.search')} className="ps-10" />
       </div>
-      {q.isLoading ? <Skeleton className="h-64" /> : (
-        <div className="card overflow-x-auto p-0"><table className="w-full text-sm">
-          <thead className="text-xs text-fg-dim"><tr className="border-b border-line">{[t('admin.orders.number'), t('admin.orders.user'), t('admin.orders.package'), t('admin.orders.amount'), t('admin.orders.status'), t('admin.orders.provider'), t('common.country'), t('admin.orders.date')].map((h) => <th key={h} className="px-4 py-3 text-start font-normal">{h}</th>)}</tr></thead>
-          <tbody>{q.data!.items.map((o) => <tr key={o.id} className="border-b border-line last:border-0 hover:bg-surface-2/60"><td className="whitespace-nowrap px-4 py-3 font-mono text-xs font-medium" dir="ltr">{o.orderNumber}</td><td className="px-4 py-3">{o.userName}</td><td className="px-4 py-3">{o.packageName}</td><td className="px-4 py-3">{fmtMoney(o.amount, o.currency, locale)}</td><td className="px-4 py-3"><StatusBadge status={o.status} kind="order" /></td><td className="px-4 py-3 text-xs" dir="ltr">{o.provider} {o.providerRef ?? ''}</td><td className="px-4 py-3">{o.countryCode}</td><td className="px-4 py-3 text-xs text-fg-dim">{fmtDate(o.createdAt, locale, true)}</td></tr>)}
-            {q.data!.items.length === 0 && <tr><td colSpan={8} className="px-4 py-8 text-center text-fg-muted">{t('admin.orders.empty')}</td></tr>}
-          </tbody>
-        </table></div>
-      )}
+
+      <div className={cn('mt-4 transition-opacity', q.isPlaceholderData && 'opacity-60')}>
+        {q.isLoading ? <div className="space-y-3">{[1, 2, 3, 4].map((i) => <Skeleton key={i} className="h-20" />)}</div>
+          : q.isError ? <ErrorBox onRetry={() => q.refetch()} />
+          : items.length === 0 ? <Empty text={term ? t('admin.orders.noMatch') : t(`admin.orders.empty.${tab}`)} />
+          : (
+            <>
+              {/* phones: one card per order */}
+              <ul className="space-y-3 md:hidden">
+                {items.map((o) => (
+                  <li key={o.id}>
+                    <Link to={`/admin/orders/${o.id}`} className={cn('card card-hover block p-4', review && 'border-gold/40')}>
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex min-w-0 items-center gap-3">
+                          <Avatar name={o.userName || o.userEmail} size={36} />
+                          <div className="min-w-0">
+                            <div className="font-mono text-sm font-semibold tracking-wide"><span dir="ltr">{o.orderNumber}</span></div>
+                            <div className="truncate text-xs text-fg-muted">{o.userName || o.userEmail} · {o.packageName}</div>
+                          </div>
+                        </div>
+                        <div className="shrink-0 text-end"><Amount o={o} /></div>
+                      </div>
+                      <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2 text-xs text-fg-dim">
+                        <StatusBadge status={o.status} kind="order" />
+                        <span><span aria-hidden="true">{flagEmoji(o.countryCode)}</span> {o.countryCode}</span>
+                        {o.attachedDreams > 0 && <span className="inline-flex items-center gap-1 text-gold-ink"><Icon name="moon" size={13} />{t('admin.orders.dreamsN', { count: o.attachedDreams, n: o.attachedDreams })}</span>}
+                        <span className="ms-auto">{review && o.transferSubmittedAt ? timeAgo(o.transferSubmittedAt, locale) : fmtDate(o.createdAt, locale)}</span>
+                      </div>
+                      {review && o.transferReference && (
+                        <div className="mt-3 flex items-center justify-between gap-2 border-t border-line pt-3 text-xs">
+                          <span className="text-fg-dim">{t('admin.orders.reference')}</span>
+                          <span dir="ltr" className="font-mono tracking-wider text-fg">{o.transferReference}</span>
+                        </div>
+                      )}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+
+              {/* tablets and desktops: a table whose whole row opens the order */}
+              <div className="card relative hidden overflow-x-auto p-0 md:block">
+                <table className="w-full text-sm">
+                  <thead className="text-xs text-fg-dim">
+                    <tr className="border-b border-line">
+                      {[t('admin.orders.number'), t('admin.orders.user'), t('admin.orders.package'), t('admin.orders.amount'), t('admin.orders.status'), review ? t('admin.orders.reference') : t('admin.orders.provider'), t('admin.orders.dreams'), t('common.country'), review ? t('admin.orders.submitted') : t('admin.orders.date')].map((h) => <th key={h} scope="col" className="whitespace-nowrap px-3 py-3 text-start font-normal">{h}</th>)}
+                      <th scope="col" className="w-8"><span className="sr-only">{t('admin.orders.open')}</span></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {items.map((o) => (
+                      <tr key={o.id} tabIndex={0} role="link" aria-label={`${t('admin.orders.open')}: ${o.orderNumber}, ${o.userName || o.userEmail}, ${fmtMoney(o.amount, o.currency, locale)}`}
+                        onClick={() => open(o.id)} onKeyDown={(e) => onRowKey(e, o.id)}
+                        className="group cursor-pointer border-b border-line outline-none transition-colors last:border-0 hover:bg-surface-2/60 focus-visible:bg-gold/5">
+                        <td dir="ltr" className="whitespace-nowrap px-3 py-3 text-start font-mono text-sm font-semibold tracking-wide">{o.orderNumber}</td>
+                        <td className="px-3 py-3">
+                          <div className="flex items-center gap-3">
+                            <Avatar name={o.userName || o.userEmail} size={30} />
+                            <div className="min-w-0">
+                              <div className="max-w-[14rem] truncate font-medium">{o.userName || o.userEmail}</div>
+                              <div dir="ltr" className="max-w-[14rem] truncate text-start text-[11px] text-fg-dim">{o.userEmail}</div>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-3 py-3">{o.packageName}</td>
+                        <td className="px-3 py-3"><Amount o={o} /></td>
+                        <td className="px-3 py-3"><StatusBadge status={o.status} kind="order" /></td>
+                        <td className="px-3 py-3 text-xs">
+                          {review ? <span dir="ltr" className="font-mono tracking-wider">{o.transferReference ?? ''}</span>
+                            : <span dir="ltr" className="inline-block text-start">{o.provider}{o.providerRef ? <span className="block max-w-[10rem] truncate text-[11px] text-fg-dim">{o.providerRef}</span> : null}</span>}
+                        </td>
+                        <td className="px-3 py-3">{o.attachedDreams > 0 ? <span className="inline-flex items-center gap-1 text-gold-ink"><Icon name="moon" size={13} />{fmtNum(o.attachedDreams, locale)}</span> : <span className="text-fg-dim">0</span>}</td>
+                        <td className="whitespace-nowrap px-3 py-3"><span aria-hidden="true">{flagEmoji(o.countryCode)}</span> {o.countryCode}</td>
+                        <td className="whitespace-nowrap px-3 py-3 text-xs text-fg-dim"><span title={fmtDate(o.createdAt, locale, true)}>{review && o.transferSubmittedAt ? timeAgo(o.transferSubmittedAt, locale) : fmtDate(o.createdAt, locale)}</span></td>
+                        <td className="px-2 py-3 text-fg-dim group-hover:text-gold-ink"><Chevron next /></td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              <Pager className="mt-4" page={page} pages={pages} onChange={setPage} label={t('admin.orders.pager')} disabled={q.isFetching} />
+            </>
+          )}
+      </div>
     </PageEnter>
   )
 }

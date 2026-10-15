@@ -58,10 +58,12 @@ export const meApi = {
 }
 
 export const dreamsApi = {
-  list: (status?: T.DreamStatus | 'ALL', page = 0, size = 20) =>
+  list: (status?: T.DreamListFilter, page = 0, size = 20) =>
     http.get<T.Page<T.DreamSummary>>('/dreams', { status: status === 'ALL' ? undefined : status, page, size }),
   get: (id: string) => http.get<T.DreamDetail>(`/dreams/${id}`),
   createDraft: (body: T.DreamDraftRequest) => http.post<T.DreamDetail>('/dreams', body),
+  /** DRAFT, or IN_REVIEW before the interpreter started (409 NOT_EDITABLE otherwise). */
+  update: (id: string, body: T.DreamDraftRequest) => http.put<T.DreamDetail>(`/dreams/${id}`, body),
   updateDraft: (id: string, body: T.DreamDraftRequest) => http.put<T.DreamDetail>(`/dreams/${id}`, body),
   deleteDraft: (id: string) => http.delete<void>(`/dreams/${id}`),
   submit: (body: T.SubmitDreamsRequest) => http.post<T.SubmitDreamsResponse>('/dreams/submit', body),
@@ -108,6 +110,8 @@ export const adminApi = {
   ask: (id: string, body: string) => http.post<T.DreamMessage>(`/admin/dreams/${id}/messages`, { body }),
   interpret: (id: string, body: T.InterpretationRequest) => http.post<void>(`/admin/dreams/${id}/interpretation`, body),
   cancel: (id: string, reason: string) => http.post<void>(`/admin/dreams/${id}/cancel`, { reason }),
+  /** "Start interpreting": IN_REVIEW → IN_PROGRESS with the expected number of days (1..30). */
+  startDream: (id: string, expectedDays: number) => http.post<T.AdminDreamDetail>(`/admin/dreams/${id}/start`, { expectedDays } satisfies T.StartDreamRequest),
 
   waitTime: () => http.get<T.WaitTimeSettings>('/admin/wait-time'),
   saveWaitTime: (body: T.WaitTimeSettings) => http.put<T.WaitTimeSettings>('/admin/wait-time', body),
@@ -145,8 +149,10 @@ export const adminApi = {
 
   testimonials: (approved?: boolean) => http.get<T.Page<T.AdminTestimonialRow>>('/admin/testimonials', { approved }),
   setTestimonial: (id: string, approved: boolean) => http.patch<void>(`/admin/testimonials/${id}`, { approved }),
-  /** `q` matches the order number (with or without the prefix), the user's name or e-mail. */
-  orders: (page = 0, size = 20, q = '') => http.get<T.Page<T.OrderDto & { userName: string }>>('/admin/orders', { page, size, q }),
+  /** `q` (optional) finds orders by number inside the scope, with or without the prefix ("15001", "rn-15001"); any other text finds nothing. */
+  orders: (scope: T.OrderScope = 'ALL', page = 0, size = 20, q = '') => http.get<T.Page<T.AdminOrderRow>>('/admin/orders', { scope, page, size, q }),
+  orderCounts: () => http.get<T.AdminOrderCounts>('/admin/orders/counts'),
+  order: (id: string) => http.get<T.AdminOrderDetail>(`/admin/orders/${id}`),
   /** InstaPay transfers waiting for the interpreter (oldest first) and the latest decisions. */
   instapayTransfers: () => http.get<T.InstapayTransferList>('/admin/payments/instapay/transfers'),
   instapayCounts: () => http.get<{ pending: number }>('/admin/payments/instapay/transfers/counts'),

@@ -28,6 +28,8 @@ import { WaitTimePage } from '@/features/admin/WaitTimePage'
 import { UsersPage, User360Page } from '@/features/admin/UsersPage'
 import { TestimonialsAdminPage } from '@/features/admin/TestimonialsAdminPage'
 import { OrdersAdminPage } from '@/features/admin/OrdersAdminPage'
+import { AdminOrderPage } from '@/features/admin/AdminOrderPage'
+import { InstapaySettingsPage } from '@/features/admin/InstapaySettingsPage'
 import { INSTAPAY_COUNTS_KEY } from '@/features/admin/InstapayAdmin'
 import { EmailSettingsPage } from '@/features/admin/EmailSettingsPage'
 import { SupportTicketsPage, SUPPORT_COUNTS_KEY } from '@/features/admin/SupportTicketsPage'
@@ -111,6 +113,7 @@ function AdminLayout() {
       { to: '/admin/wait-time', label: t('admin.nav.waitTime'), icon: 'clock' },
       { to: '/admin/testimonials', label: t('admin.nav.testimonials'), icon: 'quote' },
       { to: '/admin/orders', label: t('admin.nav.orders'), icon: 'wallet', badge: transfers.data?.pending },
+      { to: '/admin/instapay-settings', label: t('admin.nav.instapaySettings'), icon: 'settings' },
       { to: '/admin/emails', label: t('admin.nav.emails'), icon: 'mail' },
       { to: '/admin/support', label: t('admin.nav.support'), icon: 'chat', badge: support.data?.new },
       { to: '/admin/notifications', label: t('me.nav.notifications'), icon: 'bell' },
@@ -167,6 +170,8 @@ export const router = createBrowserRouter([{ element: <RootShell />, children: [
         { path: 'users/:id', element: <User360Page /> },
         { path: 'testimonials', element: <TestimonialsAdminPage /> },
         { path: 'orders', element: <OrdersAdminPage /> },
+        { path: 'orders/:id', element: <AdminOrderPage /> },
+        { path: 'instapay-settings', element: <InstapaySettingsPage /> },
         { path: 'emails', element: <EmailSettingsPage /> },
         { path: 'support', element: <SupportTicketsPage /> },
         { path: 'notifications', element: <NotificationsPage /> },

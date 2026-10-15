@@ -309,9 +309,10 @@ export function AppShell({ items, children, admin }: { items: { to: string; labe
       </aside>
       <div className="flex-1 min-w-0">
         <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-line bg-bg/90 px-4 backdrop-blur md:px-8">
-          <Link to="/" className="whitespace-nowrap font-display text-lg text-fg md:hidden">{t('interpreter')}</Link>
+          {/* the name gives way (ellipsis) before the header icons do: no sideways page scroll on narrow phones */}
+          <Link to="/" className="me-2 min-w-0 truncate whitespace-nowrap font-display text-lg text-fg md:hidden">{t('interpreter')}</Link>
           <div className="hidden md:block" />
-          <div className="flex items-center gap-2 md:gap-3">
+          <div className="flex shrink-0 items-center gap-2 md:gap-3">
             {!admin && <CreditsPill />}
             <YoutubeButton />
             <NotificationBell />
