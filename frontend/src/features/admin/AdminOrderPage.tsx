@@ -4,7 +4,8 @@ import { useTranslation } from 'react-i18next'
 import { useQuery } from '@tanstack/react-query'
 import { adminApi } from '@/api/endpoints'
 import { useAuthStore } from '@/app/auth-store'
-import { Button, ErrorBox, Label, Skeleton, StatusBadge, type BadgeStatus } from '@/components/ui'
+import { Button, ErrorBox, Label, NotFound, Skeleton, StatusBadge, type BadgeStatus } from '@/components/ui'
+import { isNotFound } from '@/lib/apiErrors'
 import { Avatar } from '@/components/ui/Avatar'
 import { Chevron } from '@/components/ui/Pager'
 import { Icon } from '@/components/icons/Icon'
@@ -66,11 +67,12 @@ export function AdminOrderPage() {
   const { t } = useTranslation()
   const { id } = useParams()
   const locale = useAuthStore((s) => s.locale)
-  const q = useQuery({ queryKey: ['admin', 'order', id], queryFn: () => adminApi.order(id!) })
+  const q = useQuery({ queryKey: ['admin', 'order', id], queryFn: () => adminApi.order(id!), retry: (n, e) => !isNotFound(e) && n < 1 })
   const [mode, setMode] = useState<'approve' | 'reject' | null>(null)
 
   const back = <Link to="/admin/orders" className="inline-flex items-center gap-1 text-sm text-fg-muted hover:text-fg">{arrowBack(locale)} {t('admin.order.back')}</Link>
   if (q.isLoading) return <div className="space-y-4"><Skeleton className="h-6 w-32" /><Skeleton className="h-10 w-64" /><div className="grid gap-5 lg:grid-cols-3"><Skeleton className="h-80 lg:col-span-2" /><Skeleton className="h-64" /></div></div>
+  if (isNotFound(q.error)) return <PageEnter><NotFound text={t('admin.order.notFound')} back={<Link to="/admin/orders" className="btn btn-sm btn-ghost">{arrowBack(locale)} {t('admin.order.back')}</Link>} /></PageEnter>
   if (q.isError || !q.data) return <div className="space-y-4">{back}<ErrorBox onRetry={() => q.refetch()} /></div>
   const o = q.data
   const failure = o.failureReason ? (o.failureReason === 'TRANSFER_REJECTED' ? t('admin.order.failure.TRANSFER_REJECTED') : t('admin.order.failure.other', { reason: o.failureReason })) : null
@@ -132,7 +134,10 @@ export function AdminOrderPage() {
             <dl className="divide-y divide-line border-t border-line">
               <Row label={t('admin.order.package')}>{o.packageName}<div className="text-xs text-fg-dim">{t('admin.order.credits', { count: o.credits, n: o.credits })}</div></Row>
               <Row label={t('admin.order.amount')}><span dir="ltr" className="font-medium">{fmtMoney(o.amount, o.currency, locale)}</span></Row>
-              <Row label={t('admin.order.settled')}>{o.settledAmountEgp != null ? <span dir="ltr">{fmtMoney(o.settledAmountEgp, 'EGP', locale)}</span> : <span className="text-fg-dim">{t('admin.order.notSettled')}</span>}</Row>
+              <Row label={t('admin.order.settled')}>{o.settledAmountEgp != null ? (
+                o.currency === 'EGP' ? <span dir="ltr">{fmtMoney(o.settledAmountEgp, 'EGP', locale)}</span>
+                  : <><span dir="ltr" title={t('admin.order.fxEstimate')}>≈ {fmtMoney(o.settledAmountEgp, 'EGP', locale)}</span><div className="text-xs text-fg-dim">{t('admin.order.fxEstimate')}</div></>
+              ) : <span className="text-fg-dim">{t('admin.order.notSettled')}</span>}</Row>
               {(o.discount > 0 || o.couponCode) && <Row label={t('admin.order.discount')}><span dir="ltr">{fmtMoney(o.discount, o.currency, locale)}</span>{o.couponCode && <div dir="ltr" className="font-mono text-xs text-fg-dim">{o.couponCode}</div>}</Row>}
               <Row label={t('admin.order.country')}><span aria-hidden="true">{flagEmoji(o.countryCode)}</span> {regionName(o.countryCode, locale)}{o.countrySource && <div className="text-xs text-fg-dim">{t('admin.order.countrySource')}</div>}</Row>
               <Row label={t('admin.order.provider')}><span dir="ltr">{o.provider}</span>{o.providerRef && <div dir="ltr" className="select-all break-all font-mono text-xs text-fg-dim">{o.providerRef}</div>}</Row>

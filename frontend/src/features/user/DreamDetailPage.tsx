@@ -1,15 +1,17 @@
 import { useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { dreamsApi, reportsApi } from '@/api/endpoints'
 import { useAuthStore } from '@/app/auth-store'
-import { Button, ErrorBox, Label, Skeleton, Stars, StatusBadge, Textarea } from '@/components/ui'
+import { Button, ErrorBox, Label, NotFound, Skeleton, Stars, StatusBadge, Textarea } from '@/components/ui'
 import { DownloadButton } from '@/components/ui/DownloadButton'
 import { Icon } from '@/components/icons/Icon'
 import { PageEnter } from '@/components/motion'
-import { arrowBack, arrowNext, cn, fmtDate } from '@/lib/utils'
+import { arrowBack, cn, fmtDate } from '@/lib/utils'
 import { dreamBadge } from './DreamsPage'
+import { DreamPaymentActions } from './DreamPaymentActions'
+import { isNotFound } from '@/lib/apiErrors'
 import type { DreamDetail, DreamMessage } from '@/api/types'
 
 const STEPS: DreamDetail['status'][] = ['DRAFT', 'IN_REVIEW', 'IN_PROGRESS', 'INTERPRETED']
@@ -53,7 +55,8 @@ export function DreamDetailPage() {
   const { id } = useParams()
   const qc = useQueryClient()
   const locale = useAuthStore((s) => s.locale)
-  const q = useQuery({ queryKey: ['dream', id], queryFn: () => dreamsApi.get(id!) })
+  const navigate = useNavigate()
+  const q = useQuery({ queryKey: ['dream', id], queryFn: () => dreamsApi.get(id!), retry: (n, e) => !isNotFound(e) && n < 1 })
   const [reply, setReply] = useState('')
   const [rating, setRating] = useState(0)
   const [comment, setComment] = useState('')
@@ -61,6 +64,7 @@ export function DreamDetailPage() {
   const rate = useMutation({ mutationFn: () => dreamsApi.testimonial(id!, { rating, comment }), onSuccess: () => qc.invalidateQueries({ queryKey: ['dream', id] }) })
 
   if (q.isLoading) return <div className="mx-auto max-w-3xl space-y-4"><Skeleton className="h-10 w-40" /><Skeleton className="h-24" /><Skeleton className="h-48" /></div>
+  if (isNotFound(q.error)) return <PageEnter className="mx-auto max-w-3xl"><NotFound text={t('me.detail.notFound')} back={<Link to="/me" className="btn btn-sm btn-ghost">{arrowBack(locale)} {t('me.nav.dreams')}</Link>} /></PageEnter>
   if (q.isError || !q.data) return <ErrorBox onRetry={() => q.refetch()} />
   const d = q.data
 
@@ -77,14 +81,14 @@ export function DreamDetailPage() {
       {d.status !== 'DRAFT' && d.status !== 'CANCELLED' && <div className="card overflow-x-auto p-5"><Stepper status={d.status} started={!!d.startedAt} /></div>}
 
       {d.payment && (
-        <div className={cn('card flex flex-col gap-3 p-5 sm:flex-row sm:items-center', d.payment.status === 'REJECTED' ? 'border-danger/30 bg-danger/5' : 'border-warn/30 bg-warn/5')}>
+        <div className={cn('card flex flex-col gap-3 p-5 sm:flex-row sm:items-start', d.payment.status === 'REJECTED' ? 'border-danger/30 bg-danger/5' : 'border-warn/30 bg-warn/5')}>
           <span className={d.payment.status === 'REJECTED' ? 'text-bad-ink' : 'text-warn'}><Icon name="wallet" size={26} /></span>
           <div className="min-w-0 flex-1">
             <div className="font-medium">{t(d.payment.status === 'REJECTED' ? 'me.detail.rejectedTitle' : 'me.detail.pendingTitle')}</div>
             <p className="mt-0.5 text-sm font-light text-fg-muted">{t(d.payment.status === 'REJECTED' ? 'me.dreamPayment.rejected' : 'me.dreamPayment.underReview')}</p>
             {d.payment.status === 'REJECTED' && d.payment.reviewNote && <p className="mt-1 text-sm text-fg-muted">{t('me.dreamPayment.reason', { note: d.payment.reviewNote })}</p>}
           </div>
-          <Link to={`/me/checkout/instapay/${d.payment.orderId}`} className="btn btn-sm btn-ghost shrink-0">{t('me.dreamPayment.open')} <span aria-hidden="true">{arrowNext(locale)}</span></Link>
+          <div className="sm:max-w-[55%]"><DreamPaymentActions dreamId={d.id} payment={d.payment} onGone={() => navigate('/me?tab=PENDING_PAYMENT', { replace: true })} /></div>
         </div>
       )}
 

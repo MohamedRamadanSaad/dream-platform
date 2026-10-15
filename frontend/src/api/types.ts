@@ -24,6 +24,8 @@ export type NotificationType =
   | 'YOUTUBE_VIDEO'
   | 'TRANSFER_SUBMITTED'
   | 'PAYMENT_REJECTED'
+  /** To the interpreter: a dreamer changed a dream's text before she started (link /admin/dreams/:id). */
+  | 'DREAM_EDITED'
 
 export interface ApiProblem {
   type: string
@@ -249,7 +251,7 @@ export interface DreamSummary {
   startedAt: string | null
   /** Days the interpreter expects to need, chosen when she started. */
   expectedDays: number | null
-  /** The user may still change the text: DRAFT, or IN_REVIEW before the interpreter started. */
+  /** The user may still change the text (DRAFT, or not yet started by the interpreter): follow this flag only. */
   editable: boolean
   /** The payment this draft waits on (PENDING_REVIEW) or that was rejected; null otherwise. */
   payment: DreamPaymentLink | null

@@ -1,11 +1,13 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { WaitTimeSettings } from '@/api/types'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { adminApi, reportsApi } from '@/api/endpoints'
 import { useAuthStore } from '@/app/auth-store'
-import { Button, ErrorBox, Input, Label, Modal, Skeleton, Stars, StatusBadge, Textarea } from '@/components/ui'
+import { Button, ErrorBox, Input, Label, Modal, NotFound, Skeleton, Stars, StatusBadge, Textarea } from '@/components/ui'
+import { invalidateDreams, isNotFound, useErrorText, useOnce } from '@/lib/apiErrors'
+import { toast } from '@/components/ui/Toaster'
 import { DownloadButton } from '@/components/ui/DownloadButton'
 import { Icon } from '@/components/icons/Icon'
 import { Avatar } from '@/components/ui/Avatar'
@@ -25,17 +27,23 @@ function StartDialog({ open, onClose, dreamId }: { open: boolean; onClose: () =>
   const qc = useQueryClient()
   const wait = useQuery({ queryKey: ['admin', 'wait-time'], queryFn: adminApi.waitTime, enabled: open, staleTime: 60_000 })
   const [days, setDays] = useState<number | null>(null)
+  // closing (cancel, Escape, backdrop or success) always brings back the default choice
+  useEffect(() => { if (!open) setDays(null) }, [open])
   const value = days ?? defaultDays(wait.data)
   const valid = Number.isInteger(value) && value >= 1 && value <= 30
+  const once = useOnce()
+  const errorText = useErrorText('admin.dream.errors', 'me.dreamErrors')
+  const refresh = () => { qc.invalidateQueries({ queryKey: ['admin'] }); invalidateDreams(qc, [dreamId]) }
   const start = useMutation({
     mutationFn: () => adminApi.startDream(dreamId, value),
-    meta: { toast: 'admin.dream.started' },
-    onSuccess: () => { onClose(); setDays(null); qc.invalidateQueries({ queryKey: ['admin'] }) },
+    meta: { toast: false },
+    onSuccess: () => { toast.success(t('admin.dream.started')); onClose(); refresh() },
+    onError: (e) => { toast.error(errorText(e)); refresh() },
   })
   const by = new Date(Date.now() + (valid ? value : 0) * 864e5).toISOString()
   return (
     <Modal open={open} onClose={onClose} title={t('admin.dream.startTitle')} size="sm" focusField={false}
-      footer={<><Button variant="ghost" onClick={onClose}>{t('common.cancel')}</Button><Button disabled={!valid} loading={start.isPending} onClick={() => start.mutate()}>{t('admin.dream.startConfirm')}</Button></>}>
+      footer={<><Button variant="ghost" onClick={onClose}>{t('common.cancel')}</Button><Button disabled={!valid} loading={start.isPending} onClick={() => once(() => start.mutateAsync())}>{t('admin.dream.startConfirm')}</Button></>}>
       <p className="text-sm leading-relaxed text-fg-muted">{t('admin.dream.startBody')}</p>
       <fieldset className="mt-5">
         <legend className="label">{t('admin.dream.startDays')}</legend>
@@ -64,7 +72,7 @@ export function AdminDreamPage() {
   const qc = useQueryClient()
   const navigate = useNavigate()
   const locale = useAuthStore((s) => s.locale)
-  const q = useQuery({ queryKey: ['admin', 'dream', id], queryFn: () => adminApi.dream(id!) })
+  const q = useQuery({ queryKey: ['admin', 'dream', id], queryFn: () => adminApi.dream(id!), retry: (n, e) => !isNotFound(e) && n < 1 })
   const [question, setQuestion] = useState('')
   const [text, setText] = useState('')
   const [confirm, setConfirm] = useState(false)
@@ -74,6 +82,7 @@ export function AdminDreamPage() {
   const publish = useMutation({ mutationFn: () => adminApi.interpret(id!, { text }), meta: { toast: 'common.published' }, onSuccess: () => { setConfirm(false); inv(); navigate('/admin/dreams') } })
 
   if (q.isLoading) return <div className="space-y-4"><Skeleton className="h-10 w-48" /><Skeleton className="h-48" /><Skeleton className="h-64" /></div>
+  if (isNotFound(q.error)) return <PageEnter><NotFound text={t('admin.dream.notFound')} back={<Link to="/admin/dreams" className="btn btn-sm btn-ghost">{arrowBack(locale)} {t('admin.nav.dreams')}</Link>} /></PageEnter>
   if (q.isError || !q.data) return <ErrorBox onRetry={() => q.refetch()} />
   const d = q.data
   // the interpretation can be written while it waits, after she started, and while a question is open

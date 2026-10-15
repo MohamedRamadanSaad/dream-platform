@@ -1,4 +1,4 @@
-import { forwardRef, useEffect, useId, useRef, type ButtonHTMLAttributes, type HTMLAttributes, type InputHTMLAttributes, type ReactNode, type TextareaHTMLAttributes } from 'react'
+import { forwardRef, useEffect, useId, useRef, useState, type ButtonHTMLAttributes, type KeyboardEvent as ReactKeyboardEvent, type HTMLAttributes, type InputHTMLAttributes, type ReactNode, type TextareaHTMLAttributes } from 'react'
 import { createPortal } from 'react-dom'
 import { cva, type VariantProps } from 'class-variance-authority'
 import { cn } from '@/lib/utils'
@@ -48,6 +48,18 @@ export function Skeleton({ className }: { className?: string }) { return <div cl
 export function Empty({ text, action }: { text: string; action?: ReactNode }) {
   return <div className="card p-10 text-center text-fg-muted"><p className="mb-4">{text}</p>{action}</div>
 }
+/** 404 page body: what was not found and a way back (no retry: asking again gives the same answer). */
+export function NotFound({ text, back }: { text: string; back: ReactNode }) {
+  return (
+    <div role="status" className="card flex flex-col items-center gap-3 p-10 text-center">
+      <span aria-hidden="true" className="flex h-14 w-14 items-center justify-center rounded-full bg-surface-2 text-fg-dim">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><path d="M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14zM20 20l-4-4M9 9l4 4M13 9l-4 4" /></svg>
+      </span>
+      <p className="text-fg-muted">{text}</p>
+      {back}
+    </div>
+  )
+}
 export function ErrorBox({ message, onRetry }: { message?: string; onRetry?: () => void }) {
   const { t } = useTranslation()
   return <div className="card border-danger/30 p-6 text-center"><p className="text-danger mb-3">{message || t('common.error')}</p>{onRetry && <Button variant="ghost" size="sm" onClick={onRetry}>{t('common.retry')}</Button>}</div>
@@ -56,6 +68,8 @@ export function ErrorBox({ message, onRetry }: { message?: string; onRetry?: () 
 export function Tabs<T extends string>({ value, onChange, items }: { value: T; onChange: (v: T) => void; items: { value: T; label: string; count?: number | string; tone?: 'danger' }[] }) {
   // on a phone the row scrolls sideways: bring the active tab into view (also when it is chosen from outside)
   const rowRef = useRef<HTMLDivElement>(null)
+  // faded edges show there are more tabs to scroll to (start / end in reading order)
+  const [edges, setEdges] = useState({ start: false, end: false })
   useEffect(() => {
     const row = rowRef.current
     const tab = row?.querySelector<HTMLElement>('[aria-selected="true"]')
@@ -64,14 +78,47 @@ export function Tabs<T extends string>({ value, onChange, items }: { value: T; o
     if (b.left < r.left) row.scrollBy({ left: b.left - r.left - 16, behavior: 'smooth' })
     else if (b.right > r.right) row.scrollBy({ left: b.right - r.right + 16, behavior: 'smooth' })
   }, [value])
+  useEffect(() => {
+    const row = rowRef.current
+    if (!row) return
+    const update = () => {
+      const max = row.scrollWidth - row.clientWidth
+      // scrollLeft is 0 at the start and negative toward the end in RTL, positive in LTR
+      const pos = Math.abs(row.scrollLeft)
+      setEdges({ start: pos > 2, end: max - pos > 2 })
+    }
+    update()
+    row.addEventListener('scroll', update, { passive: true })
+    const ro = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(update) : null
+    ro?.observe(row)
+    return () => { row.removeEventListener('scroll', update); ro?.disconnect() }
+  }, [items.length])
+  // roving tabindex: one tab stop; arrows move along the reading direction, Home / End jump to the ends
+  const onKey = (e: ReactKeyboardEvent<HTMLDivElement>) => {
+    const i = items.findIndex((x) => x.value === value)
+    const rtl = getComputedStyle(e.currentTarget).direction === 'rtl'
+    const next = rtl ? 'ArrowLeft' : 'ArrowRight', prev = rtl ? 'ArrowRight' : 'ArrowLeft'
+    let j = -1
+    if (e.key === next) j = (i + 1) % items.length
+    else if (e.key === prev) j = (i - 1 + items.length) % items.length
+    else if (e.key === 'Home') j = 0
+    else if (e.key === 'End') j = items.length - 1
+    if (j < 0) return
+    e.preventDefault()
+    onChange(items[j].value)
+    requestAnimationFrame(() => rowRef.current?.querySelectorAll<HTMLElement>('[role="tab"]')[j]?.focus())
+  }
+  const fade = 'pointer-events-none absolute inset-y-0 z-10 w-8 from-bg to-transparent transition-opacity duration-300'
   return (
     // the line sits on the outer box; the inner row scrolls sideways only (a 1px vertical overflow used to
     // show a stray vertical scrollbar on Windows) and overlaps the line so the active tab's gold bar covers it
-    <div className="border-b border-line">
-    <div ref={rowRef} role="tablist" className="no-scrollbar -mb-px flex gap-1 overflow-x-auto overflow-y-hidden">
+    <div className="relative border-b border-line">
+    <span aria-hidden="true" className={cn(fade, 'start-0 ltr:bg-gradient-to-r rtl:bg-gradient-to-l', edges.start ? 'opacity-100' : 'opacity-0')} />
+    <span aria-hidden="true" className={cn(fade, 'end-0 ltr:bg-gradient-to-l rtl:bg-gradient-to-r', edges.end ? 'opacity-100' : 'opacity-0')} />
+    <div ref={rowRef} role="tablist" onKeyDown={onKey} className="no-scrollbar -mb-px flex gap-1 overflow-x-auto overflow-y-hidden">
       {items.map((it) => (
-        <button key={it.value} role="tab" aria-selected={value === it.value} onClick={() => onChange(it.value)}
-          className={cn('whitespace-nowrap px-4 py-3 text-sm transition-colors border-b-2', value === it.value ? 'border-gold text-fg font-medium' : 'border-transparent text-fg-muted hover:text-fg', it.tone === 'danger' && value !== it.value && 'text-danger')}>
+        <button key={it.value} type="button" role="tab" aria-selected={value === it.value} tabIndex={value === it.value ? 0 : -1} onClick={() => onChange(it.value)}
+          className={cn('whitespace-nowrap px-4 py-3 text-sm transition-colors border-b-2 outline-none focus-visible:rounded-t-lg focus-visible:bg-gold/10', value === it.value ? 'border-gold text-fg font-medium' : 'border-transparent text-fg-muted hover:text-fg', it.tone === 'danger' && value !== it.value && 'text-danger')}>
           {it.label}{it.count !== undefined && <span className="ms-1.5 text-xs text-fg-dim">· {it.count}</span>}
         </button>
       ))}

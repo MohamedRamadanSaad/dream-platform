@@ -69,7 +69,8 @@ function CountryList({ title, rows, value, format, sub, icon }: { title: string;
 
 /** "SAR 1,240 · USD 96": the buyers' own currencies, shown small as a reference. */
 function currencyList(list: { currency: Currency; amount: number }[], locale: string) {
-  return list.map((r) => `\u2068${fmtMoney(r.amount, r.currency, locale)}\u2069`).join(' · ')
+  // EGP is the main figure already: only the other currencies are listed
+  return list.filter((r) => r.currency !== 'EGP').map((r) => `\u2068${fmtMoney(r.amount, r.currency, locale)}\u2069`).join(' · ')
 }
 
 function QueueStrip() {
@@ -82,7 +83,7 @@ function QueueStrip() {
   if (summary.isLoading) return <div className={grid}>{[1, 2, 3, 4, 5, 6, 7].map((i) => <Skeleton key={i} className={cn('h-[88px]', i === 7 && 'col-span-2')} />)}</div>
   if (!s) return summary.isError ? <ErrorBox onRetry={() => summary.refetch()} /> : null
   const tile = 'block h-full rounded-xl2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold'
-  const others = s.revenue.filter((r) => r.currency !== 'EGP' || s.revenue.length > 1)
+  const others = s.revenue.filter((r) => r.currency !== 'EGP')
   return (
     <StaggerGroup className={grid} stagger={0.05}>
       <Link to="/admin/orders?tab=REVIEW" className={tile}><Stat className="h-full" label={t('admin.dashboard.pendingPayments')} value={fmtNum(s.pendingPayments, locale)} icon={<Icon name="wallet" size={24} />} tone={s.pendingPayments > 0 ? 'danger' : 'gold'} /></Link>

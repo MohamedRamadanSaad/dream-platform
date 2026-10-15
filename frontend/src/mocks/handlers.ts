@@ -392,7 +392,12 @@ export const handlers = [
     if (!isEditable(d)) return problem(409, 'Conflict', 'This dream can no longer be edited', { code: 'NOT_EDITABLE' })
     const b = (await request.json()) as T.DreamDraftRequest
     if (!b.text || b.text.trim().length < 20) return problem(400, 'Validation failed', 'Text too short', { errors: { text: ['min 20'] } })
-    Object.assign(d, { text: b.text, gender: b.gender }, d.status === 'IN_REVIEW' ? { userEditedAt: helpers.now() } : {})
+    Object.assign(d, { text: b.text, gender: b.gender }, d.status !== 'DRAFT' ? { userEditedAt: helpers.now() } : {})
+    if (d.status !== 'DRAFT') {
+      for (const it of db.users.filter((x) => x.role === 'INTERPRETER')) {
+        db.notifications.unshift({ id: uid(), userId: it.id, type: 'DREAM_EDITED', title: 'عدّل صاحب الرؤيا نصّها', body: `عدّل ${me.name} نص رؤيا قبل أن تبدئي تعبيرها.`, link: `/admin/dreams/${d.id}`, createdAt: helpers.now(), readAt: null })
+      }
+    }
     return HttpResponse.json(toDetail(d))
   })),
   http.delete(u('/dreams/:id'), wrap(async ({ request, params }) => {
@@ -400,14 +405,14 @@ export const handlers = [
     const i = db.dreams.findIndex((x) => x.id === params.id && x.userId === me.id)
     if (i < 0) return problem(404, 'Not found')
     if (db.dreams[i].status !== 'DRAFT') return problem(409, 'Conflict', 'Only drafts can be deleted', { code: 'NOT_DRAFT' })
-    if (attachedOrder(db.dreams[i])) return problem(409, 'Conflict', 'This draft is attached to a payment', { code: 'ATTACHED_TO_PAYMENT' })
+    if (attachedOrder(db.dreams[i])?.status === 'PENDING_REVIEW') return problem(409, 'Conflict', 'This draft is attached to a payment', { code: 'ATTACHED_TO_PAYMENT' })
     db.dreams.splice(i, 1)
     return new HttpResponse(null, { status: 204 })
   })),
   http.post(u('/dreams/submit'), wrap(async ({ request }) => {
     const me = requireUser(request)
     const b = (await request.json()) as T.SubmitDreamsRequest
-    const drafts = b.dreamIds.map((id) => db.dreams.find((d) => d.id === id && d.userId === me.id && d.status === 'DRAFT' && !attachedOrder(d))).filter(Boolean) as MockDream[]
+    const drafts = b.dreamIds.map((id) => db.dreams.find((d) => d.id === id && d.userId === me.id && d.status === 'DRAFT' && attachedOrder(d)?.status !== 'PENDING_REVIEW')).filter(Boolean) as MockDream[]
     if (drafts.length !== b.dreamIds.length) return problem(409, 'Conflict', 'بعض الرؤى ليست مسودات')
     const bal = balanceOf(me.id)
     if (bal < drafts.length) return problem(402, 'Payment required', `تحتاج ${drafts.length - bal} رؤيا إضافية`, { code: 'INSUFFICIENT_CREDITS' })
@@ -471,8 +476,13 @@ export const handlers = [
     }
     // like production: no payment method outside Egypt yet
     if (r.currency !== 'EGP' || db.settings['payments.instapay.enabled'] !== 'true') return problem(422, 'Unprocessable', 'Payment is available inside Egypt only for now', { code: 'PAYMENT_EGYPT_ONLY' })
-    const live = (b.dreamIds ?? []).find((id) => db.orders.some((o) => o.userId === me.id && (o.status === 'PENDING_REVIEW' || (o.status === 'INITIATED' && (instapayMeta.get(o.id)?.expiresAt ?? '') > helpers.now()) || (o.status === 'FAILED' && o.failureReason === 'TRANSFER_REJECTED')) && instapayMeta.get(o.id)?.dreamIds.includes(id)))
+    const live = (b.dreamIds ?? []).find((id) => db.orders.some((o) => o.userId === me.id && (o.status === 'PENDING_REVIEW' || (o.status === 'INITIATED' && (instapayMeta.get(o.id)?.expiresAt ?? '') > helpers.now())) && instapayMeta.get(o.id)?.dreamIds.includes(id)))
     if (live) return problem(409, 'Conflict', 'This dream is already attached to another payment', { code: 'DREAM_ALREADY_ATTACHED' })
+    if ((b.dreamIds?.length ?? 0) > pkg.credits) return problem(400, 'Bad Request', 'More dreams than the package credits', { code: 'TOO_MANY_DREAMS' })
+    // a dream from a rejected payment moves to this one
+    for (const id of b.dreamIds ?? []) for (const o of db.orders.filter((x) => x.userId === me.id && x.status === 'FAILED')) {
+      const m = instapayMeta.get(o.id); if (m) m.dreamIds = m.dreamIds.filter((x) => x !== id)
+    }
     const order: MockOrder = { id: uid(), orderNumber: nextOrderNumber(), userId: me.id, packageName: pkg.nameAr, credits: pkg.credits, amount: price, currency: r.currency, status: 'INITIATED', provider: 'INSTAPAY', providerRef: null, countryCode: me.countryCode, createdAt: helpers.now(), paidAt: null }
     db.orders.unshift(order)
     const hours = Number(db.settings['payments.instapay.expire_hours'] ?? 24)
@@ -482,6 +492,19 @@ export const handlers = [
 
 
   // ---------- InstaPay (manual transfer, Egypt) ----------
+  // dreams leave the order and return to Drafts; the order itself stays as it is
+  http.post(u('/me/orders/:id/release-dreams'), wrap(async ({ request, params }) => {
+    const me = requireUser(request)
+    const o = instapayOrders().find((x) => x.id === params.id && x.userId === me.id)
+    if (!o) return problem(404, 'Not found')
+    const m = instapayMeta.get(o.id)!
+    const releasable = o.status === 'INITIATED' || o.status === 'PENDING_REVIEW' || (o.status === 'FAILED' && o.failureReason === 'TRANSFER_REJECTED')
+    if (!releasable) return problem(409, 'Conflict', 'These dreams cannot leave this order now', { code: 'NOT_RELEASABLE' })
+    const b = (await request.json().catch(() => ({}))) as { dreamIds?: string[] }
+    const ids = b.dreamIds?.length ? b.dreamIds : [...m.dreamIds]
+    m.dreamIds = m.dreamIds.filter((x) => !ids.includes(x))
+    return new HttpResponse(null, { status: 204 })
+  })),
   http.get(u('/me/orders/:id/instapay'), wrap(async ({ request, params }) => {
     const me = requireUser(request)
     const o = instapayOrders().find((x) => x.id === params.id && x.userId === me.id)
@@ -504,6 +527,7 @@ export const handlers = [
     if ((b.senderName ?? '').trim().length < 3) return problem(422, 'Unprocessable', 'Bad sender', { code: 'INVALID_SENDER' })
     const taken = instapayOrders().some((x) => x.id !== o.id && instapayMeta.get(x.id)!.reference === ref && ['PENDING_REVIEW', 'SUCCESS', 'SUSPICIOUS', 'REFUNDED'].includes(x.status))
     if (taken) return problem(409, 'Conflict', 'Reference used', { code: 'DUPLICATE_REFERENCE' })
+    if (new Set([...m.dreamIds, ...(b.dreamIds ?? [])]).size > o.credits) return problem(400, 'Bad Request', 'More dreams than the package credits', { code: 'TOO_MANY_DREAMS' })
     for (const id of b.dreamIds ?? []) if (!m.dreamIds.includes(id)) m.dreamIds.push(id)
     const first = o.status === 'INITIATED' || reopened
     Object.assign(m, { reference: ref, senderName: b.senderName.trim(), submittedAt: first ? helpers.now() : m.submittedAt ?? helpers.now() }, reopened ? { reviewNote: null, reviewedAt: null } : {})

@@ -36,7 +36,7 @@ function Amount({ o }: { o: AdminOrderRow }) {
   return (
     <span className="flex flex-col">
       <span dir="ltr" className="text-start font-medium tabular-nums">{fmtMoney(o.amount, o.currency, locale)}</span>
-      {o.currency !== 'EGP' && o.settledAmountEgp != null && <span className="whitespace-nowrap text-[11px] text-fg-dim" title={t('admin.order.settled')}>{t('admin.orders.settled')} <span dir="ltr">{fmtMoney(o.settledAmountEgp, 'EGP', locale)}</span></span>}
+      {o.currency !== 'EGP' && o.settledAmountEgp != null && <span className="whitespace-nowrap text-[11px] text-fg-dim" title={`${t('admin.order.settled')} · ${t('admin.order.fxEstimate')}`}>{t('admin.orders.settled')} <span dir="ltr">≈ {fmtMoney(o.settledAmountEgp, 'EGP', locale)}</span></span>}
     </span>
   )
 }
@@ -63,7 +63,8 @@ export function OrdersAdminPage() {
 
   const counts = useQuery({ queryKey: ['admin', 'orders', 'counts'], queryFn: adminApi.orderCounts, refetchInterval: 60_000 })
   const q = useQuery({ queryKey: ['admin', 'orders', tab, page, term], queryFn: () => adminApi.orders(tab, page, PAGE_SIZE, term), placeholderData: keepPreviousData })
-  const setTab = (v: Tab) => setParams((p) => { const n = new URLSearchParams(p); n.set('tab', v); n.delete('page'); return n }, { replace: true })
+  // a new history entry per tab: Back returns to the tab before
+  const setTab = (v: Tab) => { if (v !== tab) setParams((p) => { const n = new URLSearchParams(p); n.set('tab', v); n.delete('page'); return n }) }
   const setPage = (v: number) => {
     setParams((p) => { const n = new URLSearchParams(p); if (v > 0) n.set('page', String(v + 1)); else n.delete('page'); return n })
     window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -108,7 +109,7 @@ export function OrdersAdminPage() {
               <ul className="space-y-3 md:hidden">
                 {items.map((o) => (
                   <li key={o.id}>
-                    <Link to={`/admin/orders/${o.id}`} className={cn('card card-hover block p-4', review && 'border-gold/40')}>
+                    <Link to={`/admin/orders/${o.id}`} className={cn('card card-hover block p-4 outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold', review && 'border-gold/40')}>
                       <div className="flex items-start justify-between gap-3">
                         <div className="flex min-w-0 items-center gap-3">
                           <Avatar name={o.userName || o.userEmail} size={36} />
@@ -149,7 +150,7 @@ export function OrdersAdminPage() {
                     {items.map((o) => (
                       <tr key={o.id} tabIndex={0} role="link" aria-label={`${t('admin.orders.open')}: ${o.orderNumber}, ${o.userName || o.userEmail}, ${fmtMoney(o.amount, o.currency, locale)}`}
                         onClick={() => open(o.id)} onKeyDown={(e) => onRowKey(e, o.id)}
-                        className="group cursor-pointer border-b border-line outline-none transition-colors last:border-0 hover:bg-surface-2/60 focus-visible:bg-gold/5">
+                        className="group cursor-pointer border-b border-line outline-none transition-colors last:border-0 hover:bg-surface-2/60 focus-visible:bg-gold/10 focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-gold">
                         <td dir="ltr" className="whitespace-nowrap px-3 py-3 text-start font-mono text-sm font-semibold tracking-wide">{o.orderNumber}</td>
                         <td className="px-3 py-3">
                           <div className="flex items-center gap-3">

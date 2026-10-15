@@ -206,6 +206,7 @@ export const db = {
     { id: 'n3', userId: 'u1', type: 'PAYMENT_SUCCESS', title: 'تم الدفع', body: 'أُضيفت رؤيتان إلى رصيدك.', link: '/me/payments', createdAt: daysAgo(2), readAt: daysAgo(1) },
     { id: 'n4', userId: 'u1', type: 'INTERPRETATION_READY', title: 'تم تفسير رؤياك', body: 'تفسير رؤيا «المسجد المضاء» جاهز الآن.', link: '/me/dreams/d2', createdAt: daysAgo(7), readAt: daysAgo(6) },
     { id: 'n5', userId: 'admin', type: 'DREAM_SUBMITTED', title: 'رؤية جديدة', body: 'قدّمت أم محمد رؤيا جديدة.', link: '/admin/dreams/d4', createdAt: daysAgo(0, 20), readAt: null },
+    { id: 'n7', userId: 'admin', type: 'DREAM_EDITED', title: 'عدّل صاحب الرؤيا نصّها', body: 'عدّلت منى عبد الله نص رؤيا قبل أن تبدئي تعبيرها.', link: '/admin/dreams/d9', createdAt: daysAgo(0, 3), readAt: null },
     { id: 'n6', userId: 'admin', type: 'DREAM_SUBMITTED', title: 'رؤية جديدة', body: 'Sara Ahmed قدّمت رؤيا جديدة.', link: '/admin/dreams/d8', createdAt: daysAgo(0, 9), readAt: null },
   ] as (T.NotificationDto & { userId: string })[],
 
@@ -363,7 +364,8 @@ export function attachedOrder(d: MockDream): MockOrder | null {
     .filter((o) => o.userId === d.userId && (o.status === 'PENDING_REVIEW' || (o.status === 'FAILED' && o.failureReason === 'TRANSFER_REJECTED')) && orderMeta.get(o.id)?.dreamIds.includes(d.id))
     .sort((a, b) => b.createdAt.localeCompare(a.createdAt))[0] ?? null
 }
-export const isEditable = (d: MockDream) => d.status === 'DRAFT' || (d.status === 'IN_REVIEW' && !d.startedAt)
+/** DRAFT, or IN_REVIEW / AWAITING_USER_REPLY before the interpreter pressed "Start interpreting". */
+export const isEditable = (d: MockDream) => d.status === 'DRAFT' || ((d.status === 'IN_REVIEW' || d.status === 'AWAITING_USER_REPLY') && !d.startedAt)
 
 export function toSummary(d: MockDream): T.DreamSummary {
   const o = attachedOrder(d)

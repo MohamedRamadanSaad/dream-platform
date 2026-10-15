@@ -9,7 +9,7 @@ import { Icon } from '@/components/icons/Icon'
 import { PageEnter, StaggerGroup } from '@/components/motion'
 import { PackageCard, RefundPolicyLink } from '@/features/public/LandingPage'
 import { arrowBack, fmtMoney } from '@/lib/utils'
-import { ApiError } from '@/api/client'
+import { useErrorText, useOnce } from '@/lib/apiErrors'
 import { CreditExpiryNotice } from './CreditExpiryNotice'
 import type { PackageDto } from '@/api/types'
 
@@ -51,10 +51,12 @@ export function PackagesPage() {
 }
 
 export function CheckoutPage() {
-  const { t, i18n } = useTranslation()
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const [params] = useSearchParams()
   const locale = useAuthStore((s) => s.locale)
+  const errorText = useErrorText('me.checkout.errors', 'me.dreamErrors')
+  const once = useOnce()
   const packageId = params.get('package') ?? ''
   const dreamIds = params.get('dreams')?.split(',').filter(Boolean)
   const [coupon, setCoupon] = useState('')
@@ -68,11 +70,7 @@ export function CheckoutPage() {
       if (r.provider === 'INSTAPAY') { navigate(new URL(r.checkoutUrl, window.location.origin).pathname); return }
       window.location.href = r.checkoutUrl.startsWith('http') ? r.checkoutUrl : r.checkoutUrl + `?return=${encodeURIComponent('/me/payments')}`
     },
-    onError: (e) => {
-      const err = e as ApiError
-      const code = err.problem?.code
-      setErr(code && i18n.exists(`me.checkout.errors.${code}`) ? t(`me.checkout.errors.${code}`) : err.message)
-    },
+    onError: (e) => setErr(errorText(e)),
   })
   if (!packageId) { navigate('/me/packages'); return null }
   return (
@@ -84,11 +82,12 @@ export function CheckoutPage() {
         <div className="card p-6">
           <div className="flex items-center justify-between"><div><div className="font-display text-2xl">{pkg.name}</div><div className="text-xs text-fg-dim">{t('packages.dreams', { count: pkg.credits })}</div></div><div className="text-3xl font-medium">{fmtMoney(pkg.price, pkg.currency, locale)}</div></div>
           {dreamIds?.length ? <div className="mt-3 text-xs text-fg-muted">{t('me.checkout.autoSubmit', { count: dreamIds.length, n: dreamIds.length })}</div> : null}
+          {dreamIds && dreamIds.length > pkg.credits && <p role="alert" className="mt-2 text-xs text-bad-ink">{t('me.checkout.tooMany', { n: pkg.credits })}</p>}
           <div className="mt-6"><Label>{t('me.checkout.coupon')}</Label><div className="flex gap-2"><Input dir="ltr" value={coupon} onChange={(e) => setCoupon(e.target.value.toUpperCase())} placeholder="CODE" /></div></div>
           {err && <p className="mt-3 text-sm text-danger">{err}</p>}
           {pkg.currency === 'EGP' ? (
             <>
-              <Button className="mt-6 w-full" size="lg" loading={create.isPending} onClick={() => { setErr(null); create.mutate() }}>{t('me.checkout.continue', { amount: fmtMoney(pkg.price, pkg.currency, locale) })}</Button>
+              <Button className="mt-6 w-full" size="lg" disabled={!!dreamIds && dreamIds.length > pkg.credits} loading={create.isPending} onClick={() => { setErr(null); once(() => create.mutateAsync()) }}>{t('me.checkout.continue', { amount: fmtMoney(pkg.price, pkg.currency, locale) })}</Button>
               <p className="mt-3 text-center text-xs text-fg-dim">{t('me.checkout.methodsEg')}</p>
             </>
           ) : <EgyptOnlyNotice className="mt-6" />}

@@ -3,7 +3,7 @@ import { Link, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { dreamsApi, instapayApi } from '@/api/endpoints'
-import { ApiError } from '@/api/client'
+import { invalidateDreams, useErrorText, useOnce } from '@/lib/apiErrors'
 import { useAuthStore } from '@/app/auth-store'
 import { Button, ErrorBox, Input, Label, Skeleton, Textarea } from '@/components/ui'
 import { Icon } from '@/components/icons/Icon'
@@ -257,8 +257,10 @@ function TransferStep({ v }: { v: InstapayOrderView }) {
 }
 
 function DetailsForm({ v, editing, onDone, onCancel }: { v: InstapayOrderView; editing: boolean; onDone: () => void; onCancel?: () => void }) {
-  const { t, i18n } = useTranslation()
+  const { t } = useTranslation()
   const qc = useQueryClient()
+  const once = useOnce()
+  const errorText = useErrorText('me.checkout.instapay.errors', 'me.checkout.errors', 'me.dreamErrors')
   const user = useAuthStore((s) => s.user)
   const saved = useMemo(() => readSaved(v.orderId), [v.orderId])
   const [reference, setReference] = useState(saved.reference ?? v.reference ?? '')
@@ -274,7 +276,9 @@ function DetailsForm({ v, editing, onDone, onCancel }: { v: InstapayOrderView; e
   const refBad = ref.length > 0 && !REFERENCE_RE.test(ref) && (ref.length >= 12 || /\D/.test(ref))
   const dreamText = dream.trim()
   const dreamShort = dreamText.length > 0 && dreamText.length < DREAM_MIN
-  const canAttach = v.attachedDreams === 0 && !editing
+  // the server refuses more dreams than the package covers (TOO_MANY_DREAMS): one more only while there is room
+  const room = Math.max(0, v.credits - v.attachedDreams)
+  const canAttach = room > 0 && v.attachedDreams === 0 && !editing
   const ready = REFERENCE_RE.test(ref) && sender.trim().length >= 3 && !dreamShort
 
   const send = useMutation({
@@ -288,18 +292,15 @@ function DetailsForm({ v, editing, onDone, onCancel }: { v: InstapayOrderView; e
       }
       return instapayApi.submit(v.orderId, { reference: ref, senderName: sender.trim(), dreamIds: ids })
     },
+    meta: { toast: false },
     onSuccess: (view) => {
       clearSaved(v.orderId)
       qc.setQueryData(['instapay', v.orderId], view)
-      qc.invalidateQueries({ queryKey: ['me'] })
-      qc.invalidateQueries({ queryKey: ['dreams'] })
+      invalidateDreams(qc, [draftId])
       onDone()
       window.scrollTo({ top: 0, behavior: 'smooth' })
     },
-    onError: (e) => {
-      const code = (e as ApiError).problem?.code
-      setErr(code && i18n.exists(`me.checkout.instapay.errors.${code}`) ? t(`me.checkout.instapay.errors.${code}`) : (e as Error).message)
-    },
+    onError: (e) => setErr(errorText(e)),
   })
 
   const submitLabel = editing
@@ -307,7 +308,7 @@ function DetailsForm({ v, editing, onDone, onCancel }: { v: InstapayOrderView; e
     : canAttach && dreamText ? t('me.checkout.instapay.submitWithDream') : t('me.checkout.instapay.submit')
 
   return (
-    <form className="space-y-5" onSubmit={(e) => { e.preventDefault(); setErr(null); if (ready) send.mutate() }} noValidate>
+    <form className="space-y-5" onSubmit={(e) => { e.preventDefault(); if (!ready || send.isPending) return; setErr(null); once(() => send.mutateAsync()) }} noValidate>
       <section className="card space-y-4 p-5">
         <StepTitle n={2}>{t('me.checkout.instapay.step2')}</StepTitle>
         <div>
@@ -333,6 +334,7 @@ function DetailsForm({ v, editing, onDone, onCancel }: { v: InstapayOrderView; e
           {canAttach ? (
             <>
               <p className="text-sm leading-relaxed text-fg-muted">{t('me.checkout.instapay.dreamLead')}</p>
+              <p className="flex items-center gap-2 text-xs text-gold-ink"><Icon name="info" size={14} className="shrink-0" />{t('me.checkout.instapay.limit', { count: v.credits })}</p>
               <div className="grid grid-cols-2 gap-2" role="radiogroup" aria-label={t('auth.gender')}>
                 {(['FEMALE', 'MALE'] as Gender[]).map((g) => (
                   <button key={g} type="button" role="radio" aria-checked={gender === g} onClick={() => setGender(g)}
@@ -351,7 +353,10 @@ function DetailsForm({ v, editing, onDone, onCancel }: { v: InstapayOrderView; e
           ) : (
             <div className="flex items-start gap-3 rounded-xl bg-gold/5 p-3 text-sm leading-relaxed">
               <Icon name="moon" size={18} className="mt-0.5 shrink-0 text-gold-ink" />
-              <span>{t('me.checkout.instapay.dreamAttached', { n: v.attachedDreams })}</span>
+              <span>
+                {v.attachedDreams > 0 ? t('me.checkout.instapay.dreamAttached', { n: v.attachedDreams }) : null}
+                <span className="block text-xs text-fg-muted">{room > 0 ? t('me.checkout.instapay.limitLeft', { count: room }) : t('me.checkout.instapay.limitFull')}</span>
+              </span>
             </div>
           )}
         </section>

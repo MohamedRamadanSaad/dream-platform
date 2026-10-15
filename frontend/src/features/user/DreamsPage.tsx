@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
@@ -13,7 +13,9 @@ import type { DreamSummary } from '@/api/types'
 import { replyTimeText } from '@/lib/waitTime'
 import { CreditExpiryNotice } from './CreditExpiryNotice'
 import { UserOverview } from './UserOverview'
-import { ApiError } from '@/api/client'
+import { DreamPaymentActions } from './DreamPaymentActions'
+import { errorCode, invalidateDreams, useErrorText, useOnce } from '@/lib/apiErrors'
+import { toast } from '@/components/ui/Toaster'
 
 type Tab = 'DRAFT' | 'PENDING_PAYMENT' | 'IN_REVIEW' | 'IN_PROGRESS' | 'AWAITING_USER_REPLY' | 'INTERPRETED'
 const TABS: Tab[] = ['DRAFT', 'PENDING_PAYMENT', 'IN_REVIEW', 'IN_PROGRESS', 'AWAITING_USER_REPLY', 'INTERPRETED']
@@ -44,7 +46,7 @@ export function DreamRow({ d, selectable, selected, onToggle }: { d: DreamSummar
         <div className="mt-3 space-y-2 border-t border-line pt-3 text-xs">
           <p className={rejected ? 'text-bad-ink' : 'text-fg-muted'}>{t(rejected ? 'me.dreamPayment.rejected' : 'me.dreamPayment.underReview')}</p>
           {rejected && d.payment.reviewNote && <p className="text-fg-muted">{t('me.dreamPayment.reason', { note: d.payment.reviewNote })}</p>}
-          <Link to={`/me/checkout/instapay/${d.payment.orderId}`} className="inline-flex items-center gap-1.5 font-medium text-gold-ink hover:underline dark:text-gold">{t('me.dreamPayment.open')} <span aria-hidden="true">{arrowNext(locale)}</span></Link>
+          <DreamPaymentActions dreamId={d.id} payment={d.payment} compact />
         </div>
       </div>
     )
@@ -67,15 +69,15 @@ export function UserDreamsPage() {
   const user = useAuthStore((s) => s.user)
   const locale = useAuthStore((s) => s.locale)
   const [params, setParams] = useSearchParams()
+  // the tab IS the address (?tab=): a link, a notification or Back/Forward always shows the matching list
   const fromUrl = params.get('tab') as Tab | null
-  const [tab, setTabState] = useState<Tab>(fromUrl && TABS.includes(fromUrl) ? fromUrl : 'DRAFT')
+  const tab: Tab = fromUrl && TABS.includes(fromUrl) ? fromUrl : 'DRAFT'
   const [selected, setSelected] = useState<string[]>([])
+  useEffect(() => { setSelected([]) }, [tab])
   const listRef = useRef<HTMLDivElement>(null)
-  // the tab lives in the address too (?tab=), so a dashboard tile or a shared link opens the right list
   const setTab = (v: Tab) => {
-    setTabState(v)
-    setSelected([])
-    setParams((p) => { const n = new URLSearchParams(p); if (v === 'DRAFT') n.delete('tab'); else n.set('tab', v); return n }, { replace: true })
+    if (v === tab) return
+    setParams((p) => { const n = new URLSearchParams(p); if (v === 'DRAFT') n.delete('tab'); else n.set('tab', v); return n })
   }
   const openTab = (v: Tab) => {
     setTab(v)
@@ -84,10 +86,12 @@ export function UserDreamsPage() {
 
   const dash = useQuery({ queryKey: ['me', 'dashboard'], queryFn: meApi.dashboard })
   const list = useQuery({ queryKey: ['dreams', tab], queryFn: () => dreamsApi.list(tab, 0, 50) })
+  const errorText = useErrorText('me.dreamErrors')
+  const once = useOnce()
   const submit = useMutation({
     mutationFn: dreamsApi.submit,
     onSuccess: () => { setSelected([]); qc.invalidateQueries({ queryKey: ['dreams'] }); qc.invalidateQueries({ queryKey: ['me'] }); qc.invalidateQueries({ queryKey: ['notifications'] }); setTab('IN_REVIEW') },
-    onError: (e) => { const err = e as ApiError; if (err.problem.code === 'INSUFFICIENT_CREDITS') navigate(`/me/packages?dreams=${selected.join(',')}`) },
+    onError: (e) => { if (errorCode(e) === 'INSUFFICIENT_CREDITS') navigate(`/me/packages?dreams=${selected.join(',')}`); else { toast.error(errorText(e)); invalidateDreams(qc) } },
   })
 
   const credits = dash.data?.credits ?? 0
@@ -157,7 +161,7 @@ export function UserDreamsPage() {
           <div className="text-sm">
             {need > 0 ? <span className="text-gold">{t('me.needMore', { n: need })}</span> : t('me.submitHint', { n: selected.length, left: credits - selected.length })}
           </div>
-          <Button loading={submit.isPending} onClick={() => (need > 0 ? navigate(`/me/packages?dreams=${selected.join(',')}`) : submit.mutate({ dreamIds: selected }))}>{t('me.submitSelected', { n: selected.length })}</Button>
+          <Button loading={submit.isPending} onClick={() => (need > 0 ? navigate(`/me/packages?dreams=${selected.join(',')}`) : once(() => submit.mutateAsync({ dreamIds: selected })))}>{t('me.submitSelected', { n: selected.length })}</Button>
         </div>
       )}
     </PageEnter>

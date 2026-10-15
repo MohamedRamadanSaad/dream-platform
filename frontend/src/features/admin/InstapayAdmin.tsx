@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useMutation, useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query'
 import { adminApi } from '@/api/endpoints'
-import { ApiError } from '@/api/client'
+import { invalidateDreams, useErrorText, useOnce } from '@/lib/apiErrors'
 import { useAuthStore } from '@/app/auth-store'
 import { Button, ErrorBox, Input, Label, Modal, Skeleton, Switch, Textarea } from '@/components/ui'
 import { toast } from '@/components/ui/Toaster'
@@ -12,8 +12,10 @@ import type { Currency, InstapaySettings } from '@/api/types'
 
 export const INSTAPAY_COUNTS_KEY = ['admin', 'instapay', 'counts'] as const
 
-/** Every list that changes when a transfer is approved or rejected. */
+/** Every list that changes when a transfer is approved or rejected (attached dreams move too). */
 export function invalidateAfterReview(qc: QueryClient, orderId?: string) {
+  invalidateDreams(qc)
+  qc.invalidateQueries({ queryKey: ['admin', 'dream'] })
   qc.invalidateQueries({ queryKey: INSTAPAY_COUNTS_KEY })
   qc.invalidateQueries({ queryKey: ['admin', 'orders'] })
   qc.invalidateQueries({ queryKey: ['admin', 'summary'] })
@@ -21,14 +23,9 @@ export function invalidateAfterReview(qc: QueryClient, orderId?: string) {
   if (orderId) qc.invalidateQueries({ queryKey: ['admin', 'order', orderId] })
 }
 
-/** The server's reason, worded for the interpreter when it has a known code. */
+/** The server's reason, worded for the interpreter when it has a known code (else a translated generic text). */
 export function useInstapayErrorText() {
-  const { t, i18n } = useTranslation()
-  return (e: unknown) => {
-    const code = (e as ApiError).problem?.code
-    if (code && i18n.exists(`admin.instapay.errors.${code}`)) return t(`admin.instapay.errors.${code}`)
-    return (e as ApiError).problem?.detail ?? (e as Error).message
-  }
+  return useErrorText('admin.instapay.errors')
 }
 
 /**
@@ -42,6 +39,7 @@ export function TransferReviewModals({ orderId, orderNumber, amount, currency, r
   const locale = useAuthStore((s) => s.locale)
   const qc = useQueryClient()
   const errorText = useInstapayErrorText()
+  const once = useOnce()
   const [note, setNote] = useState('')
   useEffect(() => { if (mode === 'reject') setNote('') }, [mode])
   const accept = useMutation({
@@ -59,7 +57,7 @@ export function TransferReviewModals({ orderId, orderNumber, amount, currency, r
   return (
     <>
       <Modal open={mode === 'approve'} onClose={onClose} title={t('admin.instapay.acceptTitle')} size="sm" focusField={false}
-        footer={<><Button variant="ghost" onClick={onClose}>{t('common.cancel')}</Button><Button loading={accept.isPending} onClick={() => accept.mutate()}>{t('admin.instapay.acceptConfirm')}</Button></>}>
+        footer={<><Button variant="ghost" onClick={onClose}>{t('common.cancel')}</Button><Button loading={accept.isPending} onClick={() => once(() => accept.mutateAsync())}>{t('admin.instapay.acceptConfirm')}</Button></>}>
         <p className="mb-2 text-xs text-fg-dim">{t('admin.instapay.orderNo')}: <span dir="ltr" className="select-all font-mono font-medium text-fg-muted">{orderNumber}</span></p>
         <p className="text-sm leading-relaxed">{t('admin.instapay.acceptBody', { amount: `\u2068${fmtMoney(amount, currency, locale)}\u2069`, reference: `\u2068${reference}\u2069` })}</p>
         <div className="mt-4 rounded-xl border border-gold/40 bg-gold/5 p-4">
@@ -71,7 +69,7 @@ export function TransferReviewModals({ orderId, orderNumber, amount, currency, r
         </div>
       </Modal>
       <Modal open={mode === 'reject'} onClose={onClose} title={t('admin.instapay.rejectTitle')} size="sm"
-        footer={<><Button variant="ghost" onClick={onClose}>{t('common.cancel')}</Button><Button variant="ghost" className="border-danger text-danger" loading={reject.isPending} onClick={() => reject.mutate()}>{t('admin.instapay.rejectConfirm')}</Button></>}>
+        footer={<><Button variant="ghost" onClick={onClose}>{t('common.cancel')}</Button><Button variant="ghost" className="border-danger text-danger" loading={reject.isPending} onClick={() => once(() => reject.mutateAsync())}>{t('admin.instapay.rejectConfirm')}</Button></>}>
         <p className="mb-4 text-sm leading-relaxed text-fg-muted">{t('admin.instapay.rejectBody')}</p>
         <label htmlFor="ip-note"><Label>{t('admin.instapay.rejectNote')}</Label></label>
         <Textarea id="ip-note" rows={3} maxLength={500} value={note} onChange={(e) => setNote(e.target.value)} placeholder={t('admin.instapay.rejectNotePlaceholder')} />
@@ -93,8 +91,9 @@ export function CopyButton({ text, label, done }: { text: string; label: string;
 
 /** The receiving account (address, link, receiver name, hours to pay). Buyers see a change at once. */
 export function InstapaySettingsCard() {
-  const { t, i18n } = useTranslation()
+  const { t } = useTranslation()
   const qc = useQueryClient()
+  const settingsError = useInstapayErrorText()
   const q = useQuery({ queryKey: ['admin', 'instapay', 'settings'], queryFn: adminApi.instapaySettings })
   const [form, setForm] = useState<InstapaySettings | null>(null)
   const [err, setErr] = useState<string | null>(null)
@@ -102,10 +101,8 @@ export function InstapaySettingsCard() {
   const save = useMutation({
     mutationFn: (body: InstapaySettings) => adminApi.saveInstapaySettings(body),
     onSuccess: (s) => { setForm(s); qc.setQueryData(['admin', 'instapay', 'settings'], s); toast.success(t('admin.instapay.saved')) },
-    onError: (e) => {
-      const code = (e as ApiError).problem?.code
-      setErr(code && i18n.exists(`admin.instapay.errors.${code}`) ? t(`admin.instapay.errors.${code}`) : (e as Error).message)
-    },
+    meta: { toast: false },
+    onError: (e) => setErr(settingsError(e)),
   })
   if (q.isLoading || !form) return <Skeleton className="h-48" />
   if (q.isError) return <ErrorBox onRetry={() => q.refetch()} />

@@ -294,8 +294,9 @@
       "inProgressText": "Expected within {{days}} (by {{date}}).",
       "inProgressFinal": "The interpreter has started, so the text can no longer be changed.",
       "editHint": "You can still edit the text until the interpreter starts.",
-      "pendingTitle": "Attached to a payment under review",
-      "rejectedTitle": "The payment was not confirmed"
+      "pendingTitle": "Payment under review",
+      "rejectedTitle": "The payment was not confirmed",
+      "notFound": "This dream was not found. It may have been deleted."
     },
     "status": {
       "DRAFT": "Draft",
@@ -342,7 +343,11 @@
         "INVALID_COUPON": "This discount code is not valid or has expired.",
         "PAYMENT_PROVIDER_ERROR": "We could not reach the payment page right now. Nothing was charged. Please try again shortly.",
         "NOT_CONFIGURED": "Payment is not available right now. Nothing was charged. Please try again shortly.",
-        "PAYMENT_EGYPT_ONLY": "For now, payment is available from inside Egypt only. We are working on other countries soon."
+        "PAYMENT_EGYPT_ONLY": "For now, payment is available from inside Egypt only. We are working on other countries soon.",
+        "DREAM_ALREADY_ATTACHED": "This dream is already attached to another payment. Remove it from that payment first.",
+        "TOO_MANY_DREAMS": "You attached more dreams than this package covers. Attach fewer dreams or choose a bigger package.",
+        "ATTACHED_TO_PAYMENT": "This dream is attached to a payment under review, so it cannot be deleted now. Remove it from the payment first.",
+        "NOT_RELEASABLE": "Dreams can no longer be removed from this payment."
       },
       "title": "Checkout",
       "coupon": "Coupon code",
@@ -431,16 +436,26 @@
           "ORDER_EXPIRED": "This order has expired. Please choose the package again.",
           "ORDER_CLOSED": "This order cannot be changed now.",
           "INVALID_DREAMS": "We could not attach the dream. Please try again.",
-          "DRAFT_LIMIT": "You have too many drafts. Delete some on My dreams, or send the transfer without a dream."
+          "DRAFT_LIMIT": "You have too many drafts. Delete some on My dreams, or send the transfer without a dream.",
+          "DREAM_ALREADY_ATTACHED": "This dream is already attached to another payment. Remove it from that payment first.",
+          "TOO_MANY_DREAMS": "You attached more dreams than this package covers. Attach fewer dreams or choose a bigger package.",
+          "ATTACHED_TO_PAYMENT": "This dream is attached to a payment under review, so it cannot be deleted now. Remove it from the payment first.",
+          "NOT_RELEASABLE": "Dreams can no longer be removed from this payment."
         },
         "timeLeft": "Time left: {{left}}",
         "copyOrderNo": "Copy order number",
-        "orderNoHint": "Mention this number if you contact us about this order."
+        "orderNoHint": "Mention this number if you contact us about this order.",
+        "limit_one": "You can attach 1 dream to this payment.",
+        "limit_other": "You can attach up to {{count}} dreams to this payment.",
+        "limitLeft_one": "You can attach 1 more dream to this payment.",
+        "limitLeft_other": "You can attach {{count}} more dreams to this payment.",
+        "limitFull": "This payment already has as many dreams as its credits."
       },
       "secureEg": "We never ask for your bank details. You transfer from your own app.",
       "continue": "Continue {{amount}}",
       "egyptOnly": "For now, payment is available from inside Egypt only, by InstaPay transfer. We are working on card payment for other countries soon.",
-      "contactUs": "Contact us"
+      "contactUs": "Contact us",
+      "tooMany": "You chose more dreams than this package covers ({{n}}). Choose a bigger package or fewer dreams."
     },
     "profile": {
       "title": "Account",
@@ -565,7 +580,10 @@
     "notifications": {
       "title": "Notifications",
       "readAll": "Mark all as read",
-      "empty": "No notifications"
+      "empty": "No notifications",
+      "types": {
+        "DREAM_EDITED": "Dream edited"
+      }
     },
     "expiry": {
       "notice_one": "{{count}} credit expires on {{date}}",
@@ -576,7 +594,29 @@
       "open": "Open the payment",
       "reason": "Reason: {{note}}",
       "underReview": "It goes to the interpreter as soon as your payment is confirmed.",
-      "rejected": "Your transfer was not confirmed. Check the details and send them again."
+      "rejected": "Your transfer was not confirmed. Check the details and send them again.",
+      "release": "Remove from this payment",
+      "releaseTitle": "Remove this dream from the payment?",
+      "releaseBody": "The dream goes back to your drafts, and you can send it later.",
+      "releaseKeep": "The payment itself stays as it is. Nothing changes in it.",
+      "releaseConfirm": "Remove from payment",
+      "released": "The dream is back in your drafts",
+      "sendWithBalance": "Send with my balance",
+      "sent": "Your dream was sent to the interpreter",
+      "payAgain": "Attach to a new payment",
+      "deleteTitle": "Delete this dream?",
+      "deleteBody": "The dream is deleted for good and cannot be brought back.",
+      "deleted": "Dream deleted",
+      "actions": "Dream actions"
+    },
+    "dreamErrors": {
+      "DREAM_ALREADY_ATTACHED": "This dream is already attached to another payment. Remove it from that payment first.",
+      "TOO_MANY_DREAMS": "You attached more dreams than this package covers. Attach fewer dreams or choose a bigger package.",
+      "ATTACHED_TO_PAYMENT": "This dream is attached to a payment under review, so it cannot be deleted now. Remove it from the payment first.",
+      "NOT_RELEASABLE": "Dreams can no longer be removed from this payment.",
+      "NOT_EDITABLE": "The interpreter has already started on this dream, so it can no longer be edited.",
+      "NOT_DRAFT": "Only a draft can do this.",
+      "INSUFFICIENT_CREDITS": "Your balance is not enough. Choose a package first."
     }
   },
   "admin": {
@@ -656,8 +696,8 @@
       "creditsLeft": "Left: {{n}}",
       "creditsExpired": "Its credits have expired",
       "start": "Start interpreting",
-      "startTitle": "Start interpreting",
-      "startBody": "Once you start, the dreamer can no longer edit the text. Choose how many days you expect to need. The dreamer will see it.",
+      "startTitle": "How many days do you need?",
+      "startBody": "After you confirm, the dream is final: the dreamer can no longer edit it and sees the number of days.",
       "startDays": "Expected days",
       "startCustom": "Or type a number of days (1 to 30)",
       "startConfirm": "Start now",
@@ -666,7 +706,11 @@
       "expectedIn": "Expected within {{days}}, by {{date}}",
       "editedByDreamer": "Edited by the dreamer {{time}}",
       "editableHint": "The dreamer can still edit the text until you press “Start interpreting”.",
-      "daysOutOfRange": "Choose between 1 and 30 days."
+      "daysOutOfRange": "Choose between 1 and 30 days.",
+      "errors": {
+        "NOT_IN_REVIEW": "This dream is no longer waiting, so it cannot be started now."
+      },
+      "notFound": "This dream was not found."
     },
     "pricing": {
       "gaps": {
@@ -859,7 +903,7 @@
         "DOMESTIC": "Domestic",
         "INTERNATIONAL": "International"
       },
-      "settled": "Settled",
+      "settled": "Received",
       "reference": "Reference",
       "submitted": "Sent",
       "dreams": "Dreams",
@@ -1250,7 +1294,7 @@
       "INTERPRETED": "Interpreted",
       "CANCELLED": "Cancelled",
       "IN_PROGRESS": "Being interpreted",
-      "PENDING_PAYMENT": "Waiting for this payment",
+      "PENDING_PAYMENT": "Payment under review",
       "PAYMENT_REJECTED": "Payment rejected"
     },
     "legal": {
@@ -1306,7 +1350,11 @@
         "INVALID_ADDRESS": "The address must look like name@instapay.",
         "INVALID_LINK": "The link must start with https://ipn.eg/S/ as InstaPay copies it.",
         "REFERENCE_CHANGED": "The buyer just changed the reference number. Check the new number in your InstaPay history, then accept.",
-        "NOT_PENDING": "This transfer is no longer waiting for review."
+        "NOT_PENDING": "This transfer is no longer waiting for review.",
+        "DREAM_ALREADY_ATTACHED": "This dream is already attached to another payment. Remove it from that payment first.",
+        "TOO_MANY_DREAMS": "You attached more dreams than this package covers. Attach fewer dreams or choose a bigger package.",
+        "ATTACHED_TO_PAYMENT": "This dream is attached to a payment under review, so it cannot be deleted now. Remove it from the payment first.",
+        "NOT_RELEASABLE": "Dreams can no longer be removed from this payment."
       },
       "orderNo": "Order number"
     },
@@ -1324,7 +1372,7 @@
       "credits_one": "{{count}} dream",
       "credits_other": "{{count}} dreams",
       "amount": "Amount paid",
-      "settled": "Settled in EGP",
+      "settled": "Received in EGP",
       "notSettled": "Not settled yet",
       "country": "Country",
       "countrySource": "Detected by the server",
@@ -1355,7 +1403,9 @@
       "openDream": "Open the dream",
       "showText": "Show the dream text",
       "hideText": "Hide the dream text",
-      "approveRef": "Reference to confirm"
+      "approveRef": "Reference to confirm",
+      "notFound": "This payment was not found.",
+      "fxEstimate": "Estimate at the recorded exchange rate"
     }
   },
   "common": {

@@ -80,6 +80,8 @@ export const checkoutApi = {
 export const instapayApi = {
   view: (orderId: string) => http.get<T.InstapayOrderView>(`/me/orders/${orderId}/instapay`),
   submit: (orderId: string, body: T.InstapaySubmitRequest) => http.post<T.InstapayOrderView>(`/me/orders/${orderId}/instapay`, body),
+  /** Detach dreams from an order (all of them when `dreamIds` is missing): they go back to Drafts; the order stays as is. 409 NOT_RELEASABLE. */
+  releaseDreams: (orderId: string, dreamIds?: string[]) => http.post<void>(`/me/orders/${orderId}/release-dreams`, { dreamIds }),
 }
 
 export const notificationsApi = {
