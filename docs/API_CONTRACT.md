@@ -150,11 +150,12 @@ Binding detail: `docs/UX_PAYMENTS_REVIEW_CONTRACT.md`.
 | Route | Body / result |
 |---|---|
 | `POST /admin/dreams/{id}/start` | `{expectedDays: 1..30}` → IN_REVIEW → IN_PROGRESS, `startedAt`, `expectedBy = now + days`; returns `AdminDreamDetail`. 409 `NOT_IN_REVIEW`; 400 when the days are out of range. Audit `DREAM_START`; the dreamer gets `DREAM_STARTED` (in-app + push + `dream-started` e-mail, ar/en) |
-| `PUT /dreams/{id}` | allowed for DRAFT, or IN_REVIEW with `startedAt == null` (sets `userEditedAt`); else 409 `NOT_EDITABLE`. Row-locked, so it cannot race the start |
-| `DELETE /dreams/{id}` | DRAFT only (409 `NOT_DRAFT`); 409 `ATTACHED_TO_PAYMENT` when the draft waits on a payment |
+| `PUT /dreams/{id}` | allowed for DRAFT, or IN_REVIEW / AWAITING_USER_REPLY with `startedAt == null` (sets `userEditedAt` and sends the interpreters an in-app `DREAM_EDITED`, at most once per dream per hour, no e-mail); else 409 `NOT_EDITABLE`. Row-locked, so it cannot race the start |
+| `DELETE /dreams/{id}` | DRAFT only (409 `NOT_DRAFT`); 409 `ATTACHED_TO_PAYMENT` (+ `orderId`, `dreamId`) while an INITIATED (not expired) or PENDING_REVIEW order holds it. A rejected order never holds it: the dream leaves that order |
 | `GET /dreams?status=` | a `DreamStatus`, `ALL`, or the virtual `PENDING_PAYMENT` (drafts attached to a payment). `DRAFT` leaves the attached drafts out |
-| `POST /dreams/submit` | 409 `ATTACHED_TO_PAYMENT` for a draft that waits on a payment (it is sent by that payment) |
-| `POST /checkout`, `POST /me/orders/{id}/instapay` | 409 `DREAM_ALREADY_ATTACHED` when a dream is in the intent of another live order of the user (INITIATED not expired, PENDING_REVIEW, rejected-and-resendable). Resending the same order with its own dreams is fine |
+| `POST /dreams/submit` | 409 `ATTACHED_TO_PAYMENT` (+ `orderId`, `dreamId`) for a draft held by an INITIATED (not expired) or PENDING_REVIEW order; a draft of a rejected order may be submitted with existing credits and leaves that order |
+| `POST /checkout`, `POST /me/orders/{id}/instapay` | 409 `DREAM_ALREADY_ATTACHED` (+ `orderId`, `dreamId`) when a dream is held by another INITIATED (not expired) or PENDING_REVIEW order of the user. A dream of a rejected order may be attached and leaves that order. 400 `TOO_MANY_DREAMS` (+ `credits`, `dreams`) when the order would carry more dreams (its intent ∪ the new ones) than the credits it buys. Resending the same order with its own dreams is fine |
+| `POST /me/orders/{id}/release-dreams` | optional `{dreamIds?: uuid[]}` (all when absent or empty) → 200 `{released: uuid[]}`: the caller's order (INITIATED, PENDING_REVIEW, or rejected) lets go of those dreams, which return to the drafts. 404 for someone else's order, 409 `NOT_RELEASABLE` in any other state |
 | `GET /admin/orders?scope=&q=&page&size` | `scope` = `REVIEW` (InstaPay PENDING_REVIEW, oldest submitted first) · `DOMESTIC` (country EG, newest first) · `INTERNATIONAL` (not EG or no country) · `ALL` (default, CSV export). `q` = order number (see "Order numbers"), combinable with any scope (`?scope=REVIEW&q=15001`). `Page<AdminOrderRow>` |
 | `GET /admin/orders/counts` | `{review, domestic, international}` |
 | `GET /admin/orders/{id}` | `AdminOrderDetail` (`orderNumber`, transfer + `reviewedByName`, buyer with age, dreams = intent ∪ dreams paid by its credits with full text, `canReview`) |
@@ -164,11 +165,12 @@ Binding detail: `docs/UX_PAYMENTS_REVIEW_CONTRACT.md`.
 
 Shapes (field names = types.ts):
 
-- `DreamSummary` / `DreamDetail` add `startedAt`, `expectedDays`, `editable`, `payment: {orderId, status: PENDING_REVIEW|REJECTED, submittedAt, reviewNote} | null`.
+- `DreamSummary` / `DreamDetail` add `startedAt`, `expectedDays`, `editable` (DRAFT, or IN_REVIEW / AWAITING_USER_REPLY before the start), `payment: {orderId, status: PENDING_REVIEW|REJECTED, submittedAt, reviewNote} | null` (PENDING_REVIEW or rejected orders; a rejected one does not block the dream).
 - `AdminDreamRow` adds `startedAt`, `expectedDays`, `userEditedAt`; `AdminDreamDetail` adds `startedAt`, `expectedDays`, `editable`, `userEditedAt` and keeps `payment` = the order that paid the dream.
 - `AdminOrderRow` = `OrderDto` (incl. `orderNumber`) + `userName, userId, userEmail, settledAmountEgp, transferReference, transferSenderName, transferSubmittedAt, attachedDreams`.
 
 Data: `dreams.started_at`, `dreams.expected_days` (1..30), `dreams.user_edited_at`, status `IN_PROGRESS`;
 `orders.settled_amount_egp` set by `PaymentService.confirm` on SUCCESS (EGP → amount, else
 `amount × fx[cur] / fx[EGP]` from `pricing.fx_to_usd`, half-up 2 places) and back-filled by V39; notification type
-`DREAM_STARTED`; settings `mail.event.dream-started`, `mail.theme.dream-started`.
+`DREAM_STARTED` (in-app/push/e-mail, text "…within {daysText}, by {expectedBy}" with Arabic number agreement) and
+`DREAM_EDITED` (interpreters, in-app + push only); settings `mail.event.dream-started`, `mail.theme.dream-started`.

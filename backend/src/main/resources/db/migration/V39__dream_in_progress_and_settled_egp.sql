@@ -1,6 +1,7 @@
 -- V39 (docs/UX_PAYMENTS_REVIEW_CONTRACT.md): "Start interpreting" (dream status IN_PROGRESS with the expected number
 -- of days), the dreamer's edits before that point, the settled amount of every paid order in EGP (the base currency
--- of the interpreter's revenue ranking), and the DREAM_STARTED notification + dream-started e-mail.
+-- of the interpreter's revenue ranking), the DREAM_STARTED notification + dream-started e-mail, and the DREAM_EDITED
+-- notification to interpreters.
 
 -- ------------------------------------------------------------------ dreams: status IN_PROGRESS
 -- the V5 status CHECK has a name chosen by PostgreSQL: drop it by its definition
@@ -55,7 +56,7 @@ WHERE o.settled_amount_egp IS NULL
 -- the interpreter's order tabs: domestic (Egypt) / international, newest first
 CREATE INDEX IF NOT EXISTS ix_orders_country_created ON orders (country_code, created_at DESC);
 
--- ------------------------------------------------------------------ notification type DREAM_STARTED
+-- ------------------------------------------------------------------ notification types DREAM_STARTED, DREAM_EDITED
 ALTER TABLE notifications DROP CONSTRAINT IF EXISTS notifications_type_check;
 DO $$
 DECLARE c record;
@@ -73,7 +74,7 @@ END $$;
 ALTER TABLE notifications ADD CONSTRAINT notifications_type_check
     CHECK (type IN ('DREAM_SUBMITTED', 'DREAM_RECEIVED', 'INTERPRETER_QUESTION', 'USER_REPLIED', 'INTERPRETATION_READY',
                     'PAYMENT_SUCCESS', 'PROMOTION', 'YOUTUBE_VIDEO', 'TRANSFER_SUBMITTED', 'PAYMENT_REJECTED',
-                    'DREAM_STARTED'));
+                    'DREAM_STARTED', 'DREAM_EDITED'));
 
 -- ------------------------------------------------------------------ e-mail dream-started (switch + theme)
 INSERT INTO app_settings (key, value, type, description) VALUES

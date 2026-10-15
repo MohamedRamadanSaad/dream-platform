@@ -18,7 +18,7 @@ import java.util.List;
  *   <li>{@link #INTERPRETER_QUESTION}: name, link</li>
  *   <li>{@link #USER_REPLIED} (to interpreter): userName, link</li>
  *   <li>{@link #INTERPRETATION_READY}: name, link (no interpretation text by design)</li>
- *   <li>{@link #DREAM_STARTED}: name, expectedDays*, expectedBy, link</li>
+ *   <li>{@link #DREAM_STARTED}: name, expectedDays, daysText ("3 أيام" / "3 days"), expectedBy, link</li>
  *   <li>{@link #PAYMENT_RECEIPT}: name, packageName, amount, currency, credits, orderRef, paidAt, link</li>
  *   <li>{@link #PAYMENT_SUSPICIOUS} (to interpreter): orderRef, userName, userEmail, amount, currency, reason, link</li>
  *   <li>{@link #REPLY_REMINDER}: name, link</li>

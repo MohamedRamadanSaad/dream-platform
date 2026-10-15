@@ -1,6 +1,5 @@
 package com.saadat.payments.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.saadat.common.audit.AuditService;
 import com.saadat.common.domain.CountrySource;
@@ -159,8 +158,11 @@ public class PaymentService {
         }
 
         PaymentProvider provider = providerRegistry.forCurrency(resolved.currency());
-        // a draft already waiting on another payment cannot be paid twice (contract §2)
-        dreamAttachments.requireFree(userId, request.dreamIds(), null);
+        // a draft already held by another payment cannot be paid twice; never more dreams than credits (contract §2)
+        List<UUID> intentIds = request.dreamIds() == null ? List.of()
+                : new ArrayList<>(new LinkedHashSet<>(request.dreamIds().stream().filter(java.util.Objects::nonNull).toList()));
+        dreamAttachments.requireFree(userId, intentIds, null);
+        DreamAttachments.requireWithinCredits(intentIds.size(), pkg.getCredits() + applied.bonusCredits());
         Instant now = clock.instant();
 
         Order order = new Order();
@@ -178,7 +180,7 @@ public class PaymentService {
         order.setPriceRuleScope(resolved.scope());
         order.setProvider(provider.type());
         order.setStatus(OrderStatus.INITIATED);
-        order.setCheckoutIntent(intentJson(request.dreamIds()));
+        order.setCheckoutIntent(intentJson(intentIds));
         order.setCountryCode(countryCode);
         order.setCountrySource(countrySource);
         order.setCreatedAt(now);
@@ -197,6 +199,8 @@ public class PaymentService {
         }
         order.setProviderOrderId(session.providerOrderId());
         order = orderRepository.save(order);
+        // the dreams now belong to this payment: they leave a rejected one
+        dreamAttachments.detachFromRejected(userId, intentIds, order.getId());
 
         return new CheckoutResponse(order.getId(), OrderDto.displayProvider(order), session.checkoutUrl(),
                 order.getAmount(), order.getCurrency(), order.getExpiresAt());
@@ -391,15 +395,7 @@ public class PaymentService {
     // ================================================================== checkout_intent
 
     String intentJson(List<UUID> dreamIds) {
-        List<UUID> ids = dreamIds == null ? List.of() : new ArrayList<>(new LinkedHashSet<>(dreamIds));
-        if (ids.isEmpty()) {
-            return null;
-        }
-        try {
-            return objectMapper.writeValueAsString(Map.of(INTENT_DREAM_IDS, ids));
-        } catch (JsonProcessingException e) {
-            throw new IllegalStateException("Cannot serialize checkout intent", e);
-        }
+        return dreamAttachments.intentJson(dreamIds);
     }
 
     List<UUID> readIntent(String json) {

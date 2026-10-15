@@ -74,6 +74,11 @@ public final class ApiPaths {
         public static final String ORDER = ORDERS + "/{id}";
         /** GET: the InstaPay payment page of one of the caller's orders; POST {reference, senderName, dreamIds}. */
         public static final String ORDER_INSTAPAY = ORDER + "/instapay";
+        /**
+         * POST {dreamIds?}: the caller's order (INITIATED, PENDING_REVIEW or rejected) lets go of those dreams (all when
+         * absent); they return to the drafts. 409 NOT_RELEASABLE otherwise.
+         */
+        public static final String ORDER_RELEASE_DREAMS = ORDER + "/release-dreams";
         /** PDF of all the caller's non-draft dreams with their interpretations. */
         public static final String DREAMS_PDF = ROOT + "/dreams/pdf";
         /** GET: the caller's signed-in devices (active refresh-token families), most recently active first. */

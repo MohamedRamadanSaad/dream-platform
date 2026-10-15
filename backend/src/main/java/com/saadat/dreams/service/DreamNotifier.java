@@ -2,6 +2,7 @@ package com.saadat.dreams.service;
 
 import com.saadat.common.domain.Locale;
 import com.saadat.common.domain.NotificationType;
+import com.saadat.common.util.DayCounts;
 import com.saadat.common.tx.AfterCommit;
 import com.saadat.dreams.domain.Dream;
 import com.saadat.dreams.repo.DreamRepository;
@@ -61,8 +62,8 @@ public class DreamNotifier {
     }
 
     /**
-     * DREAM_STARTED to the owner: in-app + push + dream-started e-mail with {@code expectedDays} and
-     * {@code expectedBy} (the date it should be ready).
+     * DREAM_STARTED to the owner: in-app + push + dream-started e-mail with {@code expectedDays}, {@code daysText}
+     * ("3 أيام" / "3 days", in the owner's language) and {@code expectedBy} (the date it should be ready).
      */
     public void started(UUID dreamId) {
         afterCommit.run("dream-started:" + dreamId, () -> {
@@ -73,8 +74,22 @@ public class DreamNotifier {
             User owner = userRepository.findById(d.getUserId()).orElse(null);
             Map<String, Object> args = args(d, owner);
             args.put("expectedDays", d.getExpectedDays() == null ? "" : d.getExpectedDays());
+            // "3 أيام" / "3 days" in the dreamer's language (in-app text, push and e-mail all use it)
+            args.put("daysText", d.getExpectedDays() == null ? ""
+                    : DayCounts.text(d.getExpectedDays(), owner == null ? Locale.AR : owner.getLocale()));
             args.put(NotificationService.ARG_REF, MailTemplates.DREAM_STARTED + ":" + dreamId);
             notificationService.notify(d.getUserId(), NotificationType.DREAM_STARTED, args, DreamLinks.user(dreamId));
+        });
+    }
+
+    /** DREAM_EDITED to the interpreters (in-app + push, no e-mail): the dreamer changed a submitted dream's text. */
+    public void edited(UUID dreamId) {
+        afterCommit.run("dream-edited:" + dreamId, () -> {
+            Dream d = dreamRepository.findById(dreamId).orElse(null);
+            if (d != null) {
+                User owner = userRepository.findById(d.getUserId()).orElse(null);
+                toInterpreters(NotificationType.DREAM_EDITED, args(d, owner), DreamLinks.admin(dreamId));
+            }
         });
     }
 

@@ -50,6 +50,8 @@ class UxPaymentsReviewIntegrationTest extends IntegrationTestBase {
 
     /** Seeded package p1 (1 credit). */
     private static final String PACKAGE_ONE = "22222222-2222-4222-8222-000000000001";
+    /** Seeded package p3 (3 credits). */
+    private static final String PACKAGE_THREE = "22222222-2222-4222-8222-000000000003";
     private static final String DREAM_TEXT = "رأيت أني أقف على باب بيت قديم وفي يدي مفتاح من نحاس يلمع في الشمس.";
     private static final String EDITED_TEXT = "رأيت أني أقف على باب بيت قديم وفي يدي مفتاحان من نحاس يلمعان في الشمس.";
 
@@ -129,7 +131,7 @@ class UxPaymentsReviewIntegrationTest extends IntegrationTestBase {
                 .anyMatch(n -> n.getType() == NotificationType.DREAM_STARTED));
         Notification n = notifications(user).stream().filter(x -> x.getType() == NotificationType.DREAM_STARTED)
                 .findFirst().orElseThrow();
-        assertThat(n.getBody()).contains("3").doesNotContain("{");
+        assertThat(n.getBody()).contains("3 أيام").contains("بدأت المعبّرة تعبير رؤياك").doesNotContain("{");
         assertThat(n.getLink()).isEqualTo("/me/dreams/" + id);
         awaitTrue("dream-started e-mail", () -> emailLogRepository.existsByTemplateAndRef(MailTemplates.DREAM_STARTED,
                 MailTemplates.DREAM_STARTED + ":" + id));
@@ -203,7 +205,7 @@ class UxPaymentsReviewIntegrationTest extends IntegrationTestBase {
         UUID attached = createDraft(buyer);
         UUID loose = createDraft(buyer);
 
-        UUID orderId = checkout(buyer, attached).andExpect(status().isOk()).andReturnOrderId();
+        UUID orderId = checkout(buyer, PACKAGE_THREE, attached).andExpect(status().isOk()).andReturnOrderId();
         // INITIATED: not attached yet (the buyer has not sent the transfer), but already held by the order
         assertThat(listIds(buyer, "DRAFT")).contains(attached, loose);
         checkout(buyer, attached).andExpect(status().isConflict())
@@ -254,6 +256,209 @@ class UxPaymentsReviewIntegrationTest extends IntegrationTestBase {
         assertThat(dreamRepository.findById(attached).orElseThrow().getStatus()).isEqualTo(DreamStatus.IN_REVIEW);
         assertThat(listIds(buyer, "PENDING_PAYMENT")).isEmpty();
         assertThat(listIds(buyer, "IN_REVIEW")).contains(attached);
+    }
+
+    @Test
+    void aRejectedPaymentNeverTrapsItsDreams() throws Exception {
+        User buyer = egyptian("rejected-buyer");
+        User interpreter = createUser("rejected-interpreter", Role.INTERPRETER);
+        UUID d1 = createDraft(buyer);
+        UUID d2 = createDraft(buyer);
+        UUID d3 = createDraft(buyer);
+        UUID orderA = checkout(buyer, PACKAGE_THREE, d1, d2, d3).andExpect(status().isOk()).andReturnOrderId();
+        submitTransfer(buyer, orderA, uniqueReference(), null).andExpect(status().isOk());
+        reject(interpreter, orderA, "Not found").andExpect(status().isOk());
+
+        // still shown under the payment, as REJECTED
+        assertThat(listIds(buyer, "PENDING_PAYMENT")).containsExactlyInAnyOrder(d1, d2, d3);
+        mvc.perform(get(ApiPaths.Dreams.ROOT + "/" + d1).header("Authorization", bearer(buyer)))
+                .andExpect(jsonPath("$.payment.status").value("REJECTED"))
+                .andExpect(jsonPath("$.payment.orderId").value(orderA.toString()));
+
+        // deleted: it leaves the rejected order
+        mvc.perform(delete(ApiPaths.Dreams.ROOT + "/" + d1).header("Authorization", bearer(buyer)))
+                .andExpect(status().isNoContent());
+        assertThat(intentOf(orderA)).containsExactlyInAnyOrder(d2, d3);
+
+        // submitted with credits the user already has: it leaves the rejected order
+        creditService.add(buyer.getId(), 1, LedgerReason.BONUS, null, "test", null);
+        mvc.perform(post(ApiPaths.Dreams.SUBMIT).header("Authorization", bearer(buyer))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"dreamIds\":[\"" + d2 + "\"]}"))
+                .andExpect(status().isOk());
+        assertThat(dreamRepository.findById(d2).orElseThrow().getStatus()).isEqualTo(DreamStatus.IN_REVIEW);
+        assertThat(intentOf(orderA)).containsExactly(d3);
+
+        // attached to a new checkout: it leaves the rejected order and is a plain draft again (new order INITIATED)
+        UUID orderC = checkout(buyer, PACKAGE_ONE, d3).andExpect(status().isOk()).andReturnOrderId();
+        assertThat(intentOf(orderA)).isEmpty();
+        assertThat(intentOf(orderC)).containsExactly(d3);
+        assertThat(listIds(buyer, "PENDING_PAYMENT")).isEmpty();
+        assertThat(listIds(buyer, "DRAFT")).contains(d3);
+
+        // the rejected order can still be resent (now without dreams)
+        submitTransfer(buyer, orderA, uniqueReference(), null)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("PENDING_REVIEW"))
+                .andExpect(jsonPath("$.attachedDreams").value(0));
+
+        // attached through another InstaPay order: it leaves the rejected one
+        UUID d4 = createDraft(buyer);
+        UUID orderE = checkout(buyer, PACKAGE_ONE, d4).andExpect(status().isOk()).andReturnOrderId();
+        submitTransfer(buyer, orderE, uniqueReference(), null).andExpect(status().isOk());
+        reject(interpreter, orderE, "Not found").andExpect(status().isOk());
+        UUID orderF = checkout(buyer, PACKAGE_ONE).andExpect(status().isOk()).andReturnOrderId();
+        submitTransfer(buyer, orderF, uniqueReference(), List.of(d4))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.attachedDreams").value(1));
+        assertThat(intentOf(orderE)).isEmpty();
+        mvc.perform(get(ApiPaths.Dreams.ROOT + "/" + d4).header("Authorization", bearer(buyer)))
+                .andExpect(jsonPath("$.payment.orderId").value(orderF.toString()))
+                .andExpect(jsonPath("$.payment.status").value("PENDING_REVIEW"));
+    }
+
+    @Test
+    void theBuyerReleasesTheDreamsOfAnOrder() throws Exception {
+        User buyer = egyptian("release-buyer");
+        User interpreter = createUser("release-interpreter", Role.INTERPRETER);
+        User stranger = egyptian("release-stranger");
+        UUID d1 = createDraft(buyer);
+        UUID d2 = createDraft(buyer);
+        UUID orderId = checkout(buyer, PACKAGE_THREE, d1, d2).andExpect(status().isOk()).andReturnOrderId();
+
+        release(stranger, orderId, null).andExpect(status().isNotFound());
+        // INITIATED: one dream
+        release(buyer, orderId, List.of(d1))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.released[0]").value(d1.toString()));
+        assertThat(intentOf(orderId)).containsExactly(d2);
+        mvc.perform(delete(ApiPaths.Dreams.ROOT + "/" + d1).header("Authorization", bearer(buyer)))
+                .andExpect(status().isNoContent());
+
+        // PENDING_REVIEW: held until released (no body = all)
+        String reference = uniqueReference();
+        submitTransfer(buyer, orderId, reference, null).andExpect(status().isOk());
+        assertThat(listIds(buyer, "PENDING_PAYMENT")).containsExactly(d2);
+        mvc.perform(delete(ApiPaths.Dreams.ROOT + "/" + d2).header("Authorization", bearer(buyer)))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.code").value("ATTACHED_TO_PAYMENT"))
+                .andExpect(jsonPath("$.orderId").value(orderId.toString()));
+        release(buyer, orderId, null)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.released.length()").value(1));
+        assertThat(listIds(buyer, "PENDING_PAYMENT")).isEmpty();
+        assertThat(listIds(buyer, "DRAFT")).contains(d2);
+
+        // accepted: a second approval is refused, the dreams can no longer be released
+        approve(interpreter, orderId, reference).andExpect(status().isOk());
+        approve(interpreter, orderId, reference)
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.code").value("NOT_PENDING"));
+        release(buyer, orderId, null)
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.code").value("NOT_RELEASABLE"));
+
+        // expired: not releasable either
+        UUID expired = checkout(buyer, PACKAGE_ONE, d2).andExpect(status().isOk()).andReturnOrderId();
+        Order o = orderRepository.findById(expired).orElseThrow();
+        o.setStatus(OrderStatus.EXPIRED);
+        orderRepository.save(o);
+        release(buyer, expired, null)
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.code").value("NOT_RELEASABLE"));
+    }
+
+    @Test
+    void anOrderNeverCarriesMoreDreamsThanItsCredits() throws Exception {
+        User buyer = egyptian("too-many");
+        UUID d1 = createDraft(buyer);
+        UUID d2 = createDraft(buyer);
+
+        checkout(buyer, PACKAGE_ONE, d1, d2)
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("TOO_MANY_DREAMS"));
+        UUID orderId = checkout(buyer, PACKAGE_ONE, d1).andExpect(status().isOk()).andReturnOrderId();
+        submitTransfer(buyer, orderId, uniqueReference(), List.of(d2))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("TOO_MANY_DREAMS"));
+        Order unchanged = orderRepository.findById(orderId).orElseThrow();
+        assertThat(unchanged.getStatus()).isEqualTo(OrderStatus.INITIATED);
+        assertThat(intentOf(orderId)).containsExactly(d1);
+        // the same dream again is fine
+        submitTransfer(buyer, orderId, uniqueReference(), List.of(d1)).andExpect(status().isOk());
+    }
+
+    @Test
+    void editingAndStartingFollowTheStatus() throws Exception {
+        User user = createUser("rules-user", Role.USER);
+        User interpreter = createUser("rules-interpreter", Role.INTERPRETER);
+        creditService.add(user.getId(), 1, LedgerReason.BONUS, null, "test", null);
+        UUID id = createDraft(user);
+        dreamService.submit(user.getId(), List.of(id), null);
+
+        // only the interpreter starts
+        start(user, id, 3).andExpect(status().isForbidden());
+
+        // question before the start: the dreamer may still edit; the interpreter is told once per hour
+        ask(interpreter, id).andExpect(status().isCreated());
+        mvc.perform(get(ApiPaths.Dreams.ROOT + "/" + id).header("Authorization", bearer(user)))
+                .andExpect(jsonPath("$.status").value("AWAITING_USER_REPLY"))
+                .andExpect(jsonPath("$.editable").value(true));
+        edit(user, id, EDITED_TEXT).andExpect(status().isOk());
+        awaitTrue("DREAM_EDITED", () -> editedNotices(interpreter, id) == 1);
+        edit(user, id, DREAM_TEXT).andExpect(status().isOk());
+        assertThat(editedNotices(interpreter, id)).isEqualTo(1);
+        assertThat(dreamRepository.findById(id).orElseThrow().getUserEditedAt()).isNotNull();
+        // an hour later another edit notifies again
+        Dream d = dreamRepository.findById(id).orElseThrow();
+        d.setUserEditedAt(Instant.now().minus(Duration.ofMinutes(61)));
+        dreamRepository.save(d);
+        edit(user, id, EDITED_TEXT).andExpect(status().isOk());
+        awaitTrue("second DREAM_EDITED", () -> editedNotices(interpreter, id) == 2);
+
+        // no start while waiting for the dreamer; the reply of a never-started dream goes back to IN_REVIEW
+        start(interpreter, id, 3)
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.code").value("NOT_IN_REVIEW"));
+        reply(user, id).andExpect(status().isCreated());
+        assertThat(dreamRepository.findById(id).orElseThrow().getStatus()).isEqualTo(DreamStatus.IN_REVIEW);
+
+        // after the start the text is final, also while waiting for a reply
+        start(interpreter, id, 2).andExpect(status().isOk());
+        ask(interpreter, id).andExpect(status().isCreated());
+        mvc.perform(get(ApiPaths.Dreams.ROOT + "/" + id).header("Authorization", bearer(user)))
+                .andExpect(jsonPath("$.status").value("AWAITING_USER_REPLY"))
+                .andExpect(jsonPath("$.editable").value(false));
+        edit(user, id, DREAM_TEXT)
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.code").value("NOT_EDITABLE"));
+    }
+
+    @Test
+    void ordersWithoutACountryAreInternationalAndTheReviewTabIsOldestFirst() throws Exception {
+        User interpreter = createUser("tabs-interpreter", Role.INTERPRETER);
+        User buyer = egyptian("tabs-buyer");
+        UUID first = checkout(buyer, PACKAGE_ONE).andExpect(status().isOk()).andReturnOrderId();
+        UUID second = checkout(buyer, PACKAGE_ONE).andExpect(status().isOk()).andReturnOrderId();
+        submitTransfer(buyer, first, uniqueReference(), null).andExpect(status().isOk());
+        submitTransfer(buyer, second, uniqueReference(), null).andExpect(status().isOk());
+        // the second transfer was sent earlier
+        Order a = orderRepository.findById(first).orElseThrow();
+        a.setTransferSubmittedAt(Instant.parse("2001-01-02T00:00:00Z"));
+        orderRepository.save(a);
+        Order b = orderRepository.findById(second).orElseThrow();
+        b.setTransferSubmittedAt(Instant.parse("2001-01-01T00:00:00Z"));
+        orderRepository.save(b);
+        List<String> review = orderIds(interpreter, "REVIEW");
+        assertThat(review.indexOf(second.toString())).isNotNegative().isLessThan(review.indexOf(first.toString()));
+
+        User nowhere = createUser("tabs-nowhere", Role.USER);
+        UUID noCountry = checkout(nowhere, PACKAGE_ONE).andExpect(status().isOk()).andReturnOrderId();
+        Order n = orderRepository.findById(noCountry).orElseThrow();
+        n.setCountryCode(null);
+        orderRepository.save(n);
+        assertThat(orderIds(interpreter, "INTERNATIONAL")).contains(noCountry.toString());
+        assertThat(orderIds(interpreter, "DOMESTIC")).doesNotContain(noCountry.toString());
     }
 
     // ================================================================== §3 admin orders
@@ -416,6 +621,52 @@ class UxPaymentsReviewIntegrationTest extends IntegrationTestBase {
         return notificationRepository.findByUserIdOrderByCreatedAtDesc(user.getId(), Pageable.unpaged()).getContent();
     }
 
+    private List<UUID> intentOf(UUID orderId) {
+        String json = orderRepository.findById(orderId).orElseThrow().getCheckoutIntent();
+        List<UUID> ids = new ArrayList<>();
+        if (json == null) {
+            return ids;
+        }
+        try {
+            JsonNode node = objectMapper.readTree(json);
+            if (node.isTextual()) {
+                node = objectMapper.readTree(node.asText());
+            }
+            node.path("dreamIds").forEach(x -> ids.add(UUID.fromString(x.asText())));
+        } catch (Exception e) {
+            throw new AssertionError(e);
+        }
+        return ids;
+    }
+
+    private long editedNotices(User interpreter, UUID dreamId) {
+        return notifications(interpreter).stream()
+                .filter(x -> x.getType() == NotificationType.DREAM_EDITED && ("/admin/dreams/" + dreamId).equals(x.getLink()))
+                .count();
+    }
+
+    private ResultActions release(User user, UUID orderId, List<UUID> dreamIds) throws Exception {
+        var request = post(ApiPaths.Me.ORDERS + "/" + orderId + "/release-dreams").header("Authorization", bearer(user));
+        if (dreamIds != null) {
+            request = request.contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(Map.of("dreamIds",
+                            dreamIds.stream().map(UUID::toString).toList())));
+        }
+        return mvc.perform(request);
+    }
+
+    private ResultActions ask(User interpreter, UUID id) throws Exception {
+        return mvc.perform(post(ApiPaths.Admin.DREAMS + "/" + id + "/messages").header("Authorization", bearer(interpreter))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"body\":\"هل البيت القديم هو بيت أهلك؟\"}"));
+    }
+
+    private ResultActions reply(User user, UUID id) throws Exception {
+        return mvc.perform(post(ApiPaths.Dreams.ROOT + "/" + id + "/messages").header("Authorization", bearer(user))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"body\":\"نعم، بيت جدي.\"}"));
+    }
+
     private User egyptian(String name) {
         User user = createUser(name, Role.USER);
         user.setCountryCode("EG");
@@ -451,10 +702,14 @@ class UxPaymentsReviewIntegrationTest extends IntegrationTestBase {
     }
 
     private CheckoutResult checkout(User user, UUID draft) throws Exception {
+        return draft == null ? checkout(user, PACKAGE_ONE) : checkout(user, PACKAGE_ONE, draft);
+    }
+
+    private CheckoutResult checkout(User user, String packageId, UUID... drafts) throws Exception {
         Map<String, Object> body = new LinkedHashMap<>();
-        body.put("packageId", PACKAGE_ONE);
-        if (draft != null) {
-            body.put("dreamIds", List.of(draft.toString()));
+        body.put("packageId", packageId);
+        if (drafts.length > 0) {
+            body.put("dreamIds", java.util.Arrays.stream(drafts).map(UUID::toString).toList());
         }
         return new CheckoutResult(mvc.perform(post(ApiPaths.Checkout.ROOT).header("Authorization", bearer(user))
                 .contentType(MediaType.APPLICATION_JSON)

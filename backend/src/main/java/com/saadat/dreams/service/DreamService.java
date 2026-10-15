@@ -77,6 +77,9 @@ public class DreamService {
     /** Virtual list filter: drafts attached to a payment under review or rejected (contract §2). */
     public static final String FILTER_PENDING_PAYMENT = "PENDING_PAYMENT";
     public static final String FILTER_ALL = "ALL";
+    public static final String CODE_ATTACHED_TO_PAYMENT = "ATTACHED_TO_PAYMENT";
+    /** At most one DREAM_EDITED notice per dream in this interval. */
+    static final Duration EDIT_NOTICE_INTERVAL = Duration.ofHours(1);
 
     // ================================================================== drafts
 
@@ -100,8 +103,9 @@ public class DreamService {
     }
 
     /**
-     * Edits the text: a DRAFT, or an IN_REVIEW dream the interpreter has not started yet (409 NOT_EDITABLE otherwise).
-     * The row is locked, so an edit and "Start interpreting" cannot race; an IN_REVIEW edit sets {@code userEditedAt}.
+     * Edits the text: a DRAFT, or a submitted dream (IN_REVIEW or AWAITING_USER_REPLY) the interpreter has not started
+     * yet (409 NOT_EDITABLE otherwise). The row is locked, so an edit and "Start interpreting" cannot race. Editing a
+     * submitted dream sets {@code userEditedAt} and tells the interpreters (in-app, at most once per dream per hour).
      */
     @Transactional
     public DreamDetailDto updateDraft(UUID userId, UUID dreamId, DreamRequests.DraftRequest req) {
@@ -111,8 +115,13 @@ public class DreamService {
         }
         d.setText(validText(req.text()));
         d.setGender(req.gender());
-        if (d.getStatus() == DreamStatus.IN_REVIEW) {
-            d.setUserEditedAt(clock.instant());
+        if (d.getStatus() != DreamStatus.DRAFT) {
+            Instant now = clock.instant();
+            Instant previous = d.getUserEditedAt();
+            d.setUserEditedAt(now);
+            if (previous == null || !now.isBefore(previous.plus(EDIT_NOTICE_INTERVAL))) {
+                notifier.edited(d.getId());
+            }
         }
         dreamRepository.save(d);
         return mapper.detail(d);
@@ -124,9 +133,9 @@ public class DreamService {
         if (d.getStatus() != DreamStatus.DRAFT) {
             throw new ConflictException("Only drafts can be deleted", "NOT_DRAFT");
         }
-        if (attachments.linkOf(d) != null) {
-            throw new ConflictException("This draft is attached to a payment", "ATTACHED_TO_PAYMENT");
-        }
+        // held by a payment in progress or under review; a rejected payment lets it go
+        attachments.requireNotHeld(userId, List.of(dreamId), null, CODE_ATTACHED_TO_PAYMENT);
+        attachments.detachFromRejected(userId, List.of(dreamId), null);
         dreamRepository.delete(d);
     }
 
@@ -198,14 +207,13 @@ public class DreamService {
         if (dreams.size() != ids.size() || dreams.stream().anyMatch(d -> d.getStatus() != DreamStatus.DRAFT)) {
             throw new ConflictException("Some dreams are not your drafts", "NOT_DRAFT");
         }
-        // a draft waiting on a payment under review is sent by that payment (contract §2)
-        Map<UUID, DreamPaymentLink> attached = attachments.attachedDrafts(userId);
-        if (ids.stream().anyMatch(attached::containsKey)) {
-            throw new ConflictException("This draft is attached to a payment", "ATTACHED_TO_PAYMENT");
-        }
+        // a draft held by a payment in progress or under review is sent by that payment (contract §2); a rejected
+        // payment lets it go: submitted with the credits the user has, it leaves that payment
+        attachments.requireNotHeld(userId, ids, null, CODE_ATTACHED_TO_PAYMENT);
         if (balance < dreams.size()) {
             throw new PaymentRequiredException(dreams.size() - balance);
         }
+        attachments.detachFromRejected(userId, ids, null);
         List<UUID> submitted = doSubmit(userId, order(dreams, ids), orderId);
         // same (read-write) transaction and lock; the aggregate query auto-flushes the new ledger rows
         return new DreamRequests.SubmitResponse(submitted, creditService.lockAndGetBalance(userId));

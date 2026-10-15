@@ -301,26 +301,30 @@ public class InstapayService {
         return name;
     }
 
-    /** The order's intended drafts plus the new ones (each must be one of the caller's DRAFT dreams). */
+    /**
+     * The order's intended drafts (still the caller's drafts) plus the new ones (each must be one of the caller's
+     * DRAFT dreams and not held by another payment in progress or under review). A dream taken from a rejected order
+     * leaves that order. 400 TOO_MANY_DREAMS when the order would carry more dreams than the credits it buys.
+     */
     private List<UUID> mergeDreams(UUID userId, Order order, List<UUID> extra) {
-        List<UUID> ids = new ArrayList<>(paymentService.readIntent(order.getCheckoutIntent()));
-        if (extra == null || extra.isEmpty()) {
-            return ids;
-        }
-        Set<UUID> wanted = new LinkedHashSet<>(extra);
-        List<Dream> drafts = dreamRepository.findAllByIdInAndUserIdForUpdate(wanted, userId).stream()
-                .filter(d -> d.getStatus() == DreamStatus.DRAFT)
+        Set<UUID> wanted = extra == null ? new LinkedHashSet<>() : new LinkedHashSet<>(extra);
+        wanted.remove(null);
+        Set<UUID> all = new LinkedHashSet<>(paymentService.readIntent(order.getCheckoutIntent()));
+        all.addAll(wanted);
+        // read without a row lock (lock order elsewhere is dreams → orders; here the order is already locked)
+        List<Dream> rows = all.isEmpty() ? List.<Dream>of() : dreamRepository.findAllById(all).stream()
+                .filter(d -> userId.equals(d.getUserId()))
                 .toList();
-        if (drafts.size() != wanted.size()) {
+        Set<UUID> drafts = rows.stream().filter(d -> d.getStatus() == DreamStatus.DRAFT).map(Dream::getId)
+                .collect(Collectors.toSet());
+        if (!drafts.containsAll(wanted)) {
             throw new ValidationException("Only your own draft dreams can be attached", "INVALID_DREAMS");
         }
         // this order's own dreams are fine; a dream held by another live order of the user is not (contract §2)
         dreamAttachments.requireFree(userId, wanted, order.getId());
-        for (UUID id : wanted) {
-            if (!ids.contains(id)) {
-                ids.add(id);
-            }
-        }
+        List<UUID> ids = new ArrayList<>(all.stream().filter(drafts::contains).toList());
+        DreamAttachments.requireWithinCredits(ids.size(), order.getCredits());
+        dreamAttachments.detachFromRejected(userId, wanted, order.getId());
         return ids;
     }
 

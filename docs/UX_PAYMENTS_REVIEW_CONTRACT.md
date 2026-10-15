@@ -26,9 +26,9 @@ Transitions:
 - Overdue = status in (IN_REVIEW, IN_PROGRESS) and `expectedBy < now`.
 - Everywhere the code treated `IN_REVIEW` as "open work" (digest job, insights, summary counts, user dashboard counts, analytics) also counts `IN_PROGRESS`.
 
-User edit: `PUT /api/dreams/{id}` `{text, gender}` is allowed when status is `DRAFT`, or `IN_REVIEW` with `startedAt == null`. Otherwise 409 `NOT_EDITABLE` (keep `NOT_DRAFT` for drafts-only operations like delete). The row is locked (`FOR UPDATE`) in both edit and start so they cannot race. Editing an IN_REVIEW dream sets `userEditedAt` (shown to the interpreter as "edited by the dreamer").
+User edit: `PUT /api/dreams/{id}` `{text, gender}` is allowed when status is `DRAFT`, or `IN_REVIEW` / `AWAITING_USER_REPLY` with `startedAt == null` (BA/QA review 2026-10-15). Each such edit of a submitted dream sends the interpreters an in-app `DREAM_EDITED` (at most once per dream per hour, no e-mail). Otherwise 409 `NOT_EDITABLE` (keep `NOT_DRAFT` for drafts-only operations like delete). The row is locked (`FOR UPDATE`) in both edit and start so they cannot race. Editing an IN_REVIEW dream sets `userEditedAt` (shown to the interpreter as "edited by the dreamer").
 
-`DELETE /api/dreams/{id}`: DRAFT only, and 409 `ATTACHED_TO_PAYMENT` when the draft is attached to a live order (see 2).
+`DELETE /api/dreams/{id}`: DRAFT only, and 409 `ATTACHED_TO_PAYMENT` when the draft is held by an INITIATED (not expired) or PENDING_REVIEW order (see 2).
 
 ## 2. Dreams attached to a payment
 
@@ -36,7 +36,10 @@ A DRAFT dream is "attached" when its id is in the `checkout_intent.dreamIds` of 
 
 - `GET /api/dreams?status=DRAFT` **excludes** attached dreams.
 - `GET /api/dreams?status=PENDING_PAYMENT` (virtual filter) returns only attached dreams.
-- `InstapayService.submit`/checkout: a dream already attached to another live order (INITIATED not expired, PENDING_REVIEW, or rejected-and-resendable) of the same user → 409 `DREAM_ALREADY_ATTACHED`.
+- Only INITIATED (not expired) and PENDING_REVIEW orders hold a dream. `InstapayService.submit`/checkout: a dream held by another such order of the same user → 409 `DREAM_ALREADY_ATTACHED` (+ `orderId`, `dreamId`).
+- A rejected order never traps its dreams (BA/QA review): they stay listed under PENDING_PAYMENT with `payment.status = REJECTED`, but may be deleted, submitted with existing credits, or attached to another order; each of these removes them from the rejected order's intent.
+- `POST /api/me/orders/{id}/release-dreams` `{dreamIds?}` (all when absent): the caller's INITIATED / PENDING_REVIEW / rejected order lets go of them (back to Drafts), 200 `{released}`; 409 `NOT_RELEASABLE` otherwise.
+- An order never carries more dreams than its credits: checkout and InstaPay submit → 400 `TOO_MANY_DREAMS`.
 - `/me/dashboard` counts gain `pendingPayment` (number of attached dreams); `drafts` excludes them.
 
 DTO additions (`DreamSummaryDto` and `DreamDetailDto`):

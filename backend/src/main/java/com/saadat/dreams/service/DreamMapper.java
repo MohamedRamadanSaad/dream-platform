@@ -40,9 +40,16 @@ public class DreamMapper {
         return text.length() > EXCERPT_LENGTH ? text.substring(0, EXCERPT_LENGTH) + ELLIPSIS : text;
     }
 
-    /** The dreamer may still change the text: DRAFT, or IN_REVIEW before the interpreter started. */
+    /**
+     * The dreamer may still change the text: DRAFT, or IN_REVIEW / AWAITING_USER_REPLY before the interpreter pressed
+     * "Start interpreting".
+     */
     public static boolean editable(Dream d) {
-        return d.getStatus() == DreamStatus.DRAFT || (d.getStatus() == DreamStatus.IN_REVIEW && d.getStartedAt() == null);
+        if (d.getStatus() == DreamStatus.DRAFT) {
+            return true;
+        }
+        return d.getStartedAt() == null
+                && (d.getStatus() == DreamStatus.IN_REVIEW || d.getStatus() == DreamStatus.AWAITING_USER_REPLY);
     }
 
     /** Summary for the dream's owner: unread = interpreter messages not yet read. */

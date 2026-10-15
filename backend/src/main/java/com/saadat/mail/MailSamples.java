@@ -55,6 +55,7 @@ public class MailSamples {
             }
             case MailTemplates.DREAM_STARTED -> {
                 m.put("expectedDays", 3);
+                m.put("daysText", com.saadat.common.util.DayCounts.text(3, locale));
                 m.put("expectedBy", now.plus(Duration.ofDays(3)));
                 m.put("link", FrontendPaths.myDream(SAMPLE_DREAM_ID));
             }
