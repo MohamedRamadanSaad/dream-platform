@@ -9,7 +9,7 @@ import { Icon } from '@/components/icons/Icon'
 import { PageEnter, StaggerGroup } from '@/components/motion'
 import { PackageCard, RefundPolicyLink } from '@/features/public/LandingPage'
 import { arrowBack, fmtMoney } from '@/lib/utils'
-import { useErrorText, useOnce } from '@/lib/apiErrors'
+import { invalidateDreams, useErrorText, useOnce } from '@/lib/apiErrors'
 import { CreditExpiryNotice } from './CreditExpiryNotice'
 import type { PackageDto } from '@/api/types'
 
@@ -63,9 +63,12 @@ export function CheckoutPage() {
   const [err, setErr] = useState<string | null>(null)
   const { data: catalog } = useQuery({ queryKey: ['public', 'catalog'], queryFn: publicApi.catalog })
   const pkg = catalog?.packages.find((p) => p.id === packageId)
+  const qc = useQueryClient()
   const create = useMutation({
     mutationFn: () => checkoutApi.create({ packageId, couponCode: coupon || undefined, dreamIds }),
     onSuccess: (r) => {
+      // a dream sent with this checkout may leave a rejected payment: refresh every dream view
+      invalidateDreams(qc, dreamIds)
       // InstaPay is the site's own payment page: stay inside the app
       if (r.provider === 'INSTAPAY') { navigate(new URL(r.checkoutUrl, window.location.origin).pathname); return }
       window.location.href = r.checkoutUrl.startsWith('http') ? r.checkoutUrl : r.checkoutUrl + `?return=${encodeURIComponent('/me/payments')}`

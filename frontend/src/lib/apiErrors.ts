@@ -36,8 +36,9 @@ export function useOnce() {
 }
 
 /** Everything that shows a dream's state: the dream itself, the user's lists and the dashboard counts. */
-export function invalidateDreams(qc: QueryClient, dreamIds: (string | undefined)[] = []) {
-  for (const id of dreamIds) if (id) qc.invalidateQueries({ queryKey: ['dream', id] })
+export function invalidateDreams(qc: QueryClient, _dreamIds: (string | undefined)[] = []) {
+  // every dream page: a payment step can change dreams the caller does not list (attached from ?dreams=)
+  qc.invalidateQueries({ queryKey: ['dream'] })
   qc.invalidateQueries({ queryKey: ['dreams'] })
   qc.invalidateQueries({ queryKey: ['me'] })
 }
