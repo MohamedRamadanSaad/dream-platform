@@ -9,17 +9,17 @@ export const uid = () => Math.random().toString(36).slice(2, 10)
 export const db = {
   users: [
     {
-      id: 'u1', name: 'أم محمد', email: 'ummohamed@gmail.com', gender: 'FEMALE', birthDate: '1988-03-12', age: 38, role: 'USER', providers: ['GOOGLE'],
-      locale: 'ar', countryCode: 'SA', countryName: 'السعودية', onboarded: true, createdAt: daysAgo(40),
+      id: 'u1', name: 'أم محمد', email: 'ummohamed@gmail.com', gender: 'FEMALE', birthDate: '1988-03-12', age: 38, role: 'USER', providers: ['GOOGLE', 'PASSWORD'],
+      locale: 'ar', countryCode: 'SA', countryName: 'السعودية', onboarded: true, createdAt: daysAgo(40), hasPassword: true, termsAccepted: true,
     },
     {
-      // interpreter accounts sign in with the e-mail code only; birth date as set by the sessions/profile migration
+      // interpreter accounts sign in with e-mail + password (never Google); birth date as set by the sessions/profile migration
       id: 'admin', name: 'المعبرة فاطمة', email: 'fatema@saadatu-aldarein.com', gender: 'FEMALE', birthDate: '1988-03-06', age: 38, role: 'INTERPRETER',
-      providers: ['MAGIC_LINK'], locale: 'ar', countryCode: 'EG', countryName: 'مصر', onboarded: true, createdAt: daysAgo(400),
+      providers: ['MAGIC_LINK', 'PASSWORD'], locale: 'ar', countryCode: 'EG', countryName: 'مصر', onboarded: true, createdAt: daysAgo(400), hasPassword: true, termsAccepted: true,
     },
-    { id: 'u2', name: 'خالد العتيبي', email: 'khaled@example.com', gender: 'MALE', birthDate: '1995-11-02', age: 30, role: 'USER', providers: ['MAGIC_LINK'], locale: 'ar', countryCode: 'SA', countryName: 'السعودية', onboarded: true, createdAt: daysAgo(20) },
-    { id: 'u3', name: 'Sara Ahmed', email: 'sara@example.de', gender: 'FEMALE', birthDate: '2001-07-21', age: 25, role: 'USER', providers: ['GOOGLE'], locale: 'en', countryCode: 'DE', countryName: 'ألمانيا', onboarded: true, createdAt: daysAgo(12) },
-    { id: 'u4', name: 'منى عبد الله', email: 'mona@example.com', gender: 'FEMALE', role: 'USER', providers: ['GOOGLE'], locale: 'ar', countryCode: 'EG', countryName: 'مصر', onboarded: true, createdAt: daysAgo(60) },
+    { id: 'u2', name: 'خالد العتيبي', email: 'khaled@example.com', gender: 'MALE', birthDate: '1995-11-02', age: 30, role: 'USER', providers: ['MAGIC_LINK'], locale: 'ar', countryCode: 'SA', countryName: 'السعودية', onboarded: true, createdAt: daysAgo(20), hasPassword: false, termsAccepted: true },
+    { id: 'u3', name: 'Sara Ahmed', email: 'sara@example.de', gender: 'FEMALE', birthDate: '2001-07-21', age: 25, role: 'USER', providers: ['GOOGLE'], locale: 'en', countryCode: 'DE', countryName: 'ألمانيا', onboarded: true, createdAt: daysAgo(12), hasPassword: false, termsAccepted: true },
+    { id: 'u4', name: 'منى عبد الله', email: 'mona@example.com', gender: 'FEMALE', role: 'USER', providers: ['GOOGLE', 'PASSWORD'], locale: 'ar', countryCode: 'EG', countryName: 'مصر', onboarded: true, createdAt: daysAgo(60), hasPassword: true, termsAccepted: true },
   ] as T.UserDto[],
 
   currentUserId: 'u1' as string,
@@ -100,11 +100,11 @@ export const db = {
   ] as (T.CreditLedgerEntry & { userId: string })[],
 
   orders: [
-    { id: 'o1', userId: 'u1', packageName: 'تفسير ثلاث رؤى', credits: 3, amount: 129, currency: 'SAR', status: 'SUCCESS', provider: 'MOR', providerRef: 'MOR-88213', countryCode: 'SA', createdAt: daysAgo(9), paidAt: daysAgo(9) },
-    { id: 'o2', userId: 'u1', packageName: 'تفسير رؤيتين', credits: 2, amount: 71, currency: 'SAR', status: 'SUCCESS', provider: 'MOR', providerRef: 'MOR-90114', countryCode: 'SA', createdAt: daysAgo(2), paidAt: daysAgo(2) },
-    { id: 'o3', userId: 'u1', packageName: 'تفسير رؤيا واحدة', credits: 1, amount: 49, currency: 'SAR', status: 'FAILED', provider: 'MOR', providerRef: null, countryCode: 'SA', createdAt: daysAgo(15), paidAt: null },
-    { id: 'o4', userId: 'u4', packageName: 'تفسير رؤيا واحدة', credits: 1, amount: 199, currency: 'EGP', status: 'SUCCESS', provider: 'KASHIER', providerRef: 'TX-249893122', countryCode: 'EG', createdAt: daysAgo(3), paidAt: daysAgo(3) },
-    { id: 'o5', userId: 'u3', packageName: 'Two dreams', credits: 2, amount: 35, currency: 'USD', status: 'SUCCESS', provider: 'KASHIER', providerRef: 'TX-249893555', countryCode: 'DE', createdAt: daysAgo(5), paidAt: daysAgo(5) },
+    { id: 'o1', orderNumber: 'RN-15002', userId: 'u1', packageName: 'تفسير ثلاث رؤى', credits: 3, amount: 129, currency: 'SAR', status: 'SUCCESS', provider: 'MOR', providerRef: 'MOR-88213', countryCode: 'SA', createdAt: daysAgo(9), paidAt: daysAgo(9) },
+    { id: 'o2', orderNumber: 'RN-15005', userId: 'u1', packageName: 'تفسير رؤيتين', credits: 2, amount: 71, currency: 'SAR', status: 'SUCCESS', provider: 'MOR', providerRef: 'MOR-90114', countryCode: 'SA', createdAt: daysAgo(2), paidAt: daysAgo(2) },
+    { id: 'o3', orderNumber: 'RN-15001', userId: 'u1', packageName: 'تفسير رؤيا واحدة', credits: 1, amount: 49, currency: 'SAR', status: 'FAILED', provider: 'MOR', providerRef: null, countryCode: 'SA', createdAt: daysAgo(15), paidAt: null },
+    { id: 'o4', orderNumber: 'RN-15004', userId: 'u4', packageName: 'تفسير رؤيا واحدة', credits: 1, amount: 199, currency: 'EGP', status: 'SUCCESS', provider: 'KASHIER', providerRef: 'TX-249893122', countryCode: 'EG', createdAt: daysAgo(3), paidAt: daysAgo(3) },
+    { id: 'o5', orderNumber: 'RN-15003', userId: 'u3', packageName: 'Two dreams', credits: 2, amount: 35, currency: 'USD', status: 'SUCCESS', provider: 'KASHIER', providerRef: 'TX-249893555', countryCode: 'DE', createdAt: daysAgo(5), paidAt: daysAgo(5) },
   ] as (T.OrderDto & { userId: string })[],
 
   dreams: [
@@ -195,8 +195,8 @@ export const MAIL_EVENTS = [
   'support-auto-reply', 'new-sign-in', 'passkey-added', 'support-in-progress', 'support-closed',
 ] as const
 
-/** Every e-mail template (GET /admin/mail/templates); magic-link has no on/off switch. */
-export const MAIL_TEMPLATES = ['magic-link', ...MAIL_EVENTS] as const
+/** Every e-mail template (GET /admin/mail/templates); the sign-in and code e-mails have no on/off switch. */
+export const MAIL_TEMPLATES = ['magic-link', 'email-code', ...MAIL_EVENTS] as const
 
 /** The e-mail theme registry (backend classpath mail/themes.json). Image paths are on the site. */
 export const MAIL_THEMES: Omit<T.MailThemeDto, 'headerImageUrl' | 'footerImageUrl' | 'usedByDefault'>[] = [
@@ -221,6 +221,7 @@ db.settings = {
   'payments.instapay.link': 'https://ipn.eg/S/vcbow1694/instapay/3F76CH',
   'payments.instapay.recipient_name': '',
   'payments.instapay.expire_hours': '24',
+  'orders.number_prefix': 'RN',
   'brand.support_hours.ar': 'من ٢ إلى ٦ مساءً بتوقيت مصر',
   'brand.support_hours.en': '2 PM to 6 PM, Egypt time',
   'mail.theme.default': 'crescent-night',

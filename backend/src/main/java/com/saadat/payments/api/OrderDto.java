@@ -12,10 +12,12 @@ import java.util.UUID;
 /**
  * types.ts OrderDto. Orders paid through the local mock provider are shown as the provider their currency would
  * use (INSTAPAY for EGP); KASHIER only appears on old test orders. {@code providerRef} is the provider's
- * transaction id once paid.
+ * transaction id once paid. {@code orderNumber} is the readable number shown to people (RN-15001, V38); routes keep
+ * using {@code id}.
  */
 public record OrderDto(
         UUID id,
+        String orderNumber,
         String packageName,
         int credits,
         BigDecimal amount,
@@ -28,7 +30,8 @@ public record OrderDto(
         Instant paidAt) {
 
     public static OrderDto from(Order o) {
-        return new OrderDto(o.getId(), o.getPackageNameSnapshot(), o.getCredits(), o.getAmount(), o.getCurrency(),
+        return new OrderDto(o.getId(), o.getOrderNumber(), o.getPackageNameSnapshot(), o.getCredits(), o.getAmount(),
+                o.getCurrency(),
                 o.getStatus(), displayProvider(o), o.getProviderTxnId(), o.getCountryCode(), o.getCreatedAt(),
                 o.getPaidAt());
     }

@@ -8,6 +8,7 @@ import { defaultThemeKey, isMailTemplate, isMailTheme, mailPreviewHtml, mailTemp
 import { supportAction, supportCounts, supportDetail, supportFetchBody, supportList } from './support'
 import { endSession, listDevices, removeDevice, removeOtherDevices, startSession } from './devices'
 import { finishRegistration, finishSignIn, listPasskeys, registrationOptions, removePasskey, signInOptions } from './passkeys'
+import { checkCode, createUser, findUser, hasPassword, isFail, issueTicket, normEmail, passwordLogin, setPassword, spendTicket, strongEnough, type AuthFail } from './auth'
 
 /**
  * Preview only: the public half of a throwaway P-256 key (its private half was never kept), so the push button can be
@@ -45,6 +46,7 @@ const requireAdmin = (req: Request) => {
   if (me.role !== 'INTERPRETER') throw problem(403, 'Forbidden')
   return me
 }
+const authProblem = (f: AuthFail) => problem(f.status, f.title, f.detail, { code: f.code, ...f.extra })
 const session = (user: T.UserDto): T.AuthResponse => ({ accessToken: `mock-${user.id}`, expiresIn: 900, user })
 const page = <X,>(items: X[], q: URLSearchParams): T.Page<X> => {
   const p = Number(q.get('page') ?? 0), s = Number(q.get('size') ?? 20)
@@ -61,6 +63,11 @@ const wrap = (fn: (info: { request: Request; params: Record<string, string | rea
 type MockOrder = T.OrderDto & { userId: string }
 type InstapayMeta = { dreamIds: string[]; reference: string | null; senderName: string | null; submittedAt: string | null; reviewedAt: string | null; reviewNote: string | null; expiresAt: string }
 const instapayMeta = new Map<string, InstapayMeta>()
+/** Readable order numbers like the server's: prefix (setting orders.number_prefix) + a sequence from 15001. */
+const nextOrderNumber = () => {
+  const max = Math.max(15000, ...db.orders.map((o) => Number(/(\d+)$/.exec(o.orderNumber ?? '')?.[1] ?? 0)))
+  return `${db.settings['orders.number_prefix'] || 'RN'}-${max + 1}`
+}
 
 /** What a confirmed payment does: credits, receipt notification, then the attached drafts are submitted. */
 function completeOrder(order: MockOrder, dreamIds: string[]) {
@@ -79,7 +86,7 @@ function completeOrder(order: MockOrder, dreamIds: string[]) {
 
 // preview: one transfer already waits for the interpreter (Egyptian user u4)
 {
-  const seeded: MockOrder = { id: 'o-ip1', userId: 'u4', packageName: 'تفسير ثلاث رؤى', credits: 3, amount: 450, currency: 'EGP', status: 'PENDING_REVIEW', provider: 'INSTAPAY', providerRef: null, countryCode: 'EG', createdAt: helpers.daysAgo(0, 1), paidAt: null }
+  const seeded: MockOrder = { id: 'o-ip1', orderNumber: nextOrderNumber(), userId: 'u4', packageName: 'تفسير ثلاث رؤى', credits: 3, amount: 450, currency: 'EGP', status: 'PENDING_REVIEW', provider: 'INSTAPAY', providerRef: null, countryCode: 'EG', createdAt: helpers.daysAgo(0, 1), paidAt: null }
   db.orders.unshift(seeded)
   instapayMeta.set(seeded.id, { dreamIds: [], reference: '202311580274', senderName: 'MONA ABDALLAH', submittedAt: helpers.daysAgo(0, 1), reviewedAt: null, reviewNote: null, expiresAt: helpers.daysAhead(1) })
 }
@@ -93,7 +100,7 @@ const orderCounter = (orderId: string, credits: number, dreamId: string) => {
 const instapayView = (o: MockOrder): T.InstapayOrderView => {
   const m = instapayMeta.get(o.id)!
   return {
-    orderId: o.id, status: o.status, packageName: o.packageName, credits: o.credits, amount: o.amount, currency: o.currency,
+    orderId: o.id, orderNumber: o.orderNumber, status: o.status, packageName: o.packageName, credits: o.credits, amount: o.amount, currency: o.currency,
     address: db.settings['payments.instapay.address'] ?? '', link: db.settings['payments.instapay.link'] ?? '', recipientName: db.settings['payments.instapay.recipient_name'] ?? '',
     createdAt: o.createdAt, expiresAt: m.expiresAt, reference: m.reference, senderName: m.senderName, submittedAt: m.submittedAt, reviewNote: m.reviewNote, attachedDreams: m.dreamIds.length,
   }
@@ -101,7 +108,7 @@ const instapayView = (o: MockOrder): T.InstapayOrderView => {
 const transferRow = (o: MockOrder): T.InstapayTransferRow => {
   const m = instapayMeta.get(o.id)!
   const usr = db.users.find((x) => x.id === o.userId)
-  return { orderId: o.id, userId: o.userId, userName: usr?.name ?? '', userEmail: usr?.email ?? '', packageName: o.packageName, credits: o.credits, amount: o.amount, currency: o.currency, status: o.status, reference: m.reference, senderName: m.senderName, createdAt: o.createdAt, submittedAt: m.submittedAt, reviewedAt: m.reviewedAt, reviewNote: m.reviewNote, attachedDreams: m.dreamIds.length }
+  return { orderId: o.id, orderNumber: o.orderNumber, userId: o.userId, userName: usr?.name ?? '', userEmail: usr?.email ?? '', packageName: o.packageName, credits: o.credits, amount: o.amount, currency: o.currency, status: o.status, reference: m.reference, senderName: m.senderName, createdAt: o.createdAt, submittedAt: m.submittedAt, reviewedAt: m.reviewedAt, reviewNote: m.reviewNote, attachedDreams: m.dreamIds.length }
 }
 const toDigits = (raw: string) => raw.replace(/[\u0660-\u0669]/g, (d) => String(d.charCodeAt(0) - 0x660)).replace(/[\u06f0-\u06f9]/g, (d) => String(d.charCodeAt(0) - 0x6f0)).replace(/[\s-]/g, '')
 const instapayOrders = () => (db.orders as MockOrder[]).filter((o) => o.provider === 'INSTAPAY' && instapayMeta.has(o.id))
@@ -135,14 +142,61 @@ export const handlers = [
     const email = body.email?.toLowerCase()
     let user = db.users.find((x) => x.email.toLowerCase() === email)
     if (!user && email) {
-      user = { id: uid(), name: '', email, gender: null, birthDate: null, age: null, role: 'USER', providers: ['MAGIC_LINK'], locale: 'ar', countryCode: 'SA', countryName: 'السعودية', onboarded: false, createdAt: helpers.now(), marketingOptIn: true }
-      db.users.push(user)
+      user = createUser(email, 'MAGIC_LINK')
     }
     if (!user) user = db.users[0]
     // rule: any e-mail on the site domain is an interpreter account (backend: setting interpreter.email_domain)
     if (email && email.endsWith(INTERPRETER_DOMAIN)) user.role = 'INTERPRETER'
     startSession(user, uaOf(request), body.rememberMe ?? true)
     return HttpResponse.json(session(user))
+  })),
+  // ---------- e-mail + password ----------
+  http.post(u('/auth/signup/request'), wrap(async ({ request }) => {
+    const email = normEmail(((await request.json().catch(() => ({}))) as Partial<T.SignupRequest>).email)
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return problem(400, 'Validation failed', 'A valid e-mail is required', { errors: { email: ['invalid'] } })
+    if (hasPassword(email)) return problem(409, 'Conflict', 'An account with this e-mail already exists', { code: 'ACCOUNT_EXISTS' })
+    return new HttpResponse(null, { status: 204 })
+  })),
+  http.post(u('/auth/password/forgot'), wrap(async () => new HttpResponse(null, { status: 204 }))),
+  http.post(u('/auth/code/verify'), wrap(async ({ request }) => {
+    const b = (await request.json().catch(() => ({}))) as Partial<T.CodeVerifyRequest>
+    const bad = checkCode(b.code)
+    if (bad) return authProblem(bad)
+    const email = normEmail(b.email)
+    // like the server: a reset code is only e-mailed to an existing account, so any other code is wrong
+    if (b.purpose === 'RESET_PASSWORD' && !findUser(email)) return problem(401, 'Unauthorized', 'The code is not correct.', { code: 'MAGIC_LINK_INVALID' })
+    if (b.purpose !== 'SIGN_UP' && b.purpose !== 'RESET_PASSWORD') return problem(400, 'Validation failed')
+    return HttpResponse.json(issueTicket(email, b.purpose))
+  })),
+  http.post(u('/auth/signup/complete'), wrap(async ({ request }) => {
+    const b = (await request.json().catch(() => ({}))) as Partial<T.SignupCompleteRequest>
+    if (b.acceptedTerms !== true) return problem(400, 'Validation failed', 'The terms must be accepted', { errors: { acceptedTerms: ['must be true'] } })
+    const email = spendTicket(b.ticket, 'SIGN_UP')
+    if (!email) return problem(401, 'Unauthorized', 'The ticket is not valid', { code: 'TICKET_INVALID' })
+    if (!strongEnough(b.password ?? '')) return problem(422, 'Unprocessable', 'The password is too weak', { code: 'WEAK_PASSWORD' })
+    if (hasPassword(email)) return problem(409, 'Conflict', 'An account with this e-mail already exists', { code: 'ACCOUNT_EXISTS' })
+    const user = findUser(email) ?? createUser(email, 'PASSWORD')
+    setPassword(user, b.password!)
+    user.termsAccepted = true
+    startSession(user, uaOf(request), b.rememberMe ?? true)
+    return HttpResponse.json(session(user))
+  })),
+  http.post(u('/auth/password/reset'), wrap(async ({ request }) => {
+    const b = (await request.json().catch(() => ({}))) as Partial<T.PasswordResetRequest>
+    const email = spendTicket(b.ticket, 'RESET_PASSWORD')
+    const user = email ? findUser(email) : undefined
+    if (!user) return problem(401, 'Unauthorized', 'The ticket is not valid', { code: 'TICKET_INVALID' })
+    if (!strongEnough(b.password ?? '')) return problem(422, 'Unprocessable', 'The password is too weak', { code: 'WEAK_PASSWORD' })
+    setPassword(user, b.password!)
+    startSession(user, uaOf(request), b.rememberMe ?? true)
+    return HttpResponse.json(session(user))
+  })),
+  http.post(u('/auth/password/login'), wrap(async ({ request }) => {
+    const b = (await request.json().catch(() => ({}))) as Partial<T.PasswordLoginRequest>
+    const r = passwordLogin(b.email, b.password)
+    if (isFail(r)) return authProblem(r)
+    startSession(r, uaOf(request), b.rememberMe ?? true)
+    return HttpResponse.json(session(r))
   })),
   http.post(u('/auth/refresh'), wrap(async () => problem(401, 'Unauthenticated'))),
   http.post(u('/auth/logout'), wrap(async ({ request }) => {
@@ -153,7 +207,7 @@ export const handlers = [
   http.post(u('/auth/onboarding'), wrap(async ({ request }) => {
     const me = requireUser(request)
     const b = (await request.json()) as T.OnboardingRequest
-    Object.assign(me, { name: b.name, gender: b.gender, birthDate: b.birthDate, age: ageOf(b.birthDate), onboarded: true })
+    Object.assign(me, { name: b.name, gender: b.gender, birthDate: b.birthDate, age: ageOf(b.birthDate), onboarded: true, termsAccepted: true })
     return HttpResponse.json(me)
   })),
   // fingerprint / face sign-in (docs/PASSKEYS_CONTRACT.md); like /auth/magic/verify on success
@@ -385,7 +439,7 @@ export const handlers = [
     }
     // like production: no payment method outside Egypt yet
     if (r.currency !== 'EGP' || db.settings['payments.instapay.enabled'] !== 'true') return problem(422, 'Unprocessable', 'Payment is available inside Egypt only for now', { code: 'PAYMENT_EGYPT_ONLY' })
-    const order: MockOrder = { id: uid(), userId: me.id, packageName: pkg.nameAr, credits: pkg.credits, amount: price, currency: r.currency, status: 'INITIATED', provider: 'INSTAPAY', providerRef: null, countryCode: me.countryCode, createdAt: helpers.now(), paidAt: null }
+    const order: MockOrder = { id: uid(), orderNumber: nextOrderNumber(), userId: me.id, packageName: pkg.nameAr, credits: pkg.credits, amount: price, currency: r.currency, status: 'INITIATED', provider: 'INSTAPAY', providerRef: null, countryCode: me.countryCode, createdAt: helpers.now(), paidAt: null }
     db.orders.unshift(order)
     const hours = Number(db.settings['payments.instapay.expire_hours'] ?? 24)
     instapayMeta.set(order.id, { dreamIds: b.dreamIds ?? [], reference: null, senderName: null, submittedAt: null, reviewedAt: null, reviewNote: null, expiresAt: new Date(Date.now() + hours * 36e5).toISOString() })
@@ -657,7 +711,7 @@ export const handlers = [
     const order = d.credit?.orderId ? db.orders.find((o) => o.id === d.credit!.orderId) : null
     d.messages.forEach((m) => { if (m.senderRole === 'USER') m.readAt ??= helpers.now() })
     const r: T.AdminDreamDetail = { ...toDetail(d), user: { id: usr.id, name: usr.name, email: usr.email, countryCode: usr.countryCode, age: usr.age },
-      payment: order ? { orderId: order.id, payerName: usr.name, payerEmail: usr.email, paidAt: order.paidAt ?? order.createdAt, packageName: order.packageName, amount: order.amount, currency: order.currency, provider: order.provider, providerRef: order.providerRef ?? '-', countryCode: order.countryCode, ...orderCounter(order.id, order.credits, d.id) } : null }
+      payment: order ? { orderId: order.id, orderNumber: order.orderNumber, payerName: usr.name, payerEmail: usr.email, paidAt: order.paidAt ?? order.createdAt, packageName: order.packageName, amount: order.amount, currency: order.currency, provider: order.provider, providerRef: order.providerRef ?? '-', countryCode: order.countryCode, ...orderCounter(order.id, order.credits, d.id) } : null }
     return HttpResponse.json(r)
   })),
   http.post(u('/admin/dreams/:id/messages'), wrap(async ({ request, params }) => {
@@ -788,6 +842,13 @@ export const handlers = [
   http.patch(u('/admin/testimonials/:id'), wrap(async ({ request, params }) => { requireAdmin(request); const d = db.dreams.find((x) => x.id === params.id); if (d?.testimonial) d.testimonial.approved = ((await request.json()) as { approved: boolean }).approved; return new HttpResponse(null, { status: 204 }) })),
   http.get(u('/admin/orders'), wrap(async ({ request }) => {
     requireAdmin(request); const q = new URL(request.url).searchParams
-    return HttpResponse.json(page(db.orders.map((o) => ({ ...o, userName: db.users.find((x) => x.id === o.userId)?.name ?? '' })).sort((a, b) => b.createdAt.localeCompare(a.createdAt)), q))
+    // like the server: the order number with or without its prefix (any case), or the user's name / e-mail
+    const qq = (q.get('q') ?? '').trim().toLowerCase()
+    const rows = db.orders.map((o) => {
+      const usr = db.users.find((x) => x.id === o.userId)
+      return { ...o, userName: usr?.name ?? '', email: usr?.email ?? '' }
+    }).filter((o) => !qq || o.orderNumber.toLowerCase() === qq || o.orderNumber.toLowerCase().endsWith(`-${qq}`) || o.orderNumber.toLowerCase().includes(qq) || o.userName.toLowerCase().includes(qq) || o.email.toLowerCase().includes(qq))
+      .map(({ email: _email, ...o }) => o)
+    return HttpResponse.json(page(rows.sort((a, b) => b.createdAt.localeCompare(a.createdAt)), q))
   })),
 ]

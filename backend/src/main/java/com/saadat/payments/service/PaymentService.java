@@ -109,6 +109,7 @@ public class PaymentService {
     private final SettingsService settingsService;
     private final AfterCommit afterCommit;
     private final ObjectMapper objectMapper;
+    private final OrderNumbers orderNumbers;
     private final Clock clock;
 
     @PersistenceContext
@@ -160,6 +161,7 @@ public class PaymentService {
         Instant now = clock.instant();
 
         Order order = new Order();
+        order.setOrderNumber(orderNumbers.next());
         order.setUserId(userId);
         order.setProductType(ProductType.DREAMS);
         order.setPackageId(pkg.getId());
@@ -317,7 +319,7 @@ public class PaymentService {
             return;
         }
         Map<String, Object> model = new LinkedHashMap<>();
-        model.put("orderRef", order.getId().toString());
+        model.put("orderRef", orderRef(order));
         model.put("packageName", order.getPackageNameSnapshot());
         model.put("amount", order.getAmount());
         model.put("currency", order.getCurrency().name());
@@ -328,10 +330,11 @@ public class PaymentService {
     private void notifyPaid(UUID orderId) {
         Order order = orderRepository.findById(orderId).orElseThrow();
         User user = userRepository.findById(order.getUserId()).orElseThrow();
-        String orderRef = order.getProviderTxnId() == null ? order.getId().toString() : order.getProviderTxnId();
         Map<String, Object> args = new LinkedHashMap<>();
         args.put("orderId", order.getId().toString());
-        args.put("orderRef", orderRef);
+        args.put("orderNumber", orderRef(order));
+        // the receipt shows the order number (the invoice number), no longer the provider's transaction id
+        args.put("orderRef", orderRef(order));
         args.put("credits", order.getCredits());
         args.put("packageName", order.getPackageNameSnapshot());
         args.put("amount", order.getAmount());
@@ -353,7 +356,8 @@ public class PaymentService {
         User payer = userRepository.findById(order.getUserId()).orElse(null);
         Map<String, Object> base = new LinkedHashMap<>();
         base.put("orderId", order.getId().toString());
-        base.put("orderRef", order.getId().toString());
+        base.put("orderNumber", orderRef(order));
+        base.put("orderRef", orderRef(order));
         base.put("reason", reason);
         // amount/currency as reported by the provider; expected* as stored on the order
         base.put("amount", receivedAmount);
@@ -371,6 +375,12 @@ public class PaymentService {
             mailService.send(interpreter.getId(), interpreter.getEmail(), MAIL_SUSPICIOUS, interpreter.getLocale(),
                     model, "suspicious:" + order.getId() + ":" + interpreter.getId());
         }
+    }
+
+    /** What e-mails show as the order reference: the readable order number (the UUID for a row without one). */
+    public static String orderRef(Order order) {
+        String number = order.getOrderNumber();
+        return number == null || number.isBlank() ? order.getId().toString() : number;
     }
 
     // ================================================================== checkout_intent

@@ -46,7 +46,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Login flows (Google, magic link, passkey), refresh, logout and onboarding. Every successful login/refresh:
+ * Login flows (Google, magic link, passkey; e-mail + password in {@link PasswordService}), refresh, logout and
+ * onboarding. Every successful login/refresh:
  * upserts the user, links the identity, stores the country (first time only), records a user_sessions row,
  * updates last_login_at and sets the role from the interpreter rules (see {@link #expectedRole(String)}).
  * A passkey sign-in ({@link #loginWithPasskey}) is the same path without an auth_identities row: the passkey row
@@ -135,9 +136,9 @@ public class AuthService {
                     AuthProvider.GOOGLE)) {
                 throw new ConflictException("This e-mail already signs in with the e-mail code", CODE_USE_MAGIC_LINK);
             }
-            user = findOrCreate(identity.email(), identity.name(), ctx);
+            user = findOrCreateUser(identity.email(), identity.name(), ctx);
         }
-        return complete(user, AuthProvider.GOOGLE, identity.subject(), rememberMe, ctx);
+        return completeLogin(user, AuthProvider.GOOGLE, identity.subject(), rememberMe, ctx);
     }
 
     /** Always succeeds from the caller's point of view (the endpoint answers 204). */
@@ -160,8 +161,8 @@ public class AuthService {
         } else {
             throw new UnauthorizedException("Provide a token or an e-mail and code", MagicLinkService.CODE_INVALID);
         }
-        User user = findOrCreate(email, null, ctx);
-        return complete(user, AuthProvider.MAGIC_LINK, email, AuthDtos.rememberMe(request.rememberMe()), ctx);
+        User user = findOrCreateUser(email, null, ctx);
+        return completeLogin(user, AuthProvider.MAGIC_LINK, email, AuthDtos.rememberMe(request.rememberMe()), ctx);
     }
 
     /**
@@ -171,7 +172,7 @@ public class AuthService {
      */
     @Transactional
     public LoginResult loginWithPasskey(User user, boolean rememberMe, LoginContext ctx) {
-        return complete(user, null, null, rememberMe, ctx);
+        return completeLogin(user, null, null, rememberMe, ctx);
     }
 
     /** Rotates the refresh token: same family (device), same "remember me" mode, expiry slides forward. */
@@ -202,6 +203,9 @@ public class AuthService {
         user.setGender(request.gender());
         user.setBirthDate(request.birthDate());
         user.setOnboarded(true);
+        if (user.getTermsAcceptedAt() == null) {
+            user.setTermsAcceptedAt(clock.instant()); // acceptedTerms is required (true) by the request
+        }
         userRepository.save(user);
         if (firstTime) {
             mailOnboarded(user);
@@ -234,7 +238,11 @@ public class AuthService {
 
     // ------------------------------------------------------------------ internals
 
-    private User findOrCreate(String rawEmail, String name, LoginContext ctx) {
+    /**
+     * The active account of {@code rawEmail}, or a new one (role USER until the first sign-in syncs the interpreter
+     * rules, locale from the request, not onboarded). Runs in the caller's transaction (also used by PasswordService).
+     */
+    public User findOrCreateUser(String rawEmail, String name, LoginContext ctx) {
         String email = MagicLinkService.normalizeEmail(rawEmail);
         Optional<User> existing = userRepository.findByEmailIgnoreCase(email).filter(u -> !u.isDeleted());
         if (existing.isPresent()) {
@@ -252,9 +260,14 @@ public class AuthService {
         return userRepository.save(user);
     }
 
-    /** {@code provider} null = no identity to link (passkey sign-in). */
-    private LoginResult complete(User user, AuthProvider provider, String subject, boolean rememberMe,
-                                 LoginContext ctx) {
+    /**
+     * Finishes every sign-in of the active {@code user}: links the identity ({@code provider} null = none, passkey
+     * sign-in), country, role sync, last_login_at, user_sessions, a new refresh-token family in the "remember me"
+     * mode, the new-sign-in e-mail and the access token. Runs in the caller's transaction (also used by
+     * PasswordService).
+     */
+    public LoginResult completeLogin(User user, AuthProvider provider, String subject, boolean rememberMe,
+                                     LoginContext ctx) {
         Instant now = clock.instant();
         if (provider != null) {
             linkIdentity(user, provider, subject, now);

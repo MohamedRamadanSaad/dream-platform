@@ -77,6 +77,25 @@ public class User {
     @Column(name = "deleted_at")
     private Instant deletedAt;
 
+    /** BCrypt hash of the password (V37); null = the account has no password yet (Google / e-mail code only). */
+    @Column(name = "password_hash", length = 100)
+    private String passwordHash;
+
+    @Column(name = "password_set_at")
+    private Instant passwordSetAt;
+
+    /** When the terms were accepted (sign-up with a password, or onboarding); null = not yet. */
+    @Column(name = "terms_accepted_at")
+    private Instant termsAcceptedAt;
+
+    /** Wrong passwords in a row (reset by a correct password or a password reset). */
+    @Column(name = "failed_password_attempts", nullable = false)
+    private int failedPasswordAttempts;
+
+    /** Password sign-in refused until this instant after too many wrong passwords. */
+    @Column(name = "password_locked_until")
+    private Instant passwordLockedUntil;
+
     /** Normalizes and sets the e-mail (trim + lower-case). */
     public void setEmail(String email) {
         this.email = email == null ? null : email.trim().toLowerCase(java.util.Locale.ROOT);
@@ -84,6 +103,10 @@ public class User {
 
     public boolean isDeleted() {
         return deletedAt != null;
+    }
+
+    public boolean hasPassword() {
+        return passwordHash != null && !passwordHash.isBlank();
     }
 
     @PrePersist

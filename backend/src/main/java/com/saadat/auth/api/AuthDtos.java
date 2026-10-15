@@ -4,6 +4,7 @@ import jakarta.validation.constraints.Past;
 
 import java.time.LocalDate;
 
+import com.saadat.common.domain.CodePurpose;
 import com.saadat.common.domain.Gender;
 import com.saadat.users.api.UserDto;
 import jakarta.validation.constraints.AssertTrue;
@@ -43,6 +44,61 @@ public final class AuthDtos {
             @Email @Size(max = 320) String email,
             @Size(max = 16) String code,
             Boolean rememberMe) {
+    }
+
+    // ---------------------------------------------------------------- e-mail + password (V37)
+
+    /** POST /auth/signup/request and /auth/password/forgot. */
+    public record EmailCodeRequest(@NotBlank @Email @Size(max = 320) String email) {
+    }
+
+    /** POST /auth/code/verify: {@code purpose} SIGN_UP or RESET_PASSWORD. */
+    public record CodeVerifyRequest(
+            @NotBlank @Email @Size(max = 320) String email,
+            @NotBlank @Size(max = 16) String code,
+            @NotNull CodePurpose purpose) {
+    }
+
+    /** A verified code's single-use ticket; {@code expiresIn} in seconds. */
+    public record TicketResponse(String ticket, long expiresIn) {
+        @Override
+        public String toString() {
+            return "TicketResponse[expiresIn=" + expiresIn + "]";
+        }
+    }
+
+    /** POST /auth/signup/complete. The password rule is checked by the server (422 WEAK_PASSWORD). */
+    public record SignupCompleteRequest(
+            @NotBlank @Size(max = 256) String ticket,
+            @NotNull String password,
+            @NotNull @AssertTrue Boolean acceptedTerms,
+            Boolean rememberMe) {
+        @Override
+        public String toString() {
+            return "SignupCompleteRequest[acceptedTerms=" + acceptedTerms + ", rememberMe=" + rememberMe + "]";
+        }
+    }
+
+    /** POST /auth/password/reset. */
+    public record PasswordResetRequest(
+            @NotBlank @Size(max = 256) String ticket,
+            @NotNull String password,
+            Boolean rememberMe) {
+        @Override
+        public String toString() {
+            return "PasswordResetRequest[rememberMe=" + rememberMe + "]";
+        }
+    }
+
+    /** POST /auth/password/login. */
+    public record PasswordLoginRequest(
+            @NotBlank @Email @Size(max = 320) String email,
+            @NotNull @Size(max = 1024) String password,
+            Boolean rememberMe) {
+        @Override
+        public String toString() {
+            return "PasswordLoginRequest[rememberMe=" + rememberMe + "]";
+        }
     }
 
     public record OnboardingRequest(

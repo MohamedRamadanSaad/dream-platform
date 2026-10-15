@@ -1,57 +1,27 @@
-import { useEffect, useId, useRef, useState, type FormEvent } from 'react'
-import { useNavigate, useSearchParams, Link } from 'react-router-dom'
+import { useEffect, useRef, useState, type FormEvent } from 'react'
+import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useMutation } from '@tanstack/react-query'
 import { GoogleLogin, GoogleOAuthProvider } from '@react-oauth/google'
 import { cn, INTERPRETER_DOMAIN } from '@/lib/utils'
 import { getPasskey, passkeyFailure, useFreshOptions, usePasskeySupport, withOptions } from '@/lib/passkeys'
 import { authApi } from '@/api/endpoints'
-import { useAuthStore, isInterpreter } from '@/app/auth-store'
-import { readRememberMe, saveRememberMe, readLastEmail, rememberLastEmail, forgetLastEmail } from '@/app/session'
+import { useAuthStore } from '@/app/auth-store'
+import { readRememberMe, saveRememberMe, readLastEmail, forgetLastEmail } from '@/app/session'
 import { NightSky } from '@/components/motion/NightSky'
 import { PageEnter } from '@/components/motion'
 import { Button, Input, Label } from '@/components/ui'
 import { Icon } from '@/components/icons/Icon'
-import { LocaleToggle } from '@/components/layout'
+import { Avatar } from '@/components/ui/Avatar'
 import { ApiError } from '@/api/client'
-import { armPasskeyOffer } from '@/features/account/PasskeyOffer'
 import type { AuthResponse, Gender } from '@/api/types'
+import {
+  AuthErrorBox, AuthShell, GOOGLE_ID, GoogleG, MOCKS, PasswordInput, RememberMe, useAuthErrorText, useFinishLogin,
+  type AuthError, type AuthNavState,
+} from './authShared'
 
-const GOOGLE_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID as string | undefined
-const MOCKS = import.meta.env.VITE_USE_MOCKS === 'true'
-
-type SignInMethod = 'google' | 'email' | 'passkey'
-
-function useFinishLogin() {
-  const navigate = useNavigate()
-  const [params] = useSearchParams()
-  const setSession = useAuthStore((s) => s.setSession)
-  return (r: AuthResponse, remember: boolean, method: SignInMethod) => {
-    setSession(r.accessToken, r.user, remember)
-    rememberLastEmail(r.user.email, remember)
-    // after Google or an e-mail code, the app may offer fingerprint / face sign-in once (see PasskeyOffer)
-    if (method !== 'passkey') armPasskeyOffer(r.user.id)
-    const next = params.get('next')
-    if (!r.user.onboarded) navigate(`/onboarding${next ? `?next=${encodeURIComponent(next)}` : ''}`)
-    else navigate(next || (isInterpreter(r.user) ? '/admin' : '/me'))
-  }
-}
-
-/** "Keep me signed in on this device" — ticked by default; the hint warns against it on a shared device. */
-function RememberMe({ checked, onChange }: { checked: boolean; onChange: (v: boolean) => void }) {
-  const { t } = useTranslation()
-  const hintId = useId()
-  return (
-    <label className="mt-5 flex cursor-pointer items-start gap-3 border-t border-line pt-4">
-      <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} aria-describedby={hintId}
-        className="mt-0.5 h-[18px] w-[18px] shrink-0 cursor-pointer accent-gold" />
-      <span className="min-w-0 leading-snug">
-        <span className="block text-sm text-fg">{t('auth.rememberMe')}</span>
-        <span id={hintId} className="mt-1 block text-xs text-fg-muted">{t('auth.rememberMeHint')}</span>
-      </span>
-    </label>
-  )
-}
+export { GoogleG, useFinishLogin } from './authShared'
+export { RegisterPage, ForgotPasswordPage } from './CodeFlows'
 
 type PasskeyNote = 'cancelled' | 'invalid' | 'failed'
 
@@ -105,86 +75,118 @@ function PasskeySignIn({ remember, onStart, onSignedIn }: { remember: boolean; o
   )
 }
 
-export default function LoginPage() {
-  const { t, i18n } = useTranslation()
-  const finish = useFinishLogin()
-  const [rememberedEmail, setRememberedEmail] = useState(readLastEmail)
-  const [email, setEmail] = useState(rememberedEmail)
-  const [code, setCode] = useState('')
-  const [sent, setSent] = useState(false)
-  const [err, setErr] = useState<string | null>(null)
-  const [remember, setRemember] = useState(readRememberMe)
-  const choose = (v: boolean) => { setRemember(v); saveRememberMe(v) }
-
-  // server codes with their own wording (USE_MAGIC_LINK: this e-mail opened its account with the e-mail code)
-  const errorText = (e: unknown) => { const code = (e as ApiError).problem?.code; return code && i18n.exists(`auth.errors.${code}`) ? t(`auth.errors.${code}`) : (e as ApiError).message }
-  const google = useMutation({ mutationFn: authApi.google, onSuccess: (r, v) => finish(r, v.rememberMe ?? true, 'google'), onError: (e) => setErr(errorText(e)) })
-  const magic = useMutation({ mutationFn: authApi.magicRequest, onSuccess: () => setSent(true), onError: (e) => setErr(errorText(e)) })
-  const verify = useMutation({ mutationFn: authApi.magicVerify, onSuccess: (r, v) => finish(r, v.rememberMe ?? true, 'email'), onError: (e) => setErr(errorText(e)) })
-
-  const isInterpreterEmail = email.trim().toLowerCase().endsWith(INTERPRETER_DOMAIN)
-  // the link in the e-mail opens a new page: it reads the choice saved here (see MagicCallbackPage)
-  const submitEmail = (e: FormEvent) => { e.preventDefault(); setErr(null); saveRememberMe(remember); magic.mutate({ email: email.trim().toLowerCase() }) }
-  const submitCode = (e: FormEvent) => { e.preventDefault(); setErr(null); verify.mutate({ email: email.trim().toLowerCase(), code, rememberMe: remember }) }
-
+/**
+ * Google under the form, as before: the real button when a client id is set (live site), else the preview button.
+ * Interpreter-domain e-mails never see it (the server refuses Google for them).
+ */
+export function GoogleSection({ remember, onError, onSignedIn }: { remember: boolean; onError: (e: unknown) => void; onSignedIn: (r: AuthResponse, remember: boolean) => void }) {
+  const { t } = useTranslation()
+  const google = useMutation({ mutationFn: authApi.google, onSuccess: (r, v) => onSignedIn(r, v.rememberMe ?? true), onError })
   return (
-    <div className="relative min-h-screen bg-night text-pearl">
-      <NightSky className="absolute inset-0" withMoon={false} />
-      <div className="absolute top-5 inset-x-5 flex justify-between"><Link to="/" className="font-display text-xl text-gold-soft">{t('interpreter')}</Link><LocaleToggle dark /></div>
-      <PageEnter className="relative mx-auto flex min-h-screen max-w-md flex-col items-center justify-center px-5 py-20">
-        <div className="mb-6 text-gold-soft"><Icon name="moon" size={56} strokeWidth={0.9} /></div>
-        <h1 className="font-display text-4xl">{t('auth.title')}</h1>
-        <p className="mt-2 mb-8 text-center text-sm font-light text-pearl/60">{t('auth.lead')}</p>
-        <div className="card w-full bg-surface p-5 text-fg sm:p-6">
-          <PasskeySignIn remember={remember} onStart={() => setErr(null)} onSignedIn={(r, rem) => finish(r, rem, 'passkey')} />
-          {isInterpreterEmail && <p className="mb-5 rounded-xl border border-gold/40 bg-gold/10 p-3 text-center text-xs text-gold-ink">{t('auth.interpreterDomainHint')}</p>}
-          {!sent ? (
-            <form onSubmit={submitEmail} className="flex flex-col gap-3">
-              <Label>{t('auth.email')}</Label>
-              <Input dir="ltr" type="email" required autoComplete="email" placeholder="you@email.com" value={email} onChange={(e) => setEmail(e.target.value)} />
-              {rememberedEmail && email === rememberedEmail && (
-                <button type="button" className="self-start text-xs text-fg-muted underline-offset-2 hover:text-fg hover:underline"
-                  onClick={() => { forgetLastEmail(); setRememberedEmail(''); setEmail('') }}>{t('auth.notYou')}</button>
-              )}
-              <Button type="submit" loading={magic.isPending}>{t('auth.sendLink')} ✦</Button>
-              <p className="text-center text-xs text-fg-dim">{t('auth.noPassword')}</p>
-            </form>
-          ) : (
-            <form onSubmit={submitCode} className="flex flex-col gap-3 text-center">
-              <p className="text-success">✓ {t('auth.sent')}</p>
-              <p className="text-xs text-fg-dim">{t('auth.sentHint')}</p>
-              <Input dir="ltr" inputMode="numeric" maxLength={6} placeholder="123456" className="text-center tracking-[.4em]" value={code} onChange={(e) => setCode(e.target.value)} />
-              <Button type="submit" loading={verify.isPending}>{t('auth.verify')}</Button>
-              {MOCKS && <p className="text-[11px] text-fg-dim">{t('auth.mockHint', { email: 'fatema@saadatu-aldarein.com' })}</p>}
-            </form>
-          )}
-          {!isInterpreterEmail && <div className="my-5 flex items-center gap-3 text-xs text-fg-dim"><span className="h-px flex-1 bg-line" />{t('auth.or')}<span className="h-px flex-1 bg-line" /></div>}
-          {isInterpreterEmail ? null : GOOGLE_ID && !MOCKS ? (
-            <GoogleOAuthProvider clientId={GOOGLE_ID}>
-              <div className="flex justify-center"><GoogleLogin onSuccess={(c) => c.credential && google.mutate({ idToken: c.credential, rememberMe: remember })} onError={() => setErr(t('common.error'))} shape="pill" width="320" /></div>
-            </GoogleOAuthProvider>
-          ) : (
-            <Button variant="ghost" className="w-full bg-white text-[#222] border-[#e5e5e5]" loading={google.isPending} onClick={() => google.mutate({ idToken: 'mock', rememberMe: remember })}>
-              <GoogleG /> {t('auth.google')}
-            </Button>
-          )}
-          <RememberMe checked={remember} onChange={choose} />
-          {err && <p className="mt-4 text-center text-sm text-danger">{err}</p>}
-        </div>
-      </PageEnter>
-    </div>
+    <>
+      <div className="my-5 flex items-center gap-3 text-xs text-fg-dim"><span className="h-px flex-1 bg-line" />{t('auth.or')}<span className="h-px flex-1 bg-line" /></div>
+      {GOOGLE_ID && !MOCKS ? (
+        <GoogleOAuthProvider clientId={GOOGLE_ID}>
+          <div className="flex justify-center"><GoogleLogin onSuccess={(c) => c.credential && google.mutate({ idToken: c.credential, rememberMe: remember })} onError={() => onError(null)} shape="pill" width="320" /></div>
+        </GoogleOAuthProvider>
+      ) : (
+        <Button variant="ghost" className="w-full border-[#e5e5e5] bg-white text-[#222]" loading={google.isPending} onClick={() => google.mutate({ idToken: 'mock', rememberMe: remember })}>
+          <GoogleG /> {t('auth.google')}
+        </Button>
+      )}
+    </>
   )
 }
 
-/** Google's four-colour "G" (the sign-in button and the profile's sign-in methods). */
-export function GoogleG({ size = 18 }: { size?: number }) {
+/**
+ * Sign in: e-mail + password. A returning visitor sees the remembered e-mail as a fixed line ("Not you?" brings the
+ * field back) and only types the password. Create account and forgot password are their own screens.
+ */
+export default function LoginPage() {
+  const { t } = useTranslation()
+  const navigate = useNavigate()
+  const { search, state } = useLocation()
+  const [params] = useSearchParams()
+  const finish = useFinishLogin()
+  const errorOf = useAuthErrorText()
+  // an e-mail handed over by another screen ("Sign in instead") wins over the remembered one
+  const handed = ((state as AuthNavState)?.email ?? params.get('email') ?? '').trim().toLowerCase()
+  const [rememberedEmail, setRememberedEmail] = useState(() => (handed ? '' : readLastEmail()))
+  const [email, setEmail] = useState(handed || rememberedEmail)
+  const [password, setPassword] = useState('')
+  const [err, setErr] = useState<AuthError | null>(null)
+  const [remember, setRemember] = useState(readRememberMe)
+  const choose = (v: boolean) => { setRemember(v); saveRememberMe(v) }
+  const passwordRef = useRef<HTMLInputElement>(null)
+  const emailRef = useRef<HTMLInputElement>(null)
+  const fixedEmail = !!rememberedEmail && email === rememberedEmail
+
+  // a known e-mail: the cursor waits in the password field
+  useEffect(() => { if (fixedEmail || handed) passwordRef.current?.focus({ preventScroll: true }) }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  const login = useMutation({
+    mutationFn: authApi.passwordLogin,
+    onSuccess: (r, v) => finish(r, v.rememberMe ?? true, 'password'),
+    onError: (e) => { setErr(errorOf(e)); setPassword(''); passwordRef.current?.focus() },
+  })
+  const showError = (e: unknown) => setErr(e ? errorOf(e) : { text: t('common.error') })
+
+  const cleanEmail = email.trim().toLowerCase()
+  const isInterpreterEmail = cleanEmail.endsWith(INTERPRETER_DOMAIN)
+  const submit = (e: FormEvent) => {
+    e.preventDefault()
+    setErr(null)
+    if (!cleanEmail || !password) return
+    login.mutate({ email: cleanEmail, password, rememberMe: remember })
+  }
+  const notYou = () => {
+    forgetLastEmail(); setRememberedEmail(''); setEmail(''); setPassword(''); setErr(null)
+    window.setTimeout(() => emailRef.current?.focus(), 0)
+  }
+  const goForgot = () => navigate({ pathname: '/forgot-password', search }, { state: { email: cleanEmail } satisfies AuthNavState })
+
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" aria-hidden="true">
-      <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
-      <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
-      <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
-      <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
-    </svg>
+    <AuthShell icon="moon" title={t('auth.title')} lead={t('auth.lead')}>
+      <PasskeySignIn remember={remember} onStart={() => setErr(null)} onSignedIn={(r, rem) => finish(r, rem, 'passkey')} />
+      {isInterpreterEmail && <p className="mb-5 rounded-xl border border-gold/40 bg-gold/10 p-3 text-center text-xs leading-relaxed text-gold-ink">{t('auth.interpreterDomainHint')}</p>}
+      <form onSubmit={submit} className="flex flex-col gap-4" noValidate>
+        {fixedEmail ? (
+          <div>
+            <Label>{t('auth.signingInAs')}</Label>
+            <div className="flex items-center gap-3 rounded-xl border border-line bg-surface-2/60 px-3 py-2.5">
+              <Avatar name={rememberedEmail} size={30} />
+              <span dir="ltr" className="min-w-0 flex-1 break-all text-start text-sm font-medium leading-snug">{rememberedEmail}</span>
+              <button type="button" onClick={notYou} className="shrink-0 rounded-lg px-2 py-1 text-xs text-gold-ink underline-offset-4 hover:underline">{t('auth.notYou')}</button>
+            </div>
+            {/* lets password managers pair the saved password with this e-mail */}
+            <input type="email" name="email" autoComplete="username" value={rememberedEmail} readOnly hidden />
+          </div>
+        ) : (
+          <div>
+            <label htmlFor="login-email"><Label>{t('auth.email')}</Label></label>
+            <Input ref={emailRef} id="login-email" name="email" dir="ltr" type="email" required autoComplete="username" inputMode="email" placeholder="you@email.com" value={email} onChange={(e) => setEmail(e.target.value)} />
+          </div>
+        )}
+        <div>
+          <div className="flex items-baseline justify-between gap-3">
+            <label htmlFor="login-password"><Label>{t('auth.password')}</Label></label>
+            <button type="button" onClick={goForgot} className="mb-2 text-xs text-fg-muted underline-offset-4 hover:text-gold-ink hover:underline">{t('auth.forgotLink')}</button>
+          </div>
+          <PasswordInput ref={passwordRef} id="login-password" name="password" dir="ltr" required autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} />
+        </div>
+        <AuthErrorBox error={err} action={err?.code === 'PASSWORD_NOT_SET' ? (
+          <Button type="button" size="sm" variant="ghost" className="border-danger/50 text-danger" onClick={goForgot}><Icon name="lock" size={16} />{t('auth.createPassword')}</Button>
+        ) : undefined} />
+        <Button type="submit" size="lg" loading={login.isPending} disabled={!cleanEmail || !password}>{t('auth.signIn')}</Button>
+      </form>
+      <p className="mt-4 text-center text-sm text-fg-muted">
+        {t('auth.newHere')}{' '}
+        <Link to={{ pathname: '/register', search }} state={{ email: fixedEmail ? '' : cleanEmail } satisfies AuthNavState} className="font-medium text-gold-ink underline-offset-4 hover:underline">{t('auth.createAccountLink')}</Link>
+      </p>
+      {!isInterpreterEmail && <GoogleSection remember={remember} onError={showError} onSignedIn={(r, rem) => finish(r, rem, 'google')} />}
+      <RememberMe checked={remember} onChange={choose} />
+      {MOCKS && <p className="mt-4 text-center text-[11px] leading-relaxed text-fg-dim">{t('auth.mockHint', { email: 'fatema@saadatu-aldarein.com', password: 'saadat2026' })}</p>}
+    </AuthShell>
   )
 }
 
@@ -197,7 +199,9 @@ export function OnboardingPage() {
   const [name, setName] = useState(user?.name ?? '')
   const [gender, setGender] = useState<Gender | ''>(user?.gender ?? '')
   const [birthDate, setBirthDate] = useState(user?.birthDate ?? '')
-  const [terms, setTerms] = useState(false)
+  // accepted already at sign-up: the box is not shown again (acceptedTerms is still sent)
+  const termsDone = user?.termsAccepted === true
+  const [terms, setTerms] = useState(termsDone)
   const m = useMutation({ mutationFn: authApi.onboarding, onSuccess: (u) => { setUser(u); navigate(params.get('next') || '/me') } })
   return (
     <div className="relative min-h-screen bg-night text-pearl">
@@ -212,7 +216,7 @@ export function OnboardingPage() {
               {(['FEMALE', 'MALE'] as Gender[]).map((g) => <button type="button" key={g} onClick={() => setGender(g)} className={`rounded-xl border px-4 py-3 text-sm transition-colors ${gender === g ? 'border-gold bg-gold/10 text-gold-ink' : 'border-line text-fg-muted'}`}>{t(g === 'FEMALE' ? 'auth.female' : 'auth.male')}</button>)}
             </div>
           </div>
-          <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={terms} onChange={(e) => setTerms(e.target.checked)} className="accent-gold" />{t('auth.terms')}</label>
+          {!termsDone && <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={terms} onChange={(e) => setTerms(e.target.checked)} className="accent-gold" />{t('auth.terms')}</label>}
           <div><Label>{t('auth.birthDate')}</Label><Input type="date" dir="ltr" value={birthDate} max={new Date().toISOString().slice(0, 10)} onChange={(e) => setBirthDate(e.target.value)} required /></div>
           <Button type="submit" disabled={!gender || !terms || !name || !birthDate} loading={m.isPending}>{t('auth.continue')}</Button>
         </form>

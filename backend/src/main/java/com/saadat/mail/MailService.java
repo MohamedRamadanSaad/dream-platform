@@ -53,6 +53,8 @@ public class MailService {
     public static final String MODEL_LINK = "link";
     public static final String MODEL_CTA_URL = "ctaUrl";
     public static final String MODEL_THEME = "theme";
+    /** Optional model entry choosing a subject/preheader variant: {@code mail.<template>.<purpose>.subject}. */
+    public static final String MODEL_PURPOSE = "purpose";
     /**
      * Optional model entry (never rendered): Message-ID of the e-mail this one answers. When present the e-mail is
      * sent with {@code In-Reply-To} and {@code References} set to it, so it lands in the same thread (support
@@ -155,10 +157,10 @@ public class MailService {
 
     /**
      * Whether the e-mail event is switched on: BOOL setting {@code mail.event.<template>} (missing = on). The
-     * sign-in e-mail ({@link MailTemplates#MAGIC_LINK}) can never be switched off.
+     * sign-in / account code e-mails ({@link MailTemplates#ALWAYS_ON}) can never be switched off.
      */
     public boolean isEnabled(String template) {
-        if (MailTemplates.MAGIC_LINK.equals(template)) {
+        if (template != null && MailTemplates.ALWAYS_ON.contains(template)) {
             return true;
         }
         return settings.getBool(SettingKeys.mailEvent(template), true);
@@ -185,8 +187,8 @@ public class MailService {
         com.saadat.common.domain.Locale loc = locale == null ? com.saadat.common.domain.Locale.AR : locale;
         Map<String, Object> vars = messageText.formatValues(model, loc);
         addCommon(vars, loc, template, themeKeyOverride);
-        String subject = messageText.get(String.format(SUBJECT_KEY, template), loc, vars);
-        String preheader = messageText.get(String.format(PREHEADER_KEY, template), loc, vars);
+        String subject = messageText.get(variantKey(SUBJECT_KEY, template, vars, loc), loc, vars);
+        String preheader = messageText.get(variantKey(PREHEADER_KEY, template, vars, loc), loc, vars);
         vars.put("subject", subject);
         vars.put("preheader", preheader);
 
@@ -232,6 +234,22 @@ public class MailService {
                 vars.put(MODEL_CTA_URL, frontend);
             }
         }
+    }
+
+    /**
+     * {@code mail.<template>.<purpose>.subject} (or {@code .preheader}) when the model has a {@link #MODEL_PURPOSE}
+     * and that message exists (e.g. email-code: SIGN_UP / RESET_PASSWORD), else {@code mail.<template>.subject}.
+     */
+    private String variantKey(String pattern, String template, Map<String, Object> vars,
+                              com.saadat.common.domain.Locale loc) {
+        Object purpose = vars.get(MODEL_PURPOSE);
+        if (purpose instanceof String p && !p.isBlank()) {
+            String key = String.format(pattern, template + "." + p.trim());
+            if (messageText.find(key, loc).isPresent()) {
+                return key;
+            }
+        }
+        return String.format(pattern, template);
     }
 
     /** {@code mail/<template>_<locale>} when the file exists, else the Arabic variant. */

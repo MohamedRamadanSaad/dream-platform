@@ -97,14 +97,13 @@ export function StaticPage({ kind }: { kind: Kind }) {
   )
 }
 
-/** Contact us: the support phone with its hours, and the support e-mail (both from the dashboard settings). */
+/** Contact us: the support e-mail with the support hours (both from the dashboard settings). No phone on this page. */
 export function ContactPage() {
   const { t } = useTranslation()
   const locale = useAuthStore((s) => s.locale)
   const title = t('static.contactTitle')
   const legal = useQuery(legalQuery).data
   const email = legal?.supportEmail || FALLBACK_EMAIL
-  const phone = legal?.supportPhone ?? ''
   const hours = (locale === 'ar' ? legal?.supportHoursAr : legal?.supportHoursEn) || ''
   usePageTitle(title, 'contact')
   return (
@@ -114,26 +113,16 @@ export function ContactPage() {
         <h1 className="font-display text-4xl md:text-5xl">{title}</h1>
         <p className="mt-6 text-lg font-light leading-loose text-fg-muted">{t('static.contact.lead')}</p>
 
-        <div className="mt-8 grid gap-5 md:grid-cols-2">
-          {phone && (
-            <section className="card flex flex-col gap-4 p-6 md:p-7">
-              <div className="flex items-center gap-3">
-                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gold/15 text-gold-ink"><Icon name="phone" size={20} /></span>
-                <h2 className="font-display text-xl md:text-2xl">{t('static.contact.phone')}</h2>
-              </div>
-              <a href={`tel:${phone.replace(/[^+\d]/g, '')}`} dir="ltr" className="text-start text-2xl font-medium tabular-nums tracking-wide text-fg hover:text-gold-ink">{phone}</a>
-              {hours && <p className="flex items-center gap-2 text-sm text-fg-muted"><Icon name="clock" size={16} />{t('static.contact.hours', { hours })}</p>}
-              <a href={`tel:${phone.replace(/[^+\d]/g, '')}`} className="btn btn-md btn-gold mt-auto w-full">{t('static.contact.call')}</a>
-            </section>
-          )}
+        <div className="mt-8 grid gap-5">
           <section className="card flex flex-col gap-4 p-6 md:p-7">
             <div className="flex items-center gap-3">
               <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gold/15 text-gold-ink"><Icon name="mail" size={20} /></span>
-              <h2 className="font-display text-xl md:text-2xl">{t(phone ? 'static.contact.emailAlt' : 'static.contact.email')}</h2>
+              <h2 className="font-display text-xl md:text-2xl">{t('static.contact.email')}</h2>
             </div>
             <a href={`mailto:${email}`} dir="ltr" className="break-all text-start text-lg font-medium text-fg hover:text-gold-ink">{email}</a>
             <p className="text-sm text-fg-muted">{t('static.contact.emailNote')}</p>
-            <a href={`mailto:${email}`} className="btn btn-md btn-ghost mt-auto w-full border-fg text-fg">{t('static.contact.write')}</a>
+            {hours && <p className="flex items-center gap-2 text-sm text-fg-muted"><Icon name="clock" size={16} />{t('static.contact.hours', { hours })}</p>}
+            <a href={`mailto:${email}`} className="btn btn-md btn-gold mt-auto w-full sm:w-auto sm:self-start">{t('static.contact.write')}</a>
           </section>
         </div>
 

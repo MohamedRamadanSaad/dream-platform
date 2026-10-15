@@ -11,6 +11,7 @@ import com.saadat.users.domain.User;
 import com.saadat.users.repo.UserRepository;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -19,7 +20,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/** Read side of orders: /me/orders, /me/orders/{id}, /admin/orders. */
+/** Read side of orders: /me/orders, /me/orders/{id}, /admin/orders (with the order-number search). */
 @Service
 @RequiredArgsConstructor
 public class OrderQueryService {
@@ -46,7 +47,29 @@ public class OrderQueryService {
 
     @Transactional(readOnly = true)
     public PageResponse<AdminOrderRow> all(Integer page, Integer size) {
-        Page<Order> orders = orderRepository.findAllByOrderByCreatedAtDesc(Pages.of(page, size));
+        return all(page, size, null);
+    }
+
+    /**
+     * Admin orders, newest first. {@code q} (optional) finds orders by number, ignoring case and with or without the
+     * prefix: "15001", "rn-15001", "RN-15001". A {@code q} that is not an order number finds nothing.
+     */
+    @Transactional(readOnly = true)
+    public PageResponse<AdminOrderRow> all(Integer page, Integer size, String q) {
+        Page<Order> orders;
+        if (q == null || q.isBlank()) {
+            orders = orderRepository.findAllByOrderByCreatedAtDesc(Pages.of(page, size));
+        } else {
+            Optional<OrderNumbers.Query> query = OrderNumbers.parseQuery(q);
+            if (query.isEmpty()) {
+                return PageResponse.of(List.<AdminOrderRow>of(), Pages.of(page, size).getPageNumber(),
+                        Pages.of(page, size).getPageSize(), 0);
+            }
+            OrderNumbers.Query parsed = query.get();
+            orders = parsed.hasPrefix()
+                    ? orderRepository.searchByNumber(parsed.number(), Pages.of(page, size))
+                    : orderRepository.searchByNumberDigits(parsed.digits(), Pages.of(page, size));
+        }
         List<UUID> userIds = orders.getContent().stream().map(Order::getUserId).distinct().toList();
         Map<UUID, String> names = userRepository.findAllById(userIds).stream()
                 .collect(Collectors.toMap(User::getId, User::getName, (a, b) -> a));

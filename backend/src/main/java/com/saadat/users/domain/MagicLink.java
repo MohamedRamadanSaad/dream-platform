@@ -1,7 +1,10 @@
 package com.saadat.users.domain;
 
+import com.saadat.common.domain.CodePurpose;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -16,7 +19,8 @@ import org.hibernate.annotations.SoftDelete;
 
 /**
  * Row of {@code magic_links}. Only SHA-256 hashes of the token and of the 6-digit code are stored.
- * {@code attempts} counts failed code verifications (brute-force guard).
+ * {@code attempts} counts failed code verifications (brute-force guard). {@code purpose} (V37) says what the code is
+ * for; a verified SIGN_UP / RESET_PASSWORD code stores the SHA-256 of a single-use ticket ({@code ticket_*}).
  */
 @Getter
 @Setter
@@ -53,6 +57,20 @@ public class MagicLink {
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "purpose", nullable = false, length = 16, updatable = false)
+    private CodePurpose purpose = CodePurpose.SIGN_IN;
+
+    /** SHA-256 of the ticket given for a verified SIGN_UP / RESET_PASSWORD code (null otherwise). */
+    @Column(name = "ticket_hash", length = 128)
+    private String ticketHash;
+
+    @Column(name = "ticket_expires_at")
+    private Instant ticketExpiresAt;
+
+    @Column(name = "ticket_used_at")
+    private Instant ticketUsedAt;
 
     public boolean isUsed() {
         return usedAt != null;

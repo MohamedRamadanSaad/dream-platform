@@ -9,7 +9,7 @@ import { Button, ErrorBox, Input, Label, Skeleton, Textarea } from '@/components
 import { Icon } from '@/components/icons/Icon'
 import { PageEnter } from '@/components/motion'
 import { toast } from '@/components/ui/Toaster'
-import { arrowBack, arrowNext, cn, fmtDate, fmtMoney } from '@/lib/utils'
+import { arrowBack, arrowNext, cn, fmtDeadline, fmtMoney } from '@/lib/utils'
 import type { Gender, InstapayOrderView } from '@/api/types'
 
 /** Same minimum as the dream editor (the server checks dreams.min_chars). */
@@ -19,8 +19,8 @@ const REFERENCE_RE = /^\d{6,24}$/
 /** Arabic-Indic and Persian digits → 0-9, spaces and dashes removed (the server does the same). */
 export function normalizeReference(raw: string) {
   return raw
-    .replace(/[٠-٩]/g, (d) => String(d.charCodeAt(0) - 0x660))
-    .replace(/[۰-۹]/g, (d) => String(d.charCodeAt(0) - 0x6f0))
+    .replace(/[\u0660-\u0669]/g, (d) => String(d.charCodeAt(0) - 0x660))
+    .replace(/[\u06f0-\u06f9]/g, (d) => String(d.charCodeAt(0) - 0x6f0))
     .replace(/[\s\-‎‏]/g, '')
 }
 
@@ -121,12 +121,59 @@ export function InstapayPage() {
         </>
       )}
 
-      <div className="flex justify-between gap-3 text-xs text-fg-dim">
-        <span>{t('me.checkout.instapay.orderNo')}</span>
-        <span dir="ltr" className="select-all font-mono">{v.orderId}</span>
-      </div>
+      <OrderNumber value={v.orderNumber} />
     </PageEnter>
   )
+}
+
+/** The readable order number (RN-15001): easy to select, one tap copies it for a message to support. */
+function OrderNumber({ value }: { value: string }) {
+  const { t } = useTranslation()
+  return (
+    <div className="flex items-center justify-between gap-3 rounded-2xl border border-line px-4 py-3">
+      <div className="min-w-0">
+        <div className="text-xs text-fg-dim">{t('me.checkout.instapay.orderNo')}</div>
+        <div dir="ltr" className="select-all text-start font-mono text-lg font-semibold tracking-wider">{value}</div>
+        <div className="mt-0.5 text-[11px] leading-relaxed text-fg-dim">{t('me.checkout.instapay.orderNoHint')}</div>
+      </div>
+      <button type="button" onClick={() => void copyText(value, t('me.payments.copied'))} aria-label={t('me.checkout.instapay.copyOrderNo')} title={t('me.checkout.instapay.copyOrderNo')}
+        className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-line text-gold-ink hover:bg-surface-2">
+        <CopyIcon />
+      </button>
+    </div>
+  )
+}
+
+/** "We hold this order until …" with the time left beside it, refreshed every minute. */
+function Deadline({ expiresAt, locale }: { expiresAt: string; locale: string }) {
+  const { t } = useTranslation()
+  const [, tick] = useState(0)
+  useEffect(() => {
+    const id = window.setInterval(() => tick((n) => n + 1), 60_000)
+    return () => window.clearInterval(id)
+  }, [])
+  const left = timeLeft(expiresAt, locale)
+  return (
+    <div role="note" className="space-y-2 rounded-xl border border-line p-3 text-xs leading-relaxed text-fg-muted">
+      <div className="flex items-start gap-2">
+        <Icon name="clock" size={16} className="mt-0.5 shrink-0 text-gold-ink" />
+        <p>{t('me.checkout.instapay.deadline', { time: `\u2068${fmtDeadline(expiresAt, locale)}\u2069` })}</p>
+      </div>
+      {left && <div className="ms-6"><span className="chip bg-gold/10 font-medium text-gold-ink">{t('me.checkout.instapay.timeLeft', { left })}</span></div>}
+    </div>
+  )
+}
+
+/** "23 hours and 10 minutes" in words (Intl.NumberFormat units pick the Arabic dual / plural); null once past. */
+function timeLeft(iso: string, locale: string): string | null {
+  const ms = new Date(iso).getTime() - Date.now()
+  if (ms <= 0) return null
+  const totalMin = Math.max(1, Math.floor(ms / 60_000))
+  const h = Math.floor(totalMin / 60), m = totalMin % 60
+  const loc = locale === 'ar' ? 'ar-EG-u-nu-latn' : 'en-US'
+  const unit = (n: number, u: 'hour' | 'minute') => new Intl.NumberFormat(loc, { style: 'unit', unit: u, unitDisplay: 'long' }).format(n)
+  const parts = h > 0 ? (m > 0 && h < 6 ? [unit(h, 'hour'), unit(m, 'minute')] : [unit(h, 'hour')]) : [unit(m, 'minute')]
+  return new Intl.ListFormat(locale === 'ar' ? 'ar' : 'en', { style: 'long', type: 'conjunction' }).format(parts)
 }
 
 function PackageRow({ v, locale }: { v: InstapayOrderView; locale: string }) {
@@ -173,7 +220,7 @@ function AmountCard({ v, locale }: { v: InstapayOrderView; locale: string }) {
         <Icon name="info" size={16} className="mt-0.5 shrink-0 text-gold-ink" />
         <span>{t('me.checkout.instapay.amountNote')}</span>
       </div>
-      {v.status === 'INITIATED' && <div className="flex items-center gap-2 text-xs text-fg-dim"><Icon name="clock" size={14} />{t('me.checkout.instapay.deadline', { time: fmtDate(v.expiresAt, locale, true) })}</div>}
+      {v.status === 'INITIATED' && <Deadline expiresAt={v.expiresAt} locale={locale} />}
     </section>
   )
 }

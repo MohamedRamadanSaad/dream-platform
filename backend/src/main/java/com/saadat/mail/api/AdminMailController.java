@@ -127,7 +127,7 @@ public class AdminMailController {
     private MailTemplateRow row(String template) {
         MailTheme effective = themeService.resolve(template);
         return new MailTemplateRow(template, effective.key(), !themeService.hasOwnTheme(template),
-                mailService.isEnabled(template), !MailTemplates.MAGIC_LINK.equals(template));
+                mailService.isEnabled(template), !MailTemplates.ALWAYS_ON.contains(template));
     }
 
     private static void requireTemplate(String template) {

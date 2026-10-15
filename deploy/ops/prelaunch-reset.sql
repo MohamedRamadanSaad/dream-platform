@@ -8,7 +8,7 @@
 --       countries, country_groups, packages, price_rules, promotions, coupons, youtube_videos, flyway_schema_history),
 --       youtube_seen (which channel videos each user already saw, so the YouTube badge does not light up again).
 -- CLEARED: orders, credit_ledger, coupon_redemptions; dreams with their messages, interpretations and testimonials;
---          notifications, email_log, audit_log, magic_links, passkey_challenges.
+--          notifications, email_log, audit_log, magic_links, passkey_challenges. Order numbers restart at 15001.
 
 BEGIN;
 
@@ -29,5 +29,8 @@ TRUNCATE TABLE
 -- offers start again from zero uses
 UPDATE promotions SET used_count = 0;
 UPDATE coupons    SET used_count = 0;
+
+-- order numbers start again at RN-15001 (V38)
+ALTER SEQUENCE order_number_seq RESTART WITH 15001;
 
 COMMIT;

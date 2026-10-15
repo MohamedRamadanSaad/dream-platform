@@ -21,16 +21,23 @@ import java.util.UUID;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
 /**
  * Row of {@code orders}. JPA entity name is {@code PaymentOrder} (ORDER is an SQL/JPQL keyword): write
  * JPQL as {@code select o from PaymentOrder o}. Amounts are computed server-side only.
+ *
+ * <p>{@link DynamicInsert}: null columns are left out of the INSERT, so a row saved without an order number still gets
+ * one from the column DEFAULT ({@code 'RN-' || nextval('order_number_seq')}, V38). The application normally sets it
+ * itself ({@code OrderNumbers}, prefix from setting {@code orders.number_prefix}); no other column has a DEFAULT that
+ * differs from what the entity sets.
  */
 @Getter
 @Setter
 @NoArgsConstructor
+@DynamicInsert
 @Entity(name = "PaymentOrder")
 @Table(name = "orders")
 public class Order {
@@ -38,6 +45,10 @@ public class Order {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
+
+    /** Readable number shown to people, e.g. RN-15001 (V38): unique, never changes. Routes keep using {@link #id}. */
+    @Column(name = "order_number", length = 32, updatable = false)
+    private String orderNumber;
 
     @Column(name = "user_id", nullable = false)
     private UUID userId;

@@ -29,6 +29,18 @@ public final class ApiPaths {
         public static final String PASSKEY_OPTIONS = ROOT + "/passkey/options";
         /** POST: signs in with a passkey; AuthResponse + refresh cookie like {@link #MAGIC_VERIFY}. */
         public static final String PASSKEY_VERIFY = ROOT + "/passkey/verify";
+        /** POST {email}: e-mails a SIGN_UP code (204); 409 ACCOUNT_EXISTS when the account already has a password. */
+        public static final String SIGNUP_REQUEST = ROOT + "/signup/request";
+        /** POST {ticket, password, acceptedTerms, rememberMe?}: sets the password and signs in (AuthResponse + cookie). */
+        public static final String SIGNUP_COMPLETE = ROOT + "/signup/complete";
+        /** POST {email, code, purpose}: a SIGN_UP / RESET_PASSWORD code → {ticket, expiresIn}. */
+        public static final String CODE_VERIFY = ROOT + "/code/verify";
+        /** POST {email}: always 204; e-mails a RESET_PASSWORD code when the account exists. */
+        public static final String PASSWORD_FORGOT = ROOT + "/password/forgot";
+        /** POST {ticket, password, rememberMe?}: new password, other devices signed out, signs in. */
+        public static final String PASSWORD_RESET = ROOT + "/password/reset";
+        /** POST {email, password, rememberMe?}: signs in with the password (AuthResponse + cookie). */
+        public static final String PASSWORD_LOGIN = ROOT + "/password/login";
 
         private Auth() {
         }

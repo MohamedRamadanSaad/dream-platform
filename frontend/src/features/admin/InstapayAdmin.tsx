@@ -70,6 +70,7 @@ export function InstapayTransfersPanel() {
                 <div className="min-w-0">
                   <div className="truncate font-medium">{r.userName}</div>
                   <div dir="ltr" className="truncate text-start text-xs text-fg-dim">{r.userEmail}</div>
+                  <div className="mt-1 text-xs text-fg-dim">{t('admin.instapay.orderNo')}: <span dir="ltr" className="select-all font-mono font-medium text-fg-muted">{r.orderNumber}</span></div>
                 </div>
                 <div className="text-end">
                   <div dir="ltr" className="font-mono text-xl font-semibold">{fmtMoney(r.amount, r.currency, locale)}</div>
@@ -108,7 +109,7 @@ export function InstapayTransfersPanel() {
                 <li key={r.orderId} className="flex flex-wrap items-center justify-between gap-3 px-5 py-3 text-sm">
                   <div className="min-w-0">
                     <div className="truncate">{r.userName} · <span dir="ltr">{fmtMoney(r.amount, r.currency, locale)}</span></div>
-                    <div className="text-xs text-fg-dim"><span dir="ltr" className="font-mono">{r.reference}</span>{r.reviewedAt ? ` · ${fmtDate(r.reviewedAt, locale, true)}` : ''}{r.reviewNote ? ` · ${r.reviewNote}` : ''}</div>
+                    <div className="text-xs text-fg-dim"><span dir="ltr" className="select-all font-mono text-fg-muted">{r.orderNumber}</span> · <span dir="ltr" className="font-mono">{r.reference}</span>{r.reviewedAt ? ` · ${fmtDate(r.reviewedAt, locale, true)}` : ''}{r.reviewNote ? ` · ${r.reviewNote}` : ''}</div>
                   </div>
                   <StatusBadge status={r.status} kind="order" />
                 </li>

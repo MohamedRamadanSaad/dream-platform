@@ -14,8 +14,8 @@ Binding rules for anyone continuing the dream-interpretation platform. Short, im
 9. Courses module later (placeholder page only).
 
 ## B. Accounts & security
-10. No passwords. Google sign-in + magic link / 6-digit code. No Facebook/Apple at launch.
-11. Any e-mail on `@saadatu-aldarein.com` is an interpreter account and signs in **only** with the e-mail code (Google rejected). Domain is a DB setting (`interpreter.email_domain`); plus `interpreter.emails` list and `INTERPRETER_EMAILS` env for bootstrap.
+10. E-mail + password accounts (owner's decision of 2026-10-15, replaces "no passwords"): sign-up = e-mail → 6-digit code → password + terms; forgot password = e-mail → code → new password. Google sign-in and passkeys stay; the e-mail-code sign-in stays in the API but the login screen no longer offers it. No Facebook/Apple at launch.
+11. Any e-mail on `@saadatu-aldarein.com` is an interpreter account and signs in with the e-mail code or a password, never Google (Google rejected). Domain is a DB setting (`interpreter.email_domain`); plus `interpreter.emails` list and `INTERPRETER_EMAILS` env for bootstrap.
 12. Every user: name, gender, **date of birth** (age shown to the interpreter), country (server-detected). Initial-letter colour avatar instead of photos, everywhere.
 13. Sign-out must exist on every device (profile page icon; sidebar on desktop). Login/account/sign-out are icons, not text.
 14. Secure payments: signed webhooks only, idempotent, amounts verified server-side; mock provider only outside prod (`ProductionSafetyCheck`).

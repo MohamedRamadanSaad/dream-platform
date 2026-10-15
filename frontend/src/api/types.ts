@@ -5,7 +5,7 @@ export type OrderStatus = 'INITIATED' | 'PENDING_REVIEW' | 'SUCCESS' | 'FAILED' 
 /** INSTAPAY: manual transfer inside Egypt, confirmed by the interpreter. */
 export type PaymentProvider = 'KASHIER' | 'MOR' | 'INSTAPAY'
 export type Role = 'USER' | 'INTERPRETER'
-export type AuthProvider = 'GOOGLE' | 'MAGIC_LINK'
+export type AuthProvider = 'GOOGLE' | 'MAGIC_LINK' | 'PASSWORD'
 export type Gender = 'FEMALE' | 'MALE'
 export type Currency = 'EGP' | 'SAR' | 'USD'
 export type Locale = 'ar' | 'en'
@@ -31,6 +31,8 @@ export interface ApiProblem {
   instance?: string
   code?: string
   errors?: Record<string, string[]>
+  /** 429 TOO_MANY_ATTEMPTS (password sign-in): seconds until the account can try again. */
+  retryAfterSeconds?: number
 }
 
 export interface Page<T> {
@@ -59,6 +61,10 @@ export interface UserDto {
   createdAt: string
   /** New-video e-mails on. */
   marketingOptIn: boolean
+  /** The account has a password (sign-in with e-mail + password works). */
+  hasPassword: boolean
+  /** The terms were accepted (at sign-up or onboarding): onboarding does not ask again. */
+  termsAccepted: boolean
 }
 export interface AuthResponse {
   accessToken: string
@@ -80,6 +86,23 @@ export interface MagicVerifyRequest {
   /** Missing = true. */
   rememberMe?: boolean
 }
+
+// ---------- E-mail + password (sign-up, sign-in, forgot password) ----------
+/** POST /auth/signup/request: 204 (code e-mailed) or 409 ACCOUNT_EXISTS. */
+export interface SignupRequest { email: string }
+/** POST /auth/password/forgot: always 204. */
+export interface ForgotRequest { email: string }
+export type CodePurpose = 'SIGN_UP' | 'RESET_PASSWORD'
+/** POST /auth/code/verify → TicketResponse; 401 MAGIC_LINK_INVALID / _EXPIRED / _TOO_MANY_ATTEMPTS. */
+export interface CodeVerifyRequest { email: string; code: string; purpose: CodePurpose }
+/** Single-use ticket for the password step (valid 15 minutes). Kept in memory only, never in storage. */
+export interface TicketResponse { ticket: string; expiresIn: number }
+/** POST /auth/signup/complete → AuthResponse; 401 TICKET_INVALID, 422 WEAK_PASSWORD, 409 ACCOUNT_EXISTS. */
+export interface SignupCompleteRequest { ticket: string; password: string; acceptedTerms: true; rememberMe?: boolean }
+/** POST /auth/password/reset → AuthResponse; 401 TICKET_INVALID, 422 WEAK_PASSWORD. */
+export interface PasswordResetRequest { ticket: string; password: string; rememberMe?: boolean }
+/** POST /auth/password/login → AuthResponse; 401 INVALID_CREDENTIALS, 409 PASSWORD_NOT_SET, 429 TOO_MANY_ATTEMPTS. */
+export interface PasswordLoginRequest { email: string; password: string; rememberMe?: boolean }
 
 /** GET /me/devices — one active refresh-token family of the caller, most recently active first. */
 export interface DeviceDto {
@@ -273,6 +296,8 @@ export interface CheckoutResponse {
 }
 export interface OrderDto {
   id: string
+  /** Readable order number shown to people (e.g. RN-15001); routes still use the id. */
+  orderNumber: string
   packageName: string
   credits: number
   amount: number
@@ -289,6 +314,7 @@ export interface OrderDto {
 /** GET /me/orders/{id}/instapay: the payment page. The receiving account is the interpreter's current setting. */
 export interface InstapayOrderView {
   orderId: string
+  orderNumber: string
   status: OrderStatus
   packageName: string
   credits: number
@@ -312,6 +338,7 @@ export interface InstapaySubmitRequest {
 }
 export interface InstapayTransferRow {
   orderId: string
+  orderNumber: string
   userId: string
   userName: string
   userEmail: string
@@ -422,6 +449,7 @@ export interface AdminDreamDetail extends DreamDetail {
   user: { id: string; name: string; email: string; countryCode: string; age: number | null }
   payment: {
     orderId: string
+    orderNumber: string
     payerName: string
     payerEmail: string
     paidAt: string

@@ -5,7 +5,8 @@
 -- KEPT (fixed data): app_settings, countries, country_groups, packages, price_rules, promotions, coupons,
 --                    youtube_videos, flyway_schema_history, interpreter accounts (users with role INTERPRETER)
 --                    with their sign-in methods (auth_identities, passkeys).
--- CLEARED: everything users did while testing (see the TRUNCATE list and the DELETEs below).
+-- CLEARED: everything users did while testing (see the TRUNCATE list and the DELETEs below); order numbers restart
+--          at 15001 (sequence order_number_seq).
 
 BEGIN;
 
@@ -40,6 +41,9 @@ DELETE FROM users           WHERE role <> 'INTERPRETER';
 -- 3. offers start again from zero uses
 UPDATE promotions SET used_count = 0;
 UPDATE coupons    SET used_count = 0;
+
+-- 3b. order numbers start again at RN-15001 (V38)
+ALTER SEQUENCE order_number_seq RESTART WITH 15001;
 
 -- 4. the site mailbox account belongs to Egypt (same as V32)
 UPDATE users SET country_code = 'EG', country_source = 'ADMIN'

@@ -76,7 +76,7 @@ export function AdminDreamPage() {
               <div className="flex justify-between"><dt className="text-fg-muted">{t('admin.dream.package')}</dt><dd>{d.payment.packageName}</dd></div>
               <div className="flex justify-between"><dt className="text-fg-muted">{t('common.country')}</dt><dd>{d.payment.countryCode}</dd></div>
               <div className="flex justify-between"><dt className="text-fg-muted">{t('admin.dream.amount')}</dt><dd>{fmtMoney(d.payment.amount, d.payment.currency, locale)}</dd></div>
-              <div className="flex justify-between gap-3"><dt className="shrink-0 text-fg-muted">{t('admin.dream.orderNo')}</dt><dd dir="ltr" className="min-w-0 select-all truncate font-mono text-xs">{d.payment.orderId}</dd></div>
+              <div className="flex justify-between gap-3"><dt className="shrink-0 text-fg-muted">{t('admin.dream.orderNo')}</dt><dd dir="ltr" className="min-w-0 select-all truncate font-mono text-sm font-medium tracking-wide">{d.payment.orderNumber}</dd></div>
               <div className="flex justify-between gap-3"><dt className="shrink-0 text-fg-muted">{t('admin.dream.orderCredits')}</dt><dd className="text-end">
                 {d.payment.dreamNumber > 0 && <div>{t('admin.dream.dreamOf', { n: d.payment.dreamNumber, total: d.payment.credits })}</div>}
                 <div className={d.payment.creditsLeft > 0 ? 'font-medium text-gold-ink' : 'text-fg-dim'}>{d.payment.creditsExpired ? t('admin.dream.creditsExpired') : t('admin.dream.creditsLeft', { n: d.payment.creditsLeft })}</div>

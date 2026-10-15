@@ -226,8 +226,9 @@ public class ReportService {
             return List.of();
         }
         Order o = order.get();
-        String ref = o.getProviderTxnId() != null ? o.getProviderTxnId()
-                : (o.getProviderOrderId() != null ? o.getProviderOrderId() : o.getId().toString());
+        String ref = o.getOrderNumber() != null ? o.getOrderNumber()
+                : (o.getProviderTxnId() != null ? o.getProviderTxnId()
+                : (o.getProviderOrderId() != null ? o.getProviderOrderId() : o.getId().toString()));
         List<Row> rows = new ArrayList<>();
         rows.add(row(ctx, "pdf.payment.order", PdfRenderer.clean(ref)));
         rows.add(row(ctx, "pdf.payment.package", PdfRenderer.clean(o.getPackageNameSnapshot())));

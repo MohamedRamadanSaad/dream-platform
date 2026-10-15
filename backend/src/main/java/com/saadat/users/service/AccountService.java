@@ -126,6 +126,7 @@ public class AccountService {
         user.setName("");
         user.setGender(null);
         user.setMarketingOptIn(false);
+        user.setPasswordHash(null); // the anonymised row can never be signed in to
         user.setDeletedAt(clock.instant());
         userRepository.save(user);
         identityRepository.deleteAll(identityRepository.findByUserId(userId));

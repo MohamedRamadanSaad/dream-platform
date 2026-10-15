@@ -10,6 +10,7 @@ import java.util.UUID;
 /** types.ts {@code OrderDto & { userName }} for GET /admin/orders. */
 public record AdminOrderRow(
         UUID id,
+        String orderNumber,
         String packageName,
         int credits,
         BigDecimal amount,
@@ -23,7 +24,8 @@ public record AdminOrderRow(
         String userName) {
 
     public static AdminOrderRow of(OrderDto o, String userName) {
-        return new AdminOrderRow(o.id(), o.packageName(), o.credits(), o.amount(), o.currency(), o.status(),
+        return new AdminOrderRow(o.id(), o.orderNumber(), o.packageName(), o.credits(), o.amount(), o.currency(),
+                o.status(),
                 o.provider(), o.providerRef(), o.countryCode(), o.createdAt(), o.paidAt(), userName);
     }
 }

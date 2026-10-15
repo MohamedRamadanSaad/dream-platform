@@ -36,6 +36,8 @@ public record AdminDreamDetailDto(
      */
     public record PaymentRef(
             UUID orderId,
+            /** Readable order number, e.g. RN-15001 (V38). */
+            String orderNumber,
             String payerName,
             String payerEmail,
             Instant paidAt,

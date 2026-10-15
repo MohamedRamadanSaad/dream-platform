@@ -1,6 +1,7 @@
 // One account page for every role: /me/profile (users) and /admin/profile (the interpreter).
 import { useState, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
+import { Link } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Icon } from '@/components/icons/Icon'
 import { Avatar } from '@/components/ui/Avatar'
@@ -106,20 +107,21 @@ function PersonalCard() {
 }
 
 /**
- * How this account signs in. The site has no passwords: Google or a code sent by e-mail (the interpreter: code only),
- * plus fingerprint / face once a passkey is added (#passkeys below).
+ * How this account signs in: e-mail + password or Google (the interpreter: e-mail + password only), plus fingerprint /
+ * face once a passkey is added (#passkeys below). Accounts opened before passwords existed may still show the e-mail code.
  */
 function SignInMethods({ interpreter }: { interpreter: boolean }) {
   const { t } = useTranslation()
   const providers = useAuthStore((s) => s.user)!.providers
   const passkeys = usePasskeys()
   const withPasskey = (passkeys.data?.length ?? 0) > 0
-  const base: string[] = providers.length ? providers : interpreter ? ['MAGIC_LINK'] : ['GOOGLE', 'MAGIC_LINK']
-  const methods = [...new Set([...base, ...(withPasskey ? ['PASSKEY'] : [])])]
-  const icon = (p: string) => (p === 'GOOGLE' ? <GoogleG size={16} /> : <span className="text-gold-ink"><Icon name={p === 'PASSKEY' ? 'passkey' : 'mail'} size={16} /></span>)
+  const user = useAuthStore((s) => s.user)!
+  const base: string[] = providers.length ? providers : interpreter ? ['PASSWORD'] : ['GOOGLE', 'PASSWORD']
+  const methods = [...new Set([...base, ...(user.hasPassword ? ['PASSWORD'] : []), ...(withPasskey ? ['PASSKEY'] : [])])]
+  const icon = (p: string) => (p === 'GOOGLE' ? <GoogleG size={16} /> : <span className="text-gold-ink"><Icon name={p === 'PASSKEY' ? 'passkey' : p === 'PASSWORD' ? 'lock' : 'mail'} size={16} /></span>)
   const line = interpreter
-    ? withPasskey ? 'me.profile.noPasswordsInterpreterPasskey' : 'me.profile.noPasswordsInterpreter'
-    : withPasskey ? 'me.profile.noPasswordsPasskey' : 'me.profile.noPasswords'
+    ? withPasskey ? 'me.profile.signInLineInterpreterPasskey' : 'me.profile.signInLineInterpreter'
+    : withPasskey ? 'me.profile.signInLinePasskey' : 'me.profile.signInLine'
   return (
     <section aria-labelledby="signin-title" className="card p-5 sm:p-6">
       <h2 id="signin-title" className="font-display text-xl">{t('me.profile.signInTitle')}</h2>
@@ -135,6 +137,10 @@ function SignInMethods({ interpreter }: { interpreter: boolean }) {
         <span className="mt-0.5 shrink-0 text-gold-ink"><Icon name="shield" size={16} /></span>
         {t(line)}
       </p>
+      {/* a new password goes through the e-mailed code (the same steps as "Forgot password?") */}
+      <Link to="/forgot-password" state={{ email: user.email }} className="btn btn-sm btn-ghost mt-4">
+        <Icon name="lock" size={16} />{t(user.hasPassword ? 'me.profile.changePassword' : 'me.profile.createPassword')}
+      </Link>
     </section>
   )
 }

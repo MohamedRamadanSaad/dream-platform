@@ -11,7 +11,7 @@ import { arrowNext, fmtDate, fmtMoney } from '@/lib/utils'
 import { CreditExpiryNotice } from './CreditExpiryNotice'
 import { toast } from '@/components/ui/Toaster'
 
-/** The order id is the invoice number (same as in the receipt e-mail); one tap copies it for a support e-mail. */
+/** The readable order number (same as in the receipt e-mail); one tap copies it for a support e-mail. */
 function InvoiceNo({ id }: { id: string }) {
   const { t } = useTranslation()
   const copy = async () => {
@@ -20,7 +20,7 @@ function InvoiceNo({ id }: { id: string }) {
   return (
     <div className="mt-1 flex min-w-0 items-center gap-1.5 text-xs text-fg-dim">
       <span className="shrink-0">{t('me.payments.invoiceNo')}:</span>
-      <span dir="ltr" className="select-all truncate font-mono text-[11px] text-fg-muted">{id}</span>
+      <span dir="ltr" className="select-all truncate font-mono text-xs font-medium tracking-wide text-fg-muted">{id}</span>
       <button type="button" onClick={() => void copy()} aria-label={t('me.payments.copy')} title={t('me.payments.copy')} className="shrink-0 rounded-md p-1 text-fg-dim transition-colors hover:bg-surface-2 hover:text-fg">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2" /><path d="M5 15V6a2 2 0 0 1 2-2h9" /></svg>
       </button>
@@ -56,7 +56,7 @@ export function PaymentsPage() {
           <div className="card divide-y divide-line p-0">
             {orders.data!.items.map((o) => (
               <div key={o.id} className="flex items-center justify-between gap-4 p-4">
-                <div className="min-w-0"><div className="text-sm">{o.packageName} · {fmtMoney(o.amount, o.currency, locale)}</div><div className="text-xs text-fg-dim">{fmtDate(o.createdAt, locale, true)}</div><InvoiceNo id={o.id} /></div>
+                <div className="min-w-0"><div className="text-sm">{o.packageName} · {fmtMoney(o.amount, o.currency, locale)}</div><div className="text-xs text-fg-dim">{fmtDate(o.createdAt, locale, true)}</div><InvoiceNo id={o.orderNumber} /></div>
                 <div className="text-end"><StatusBadge status={o.status} kind="order" />
                   {o.provider === 'INSTAPAY' && (o.status === 'INITIATED' || o.status === 'PENDING_REVIEW' || o.status === 'FAILED')
                     ? <div><Link to={`/me/checkout/instapay/${o.id}`} className="text-xs text-gold-ink">{t('me.payments.openOrder')} {arrowNext(locale)}</Link></div>

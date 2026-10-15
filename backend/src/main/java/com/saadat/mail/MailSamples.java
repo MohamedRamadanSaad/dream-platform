@@ -43,6 +43,11 @@ public class MailSamples {
                 m.put("code", "482915");
                 m.put("ttlMinutes", 15);
             }
+            case MailTemplates.EMAIL_CODE -> {
+                m.put("code", "482915");
+                m.put("ttlMinutes", 15);
+                m.put("purpose", "SIGN_UP");
+            }
             case MailTemplates.DREAM_RECEIVED -> {
                 m.put("expectedBy", now.plus(Duration.ofHours(48)));
                 m.put("waitMessage", en ? "We usually reply within 48 hours." : "نرد عادةً خلال 48 ساعة.");
@@ -61,7 +66,7 @@ public class MailSamples {
                 m.put("amount", new BigDecimal("150.00"));
                 m.put("currency", "SAR");
                 m.put("credits", 3);
-                m.put("orderRef", "A1B2C3D4");
+                m.put("orderRef", "RN-15001");
                 m.put("paidAt", now);
                 m.put("link", FrontendPaths.MY_PAYMENTS);
             }
@@ -69,11 +74,11 @@ public class MailSamples {
                 m.put("packageName", en ? "Three dreams" : "ثلاث رؤى");
                 m.put("amount", new BigDecimal("150.00"));
                 m.put("currency", "SAR");
-                m.put("orderRef", "A1B2C3D4");
+                m.put("orderRef", "RN-15001");
                 m.put("link", FrontendPaths.PACKAGES);
             }
             case MailTemplates.PAYMENT_SUSPICIOUS -> {
-                m.put("orderRef", "A1B2C3D4");
+                m.put("orderRef", "RN-15001");
                 m.put("userEmail", "ahmed@example.com");
                 m.put("amount", new BigDecimal("150.00"));
                 m.put("currency", "SAR");

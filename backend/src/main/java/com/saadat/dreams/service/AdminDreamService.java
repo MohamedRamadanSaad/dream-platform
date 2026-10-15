@@ -127,7 +127,8 @@ public class AdminDreamService {
         OrderCredits.Usage usage = orderCredits.of(o.getUserId(), o.getId());
         String ref = o.getProviderTxnId() != null ? o.getProviderTxnId()
                 : (o.getProviderOrderId() != null ? o.getProviderOrderId() : "");
-        return new AdminDreamDetailDto.PaymentRef(o.getId(), payer == null ? "" : payer.getName(),
+        return new AdminDreamDetailDto.PaymentRef(o.getId(), o.getOrderNumber(),
+                payer == null ? "" : payer.getName(),
                 payer == null ? "" : payer.getEmail(), o.getPaidAt() != null ? o.getPaidAt() : o.getCreatedAt(),
                 o.getPackageNameSnapshot(), o.getAmount(), o.getCurrency(), OrderDto.displayProvider(o).name(), ref,
                 o.getCountryCode(), usage == null ? o.getCredits() : usage.credits(),

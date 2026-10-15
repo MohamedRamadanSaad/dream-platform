@@ -50,7 +50,8 @@ Admin endpoints `GET/PUT /admin/settings` (map) exist for the interpreter; `admi
 - Bucket4j filter: 10/min/IP on `/auth/**`, 30/min/user on `POST /dreams`, 5/min/IP on `/checkout`.
 - Google: verify `idToken` with `GoogleIdTokenVerifier` (audience = `app.google.client-id`); require `email_verified=true`; upsert user by lowercase email; link identity (GOOGLE, sub). In `local` profile, `idToken == "mock"` logs in the seeded user (guarded by property `app.auth.allow-mock=true` only in local).
 - Magic link: `POST /auth/magic/request` always 204; generates token (32B url-safe) + 6-digit code, stores hashes, sends email with both link `${frontend}/auth/callback?token=…` and code. `POST /auth/magic/verify` accepts `{token}` or `{email, code}`; single use; creates user if absent (`onboarded=false`, name ''), links MAGIC_LINK identity.
-- `POST /auth/onboarding` sets name/gender/onboarded. `PUT /me/preferences` per DTO.
+- E-mail + password (owner's decision of 2026-10-15, replaces the earlier "no passwords" rule): `PasswordService` + V37. Sign-up and "forgot password" prove the e-mail with a 6-digit code (`magic_links.purpose` SIGN_UP / RESET_PASSWORD, template `email-code`), exchanged once for a 15-minute ticket; then the password is set (BCrypt 12) and the user is signed in. Login with lockout (5 wrong → 15 min, 429 `retryAfterSeconds`). Routes and codes: docs/API_CONTRACT.md "E-mail + password accounts". The magic-link routes stay (SIGN_IN purpose only).
+- `POST /auth/onboarding` sets name/gender/onboarded (and `terms_accepted_at` when still empty). `PUT /me/preferences` per DTO.
 - Country: `CountryResolver` reads `CF-IPCountry` header (fallback `X-Country` in local, else setting default `SA`); stored on user at first login (`country_source=IP`); user cannot change it (only admin). Each `user_sessions` row on login/refresh.
 
 ## 4. Pricing & catalog (`com.saadat.pricing`)

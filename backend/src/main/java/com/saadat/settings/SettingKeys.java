@@ -62,6 +62,8 @@ public final class SettingKeys {
 
     // ---- orders ----
     public static final String ORDERS_EXPIRE_MINUTES = "orders.expire_minutes";
+    /** Prefix of new order numbers, e.g. RN → RN-15001 (V38). Old numbers keep their prefix. */
+    public static final String ORDERS_NUMBER_PREFIX = "orders.number_prefix";
     /** The user sees their next credit expiry when it is within N days. */
     public static final String CREDITS_EXPIRY_NOTICE_DAYS = "credits.expiry_notice_days";
 
@@ -198,7 +200,7 @@ public final class SettingKeys {
             AUTH_MAGIC_TTL_MINUTES, AUTH_ACCESS_TTL_MINUTES, AUTH_REFRESH_TTL_DAYS, AUTH_SESSION_TTL_HOURS,
             AUTH_KNOWN_DEVICE_DAYS,
             AUTH_PASSKEY_CHALLENGE_TTL_SECONDS,
-            ORDERS_EXPIRE_MINUTES, CREDITS_EXPIRY_NOTICE_DAYS,
+            ORDERS_EXPIRE_MINUTES, ORDERS_NUMBER_PREFIX, CREDITS_EXPIRY_NOTICE_DAYS,
             INSTAPAY_ENABLED, INSTAPAY_ADDRESS, INSTAPAY_LINK, INSTAPAY_RECIPIENT_NAME, INSTAPAY_EXPIRE_HOURS,
             INTERPRETER_EMAILS, INTERPRETER_DIGEST_HOUR,
             PRICING_GLOBAL_CURRENCY, PRICING_DEFAULT_COUNTRY, PRICING_FX_TO_USD,

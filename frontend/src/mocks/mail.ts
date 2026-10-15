@@ -22,7 +22,7 @@ export function mailThemes(): T.MailThemeDto[] {
 
 export function mailTemplateRow(template: string): T.MailTemplateRow {
   const own = db.settings[`mail.theme.${template}`]
-  const switchable = template !== 'magic-link'
+  const switchable = template !== 'magic-link' && template !== 'email-code'
   return {
     template,
     theme: known(own) ? own : defaultThemeKey(),

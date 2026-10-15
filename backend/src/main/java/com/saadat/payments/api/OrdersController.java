@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-/** GET /me/orders, GET /me/orders/{id}, GET /admin/orders. */
+/** GET /me/orders, GET /me/orders/{id}, GET /admin/orders ({@code q} = order number, e.g. 15001 or RN-15001). */
 @RestController
 @RequiredArgsConstructor
 public class OrdersController {
@@ -31,7 +31,8 @@ public class OrdersController {
 
     @GetMapping(ApiPaths.Admin.ORDERS)
     public PageResponse<AdminOrderRow> adminOrders(@RequestParam(required = false) Integer page,
-                                                   @RequestParam(required = false) Integer size) {
-        return orderQueryService.all(page, size);
+                                                   @RequestParam(required = false) Integer size,
+                                                   @RequestParam(required = false) String q) {
+        return orderQueryService.all(page, size, q);
     }
 }

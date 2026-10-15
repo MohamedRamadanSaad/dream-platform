@@ -1,13 +1,20 @@
 package com.saadat.auth.api;
 
 import com.saadat.auth.api.AuthDtos.AuthResponse;
+import com.saadat.auth.api.AuthDtos.CodeVerifyRequest;
+import com.saadat.auth.api.AuthDtos.EmailCodeRequest;
 import com.saadat.auth.api.AuthDtos.GoogleLoginRequest;
 import com.saadat.auth.api.AuthDtos.MagicRequest;
 import com.saadat.auth.api.AuthDtos.MagicVerifyRequest;
 import com.saadat.auth.api.AuthDtos.OnboardingRequest;
+import com.saadat.auth.api.AuthDtos.PasswordLoginRequest;
+import com.saadat.auth.api.AuthDtos.PasswordResetRequest;
+import com.saadat.auth.api.AuthDtos.SignupCompleteRequest;
+import com.saadat.auth.api.AuthDtos.TicketResponse;
 import com.saadat.auth.service.AuthService;
 import com.saadat.auth.service.AuthService.LoginContext;
 import com.saadat.auth.service.AuthService.LoginResult;
+import com.saadat.auth.service.PasswordService;
 import com.saadat.auth.service.RefreshTokenService.IssuedRefreshToken;
 import com.saadat.auth.web.CookieUtil;
 import com.saadat.common.api.ApiPaths;
@@ -40,13 +47,15 @@ public class AuthController {
     private final CookieUtil cookieUtil;
     private final CountryResolver countryResolver;
     private final PasskeyService passkeyService;
+    private final PasswordService passwordService;
 
     public AuthController(AuthService authService, CookieUtil cookieUtil, CountryResolver countryResolver,
-                          PasskeyService passkeyService) {
+                          PasskeyService passkeyService, PasswordService passwordService) {
         this.authService = authService;
         this.cookieUtil = cookieUtil;
         this.countryResolver = countryResolver;
         this.passkeyService = passkeyService;
+        this.passwordService = passwordService;
     }
 
     @PostMapping(ApiPaths.Auth.GOOGLE)
@@ -79,6 +88,47 @@ public class AuthController {
     public AuthResponse passkeyVerify(@RequestBody PasskeySignInRequest body, HttpServletRequest request,
                                       HttpServletResponse response) {
         return withCookie(passkeyService.signIn(body, context(request)), response);
+    }
+
+    // ------------------------------------------------------------------ e-mail + password (V37)
+
+    /** 204: a SIGN_UP code is e-mailed (silently throttled); 409 ACCOUNT_EXISTS when the account has a password. */
+    @PostMapping(ApiPaths.Auth.SIGNUP_REQUEST)
+    public ResponseEntity<Void> signupRequest(@Valid @RequestBody EmailCodeRequest body, HttpServletRequest request) {
+        passwordService.requestSignup(body.email(), context(request));
+        return ResponseEntity.noContent().build();
+    }
+
+    /** Always 204 (a RESET_PASSWORD code only when the account exists). */
+    @PostMapping(ApiPaths.Auth.PASSWORD_FORGOT)
+    public ResponseEntity<Void> passwordForgot(@Valid @RequestBody EmailCodeRequest body,
+                                               HttpServletRequest request) {
+        passwordService.forgot(body.email(), context(request));
+        return ResponseEntity.noContent().build();
+    }
+
+    /** A SIGN_UP / RESET_PASSWORD code → {ticket, expiresIn}; 401 MAGIC_LINK_* like the magic code. */
+    @PostMapping(ApiPaths.Auth.CODE_VERIFY)
+    public TicketResponse codeVerify(@Valid @RequestBody CodeVerifyRequest body) {
+        return passwordService.verifyCode(body);
+    }
+
+    @PostMapping(ApiPaths.Auth.SIGNUP_COMPLETE)
+    public AuthResponse signupComplete(@Valid @RequestBody SignupCompleteRequest body, HttpServletRequest request,
+                                       HttpServletResponse response) {
+        return withCookie(passwordService.completeSignup(body, context(request)), response);
+    }
+
+    @PostMapping(ApiPaths.Auth.PASSWORD_RESET)
+    public AuthResponse passwordReset(@Valid @RequestBody PasswordResetRequest body, HttpServletRequest request,
+                                      HttpServletResponse response) {
+        return withCookie(passwordService.reset(body, context(request)), response);
+    }
+
+    @PostMapping(ApiPaths.Auth.PASSWORD_LOGIN)
+    public AuthResponse passwordLogin(@Valid @RequestBody PasswordLoginRequest body, HttpServletRequest request,
+                                      HttpServletResponse response) {
+        return withCookie(passwordService.login(body, context(request)), response);
     }
 
     @PostMapping(ApiPaths.Auth.REFRESH)

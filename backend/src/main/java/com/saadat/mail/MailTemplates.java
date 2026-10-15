@@ -5,13 +5,15 @@ import java.util.List;
 /**
  * Names of the Thymeleaf e-mail templates ({@code templates/mail/<name>_<ar|en>.html}). Subject and preheader
  * come from messages {@code mail.<name>.subject} / {@code mail.<name>.preheader} ({@code {key}} placeholders
- * are filled from the model). Every template except {@link #MAGIC_LINK} can be switched off with the BOOL setting
- * {@code mail.event.<name>} (see MailService).
+ * are filled from the model). Every template except the sign-in codes ({@link #ALWAYS_ON}: {@link #MAGIC_LINK},
+ * {@link #EMAIL_CODE}) can be switched off with the BOOL setting {@code mail.event.<name>} (see MailService).
  *
  * <p>Model keys each template reads (all optional unless noted; Instants are formatted automatically in the
  * recipient's locale and {@code schedule.time_zone}; {@code link} = SPA path → {@code ctaUrl} is derived):
  * <ul>
  *   <li>{@link #MAGIC_LINK}: link*, code*, ttlMinutes*</li>
+ *   <li>{@link #EMAIL_CODE}: code*, ttlMinutes*, purpose* ("SIGN_UP" or "RESET_PASSWORD"; subject + heading per
+ *       purpose from messages {@code mail.email-code.<purpose>.*}); no link</li>
  *   <li>{@link #DREAM_RECEIVED}: name, expectedBy, waitMessage, link</li>
  *   <li>{@link #INTERPRETER_QUESTION}: name, link</li>
  *   <li>{@link #USER_REPLIED} (to interpreter): userName, link</li>
@@ -49,6 +51,8 @@ import java.util.List;
 public final class MailTemplates {
 
     public static final String MAGIC_LINK = "magic-link";
+    /** 6-digit code (no link) to create an account or to reset the password (V37). */
+    public static final String EMAIL_CODE = "email-code";
     public static final String DREAM_RECEIVED = "dream-received";
     public static final String INTERPRETER_QUESTION = "interpreter-question";
     public static final String USER_REPLIED = "user-replied";
@@ -83,7 +87,12 @@ public final class MailTemplates {
             PAYMENT_RECEIPT, PAYMENT_SUSPICIOUS, REPLY_REMINDER, TESTIMONIAL_REQUEST, INTERPRETER_DIGEST,
             DREAM_SUBMITTED, YOUTUBE_NEW_VIDEO, WELCOME, PAYMENT_FAILED, DREAM_CANCELLED, CREDITS_ADJUSTED,
             TESTIMONIAL_APPROVED, ACCOUNT_DELETED, NEW_USER, TESTIMONIAL_RECEIVED, SUPPORT_AUTO_REPLY, NEW_SIGN_IN,
-            PASSKEY_ADDED, SUPPORT_IN_PROGRESS, SUPPORT_CLOSED);
+            PASSKEY_ADDED, SUPPORT_IN_PROGRESS, SUPPORT_CLOSED, EMAIL_CODE);
+
+    /**
+     * Sign-in / account codes: always sent (no {@code mail.event.*} switch) and never copied to the Sent folder.
+     */
+    public static final List<String> ALWAYS_ON = List.of(MAGIC_LINK, EMAIL_CODE);
 
     /**
      * E-mails to people outside the platform whose language we do not know (they wrote to the support mailbox):

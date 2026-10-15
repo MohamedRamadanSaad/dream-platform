@@ -68,7 +68,8 @@ public class DashboardActivity {
     @Transactional(readOnly = true)
     public LastPackage lastPackage(UUID userId, Locale locale) {
         return orderRepository.findFirstByUserIdAndStatusOrderByPaidAtDescCreatedAtDesc(userId, OrderStatus.SUCCESS)
-                .map(o -> new LastPackage(o.getId(), packageName(o, locale), o.getCredits(), o.getAmount(),
+                .map(o -> new LastPackage(o.getId(), o.getOrderNumber(), packageName(o, locale), o.getCredits(),
+                        o.getAmount(),
                         o.getCurrency(), o.getPaidAt() != null ? o.getPaidAt() : o.getCreatedAt()))
                 .orElse(null);
     }

@@ -55,7 +55,7 @@ public class SentFolderArchiver {
 
     /** Whether copies are wanted and possible for this template (sign-in e-mails are never copied). */
     public boolean shouldArchive(String template) {
-        if (MailTemplates.MAGIC_LINK.equals(template)) {
+        if (template != null && MailTemplates.ALWAYS_ON.contains(template)) {
             return false;
         }
         if (imapHost.isEmpty() || username.isEmpty()) {

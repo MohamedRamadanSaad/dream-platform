@@ -104,17 +104,12 @@
     "refund": "Refund policy"
   },
   "auth": {
-    "title": "Welcome",
-    "lead": "Type your email to get a 6-digit sign-in code, or sign in with Google. No password needed.",
+    "title": "Sign in",
+    "lead": "Welcome back. Enter your email and password to sign in.",
     "google": "Continue with Google",
     "or": "or",
     "email": "Email",
-    "sendLink": "Send me the sign-in code",
-    "sent": "We sent a sign-in code to your email",
-    "sentHint": "Type the 6-digit code, or tap the link in the email. It works for 15 minutes.",
-    "code": "Sign-in code",
-    "verify": "Sign in",
-    "noPassword": "No password. One code signs you in",
+    "code": "Verification code",
     "onboardingTitle": "One last step",
     "onboardingLead": "We need your name and gender, because the interpretation can be different for men and women.",
     "name": "Name",
@@ -125,35 +120,89 @@
     "continue": "Continue",
     "logout": "Sign out",
     "birthDate": "Date of birth",
-    "interpreterDomainHint": "Interpreter accounts sign in with the email code, not with Google.",
-    "interpreterUseMagic": "This is an interpreter email. Please sign in with the email code.",
-    "mockHint": "Test mode: any code will sign you in. Use {{email}} to sign in as the interpreter.",
+    "interpreterDomainHint": "Interpreter accounts sign in with email and password. Google sign-in is not available for them.",
+    "interpreterUseMagic": "This is an interpreter email. Please sign in with your email and password.",
+    "mockHint": "Test mode: create an account with any email. Any 6-digit code works (000000 gives an error). The demo accounts use the password {{password}}. The interpreter email is {{email}}.",
     "linkInvalid": "This link is not valid or has expired",
     "providers": {
       "GOOGLE": "Google",
       "MAGIC_LINK": "Email code",
       "PASSKEY": "Fingerprint or face",
-      "APPLE": "Apple"
+      "APPLE": "Apple",
+      "PASSWORD": "Password"
     },
     "rememberMe": "Keep me signed in on this device",
     "rememberMeHint": "Don't tick this on a shared device.",
     "passkey": {
       "button": "Sign in with fingerprint or face",
       "cancelled": "Not turned on yet? Sign in another way, then turn it on from your account page.",
-      "invalid": "We couldn't sign you in with this fingerprint or face. Please sign in with Google or an email code, then add it again from your account page.",
+      "invalid": "We could not sign you in with this fingerprint or face. Please sign in with your email and password or with Google, then add it again from your account page.",
       "failed": "Fingerprint or face sign-in didn't work this time. Try again, or choose another way."
     },
-    "notYou": "Not you? Use another email",
+    "notYou": "Not you?",
     "errors": {
-      "USE_MAGIC_LINK": "This e-mail already signs in with an e-mail code. Type it in the box above and we will send you a sign-in code.",
-      "INTERPRETER_USE_MAGIC": "Interpreter accounts sign in with the email code only. Type your email above.",
-      "EMAIL_NOT_VERIFIED": "This Google account's email is not verified. Please sign in with the email code.",
+      "USE_MAGIC_LINK": "This email already has an account here without Google. Sign in with your email and password, or create a password with “Forgot password?”.",
+      "INTERPRETER_USE_MAGIC": "Interpreter accounts sign in with email and password, not with Google.",
+      "EMAIL_NOT_VERIFIED": "This Google account’s email is not verified. Please sign in with your email and password.",
       "IDENTITY_LINKED": "This Google account is linked to another account here.",
       "ACCOUNT_UNAVAILABLE": "This account is not available. Contact us if this is a mistake.",
       "MAGIC_LINK_INVALID": "The code is not correct. Check it and try again.",
       "MAGIC_LINK_EXPIRED": "The code has expired. Ask for a new one.",
-      "MAGIC_LINK_TOO_MANY_ATTEMPTS": "Too many tries. Ask for a new code."
-    }
+      "MAGIC_LINK_TOO_MANY_ATTEMPTS": "Too many tries. Ask for a new code.",
+      "INVALID_CREDENTIALS": "The email or password is not correct.",
+      "PASSWORD_NOT_SET": "This account was opened without a password. Create a password now, or sign in with Google below.",
+      "TOO_MANY_ATTEMPTS": "Too many wrong tries, so we paused sign-in for a while to protect your account.",
+      "WEAK_PASSWORD": "This password is too weak. Use at least 8 characters with a letter and a number.",
+      "ACCOUNT_EXISTS": "An account with this email already exists. Please sign in with your password.",
+      "TICKET_INVALID": "This step has timed out. Please start again and ask for a new code."
+    },
+    "mockCodeHint": "Test mode: any 6 digits work. 000000 shows an error message.",
+    "signingInAs": "Signing in as",
+    "password": "Password",
+    "newPassword": "New password",
+    "confirmPassword": "Confirm password",
+    "showPassword": "Show password",
+    "forgotLink": "Forgot password?",
+    "signIn": "Sign in",
+    "newHere": "New here?",
+    "createAccountLink": "Create an account",
+    "haveAccount": "Already have an account?",
+    "signInLink": "Sign in",
+    "registerTitle": "Create a new account",
+    "registerLead": "Three short steps: your email, a code we send to it, then your password.",
+    "forgotTitle": "Reset your password",
+    "forgotLead": "We send a code to your email, then you choose a new password.",
+    "stepOf": "Step {{n}} of 3",
+    "steps": {
+      "email": "Email",
+      "code": "Code",
+      "password": "Password"
+    },
+    "sendCode": "Send the code",
+    "codeSentTo": "We sent a 6-digit code to",
+    "codeHint": "The code works for 15 minutes. If you cannot find it, check your spam folder.",
+    "forgotCodeNote": "The code only arrives if this email has an account here.",
+    "verifyCode": "Confirm the code",
+    "resend": "Send the code again",
+    "resendIn": "Send again in {{s}} s",
+    "resent": "We sent a new code to your email",
+    "changeEmail": "Change email",
+    "rules": {
+      "title": "Your password needs:",
+      "length": "At least 8 characters",
+      "letter": "At least one letter",
+      "digit": "At least one number",
+      "match": "The two passwords match",
+      "met": "done",
+      "unmet": "not yet"
+    },
+    "acceptTerms": "I have read and accept the <terms>Terms and Conditions</terms>",
+    "createAccount": "Create account",
+    "savePassword": "Save the password and sign in",
+    "signInInstead": "Sign in instead",
+    "createPassword": "Create a password",
+    "tryAgainIn_one": "Try again in 1 minute.",
+    "tryAgainIn_other": "Try again in {{count}} minutes."
   },
   "me": {
     "greeting": "Peace be upon you, {{name}}",
@@ -254,9 +303,9 @@
         "BONUS": "Gift",
         "EXPIRE": "Expired"
       },
-      "invoiceNo": "Invoice number",
-      "copy": "Copy invoice number",
-      "copied": "Invoice number copied",
+      "invoiceNo": "Order number",
+      "copy": "Copy order number",
+      "copied": "Order number copied",
       "openOrder": "Open order"
     },
     "orderStatus": {
@@ -301,7 +350,7 @@
         "reviewTitle": "Your payment and the amount will be checked",
         "reviewBody": "Please send exactly the amount shown for the package you chose. If the amount you send is different from the package price, the payment will not be accepted and will be rejected.",
         "reviewAfter": "Your dream is interpreted after the payment is confirmed. You will get a notification as soon as possible.",
-        "deadline": "Send the transfer details before {{time}}",
+        "deadline": "We hold this order for you until {{time}}. If you do not send the transfer reference number and the sender name by then, the order is cancelled automatically and you can order the package again.",
         "step1": "Transfer the amount with InstaPay",
         "open": "Open InstaPay and transfer now",
         "openHint": "The app opens with the receiver filled in. You only type the amount.",
@@ -311,7 +360,7 @@
         "qrTitle": "Using a computer?",
         "qrHint": "Scan the code with your phone camera to open InstaPay.",
         "qrAlt": "QR code of the InstaPay payment link",
-        "step2": "Enter the transfer details",
+        "step2": "Enter the transfer reference number and the sender name",
         "reference": "Transfer reference number",
         "referenceHint": "You find it in the transfer details in InstaPay, next to “Reference”.",
         "referenceInvalid": "The reference is digits only. Please check it in the transfer details.",
@@ -329,7 +378,7 @@
         "submitNote": "After you send, we match the amount with the package price. Once the payment is confirmed, your credits are added and your dream goes for interpretation.",
         "safety": "We will never ask for your InstaPay PIN or any code you receive. Only transfer to the address shown on this page.",
         "orderNo": "Order number",
-        "pendingTitle": "We received your transfer details",
+        "pendingTitle": "We received your reference number and sender name",
         "pendingLead": "We are now checking your payment and the amount you sent. Your dream is interpreted after the payment is confirmed. You will get a notification as soon as possible.",
         "stepSent": "Transfer sent",
         "stepCheck": "Checking the payment and the amount",
@@ -340,7 +389,7 @@
         "summaryAmount": "Amount",
         "summaryRef": "Reference number",
         "summarySender": "Sender name",
-        "edit": "Edit transfer details",
+        "edit": "Edit the reference number or sender name",
         "cancelEdit": "Cancel",
         "saveEdit": "Save changes",
         "toPayments": "My payments",
@@ -365,7 +414,10 @@
           "ORDER_CLOSED": "This order cannot be changed now.",
           "INVALID_DREAMS": "We could not attach the dream. Please try again.",
           "DRAFT_LIMIT": "You have too many drafts. Delete some on My dreams, or send the transfer without a dream."
-        }
+        },
+        "timeLeft": "Time left: {{left}}",
+        "copyOrderNo": "Copy order number",
+        "orderNoHint": "Mention this number if you contact us about this order."
       },
       "secureEg": "We never ask for your bank details. You transfer from your own app.",
       "continue": "Continue {{amount}}",
@@ -399,16 +451,18 @@
       "signedInAs": "Signed in as",
       "personal": "Personal details",
       "signInTitle": "How you sign in",
-      "noPasswords": "No passwords here. You sign in with Google or with a code sent to your email.",
-      "noPasswordsPasskey": "No passwords here. You sign in with Google, with a code sent to your email, or with your fingerprint or face.",
-      "noPasswordsInterpreter": "No passwords here. You sign in with a code sent to your email.",
-      "noPasswordsInterpreterPasskey": "No passwords here. You sign in with a code sent to your email, or with your fingerprint or face.",
       "interpreterRole": "Interpreter account",
       "deleteBody": "Your name, email and sign-in methods will be removed, and you will be signed out on every device. Records of dreams and payments are kept for accounting, without your name or email. This cannot be undone.",
       "deleteYes": "Delete my account",
       "deleted": "Your account was deleted",
       "channelMail": "New video emails",
-      "channelMailHint": "An email when a new video is published on the interpreter's channel."
+      "channelMailHint": "An email when a new video is published on the interpreter's channel.",
+      "signInLine": "You sign in with your email and password, or with Google.",
+      "signInLinePasskey": "You sign in with your email and password, with Google, or with your fingerprint or face.",
+      "signInLineInterpreter": "You sign in with your email and password.",
+      "signInLineInterpreterPasskey": "You sign in with your email and password, or with your fingerprint or face.",
+      "changePassword": "Change password",
+      "createPassword": "Create a password"
     },
     "passkeys": {
       "title": "Fingerprint or face sign-in",
@@ -423,7 +477,7 @@
       "unsupportedBrowser": "This browser doesn't support fingerprint or face sign-in.",
       "unsupportedDevice": "It can't be added on this device: there is no fingerprint, face or screen lock this browser can use.",
       "addTitle": "Turn on fingerprint or face sign-in",
-      "addBody": "Your device will ask for your fingerprint, face or screen lock once now. After that, one touch signs you in, with no email code.",
+      "addBody": "Your device will ask for your fingerprint, face or screen lock once now. After that, one touch signs you in, with no password to type.",
       "labelField": "Name for this device",
       "labelHint": "Optional. It only shows in this list.",
       "continue": "Continue",
@@ -435,8 +489,8 @@
       },
       "remove": "Remove {{label}}",
       "removeTitle": "Remove this sign-in?",
-      "removeBody": "“{{label}}” will no longer sign you in. You can still sign in with Google or an email code.",
-      "removeBodyInterpreter": "“{{label}}” will no longer sign you in. You can still sign in with an email code.",
+      "removeBody": "“{{label}}” will no longer sign you in. You can still sign in with your email and password or with Google.",
+      "removeBodyInterpreter": "“{{label}}” will no longer sign you in. You can still sign in with your email and password.",
       "removeDevice": "Your device may still show it in its settings. You can delete it there too.",
       "removeYes": "Remove",
       "removed": "Removed",
@@ -565,7 +619,7 @@
       "amount": "Amount",
       "noOrder": "Manual credit (no purchase)",
       "timerPaused": "Timer paused",
-      "orderNo": "Payment number",
+      "orderNo": "Order number",
       "orderCredits": "This payment's credits",
       "dreamOf": "This is dream {{n}} of {{total}}",
       "creditsLeft": "Left: {{n}}",
@@ -748,7 +802,10 @@
       "amount": "Amount",
       "status": "Status",
       "provider": "Provider",
-      "date": "Date"
+      "date": "Date",
+      "number": "Order no.",
+      "search": "Search by order number (like RN-15001), name or email",
+      "empty": "No matching orders."
     },
     "insights": {
       "title": "Recommendations for you",
@@ -1010,6 +1067,10 @@
         "support-closed": {
           "label": "Support: ticket closed",
           "desc": "To the sender of a support message when the ticket is closed, with your message."
+        },
+        "email-code": {
+          "label": "Account or password code",
+          "desc": "To the user, when they create an account or reset their password. It cannot be switched off."
         }
       },
       "toSupport": "Replies to support e-mails",
@@ -1169,7 +1230,7 @@
       "linkHint": "In the InstaPay app: QR code, then Share link. It starts with https://ipn.eg/S/",
       "recipient": "Receiver name (optional)",
       "recipientHint": "The name buyers see in InstaPay when they transfer.",
-      "expireHours": "Hours to send the transfer details",
+      "expireHours": "Hours the buyer has to send the reference number and sender name",
       "qrPreview": "The code buyers see",
       "save": "Save",
       "saved": "InstaPay account saved",
@@ -1178,7 +1239,8 @@
         "INVALID_LINK": "The link must start with https://ipn.eg/S/ as InstaPay copies it.",
         "REFERENCE_CHANGED": "The buyer just changed the reference number. Check the new number in your InstaPay history, then accept.",
         "NOT_PENDING": "This transfer is no longer waiting for review."
-      }
+      },
+      "orderNo": "Order number"
     }
   },
   "common": {
@@ -1230,9 +1292,9 @@
         {
           "h": "Your account",
           "p": [
-            "You sign in with Google or with a code sent to your email. There is no password.",
+            "You sign in with your email and password, or with Google. We store your password only as a one-way encrypted hash, so no one can read it.",
             "Enter your real name, gender and date of birth. The interpreter uses them to understand your dream. The site detects your country from your internet connection.",
-            "You are responsible for keeping your email and your signed-in devices safe. You can review and sign out devices from My account.",
+            "You are responsible for keeping your email, your password and your signed-in devices safe. You can review and sign out devices from My account.",
             "If you are under 18, use the site with your parent's or guardian's knowledge and consent."
           ]
         },
@@ -1334,7 +1396,7 @@
         {
           "h": "Your IP address",
           "p": [
-            "We do not store your IP address with your visits or your devices. We use it for a moment to find your country and to block misuse. It is only stored with email sign-in code requests, for security."
+            "We do not store your IP address with your visits or your devices. We use it for a moment to find your country and to block misuse. It is only stored with requests for the codes we email you (sign-in, new account and password reset codes), for security."
           ]
         },
         {
@@ -1423,11 +1485,8 @@
     },
     "contact": {
       "lead": "To reach technical support",
-      "phone": "Call us",
       "hours": "Available {{hours}}",
-      "call": "Call now",
       "email": "Email us",
-      "emailAlt": "Or email us",
       "emailNote": "We reply as soon as possible, within 2 working days.",
       "write": "Send an email",
       "refundNote": "Need a refund? First read our",

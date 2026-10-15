@@ -34,6 +34,7 @@ the real schema and rolls back).
 | | user_notes, youtube_seen | |
 
 The account `support@saadatu-aldarein.com` is set to Egypt (also done once by migration V32).
+Order numbers start again at `RN-15001` (`ALTER SEQUENCE order_number_seq RESTART WITH 15001`, V38).
 
 ### Pre-launch variant (payments only, 2026-10-14)
 
@@ -44,7 +45,7 @@ CONFIRM=RESET-PRODUCTION RESET_SQL=prelaunch-reset.sql bash /opt/saadat/deploy/o
 
 Same backup first. Clears orders, credit_ledger, coupon_redemptions, dreams (with messages, interpretations,
 testimonials), notifications, email_log, audit_log, magic_links, passkey_challenges; offers back to 0
-uses. **Keeps** every account and its sign-in methods and sessions, `page_views` (visitor and visit statistics) and
+uses; order numbers start again at `RN-15001`. **Keeps** every account and its sign-in methods and sessions, `page_views` (visitor and visit statistics) and
 `youtube_seen` (so the YouTube badge does not light up again for videos people already saw).
 Tested by `PrelaunchResetScriptIntegrationTest`.
 

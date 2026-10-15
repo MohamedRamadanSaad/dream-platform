@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<!--/* email-code (ar): code only, no link. purpose SIGN_UP or RESET_PASSWORD; subject + preheader: messages mail.email-code.<purpose>.* */-->
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{mail/_layout :: layout('rtl', 'ar', ~{::content})}">
+<head><title>email-code</title></head>
+<body>
+<div th:fragment="content">
+  <p style="margin:0 0 18px 0;font-size:18px;line-height:1.7;font-weight:600;color:#0A1128;">السلام عليكم<th:block th:if="${!#strings.isEmpty(name)}"> <span th:text="${name}">…</span></th:block>،</p>
+  <p th:if="${purpose == 'RESET_PASSWORD'}" style="margin:0 0 6px 0;font-size:17px;line-height:1.7;font-weight:600;color:#0A1128;">رمز إعادة تعيين كلمة المرور</p>
+  <p th:unless="${purpose == 'RESET_PASSWORD'}" style="margin:0 0 6px 0;font-size:17px;line-height:1.7;font-weight:600;color:#0A1128;">رمز إنشاء حسابك</p>
+  <p th:if="${purpose == 'RESET_PASSWORD'}" style="margin:0 0 16px 0;">طلبتَ إعادة تعيين كلمة المرور. اكتب هذا الرمز في الصفحة المفتوحة، ثم اختر كلمة مرور جديدة:</p>
+  <p th:unless="${purpose == 'RESET_PASSWORD'}" style="margin:0 0 16px 0;">طلبتَ إنشاء حساب بهذا البريد. اكتب هذا الرمز في الصفحة المفتوحة، ثم اختر كلمة المرور:</p>
+  <div dir="ltr" th:text="${code}" style="margin:8px 0 12px 0;padding:16px;text-align:center;font-size:30px;line-height:1.2;letter-spacing:8px;font-weight:600;color:#0A1128;background-color:#FFFFFF;border:1px solid #E6DCC8;border-radius:12px;">000000</div>
+  <p style="margin:0 0 16px 0;font-size:14px;line-height:1.8;color:#5B6478;">الرمز صالح لمدة <span th:text="${ttlMinutes}">15</span> دقيقة، ولمرة واحدة فقط. لا تشاركه مع أي أحد.</p>
+  <p style="margin:18px 0 0 0;font-size:13px;line-height:1.8;color:#5B6478;">إن لم تطلب هذا، يمكنك تجاهل الرسالة بأمان؛ لن يتغير شيء في حسابك.</p>
+</div>
+</body>
+</html>

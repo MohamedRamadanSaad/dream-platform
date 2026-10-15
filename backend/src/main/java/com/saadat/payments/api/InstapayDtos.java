@@ -24,6 +24,8 @@ public final class InstapayDtos {
      */
     public record OrderView(
             UUID orderId,
+            /** Readable number shown to the buyer, e.g. RN-15001 (V38). */
+            String orderNumber,
             OrderStatus status,
             String packageName,
             int credits,
@@ -53,6 +55,7 @@ public final class InstapayDtos {
     /** One row of the interpreter's InstaPay review list. */
     public record TransferRow(
             UUID orderId,
+            String orderNumber,
             UUID userId,
             String userName,
             String userEmail,

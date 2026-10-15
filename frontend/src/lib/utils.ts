@@ -26,6 +26,11 @@ export function fmtDate(iso: string, locale: string, withTime = false) {
     : { dateStyle: 'medium', ...(withTime ? { timeStyle: 'short' } : {}) }
   return new Intl.DateTimeFormat(intlLocale(locale, 'ar-EG', 'en-GB'), opts).format(new Date(iso))
 }
+/** Weekday, day, month and time, e.g. "الخميس 15 أكتوبر، 10:45 م" / "Thursday 15 October at 10:45 pm" (deadlines a few days ahead). */
+export function fmtDeadline(iso: string, locale: string) {
+  const opts: Intl.DateTimeFormatOptions = { weekday: 'long', day: 'numeric', month: 'long', hour: 'numeric', minute: '2-digit', hour12: true }
+  return new Intl.DateTimeFormat(intlLocale(locale, 'ar-EG', 'en-GB'), opts).format(new Date(iso))
+}
 export function timeAgo(iso: string, locale: string) {
   const diff = (Date.now() - new Date(iso).getTime()) / 1000
   const rtf = new Intl.RelativeTimeFormat(intlLocale(locale, 'ar', 'en'), { numeric: 'auto' })

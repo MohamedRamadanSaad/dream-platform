@@ -7,7 +7,7 @@ import { Skeleton } from '@/components/ui'
 import { useAuthStore, isInterpreter } from './auth-store'
 import { AppShell } from '@/components/layout'
 import LandingPage from '@/features/public/LandingPage'
-import LoginPage, { OnboardingPage, MagicCallbackPage } from '@/features/auth/LoginPage'
+import LoginPage, { OnboardingPage, MagicCallbackPage, RegisterPage, ForgotPasswordPage } from '@/features/auth/LoginPage'
 import { StaticPage, ContactPage } from '@/features/public/StaticPage'
 import { UnsubscribePage } from '@/features/public/UnsubscribePage'
 import { UserDreamsPage } from '@/features/user/DreamsPage'
@@ -122,6 +122,8 @@ function AdminLayout() {
 export const router = createBrowserRouter([{ element: <RootShell />, children: [
   { path: '/', element: <LandingPage /> },
   { path: '/login', element: <LoginPage /> },
+  { path: '/register', element: <RegisterPage /> },
+  { path: '/forgot-password', element: <ForgotPasswordPage /> },
   { path: '/auth/callback', element: <MagicCallbackPage /> },
   { path: '/terms', element: <StaticPage kind="terms" /> },
   { path: '/privacy', element: <StaticPage kind="privacy" /> },

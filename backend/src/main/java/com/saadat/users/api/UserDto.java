@@ -26,5 +26,9 @@ public record UserDto(
         boolean onboarded,
         Instant createdAt,
         /** New-video e-mails on (users.marketing_opt_in). */
-        boolean marketingOptIn) {
+        boolean marketingOptIn,
+        /** The account has a password (V37). */
+        boolean hasPassword,
+        /** The terms were accepted (users.terms_accepted_at not null): onboarding hides its terms checkbox. */
+        boolean termsAccepted) {
 }

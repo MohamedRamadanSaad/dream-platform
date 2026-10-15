@@ -47,7 +47,8 @@ public final class MeDtos {
      * The latest package the user paid for (null when none). {@code name} is in the request language when the
      * package still exists, else the name stored on the order.
      */
-    public record LastPackage(UUID orderId, String name, int credits, java.math.BigDecimal amount,
+    public record LastPackage(UUID orderId, String orderNumber, String name, int credits,
+                              java.math.BigDecimal amount,
                               com.saadat.common.domain.Currency currency, java.time.Instant paidAt) {
     }
 

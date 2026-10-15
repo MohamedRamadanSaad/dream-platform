@@ -7,6 +7,13 @@ export const authApi = {
   google: (body: T.GoogleLoginRequest) => http.post<T.AuthResponse>('/auth/google', body),
   magicRequest: (body: T.MagicRequest) => http.post<void>('/auth/magic/request', body),
   magicVerify: (body: T.MagicVerifyRequest) => http.post<T.AuthResponse>('/auth/magic/verify', body),
+  /** E-mail + password: sign-up (code → ticket → password), forgot password (same steps) and sign-in. */
+  signupRequest: (body: T.SignupRequest) => http.post<void>('/auth/signup/request', body),
+  passwordForgot: (body: T.ForgotRequest) => http.post<void>('/auth/password/forgot', body),
+  codeVerify: (body: T.CodeVerifyRequest) => http.post<T.TicketResponse>('/auth/code/verify', body),
+  signupComplete: (body: T.SignupCompleteRequest) => http.post<T.AuthResponse>('/auth/signup/complete', body),
+  passwordReset: (body: T.PasswordResetRequest) => http.post<T.AuthResponse>('/auth/password/reset', body),
+  passwordLogin: (body: T.PasswordLoginRequest) => http.post<T.AuthResponse>('/auth/password/login', body),
   refresh: () => http.post<T.AuthResponse>('/auth/refresh'),
   logout: () => http.post<void>('/auth/logout'),
   onboarding: (body: T.OnboardingRequest) => http.post<T.UserDto>('/auth/onboarding', body),
@@ -138,7 +145,8 @@ export const adminApi = {
 
   testimonials: (approved?: boolean) => http.get<T.Page<T.AdminTestimonialRow>>('/admin/testimonials', { approved }),
   setTestimonial: (id: string, approved: boolean) => http.patch<void>(`/admin/testimonials/${id}`, { approved }),
-  orders: (page = 0, size = 20) => http.get<T.Page<T.OrderDto & { userName: string }>>('/admin/orders', { page, size }),
+  /** `q` matches the order number (with or without the prefix), the user's name or e-mail. */
+  orders: (page = 0, size = 20, q = '') => http.get<T.Page<T.OrderDto & { userName: string }>>('/admin/orders', { page, size, q }),
   /** InstaPay transfers waiting for the interpreter (oldest first) and the latest decisions. */
   instapayTransfers: () => http.get<T.InstapayTransferList>('/admin/payments/instapay/transfers'),
   instapayCounts: () => http.get<{ pending: number }>('/admin/payments/instapay/transfers/counts'),

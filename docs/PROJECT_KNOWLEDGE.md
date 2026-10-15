@@ -10,8 +10,8 @@ A dream-interpretation platform for the interpreter **المعبرة فاطمة*
 
 Core rules agreed with the owner (Mohamed Ramadan, m.ramadansaad@gmail.com):
 - Payment **before** interpretation (credits). One credit = one dream.
-- No passwords. Login = Google **or** magic link / 6-digit e-mail code. No Facebook/Apple for launch.
-- Interpreter accounts = any e-mail ending with the site domain (`@saadatu-aldarein.com`) → role `INTERPRETER`, and they may only sign in with the e-mail code (Google is rejected with code `INTERPRETER_USE_MAGIC`). Also a list setting `interpreter.emails` and env `INTERPRETER_EMAILS` (bootstrap).
+- Login = e-mail + password (since 2026-10-15; sign-up and password reset confirm the e-mail with a 6-digit code), Google, or a passkey. The magic link / e-mail-code sign-in stays in the API but is no longer on the login screen. No Facebook/Apple for launch.
+- Interpreter accounts = any e-mail ending with the site domain (`@saadatu-aldarein.com`) → role `INTERPRETER`, and they sign in with the e-mail code or a password, never Google (Google is rejected with code `INTERPRETER_USE_MAGIC`). Also a list setting `interpreter.emails` and env `INTERPRETER_EMAILS` (bootstrap).
 - Zero-trust geo pricing: the **server** decides the visitor's country (Cloudflare `CF-IPCountry` header, else the visitor's IP in the GeoIP database on the VPS); the user can never pick a cheaper country. Prices resolve COUNTRY → GROUP → CONTINENT → GLOBAL. Currencies: EGP (Egypt), SAR (Gulf group), USD (rest). The country of each payment is stored on the order; mismatches flag the order `SUSPICIOUS`.
 - "Wait time" (مدة الانتظار) is a setting shown positively; the service never says "closed". Normal mode = N hours; busy mode = min–max days, with optional auto-reset date.
 - Testimonials can only be written on **interpreted** dreams and need interpreter approval before showing publicly.

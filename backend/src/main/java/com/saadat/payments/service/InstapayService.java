@@ -226,7 +226,7 @@ public class InstapayService {
                     InstapayProvider.CHECKOUT_PATH + orderId);
 
             Map<String, Object> model = new LinkedHashMap<>();
-            model.put("orderRef", order.getId().toString());
+            model.put("orderRef", PaymentService.orderRef(order));
             model.put("packageName", order.getPackageNameSnapshot());
             model.put("amount", order.getAmount());
             model.put("currency", order.getCurrency().name());
@@ -338,7 +338,8 @@ public class InstapayService {
     }
 
     private InstapayDtos.OrderView toView(Order o) {
-        return new InstapayDtos.OrderView(o.getId(), o.getStatus(), o.getPackageNameSnapshot(), o.getCredits(),
+        return new InstapayDtos.OrderView(o.getId(), o.getOrderNumber(), o.getStatus(), o.getPackageNameSnapshot(),
+                o.getCredits(),
                 o.getAmount(), o.getCurrency(),
                 settings.getString(SettingKeys.INSTAPAY_ADDRESS, ""),
                 settings.getString(SettingKeys.INSTAPAY_LINK, ""),
@@ -348,7 +349,7 @@ public class InstapayService {
     }
 
     private InstapayDtos.TransferRow toRow(Order o, User u) {
-        return new InstapayDtos.TransferRow(o.getId(), o.getUserId(), u == null ? "" : u.getName(),
+        return new InstapayDtos.TransferRow(o.getId(), o.getOrderNumber(), o.getUserId(), u == null ? "" : u.getName(),
                 u == null ? "" : u.getEmail(), o.getPackageNameSnapshot(), o.getCredits(), o.getAmount(),
                 o.getCurrency(), o.getStatus(), o.getTransferReference(), o.getTransferSenderName(), o.getCreatedAt(),
                 o.getTransferSubmittedAt(), o.getReviewedAt(), o.getReviewNote(),

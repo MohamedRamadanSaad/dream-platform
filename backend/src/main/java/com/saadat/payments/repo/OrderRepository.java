@@ -15,6 +15,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.transaction.annotation.Transactional;
 
 /** Orders. JPQL entity name is {@code PaymentOrder}. */
 public interface OrderRepository extends JpaRepository<Order, UUID> {
@@ -33,6 +34,19 @@ public interface OrderRepository extends JpaRepository<Order, UUID> {
     Optional<Order> findByIdAndUserId(UUID id, UUID userId);
 
     Page<Order> findAllByOrderByCreatedAtDesc(Pageable pageable);
+
+    /** Next value of order_number_seq (V38; never in a read-only transaction). */
+    @Transactional
+    @Query(value = "select nextval('order_number_seq')", nativeQuery = true)
+    Long nextOrderNumber();
+
+    /** Admin search by the whole order number, ignoring case ({@code number} in upper case, e.g. RN-15001). */
+    @Query("select o from PaymentOrder o where upper(o.orderNumber) = :number order by o.createdAt desc")
+    Page<Order> searchByNumber(@Param("number") String number, Pageable pageable);
+
+    /** Admin search by the numeric part only (e.g. 15001), whatever the prefix. */
+    @Query("select o from PaymentOrder o where o.orderNumber like concat('%-', :digits) order by o.createdAt desc")
+    Page<Order> searchByNumberDigits(@Param("digits") String digits, Pageable pageable);
 
     List<Order> findByUserIdAndStatus(UUID userId, OrderStatus status);
 
