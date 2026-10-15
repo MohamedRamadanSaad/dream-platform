@@ -90,6 +90,8 @@ export const notificationsApi = {
   read: (id: string) => http.post<void>(`/notifications/${id}/read`),
   subscribePush: (body: T.PushSubscriptionRequest) => http.post<void>('/push/subscriptions', body),
   unsubscribePush: (endpoint: string) => http.delete<void>(`/push/subscriptions?endpoint=${encodeURIComponent(endpoint)}`),
+  /** A test notification to every device of the signed-in account. */
+  testPush: () => http.post<T.PushTestResult>('/push/test'),
 }
 
 export const youtubeApi = {

@@ -174,3 +174,23 @@ Data: `dreams.started_at`, `dreams.expected_days` (1..30), `dreams.user_edited_a
 `amount × fx[cur] / fx[EGP]` from `pricing.fx_to_usd`, half-up 2 places) and back-filled by V39; notification type
 `DREAM_STARTED` (in-app/push/e-mail, text "…within {daysText}, by {expectedBy}" with Arabic number agreement) and
 `DREAM_EDITED` (interpreters, in-app + push only); settings `mail.event.dream-started`, `mail.theme.dream-started`.
+
+## Web Push (installed app and browsers)
+
+All routes need a signed-in user (USER or INTERPRETER). The public key comes from `GET /public/push-key`
+(`{publicKey}`, empty when the server has no VAPID keys).
+
+| Method | Route | Body | Result |
+|---|---|---|---|
+| POST | `/push/subscriptions` | `PushSubscriptionRequest` `{endpoint, keys: {p256dh, auth}, userAgent}` | 204. Upsert by `endpoint`: an endpoint already stored is moved to the caller (the latest account signed in on that browser), its keys are replaced and `failures` reset. The SPA posts it after "Turn on notifications", on every start and after every sign-in when the permission is already granted (`syncPushSubscription`), so a subscription the phone dropped comes back by itself |
+| DELETE | `/push/subscriptions?endpoint=` | | 204; removes the caller's row for that endpoint (soft delete). Called on sign-out, the browser keeps its subscription |
+| POST | `/push/test` | | 200 `PushTestResult` `{subscriptions, sent, configured}`: a test notification to the caller's own subscriptions only (title = brand name in the user's locale, body `push.test.body` ar/en, url `/me` or `/admin` by role). `configured=false` → the server lacks `VAPID_PRIVATE_KEY`/`VAPID_SUBJECT` (nothing sent); `subscriptions=0` → no device connected; `sent` = push services that accepted it |
+
+Sending (`WebPushSender`): payload JSON `{title, body, url}`, `TTL` 86400 s, `Urgency: high`, encoding `aes128gcm`
+(RFC 8291, required by Apple's push service) with VAPID `Authorization: vapid t=…, k=…`; 404/410 deletes the
+subscription. A start-up WARN is logged when `VAPID_PUBLIC_KEY` is set but the private key or subject is missing.
+
+Service worker (`frontend/src/sw.ts`, vite-plugin-pwa `injectManifest`, served as `/sw.js` uncached): precache + SPA
+fallback (denylist `/api`, `/ops/`), `push` → `showNotification(title, {body, icon, badge, data: {url}, tag: url,
+renotify, lang: 'ar', dir: 'auto'})` for every push (a silent push makes iOS revoke the subscription),
+`notificationclick` → focus an open page of the site and navigate to `url`, else open a new window.

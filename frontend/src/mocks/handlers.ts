@@ -16,6 +16,9 @@ import { checkCode, createUser, findUser, hasPassword, isFail, issueTicket, norm
  */
 const MOCK_PUSH_KEY = 'BLG8Q3e-yg97PaYBiGpxgzU__5hoUDNQwxQl3TkAGm170BzckNCfAgIliFnPc_XnZUkzS6Cd4z2mMCX58eJLFJc'
 
+/** Preview push subscriptions: endpoint → user id. */
+const pushSubs = new Map<string, string>()
+
 const BASE = (import.meta.env.VITE_API_URL as string) || ''
 const u = (p: string) => `${BASE}${p}`
 const lang = (req: Request) => req.headers.get('accept-language') ?? 'ar'
@@ -605,7 +608,26 @@ export const handlers = [
     if (n) n.readAt ??= helpers.now()
     return new HttpResponse(null, { status: 204 })
   })),
-  http.post(u('/push/subscriptions'), wrap(async () => new HttpResponse(null, { status: 204 }))),
+  // preview: subscriptions kept in memory (endpoint → account, the latest account wins like the server); the test
+  // answers as a server without push keys would not: it says "sent" so the button can be tried, nothing is delivered
+  http.post(u('/push/subscriptions'), wrap(async ({ request }) => {
+    const me = requireUser(request)
+    const b = await request.json() as T.PushSubscriptionRequest
+    if (!b?.endpoint || !b.keys?.p256dh || !b.keys.auth) return problem(400, 'Bad Request', 'endpoint and keys are required')
+    pushSubs.set(b.endpoint, me.id)
+    return new HttpResponse(null, { status: 204 })
+  })),
+  http.delete(u('/push/subscriptions'), wrap(async ({ request }) => {
+    const me = requireUser(request)
+    const endpoint = new URL(request.url).searchParams.get('endpoint') ?? ''
+    if (pushSubs.get(endpoint) === me.id) pushSubs.delete(endpoint)
+    return new HttpResponse(null, { status: 204 })
+  })),
+  http.post(u('/push/test'), wrap(async ({ request }) => {
+    const me = requireUser(request)
+    const n = [...pushSubs.values()].filter((id) => id === me.id).length
+    return HttpResponse.json({ subscriptions: n, sent: n, configured: true } satisfies T.PushTestResult)
+  })),
 
   // ---------- youtube as notification ----------
   http.get(u('/youtube/unseen'), wrap(async ({ request }) => {

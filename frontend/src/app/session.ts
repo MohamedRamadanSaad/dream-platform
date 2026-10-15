@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import { useQueryClient } from '@tanstack/react-query'
 import { authApi } from '@/api/endpoints'
 import { refreshSession } from '@/api/client'
+import { unsubscribePush } from '@/lib/push'
 import { forgetSessionTab, isSessionTab, markSessionTab, useAuthStore } from './auth-store'
 
 const REMEMBER_KEY = 'saadat-remember-me'
@@ -65,8 +66,10 @@ export function useSignOut() {
   const signOut = useCallback(async ({ server = true }: { server?: boolean } = {}) => {
     setPending(true)
     if (server) {
-      // never keep someone waiting on a slow network: the local sign-out happens anyway
-      await Promise.race([authApi.logout().catch(() => undefined), new Promise((r) => window.setTimeout(r, SIGN_OUT_WAIT_MS))])
+      // never keep someone waiting on a slow network: the local sign-out happens anyway. This browser's push
+      // subscription leaves the account first (it needs the access token), so the next person gets no notifications
+      const leave = unsubscribePush().then(() => authApi.logout()).catch(() => undefined)
+      await Promise.race([leave, new Promise((r) => window.setTimeout(r, SIGN_OUT_WAIT_MS))])
     }
     // nothing more is sent with the old token
     useAuthStore.setState({ accessToken: null })

@@ -1,64 +1,24 @@
 // One account page for every role: /me/profile (users) and /admin/profile (the interpreter).
-import { useState, type ReactNode } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Icon } from '@/components/icons/Icon'
 import { Avatar } from '@/components/ui/Avatar'
 import { toast } from '@/components/ui/Toaster'
-import { adminApi, meApi, notificationsApi, publicApi } from '@/api/endpoints'
+import { adminApi, meApi, notificationsApi } from '@/api/endpoints'
 import { useAuthStore, isInterpreter } from '@/app/auth-store'
 import { useSignOut, forgetLastEmail } from '@/app/session'
 import { applyLocale } from '@/i18n'
 import { Button, Input, Label, Modal, Segmented, Switch } from '@/components/ui'
 import { PageEnter } from '@/components/motion'
 import { GoogleG } from '@/features/auth/LoginPage'
-import { fromBase64url, toBase64url } from '@/lib/base64url'
+import { fetchPushKey, isIos, isStandalone, pushPermission, subscribePush } from '@/lib/push'
 import { cn, flagEmoji, fmtDate, regionName } from '@/lib/utils'
 import { DevicesSection } from './DevicesSection'
 import { PasskeysSection } from './PasskeysSection'
 import { usePasskeys } from './usePasskeys'
 import type { Gender, Locale } from '@/api/types'
-
-/** Build-time key, used only when the server gives none (GET /public/push-key is the source). */
-const ENV_PUSH_KEY = ((import.meta.env.VITE_VAPID_PUBLIC_KEY as string | undefined) ?? '').trim()
-
-/** The server's Web Push key (read at run time, so a new key needs no new build); '' while unknown or when there is none. */
-function usePushKey() {
-  const q = useQuery({ queryKey: ['public', 'push-key'], queryFn: publicApi.pushKey, staleTime: Infinity, retry: 1 })
-  if (q.isPending) return ''
-  return q.data?.publicKey?.trim() || ENV_PUSH_KEY
-}
-
-type PushState = 'granted' | 'denied' | 'unsupported' | 'failed'
-
-/** The browser's push service can stall (no network to it): give up instead of spinning forever. */
-const PUSH_WAIT_MS = 20_000
-const inTime = <T,>(p: Promise<T>) =>
-  Promise.race([p, new Promise<never>((_, reject) => window.setTimeout(() => reject(new Error('push: no answer')), PUSH_WAIT_MS))])
-
-async function enablePush(key: string): Promise<PushState> {
-  if (!('serviceWorker' in navigator) || !('PushManager' in window)) return 'unsupported'
-  try {
-    const perm = await Notification.requestPermission()
-    if (perm !== 'granted') return 'denied'
-    const reg = await inTime(navigator.serviceWorker.ready)
-    const serverKey = fromBase64url(key)
-    // a subscription made with another key (e.g. the old build-time one) cannot be reused: replace it
-    let sub = await reg.pushManager.getSubscription()
-    const own = sub?.options.applicationServerKey
-    if (sub && (!own || toBase64url(own) !== toBase64url(serverKey))) {
-      await sub.unsubscribe().catch(() => undefined)
-      sub = null
-    }
-    sub ??= await inTime(reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: serverKey }))
-    const j = sub.toJSON()
-    await notificationsApi.subscribePush({ endpoint: sub.endpoint, keys: { p256dh: j.keys!.p256dh, auth: j.keys!.auth }, userAgent: navigator.userAgent })
-    return 'granted'
-  } catch {
-    return 'failed'
-  }
-}
 
 function Field({ label, children, className }: { label: ReactNode; children: ReactNode; className?: string }) {
   return <div className={cn('min-w-0', className)}><Label>{label}</Label>{children}</div>
@@ -145,28 +105,82 @@ function SignInMethods({ interpreter }: { interpreter: boolean }) {
   )
 }
 
-/** Phone notifications — offered only when the server has a push key (or the build carries one). */
-function PushCard() {
+type PushNote = { key: string; tone: 'ok' | 'bad' } | null
+
+/**
+ * Phone notifications for this device (users and the interpreter). States: not possible in this browser / iPhone
+ * not installed yet (how to install) / not asked yet (turn on) / blocked (how to allow it in the settings) / on (send
+ * a test, re-connect). Turning on asks the permission only on the tap.
+ */
+function PushCard({ interpreter }: { interpreter: boolean }) {
   const { t } = useTranslation()
-  const key = usePushKey()
-  const [push, setPush] = useState<PushState | ''>(typeof Notification !== 'undefined' && Notification.permission === 'granted' ? 'granted' : '')
-  const [busy, setBusy] = useState(false)
-  if (!key) return null
-  const isIos = /iphone|ipad/i.test(navigator.userAgent)
-  const standalone = window.matchMedia('(display-mode: standalone)').matches
-  const turnOn = async () => {
-    setBusy(true)
-    setPush(await enablePush(key))
-    setBusy(false)
-  }
+  const key = useQuery({ queryKey: ['public', 'push-key'], queryFn: fetchPushKey, staleTime: Infinity, retry: 1 })
+  const [permission, setPermission] = useState(pushPermission)
+  const [note, setNote] = useState<PushNote>(null)
+  // back from the phone settings (notifications allowed or blocked there): show the new state
+  useEffect(() => {
+    const onVisible = () => { if (document.visibilityState === 'visible') setPermission(pushPermission()) }
+    document.addEventListener('visibilitychange', onVisible)
+    return () => document.removeEventListener('visibilitychange', onVisible)
+  }, [])
+  const connect = useMutation({
+    meta: { toast: false },
+    mutationFn: (_again: boolean) => subscribePush(),
+    onSuccess: (r, again) => {
+      setPermission(pushPermission())
+      if (r === 'granted') setNote(again ? { key: 'me.profile.pushReconnected', tone: 'ok' } : null)
+      else if (r === 'no-key') setNote({ key: 'me.profile.pushNotConfigured', tone: 'bad' })
+      else if (r === 'failed') setNote({ key: 'me.profile.pushFailed', tone: 'bad' })
+      else setNote(null)
+    },
+  })
+  const test = useMutation({
+    meta: { toast: false },
+    mutationFn: notificationsApi.testPush,
+    onSuccess: (r) => setNote(
+      !r.configured ? { key: 'me.profile.pushNotConfigured', tone: 'bad' }
+        : r.subscriptions === 0 ? { key: 'me.profile.pushTestNoDevice', tone: 'bad' }
+        : r.sent === 0 ? { key: 'me.profile.pushTestFailed', tone: 'bad' }
+        : { key: 'me.profile.pushTestSent', tone: 'ok' }),
+    onError: () => setNote({ key: 'me.profile.pushTestFailed', tone: 'bad' }),
+  })
+  if (key.isPending) return null
+  // no key on the server: users see nothing, the interpreter sees why
+  if (!key.data && !interpreter) return null
+  const ios = isIos()
+  const body = (() => {
+    if (!key.data) return <p className="text-sm text-fg-muted">{t('me.profile.pushNotConfigured')}</p>
+    if (ios && !isStandalone()) {
+      return <div className="text-sm text-fg-muted"><div className="font-medium text-fg">{t('me.profile.pushIosTitle')}</div><p className="mt-1">{t('me.profile.pushIosBody')}</p></div>
+    }
+    if (permission === 'unsupported') return <p className="text-sm text-fg-muted">{t('me.profile.pushUnsupported')}</p>
+    if (permission === 'denied') {
+      return <p className="flex items-start gap-2 text-sm text-fg-muted"><span className="mt-0.5 shrink-0 text-danger"><Icon name="alert" size={16} /></span>{t(ios ? 'me.profile.pushDeniedIos' : 'me.profile.pushDeniedOther')}</p>
+    }
+    if (permission === 'default') {
+      return <Button size="sm" loading={connect.isPending} onClick={() => connect.mutate(false)}><Icon name="bell" size={16} />{t('me.profile.pushEnable')}</Button>
+    }
+    return (
+      <>
+        <div className="flex items-center gap-2 text-sm text-success"><Icon name="check" size={16} />{t('me.profile.pushOn')}</div>
+        <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2">
+          <Button variant="ghost" size="sm" loading={test.isPending} disabled={connect.isPending} onClick={() => { setNote(null); test.mutate() }}>
+            <Icon name="bell" size={16} />{t('me.profile.pushTest')}
+          </Button>
+          <button type="button" disabled={connect.isPending || test.isPending} onClick={() => { setNote(null); connect.mutate(true) }}
+            className="text-sm text-fg-muted underline-offset-4 hover:text-fg hover:underline disabled:opacity-50">
+            {connect.isPending ? t('me.profile.pushConnecting') : t('me.profile.pushReconnect')}
+          </button>
+        </div>
+      </>
+    )
+  })()
   return (
-    <section className="card p-5 sm:p-6">
-      <Label>{t('me.profile.push')}</Label>
-      {push === 'granted' ? <div className="text-sm text-success">✓ {t('me.profile.pushOn')}</div>
-        : isIos && !standalone ? <div className="text-sm text-fg-muted"><div className="font-medium text-fg">{t('common.installTitle')}</div>{t('common.installIos')}</div>
-        : <Button variant="ghost" size="sm" loading={busy} onClick={() => void turnOn()}>{t('me.profile.pushEnable')}</Button>}
-      {push === 'denied' && <p className="mt-2 text-xs text-danger">{t('me.profile.pushDenied')}</p>}
-      {push === 'failed' && <p className="mt-2 text-xs text-danger">{t('me.profile.pushFailed')}</p>}
+    <section aria-labelledby="push-title" className="card p-5 sm:p-6">
+      <h2 id="push-title" className="font-display text-xl">{t('me.profile.push')}</h2>
+      <p className="mt-1 text-sm font-light text-fg-muted">{t(interpreter ? 'me.profile.pushLeadInterpreter' : 'me.profile.pushLead')}</p>
+      <div className="mt-4">{body}</div>
+      <p role="status" className={cn('mt-3 text-sm empty:hidden', note?.tone === 'bad' ? 'text-danger' : 'text-success')}>{note ? t(note.key) : ''}</p>
     </section>
   )
 }
@@ -242,7 +256,7 @@ export function ProfilePage() {
         </div>
       </div>
       <PersonalCard />
-      {!interpreter && <PushCard />}
+      <PushCard interpreter={interpreter} />
       {!interpreter && <ChannelMailCard />}
       {interpreter && <SellerCard />}
       {/* how this account signs in, then where: methods → fingerprint / face (#passkeys) → devices (#devices) */}

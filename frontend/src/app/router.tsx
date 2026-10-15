@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { createBrowserRouter, Navigate, Outlet, useLocation } from 'react-router-dom'
+import { createBrowserRouter, Navigate, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useQuery } from '@tanstack/react-query'
 import { adminApi, meApi } from '@/api/endpoints'
@@ -35,10 +35,35 @@ import { EmailSettingsPage } from '@/features/admin/EmailSettingsPage'
 import { SupportTicketsPage, SUPPORT_COUNTS_KEY } from '@/features/admin/SupportTicketsPage'
 import { PasskeyOffer } from '@/features/account/PasskeyOffer'
 import { usePageTracking } from './usePageTracking'
+import { syncPushSubscription } from '@/lib/push'
+
+/**
+ * Web Push upkeep for every page: once per start and after every sign-in (keyed on the account), re-sends this
+ * browser's subscription when notifications are already allowed (never asks), so a subscription the phone dropped
+ * comes back by itself. A tap on a notification while the app is open but not yet controlled by the new service
+ * worker arrives as a NAVIGATE message.
+ */
+function usePushUpkeep() {
+  const userId = useAuthStore((s) => s.user?.id)
+  const navigate = useNavigate()
+  useEffect(() => { if (userId) void syncPushSubscription() }, [userId])
+  useEffect(() => {
+    if (!('serviceWorker' in navigator)) return
+    const onMessage = (e: MessageEvent) => {
+      const data = e.data as { type?: string; url?: string } | null
+      if (data?.type !== 'NAVIGATE' || !data.url) return
+      const u = new URL(data.url, window.location.origin)
+      if (u.origin === window.location.origin) navigate(u.pathname + u.search + u.hash)
+    }
+    navigator.serviceWorker.addEventListener('message', onMessage)
+    return () => navigator.serviceWorker.removeEventListener('message', onMessage)
+  }, [navigate])
+}
 
 /** Root of every route: page-view tracking lives here so each pathname change is counted once. */
 function RootShell() {
   usePageTracking()
+  usePushUpkeep()
   return <Outlet />
 }
 

@@ -4,3 +4,4 @@ dev-dist
 .env
 *.local
 .screens
+tsconfig.sw.tsbuildinfo

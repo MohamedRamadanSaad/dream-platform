@@ -400,6 +400,12 @@ export interface PushSubscriptionRequest {
   keys: { p256dh: string; auth: string }
   userAgent: string
 }
+/** POST /push/test: devices on the account, how many push services accepted the test, whether the server can send at all. */
+export interface PushTestResult {
+  subscriptions: number
+  sent: number
+  configured: boolean
+}
 
 // ---------- Me ----------
 export interface DashboardSummary {

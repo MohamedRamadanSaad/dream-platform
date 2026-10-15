@@ -133,6 +133,8 @@ public final class ApiPaths {
         public static final String ROOT = "/push";
         /** POST (subscribe, body PushSubscriptionRequest) and DELETE (?endpoint=...). */
         public static final String SUBSCRIPTIONS = ROOT + "/subscriptions";
+        /** POST: sends a test notification to every subscription of the caller; returns PushTestResult. */
+        public static final String TEST = ROOT + "/test";
 
         private Push() {
         }
