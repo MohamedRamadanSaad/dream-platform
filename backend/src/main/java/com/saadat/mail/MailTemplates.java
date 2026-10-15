@@ -18,6 +18,7 @@ import java.util.List;
  *   <li>{@link #INTERPRETER_QUESTION}: name, link</li>
  *   <li>{@link #USER_REPLIED} (to interpreter): userName, link</li>
  *   <li>{@link #INTERPRETATION_READY}: name, link (no interpretation text by design)</li>
+ *   <li>{@link #DREAM_STARTED}: name, expectedDays*, expectedBy, link</li>
  *   <li>{@link #PAYMENT_RECEIPT}: name, packageName, amount, currency, credits, orderRef, paidAt, link</li>
  *   <li>{@link #PAYMENT_SUSPICIOUS} (to interpreter): orderRef, userName, userEmail, amount, currency, reason, link</li>
  *   <li>{@link #REPLY_REMINDER}: name, link</li>
@@ -81,13 +82,16 @@ public final class MailTemplates {
     public static final String SUPPORT_IN_PROGRESS = "support-in-progress";
     /** To the sender of a support e-mail: the ticket is closed, with the interpreter's message. */
     public static final String SUPPORT_CLOSED = "support-closed";
+    /** To the dreamer: the interpreter started interpreting; the text is final, with the expected number of days. */
+    public static final String DREAM_STARTED = "dream-started";
 
     public static final List<String> ALL = List.of(
             MAGIC_LINK, DREAM_RECEIVED, INTERPRETER_QUESTION, USER_REPLIED, INTERPRETATION_READY,
             PAYMENT_RECEIPT, PAYMENT_SUSPICIOUS, REPLY_REMINDER, TESTIMONIAL_REQUEST, INTERPRETER_DIGEST,
             DREAM_SUBMITTED, YOUTUBE_NEW_VIDEO, WELCOME, PAYMENT_FAILED, DREAM_CANCELLED, CREDITS_ADJUSTED,
             TESTIMONIAL_APPROVED, ACCOUNT_DELETED, NEW_USER, TESTIMONIAL_RECEIVED, SUPPORT_AUTO_REPLY, NEW_SIGN_IN,
-            PASSKEY_ADDED, SUPPORT_IN_PROGRESS, SUPPORT_CLOSED, EMAIL_CODE);
+            PASSKEY_ADDED, SUPPORT_IN_PROGRESS, SUPPORT_CLOSED, EMAIL_CODE,
+            DREAM_STARTED);
 
     /**
      * Sign-in / account codes: always sent (no {@code mail.event.*} switch) and never copied to the Sent folder.

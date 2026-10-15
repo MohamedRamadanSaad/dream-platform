@@ -8,7 +8,10 @@ import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
-/** types.ts AdminDreamDetail (= DreamDetail + user + payment, flattened). */
+/**
+ * types.ts AdminDreamDetail (= DreamDetail without the user's {@code payment} link + userEditedAt + user + payment
+ * (the order that paid this dream), flattened).
+ */
 public record AdminDreamDetailDto(
         UUID id,
         String excerpt,
@@ -18,6 +21,10 @@ public record AdminDreamDetailDto(
         Instant interpretedAt,
         Instant expectedBy,
         long unreadMessages,
+        Instant startedAt,
+        Integer expectedDays,
+        boolean editable,
+        Instant userEditedAt,
         String text,
         Gender gender,
         DreamDetailDto.InterpretationView interpretation,
@@ -53,9 +60,10 @@ public record AdminDreamDetailDto(
             boolean creditsExpired) {
     }
 
-    public static AdminDreamDetailDto of(DreamDetailDto d, UserRef user, PaymentRef payment) {
+    public static AdminDreamDetailDto of(DreamDetailDto d, Instant userEditedAt, UserRef user, PaymentRef payment) {
         return new AdminDreamDetailDto(d.id(), d.excerpt(), d.status(), d.createdAt(), d.submittedAt(),
-                d.interpretedAt(), d.expectedBy(), d.unreadMessages(), d.text(), d.gender(), d.interpretation(),
-                d.messages(), d.testimonial(), d.credit(), user, payment);
+                d.interpretedAt(), d.expectedBy(), d.unreadMessages(), d.startedAt(), d.expectedDays(), d.editable(),
+                userEditedAt, d.text(), d.gender(), d.interpretation(), d.messages(), d.testimonial(), d.credit(), user,
+                payment);
     }
 }

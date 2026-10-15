@@ -37,6 +37,7 @@ import com.saadat.payments.repo.OrderRepository;
 import com.saadat.users.domain.User;
 import com.saadat.users.repo.UserRepository;
 import java.time.Clock;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -59,6 +60,9 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 public class AdminDreamService {
+
+    public static final int MIN_EXPECTED_DAYS = 1;
+    public static final int MAX_EXPECTED_DAYS = 30;
 
     private final DreamRepository dreamRepository;
     private final DreamMessageRepository messageRepository;
@@ -94,13 +98,18 @@ public class AdminDreamService {
             User u = users.get(d.getUserId());
             return new AdminDreamRow(d.getId(), d.getUserId(), u == null ? "" : u.getName(), d.getGender(),
                     DreamMapper.excerpt(d.getText()), d.getStatus(), d.getSubmittedAt(), d.getExpectedBy(),
-                    isOverdue(d, now), u == null || u.getCountryCode() == null ? "" : u.getCountryCode());
+                    isOverdue(d, now), u == null || u.getCountryCode() == null ? "" : u.getCountryCode(),
+                    d.getStartedAt(), d.getExpectedDays(), d.getUserEditedAt());
         };
         return PageResponse.from(dreams, toRow);
     }
 
+    /** Statuses in which the interpreter is working on a dream (the SLA clock runs). */
+    public static final List<DreamStatus> OPEN_WORK = List.of(DreamStatus.IN_REVIEW, DreamStatus.IN_PROGRESS);
+
+    /** Overdue = IN_REVIEW or IN_PROGRESS and the expected time has passed. */
     public static boolean isOverdue(Dream d, Instant now) {
-        return d.getStatus() == DreamStatus.IN_REVIEW && d.getExpectedBy() != null && now.isAfter(d.getExpectedBy());
+        return OPEN_WORK.contains(d.getStatus()) && d.getExpectedBy() != null && now.isAfter(d.getExpectedBy());
     }
 
     /** Detail with user{} and payment{} (ledger entry → order → payer); marks the user's messages read. */
@@ -112,7 +121,7 @@ public class AdminDreamService {
         User owner = userRepository.findById(d.getUserId())
                 .orElseThrow(() -> new NotFoundException("Dream owner not found"));
         AdminDreamDetailDto.UserRef userRef = new AdminDreamDetailDto.UserRef(owner.getId(), owner.getName(), owner.getEmail(), owner.getCountryCode(), Ages.of(owner.getBirthDate()));
-        return AdminDreamDetailDto.of(detail, userRef, payment(detail.credit(), d.getId()));
+        return AdminDreamDetailDto.of(detail, d.getUserEditedAt(), userRef, payment(detail.credit(), d.getId()));
     }
 
     private AdminDreamDetailDto.PaymentRef payment(DreamDetailDto.CreditRef credit, UUID dreamId) {
@@ -138,13 +147,45 @@ public class AdminDreamService {
 
     // ================================================================== transitions
 
-    /** Interpreter question: only from IN_REVIEW → AWAITING_USER_REPLY; pauses the SLA clock. */
+    /**
+     * "Start interpreting": IN_REVIEW → IN_PROGRESS (409 NOT_IN_REVIEW otherwise). The text becomes final for the
+     * dreamer; {@code expectedBy = now + expectedDays}. The row lock makes it wait for (or win against) a dreamer's
+     * edit. The dreamer is told (in-app + push + dream-started e-mail) how long it will take.
+     */
+    @Transactional
+    public AdminDreamDetailDto start(UUID actor, UUID dreamId, int expectedDays) {
+        if (expectedDays < MIN_EXPECTED_DAYS || expectedDays > MAX_EXPECTED_DAYS) {
+            throw DreamService.fieldError("expectedDays", "between " + MIN_EXPECTED_DAYS + " and " + MAX_EXPECTED_DAYS);
+        }
+        Dream d = lock(dreamId);
+        if (d.getStatus() != DreamStatus.IN_REVIEW) {
+            throw new ConflictException("Only a dream in review can be started", "NOT_IN_REVIEW");
+        }
+        Instant now = clock.instant();
+        d.setStatus(DreamStatus.IN_PROGRESS);
+        d.setStartedAt(now);
+        d.setExpectedDays(expectedDays);
+        d.setExpectedBy(now.plus(Duration.ofDays(expectedDays)));
+        d.setSlaPausedAt(null);
+        if (d.getAssigneeId() == null) {
+            d.setAssigneeId(actor);
+        }
+        dreamRepository.save(d);
+        Map<String, Object> after = statusMap(DreamStatus.IN_PROGRESS);
+        after.put("expectedDays", expectedDays);
+        auditService.record(actor, "DREAM_START", "dreams", dreamId.toString(), statusMap(DreamStatus.IN_REVIEW), after);
+        notifier.started(d.getId());
+        return detail(dreamId);
+    }
+
+    /** Interpreter question: from IN_REVIEW or IN_PROGRESS → AWAITING_USER_REPLY; pauses the SLA clock. */
     @Transactional
     public DreamMessageDto ask(UUID actor, UUID dreamId, String body) {
         Dream d = lock(dreamId);
-        if (d.getStatus() != DreamStatus.IN_REVIEW) {
+        if (!OPEN_WORK.contains(d.getStatus())) {
             throw new ConflictException("Questions are only possible while the dream is in review", "NOT_IN_REVIEW");
         }
+        DreamStatus before = d.getStatus();
         Instant now = clock.instant();
         DreamMessage m = new DreamMessage();
         m.setDreamId(d.getId());
@@ -157,16 +198,16 @@ public class AdminDreamService {
         d.setSlaPausedAt(now);
         dreamRepository.save(d);
         auditService.record(actor, "DREAM_QUESTION", "dreams", dreamId.toString(),
-                statusMap(DreamStatus.IN_REVIEW), statusMap(DreamStatus.AWAITING_USER_REPLY));
+                statusMap(before), statusMap(DreamStatus.AWAITING_USER_REPLY));
         notifier.interpreterQuestion(d.getId());
         return DreamMessageDto.from(m);
     }
 
-    /** Interpretation: from IN_REVIEW or AWAITING_USER_REPLY → INTERPRETED. */
+    /** Interpretation: from IN_REVIEW, IN_PROGRESS or AWAITING_USER_REPLY → INTERPRETED. */
     @Transactional
     public void interpret(UUID actor, UUID dreamId, String text) {
         Dream d = lock(dreamId);
-        if (d.getStatus() != DreamStatus.IN_REVIEW && d.getStatus() != DreamStatus.AWAITING_USER_REPLY) {
+        if (!OPEN_WORK.contains(d.getStatus()) && d.getStatus() != DreamStatus.AWAITING_USER_REPLY) {
             throw new ConflictException("This dream cannot be interpreted in status " + d.getStatus(), "INVALID_STATUS");
         }
         if (interpretationRepository.existsByDreamId(dreamId)) {
@@ -191,12 +232,14 @@ public class AdminDreamService {
         notifier.interpretationReady(d.getId());
     }
 
-    /** Cancel: from IN_REVIEW or AWAITING_USER_REPLY → CANCELLED and the consumed credit is refunded once. */
+    /**
+     * Cancel: from IN_REVIEW, IN_PROGRESS or AWAITING_USER_REPLY → CANCELLED and the consumed credit is refunded once.
+     */
     @Transactional
     public void cancel(UUID actor, UUID dreamId, String reason) {
         // only the dream row is locked: a refund is a positive ledger entry and needs no user lock
         Dream d = lock(dreamId);
-        if (d.getStatus() != DreamStatus.IN_REVIEW && d.getStatus() != DreamStatus.AWAITING_USER_REPLY) {
+        if (!OPEN_WORK.contains(d.getStatus()) && d.getStatus() != DreamStatus.AWAITING_USER_REPLY) {
             throw new ConflictException("This dream cannot be cancelled in status " + d.getStatus(), "INVALID_STATUS");
         }
         DreamStatus before = d.getStatus();

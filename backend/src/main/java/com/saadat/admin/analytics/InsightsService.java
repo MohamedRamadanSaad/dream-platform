@@ -7,9 +7,9 @@ import com.saadat.admin.analytics.InsightsDtos.Insight;
 import com.saadat.admin.analytics.InsightsDtos.InsightKind;
 import com.saadat.admin.analytics.InsightsDtos.InsightsResponse;
 import com.saadat.admin.analytics.InsightsDtos.MyActivity;
-import com.saadat.common.domain.DreamStatus;
 import com.saadat.common.domain.Locale;
 import com.saadat.dreams.repo.DreamRepository;
+import com.saadat.dreams.service.AdminDreamService;
 import com.saadat.mail.FrontendPaths;
 import com.saadat.mail.MessageText;
 import com.saadat.publicapi.WaitTimeView;
@@ -118,7 +118,7 @@ public class InsightsService {
         // ------------------------------------------------------------ rules
         List<Insight> items = new ArrayList<>();
 
-        long overdue = dreamRepository.countByStatusAndExpectedByBefore(DreamStatus.IN_REVIEW, now);
+        long overdue = dreamRepository.countByStatusInAndExpectedByBefore(AdminDreamService.OPEN_WORK, now);
         if (overdue > 0) {
             items.add(insight(OVERDUE, InsightKind.WARNING, FrontendPaths.ADMIN_QUEUE, Map.of("count", overdue), locale));
         }
@@ -130,7 +130,7 @@ public class InsightsService {
                     Map.of("count", awaiting, "days", awaitingDays), locale));
         }
 
-        long queue = dreamRepository.countByStatus(DreamStatus.IN_REVIEW);
+        long queue = dreamRepository.countByStatusIn(AdminDreamService.OPEN_WORK);
         double dailyOutput = queries.interpretedBetween(now.minus(Duration.ofDays(OUTPUT_WINDOW_DAYS)), tomorrow)
                 / (double) OUTPUT_WINDOW_DAYS;
         if (!busy && queue > 0 && queue > dailyOutput * slaHours / HOURS_PER_DAY) {

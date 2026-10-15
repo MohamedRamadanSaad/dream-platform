@@ -159,6 +159,8 @@ public final class ApiPaths {
         public static final String DREAM_MESSAGES = DREAM + "/messages";
         public static final String DREAM_INTERPRETATION = DREAM + "/interpretation";
         public static final String DREAM_CANCEL = DREAM + "/cancel";
+        /** POST {expectedDays: 1..30}: "Start interpreting", IN_REVIEW → IN_PROGRESS; returns AdminDreamDetail. */
+        public static final String DREAM_START = DREAM + "/start";
         public static final String DREAM_PDF = DREAM + "/pdf";
 
         public static final String WAIT_TIME = ROOT + "/wait-time";
@@ -191,7 +193,12 @@ public final class ApiPaths {
         public static final String TESTIMONIALS = ROOT + "/testimonials";
         public static final String TESTIMONIAL = TESTIMONIALS + "/{id}";
 
+        /** GET ?scope=REVIEW|DOMESTIC|INTERNATIONAL|ALL&page&size (default ALL, used by the CSV export). */
         public static final String ORDERS = ROOT + "/orders";
+        /** GET {review, domestic, international}: tab counts. */
+        public static final String ORDER_COUNTS = ORDERS + "/counts";
+        /** GET AdminOrderDetail: the order page with its attached dreams. */
+        public static final String ORDER = ORDERS + "/{id}";
 
         /** GET/PUT the receiving InstaPay account (address, link, receiver name, hours to pay, on/off). */
         public static final String INSTAPAY_SETTINGS = ROOT + "/payments/instapay/settings";

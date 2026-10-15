@@ -12,8 +12,10 @@ import com.saadat.common.domain.Currency;
 import com.saadat.common.domain.DreamStatus;
 import com.saadat.common.domain.Locale;
 import com.saadat.common.domain.OrderStatus;
+import com.saadat.common.domain.PaymentProviderType;
 import com.saadat.common.error.ValidationException;
 import com.saadat.dreams.repo.DreamRepository;
+import com.saadat.dreams.service.AdminDreamService;
 import com.saadat.payments.repo.OrderRepository;
 import com.saadat.pricing.domain.Country;
 import com.saadat.pricing.repo.CountryRepository;
@@ -42,15 +44,20 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Interpreter dashboards (spec §9). Revenue is converted to the base currency USD with the static rates in
- * setting {@code pricing.fx_to_usd}.
+ * Interpreter dashboards (spec §9). Country revenue is ranked by the settled amount in EGP of each paid order
+ * ({@code orders.settled_amount_egp}, docs/UX_PAYMENTS_REVIEW_CONTRACT.md §4–5); the buyers' own currencies are kept as
+ * a reference. The users list still converts to USD with the static rates in setting {@code pricing.fx_to_usd}.
  */
 @Service
 @RequiredArgsConstructor
 public class AnalyticsService {
 
+    /** Base currency of the users list ({@code totalPaidBase}). */
     static final Currency BASE_CURRENCY = Currency.USD;
-    static final int TOP_N = 8;
+    /** Base currency of the country dashboard: what the payments brought in EGP. */
+    static final Currency COUNTRY_BASE_CURRENCY = Currency.EGP;
+    /** Safety cap of each country list (only countries with a non-zero value are listed). */
+    static final int COUNTRY_ROWS_MAX = 250;
     /** Window of the summary's revenue and average response time. */
     static final Duration SUMMARY_WINDOW = Duration.ofDays(30);
 
@@ -118,42 +125,57 @@ public class AnalyticsService {
             revenue.add(new RevenueDto(toCurrency(row[0]), Rows.decimal(row[1]).setScale(2, RoundingMode.HALF_UP)));
         }
         revenue.sort(Comparator.comparing(r -> r.currency().name()));
+        BigDecimal revenueEgp = Rows.decimal(orderRepository.sumSettledEgpSince(OrderStatus.SUCCESS, windowStart));
         double avg = dreamRepository.averageResponseHoursSince(windowStart);
         return new AdminSummaryDto(
+                orderRepository.countByProviderAndStatus(PaymentProviderType.INSTAPAY, OrderStatus.PENDING_REVIEW),
                 dreamRepository.countByStatus(DreamStatus.IN_REVIEW),
+                dreamRepository.countByStatus(DreamStatus.IN_PROGRESS),
                 dreamRepository.countByStatus(DreamStatus.AWAITING_USER_REPLY),
-                dreamRepository.countByStatusAndExpectedByBefore(DreamStatus.IN_REVIEW, now),
+                dreamRepository.countByStatusInAndExpectedByBefore(AdminDreamService.OPEN_WORK, now),
                 dreamRepository.countByStatusAndInterpretedAtAfter(DreamStatus.INTERPRETED, startOfToday),
                 revenue,
+                revenueEgp.setScale(2, RoundingMode.HALF_UP).doubleValue(),
                 round1(avg));
     }
 
     // ================================================================== countries
 
+    /**
+     * Top countries by visits, dreams and revenue (settled EGP). Each list holds only the countries whose value for
+     * that metric is above zero, all of them (capped at {@link #COUNTRY_ROWS_MAX}), highest first.
+     */
     @Transactional(readOnly = true)
     public AdminCountryDashboardDto countries(String periodCode, Locale locale) {
         Period period = Period.parse(periodCode);
         Instant since = period.since(clock.instant());
-        Map<String, BigDecimal> fx = fxToUsd();
 
         // visits = visits of the site's pages (page_views), not sign-ins: one person signing in again is not a visit
         Map<String, Long> visits = countMap(analyticsQueries.visitsByCountrySince(since));
         Map<String, Long> dreams = countMap(dreamRepository.countSubmittedByCountrySince(since));
         Map<String, Long> users = countMap(userRepository.countUsersByCountry());
         Map<String, BigDecimal> revenue = new HashMap<>();
+        for (Object[] row : orderRepository.sumSettledEgpByCountrySince(OrderStatus.SUCCESS, since)) {
+            String cc = Rows.string(row[0]);
+            if (cc != null && !cc.isEmpty()) {
+                revenue.merge(cc, Rows.decimal(row[1]), BigDecimal::add);
+            }
+        }
+        Map<String, List<RevenueDto>> byCurrency = new HashMap<>();
         for (Object[] row : orderRepository.sumAmountByCountryAndCurrencySince(OrderStatus.SUCCESS, since)) {
             String cc = Rows.string(row[0]);
-            if (cc == null || cc.isEmpty()) {
+            Currency currency = toCurrency(row[1]);
+            if (cc == null || cc.isEmpty() || currency == null) {
                 continue;
             }
-            revenue.merge(cc, toBase(Rows.decimal(row[2]), toCurrency(row[1]), fx), BigDecimal::add);
+            byCurrency.computeIfAbsent(cc, k -> new ArrayList<>())
+                    .add(new RevenueDto(currency, Rows.decimal(row[2]).setScale(2, RoundingMode.HALF_UP)));
         }
 
         Set<String> codes = new LinkedHashSet<>();
         codes.addAll(visits.keySet());
         codes.addAll(dreams.keySet());
         codes.addAll(revenue.keySet());
-        codes.addAll(users.keySet());
         Map<String, Country> countries = codes.isEmpty() ? Map.of() : countryRepository.findByCodeIn(codes).stream()
                 .collect(Collectors.toMap(Country::getCode, Function.identity()));
 
@@ -161,18 +183,25 @@ public class AnalyticsService {
         for (String cc : codes) {
             Country c = countries.get(cc);
             String name = c == null ? cc : (locale == Locale.EN ? c.getNameEn() : c.getNameAr());
+            List<RevenueDto> refs = new ArrayList<>(byCurrency.getOrDefault(cc, List.of()));
+            refs.sort(Comparator.comparing(r -> r.currency().name()));
             stats.add(new CountryStatDto(cc, name, visits.getOrDefault(cc, 0L), dreams.getOrDefault(cc, 0L),
                     revenue.getOrDefault(cc, BigDecimal.ZERO).setScale(2, RoundingMode.HALF_UP).doubleValue(),
-                    users.getOrDefault(cc, 0L)));
+                    users.getOrDefault(cc, 0L), refs));
         }
-        return new AdminCountryDashboardDto(period.code, BASE_CURRENCY,
-                top(stats, Comparator.comparingLong(CountryStatDto::visits)),
-                top(stats, Comparator.comparingLong(CountryStatDto::dreams)),
-                top(stats, Comparator.comparingDouble(CountryStatDto::revenueBase)));
+        return new AdminCountryDashboardDto(period.code, COUNTRY_BASE_CURRENCY,
+                top(stats, s -> s.visits() > 0, Comparator.comparingLong(CountryStatDto::visits)),
+                top(stats, s -> s.dreams() > 0, Comparator.comparingLong(CountryStatDto::dreams)),
+                top(stats, s -> s.revenueBase() > 0, Comparator.comparingDouble(CountryStatDto::revenueBase)));
     }
 
-    private static List<CountryStatDto> top(List<CountryStatDto> stats, Comparator<CountryStatDto> by) {
-        return stats.stream().sorted(by.reversed()).limit(TOP_N).toList();
+    private static List<CountryStatDto> top(List<CountryStatDto> stats, java.util.function.Predicate<CountryStatDto> nonZero,
+                                            Comparator<CountryStatDto> by) {
+        return stats.stream()
+                .filter(nonZero)
+                .sorted(by.reversed().thenComparing(CountryStatDto::countryCode))
+                .limit(COUNTRY_ROWS_MAX)
+                .toList();
     }
 
     // ================================================================== users

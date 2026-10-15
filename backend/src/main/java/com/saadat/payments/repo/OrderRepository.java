@@ -12,13 +12,14 @@ import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 
 /** Orders. JPQL entity name is {@code PaymentOrder}. */
-public interface OrderRepository extends JpaRepository<Order, UUID> {
+public interface OrderRepository extends JpaRepository<Order, UUID>, JpaSpecificationExecutor<Order> {
 
     Optional<Order> findByProviderTxnId(String providerTxnId);
 
@@ -64,6 +65,16 @@ public interface OrderRepository extends JpaRepository<Order, UUID> {
 
     long countByProviderAndStatus(PaymentProviderType provider, OrderStatus status);
 
+    // ---- admin orders tabs (docs/UX_PAYMENTS_REVIEW_CONTRACT.md §3) ----
+    /** Tabs of /admin/orders are built with Specifications (OrderQueryService); these are their counts. */
+    long countByCountryCode(String countryCode);
+
+    @Query("select count(o) from PaymentOrder o where o.countryCode is null or o.countryCode <> :countryCode")
+    long countOutsideCountry(@Param("countryCode") String countryCode);
+
+    /** The user's orders in {@code statuses}, newest first (dreams attached to a payment). */
+    List<Order> findByUserIdAndStatusInOrderByCreatedAtDesc(UUID userId, Collection<OrderStatus> statuses);
+
     /** Another live order already holds this InstaPay reference (V34 unique index, checked first for a clear error). */
     boolean existsByTransferReferenceAndStatusInAndIdNot(String transferReference, Collection<OrderStatus> statuses,
                                                          UUID id);
@@ -83,6 +94,16 @@ public interface OrderRepository extends JpaRepository<Order, UUID> {
             + "where o.status = :status and o.paidAt >= :since group by o.countryCode, o.currency")
     List<Object[]> sumAmountByCountryAndCurrencySince(@Param("status") OrderStatus status,
                                                       @Param("since") Instant since);
+
+    /** Settled EGP of orders with {@code status} paid since {@code since}; null when there is none. */
+    @Query("select sum(o.settledAmountEgp) from PaymentOrder o "
+            + "where o.status = :status and o.paidAt >= :since")
+    java.math.BigDecimal sumSettledEgpSince(@Param("status") OrderStatus status, @Param("since") Instant since);
+
+    /** [countryCode, sum(settledAmountEgp)] of paid orders since {@code since}. */
+    @Query("select o.countryCode, sum(o.settledAmountEgp) from PaymentOrder o "
+            + "where o.status = :status and o.paidAt >= :since group by o.countryCode")
+    List<Object[]> sumSettledEgpByCountrySince(@Param("status") OrderStatus status, @Param("since") Instant since);
 
     /** [userId, currency, sum(amount)] of orders with the given statuses. */
     @Query("select o.userId, o.currency, sum(o.amount) from PaymentOrder o "

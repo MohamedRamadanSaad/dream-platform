@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-/** GET /me/orders, GET /me/orders/{id}, GET /admin/orders ({@code q} = order number, e.g. 15001 or RN-15001). */
+/** GET /me/orders, GET /me/orders/{id}, GET /admin/orders (+ /counts, /{id}). */
 @RestController
 @RequiredArgsConstructor
 public class OrdersController {
@@ -29,10 +29,22 @@ public class OrdersController {
         return orderQueryService.mine(AuthPrincipal.current().userId(), id);
     }
 
+    /** {@code scope}: REVIEW | DOMESTIC | INTERNATIONAL | ALL (default, kept for the CSV export). */
     @GetMapping(ApiPaths.Admin.ORDERS)
-    public PageResponse<AdminOrderRow> adminOrders(@RequestParam(required = false) Integer page,
+    public PageResponse<AdminOrderRow> adminOrders(@RequestParam(required = false) AdminOrderDtos.Scope scope,
+                                                   @RequestParam(required = false) Integer page,
                                                    @RequestParam(required = false) Integer size,
                                                    @RequestParam(required = false) String q) {
-        return orderQueryService.all(page, size, q);
+        return orderQueryService.admin(scope, q, page, size);
+    }
+
+    @GetMapping(ApiPaths.Admin.ORDER_COUNTS)
+    public AdminOrderDtos.Counts adminOrderCounts() {
+        return orderQueryService.counts();
+    }
+
+    @GetMapping(ApiPaths.Admin.ORDER)
+    public AdminOrderDtos.Detail adminOrder(@PathVariable UUID id) {
+        return orderQueryService.detail(id);
     }
 }

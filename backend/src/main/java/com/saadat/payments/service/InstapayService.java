@@ -70,6 +70,7 @@ public class InstapayService {
     private final DreamRepository dreamRepository;
     private final UserRepository userRepository;
     private final PaymentService paymentService;
+    private final DreamAttachments dreamAttachments;
     private final NotificationService notificationService;
     private final EventMailer eventMailer;
     private final AuditService auditService;
@@ -313,6 +314,8 @@ public class InstapayService {
         if (drafts.size() != wanted.size()) {
             throw new ValidationException("Only your own draft dreams can be attached", "INVALID_DREAMS");
         }
+        // this order's own dreams are fine; a dream held by another live order of the user is not (contract §2)
+        dreamAttachments.requireFree(userId, wanted, order.getId());
         for (UUID id : wanted) {
             if (!ids.contains(id)) {
                 ids.add(id);

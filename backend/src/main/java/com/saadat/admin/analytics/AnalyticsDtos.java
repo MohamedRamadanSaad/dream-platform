@@ -24,14 +24,21 @@ public final class AnalyticsDtos {
     public record RevenueDto(Currency currency, BigDecimal amount) {
     }
 
-    /** types.ts AdminSummary. */
-    public record AdminSummaryDto(long inReview, long awaitingReply, long overdue, long interpretedToday,
-                                  List<RevenueDto> revenue, double avgResponseHours) {
+    /**
+     * types.ts AdminSummary. {@code pendingPayments}: InstaPay transfers waiting for the interpreter; {@code revenue}:
+     * per currency, the buyers' own amounts (reference only); {@code revenueEgp}: settled EGP of the last 30 days.
+     */
+    public record AdminSummaryDto(long pendingPayments, long inReview, long inProgress, long awaitingReply,
+                                  long overdue, long interpretedToday, List<RevenueDto> revenue, double revenueEgp,
+                                  double avgResponseHours) {
     }
 
-    /** types.ts CountryStat. */
+    /**
+     * types.ts CountryStat. {@code revenueBase}: settled EGP (the base currency); {@code revenueByCurrency}: the
+     * buyers' own currencies (reference only).
+     */
     public record CountryStatDto(String countryCode, String countryName, long visits, long dreams, double revenueBase,
-                                 long users) {
+                                 long users, List<RevenueDto> revenueByCurrency) {
     }
 
     /** types.ts AdminCountryDashboard. */

@@ -74,6 +74,13 @@ public class Order {
     @Column(name = "currency", columnDefinition = "char(3)", nullable = false)
     private Currency currency;
 
+    /**
+     * What the order brought in Egyptian pounds (V39): the amount for EGP orders, else the amount converted with
+     * setting {@code pricing.fx_to_usd}. Set when the order becomes SUCCESS; null before.
+     */
+    @Column(name = "settled_amount_egp", precision = 12, scale = 2)
+    private BigDecimal settledAmountEgp;
+
     @Column(name = "discount", nullable = false, precision = 12, scale = 2)
     private BigDecimal discount = BigDecimal.ZERO;
 

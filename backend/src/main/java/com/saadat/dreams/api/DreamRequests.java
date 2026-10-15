@@ -39,6 +39,10 @@ public final class DreamRequests {
     public record InterpretationRequest(@NotBlank String text) {
     }
 
+    /** types.ts StartDreamRequest: POST /admin/dreams/{id}/start, the days the interpreter expects to need. */
+    public record StartRequest(@NotNull @Min(1) @Max(30) Integer expectedDays) {
+    }
+
     /** {@code {reason}} for POST /admin/dreams/{id}/cancel. */
     public record CancelRequest(String reason) {
     }

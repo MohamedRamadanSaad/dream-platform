@@ -25,7 +25,9 @@ import com.saadat.mail.EventMailer;
 import com.saadat.mail.FrontendPaths;
 import com.saadat.mail.MailService;
 import com.saadat.mail.MailTemplates;
+import com.saadat.dreams.api.DreamPaymentLink;
 import com.saadat.payments.domain.CreditLedgerEntry;
+import com.saadat.payments.service.DreamAttachments;
 import com.saadat.settings.SettingKeys;
 import com.saadat.settings.SettingsService;
 import com.saadat.users.domain.User;
@@ -69,7 +71,12 @@ public class DreamService {
     private final DreamNotifier notifier;
     private final UserRepository userRepository;
     private final EventMailer eventMailer;
+    private final DreamAttachments attachments;
     private final Clock clock;
+
+    /** Virtual list filter: drafts attached to a payment under review or rejected (contract §2). */
+    public static final String FILTER_PENDING_PAYMENT = "PENDING_PAYMENT";
+    public static final String FILTER_ALL = "ALL";
 
     // ================================================================== drafts
 
@@ -92,14 +99,21 @@ public class DreamService {
         return mapper.detail(d);
     }
 
+    /**
+     * Edits the text: a DRAFT, or an IN_REVIEW dream the interpreter has not started yet (409 NOT_EDITABLE otherwise).
+     * The row is locked, so an edit and "Start interpreting" cannot race; an IN_REVIEW edit sets {@code userEditedAt}.
+     */
     @Transactional
     public DreamDetailDto updateDraft(UUID userId, UUID dreamId, DreamRequests.DraftRequest req) {
         Dream d = ownedForUpdate(userId, dreamId);
-        if (d.getStatus() != DreamStatus.DRAFT) {
-            throw new ConflictException("Only drafts can be edited", "NOT_DRAFT");
+        if (!DreamMapper.editable(d)) {
+            throw new ConflictException("This dream can no longer be edited", "NOT_EDITABLE");
         }
         d.setText(validText(req.text()));
         d.setGender(req.gender());
+        if (d.getStatus() == DreamStatus.IN_REVIEW) {
+            d.setUserEditedAt(clock.instant());
+        }
         dreamRepository.save(d);
         return mapper.detail(d);
     }
@@ -110,18 +124,50 @@ public class DreamService {
         if (d.getStatus() != DreamStatus.DRAFT) {
             throw new ConflictException("Only drafts can be deleted", "NOT_DRAFT");
         }
+        if (attachments.linkOf(d) != null) {
+            throw new ConflictException("This draft is attached to a payment", "ATTACHED_TO_PAYMENT");
+        }
         dreamRepository.delete(d);
     }
 
     // ================================================================== reads
 
+    /**
+     * The caller's dreams, newest first. {@code filter}: null/blank/ALL = every dream, a {@link DreamStatus} name, or
+     * {@link #FILTER_PENDING_PAYMENT}. DRAFT leaves out the drafts attached to a payment; PENDING_PAYMENT lists only
+     * those (contract §2). A user has few drafts (setting {@code dreams.draft_limit}), so drafts are paged in memory.
+     */
     @Transactional(readOnly = true)
-    public PageResponse<DreamSummaryDto> list(UUID userId, DreamStatus status, Integer page, Integer size) {
+    public PageResponse<DreamSummaryDto> list(UUID userId, String filter, Integer page, Integer size) {
         Pageable pageable = Pages.of(page, size);
-        Page<Dream> dreams = status == null
-                ? dreamRepository.findByUserIdOrderByCreatedAtDesc(userId, pageable)
-                : dreamRepository.findByUserIdAndStatusOrderByCreatedAtDesc(userId, status, pageable);
-        Function<Dream, DreamSummaryDto> toDto = mapper::summary;
+        String f = filter == null ? "" : filter.trim().toUpperCase(java.util.Locale.ROOT);
+        if (f.isEmpty() || FILTER_ALL.equals(f)) {
+            Page<Dream> dreams = dreamRepository.findByUserIdOrderByCreatedAtDesc(userId, pageable);
+            return PageResponse.of(mapper.summaries(userId, dreams.getContent()), dreams.getNumber(), dreams.getSize(),
+                    dreams.getTotalElements());
+        }
+        if (FILTER_PENDING_PAYMENT.equals(f) || DreamStatus.DRAFT.name().equals(f)) {
+            boolean attachedOnly = FILTER_PENDING_PAYMENT.equals(f);
+            Map<UUID, DreamPaymentLink> links = attachments.attachedDrafts(userId);
+            List<Dream> drafts = dreamRepository.findByUserIdAndStatusOrderByCreatedAtDesc(userId, DreamStatus.DRAFT)
+                    .stream()
+                    .filter(d -> links.containsKey(d.getId()) == attachedOnly)
+                    .toList();
+            int from = (int) Math.min((long) pageable.getPageNumber() * pageable.getPageSize(), drafts.size());
+            int to = Math.min(from + pageable.getPageSize(), drafts.size());
+            List<DreamSummaryDto> items = drafts.subList(from, to).stream()
+                    .map(d -> mapper.summary(d, links.get(d.getId())))
+                    .toList();
+            return PageResponse.of(items, pageable.getPageNumber(), pageable.getPageSize(), drafts.size());
+        }
+        DreamStatus status;
+        try {
+            status = DreamStatus.valueOf(f);
+        } catch (IllegalArgumentException e) {
+            throw new ValidationException("Unknown status: " + filter, "INVALID_STATUS");
+        }
+        Page<Dream> dreams = dreamRepository.findByUserIdAndStatusOrderByCreatedAtDesc(userId, status, pageable);
+        Function<Dream, DreamSummaryDto> toDto = d -> mapper.summary(d, null);
         return PageResponse.from(dreams, toDto);
     }
 
@@ -151,6 +197,11 @@ public class DreamService {
         List<Dream> dreams = dreamRepository.findAllByIdInAndUserIdForUpdate(ids, userId);
         if (dreams.size() != ids.size() || dreams.stream().anyMatch(d -> d.getStatus() != DreamStatus.DRAFT)) {
             throw new ConflictException("Some dreams are not your drafts", "NOT_DRAFT");
+        }
+        // a draft waiting on a payment under review is sent by that payment (contract §2)
+        Map<UUID, DreamPaymentLink> attached = attachments.attachedDrafts(userId);
+        if (ids.stream().anyMatch(attached::containsKey)) {
+            throw new ConflictException("This draft is attached to a payment", "ATTACHED_TO_PAYMENT");
         }
         if (balance < dreams.size()) {
             throw new PaymentRequiredException(dreams.size() - balance);
@@ -212,7 +263,10 @@ public class DreamService {
 
     // ================================================================== messages & testimonial
 
-    /** User reply: only from AWAITING_USER_REPLY → IN_REVIEW; the SLA deadline moves by the paused time. */
+    /**
+     * User reply: only from AWAITING_USER_REPLY → IN_PROGRESS when the interpreter had started, else IN_REVIEW; the
+     * SLA deadline moves by the paused time.
+     */
     @Transactional
     public DreamMessageDto reply(UUID userId, UUID dreamId, String body) {
         Dream d = ownedForUpdate(userId, dreamId);
@@ -228,7 +282,7 @@ public class DreamService {
         messageRepository.save(m);
 
         resumeSla(d, now);
-        d.setStatus(DreamStatus.IN_REVIEW);
+        d.setStatus(d.getStartedAt() != null ? DreamStatus.IN_PROGRESS : DreamStatus.IN_REVIEW);
         dreamRepository.save(d);
         notifier.userReplied(d.getId());
         return DreamMessageDto.from(m);

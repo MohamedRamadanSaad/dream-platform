@@ -40,6 +40,9 @@ public interface CreditLedgerRepository extends JpaRepository<CreditLedgerEntry,
 
     boolean existsByOrderIdAndReason(UUID orderId, LedgerReason reason);
 
+    /** Every entry of an order with {@code reason} (e.g. the SUBMIT rows of the dreams it paid for), oldest first. */
+    List<CreditLedgerEntry> findAllByOrderIdAndReasonOrderByCreatedAtAsc(UUID orderId, LedgerReason reason);
+
     Optional<CreditLedgerEntry> findByDreamIdAndReason(UUID dreamId, LedgerReason reason);
 
     boolean existsByDreamIdAndReason(UUID dreamId, LedgerReason reason);

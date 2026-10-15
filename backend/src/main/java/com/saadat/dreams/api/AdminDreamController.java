@@ -50,6 +50,11 @@ public class AdminDreamController {
         return ResponseEntity.noContent().build();
     }
 
+    @PostMapping(ApiPaths.Admin.DREAM_START)
+    public AdminDreamDetailDto start(@PathVariable UUID id, @Valid @RequestBody DreamRequests.StartRequest body) {
+        return service.start(actor(), id, body.expectedDays());
+    }
+
     @PostMapping(ApiPaths.Admin.DREAM_CANCEL)
     public ResponseEntity<Void> cancel(@PathVariable UUID id,
                                        @RequestBody(required = false) DreamRequests.CancelRequest body) {

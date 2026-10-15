@@ -4,6 +4,8 @@ package com.saadat.common.domain;
 public enum DreamStatus {
     DRAFT,
     IN_REVIEW,
+    /** The interpreter pressed "Start interpreting": the text is final, {@code expectedDays} is set (V39). */
+    IN_PROGRESS,
     AWAITING_USER_REPLY,
     INTERPRETED,
     CANCELLED

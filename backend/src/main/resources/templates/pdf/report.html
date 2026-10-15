@@ -65,6 +65,7 @@
   .rtl .dh-status { text-align: left; }
   .chip { font-size: 8.5pt; font-weight: bold; padding: 1mm 3mm; border-radius: 3mm; background-color: #EEF0F5; color: #16244A; }
   .st-IN_REVIEW { background-color: #E8EDF8; color: #16244A; }
+  .st-IN_PROGRESS { background-color: #E8EDF8; color: #16244A; }
   .st-AWAITING_USER_REPLY { background-color: #FBF3DC; color: #7A5E12; }
   .st-INTERPRETED { background-color: #E5F2E9; color: #1E6B3A; }
   .st-CANCELLED { background-color: #F7E6E6; color: #8A2B2B; }
@@ -153,7 +154,7 @@
       <div class="interp-text" dir="auto" th:text="${dream.interpretation.text}">Interpretation</div>
     </div>
   </th:block>
-  <th:block th:if="${dream.interpretation == null and (dream.statusKey == 'IN_REVIEW' or dream.statusKey == 'AWAITING_USER_REPLY')}">
+  <th:block th:if="${dream.interpretation == null and (dream.statusKey == 'IN_REVIEW' or dream.statusKey == 'IN_PROGRESS' or dream.statusKey == 'AWAITING_USER_REPLY')}">
     <div class="label" th:text="#{pdf.dream.interpretation}">Interpretation</div>
     <div class="muted" th:text="#{pdf.dream.noInterpretation}">Not written yet.</div>
   </th:block>

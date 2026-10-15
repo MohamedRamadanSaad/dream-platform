@@ -5,6 +5,7 @@ import com.saadat.common.domain.DreamStatus;
 import com.saadat.common.domain.Locale;
 import com.saadat.common.error.UnauthorizedException;
 import com.saadat.dreams.repo.DreamRepository;
+import com.saadat.payments.service.DreamAttachments;
 import com.saadat.mail.EventMailer;
 import com.saadat.mail.MailTemplates;
 import com.saadat.notifications.repo.NotificationRepository;
@@ -51,6 +52,7 @@ public class AccountService {
     private final PasskeyRepository passkeyRepository;
     private final CreditExpiryService creditExpiryService;
     private final DashboardActivity dashboardActivity;
+    private final DreamAttachments dreamAttachments;
 
     public AccountService(UserRepository userRepository, AuthIdentityRepository identityRepository,
                           RefreshTokenService refreshTokenService, PushSubscriptionService pushSubscriptionService,
@@ -58,8 +60,9 @@ public class AccountService {
                           NotificationRepository notificationRepository, WaitTimeView waitTimeView,
                           UserDtoMapper mapper, EventMailer eventMailer, Clock clock,
                           PasskeyRepository passkeyRepository, CreditExpiryService creditExpiryService,
-                          DashboardActivity dashboardActivity) {
+                          DashboardActivity dashboardActivity, DreamAttachments dreamAttachments) {
         this.dashboardActivity = dashboardActivity;
+        this.dreamAttachments = dreamAttachments;
         this.passkeyRepository = passkeyRepository;
         this.creditExpiryService = creditExpiryService;
         this.userRepository = userRepository;
@@ -148,9 +151,13 @@ public class AccountService {
         Locale locale = requestLocale != null ? requestLocale : user.getLocale();
         CreditExpiryService.View credits = creditExpiryService.view(userId);
         CreditLots.NextExpiry next = credits.nextExpiry();
+        long drafts = dreamRepository.countByUserIdAndStatus(userId, DreamStatus.DRAFT);
+        long pendingPayment = drafts == 0 ? 0 : dreamAttachments.attachedDrafts(userId).size();
         return new DashboardSummary(
-                dreamRepository.countByUserIdAndStatus(userId, DreamStatus.DRAFT),
+                Math.max(0, drafts - pendingPayment),
+                pendingPayment,
                 dreamRepository.countByUserIdAndStatus(userId, DreamStatus.IN_REVIEW),
+                dreamRepository.countByUserIdAndStatus(userId, DreamStatus.IN_PROGRESS),
                 dreamRepository.countByUserIdAndStatus(userId, DreamStatus.AWAITING_USER_REPLY),
                 dreamRepository.countByUserIdAndStatus(userId, DreamStatus.INTERPRETED),
                 credits.balance(),

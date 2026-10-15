@@ -7,7 +7,10 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.UUID;
 
-/** types.ts {@code OrderDto & { userName }} for GET /admin/orders. */
+/**
+ * types.ts AdminOrderRow ({@code OrderDto} + buyer + settled EGP + InstaPay transfer) for GET /admin/orders.
+ * {@code attachedDreams} = dreams in the order's checkout intent.
+ */
 public record AdminOrderRow(
         UUID id,
         String orderNumber,
@@ -21,11 +24,20 @@ public record AdminOrderRow(
         String countryCode,
         Instant createdAt,
         Instant paidAt,
-        String userName) {
+        String userName,
+        UUID userId,
+        String userEmail,
+        BigDecimal settledAmountEgp,
+        String transferReference,
+        String transferSenderName,
+        Instant transferSubmittedAt,
+        int attachedDreams) {
 
-    public static AdminOrderRow of(OrderDto o, String userName) {
-        return new AdminOrderRow(o.id(), o.orderNumber(), o.packageName(), o.credits(), o.amount(), o.currency(),
-                o.status(),
-                o.provider(), o.providerRef(), o.countryCode(), o.createdAt(), o.paidAt(), userName);
+    public static AdminOrderRow of(OrderDto o, UUID userId, String userName, String userEmail,
+                                   BigDecimal settledAmountEgp, String transferReference, String transferSenderName,
+                                   Instant transferSubmittedAt, int attachedDreams) {
+        return new AdminOrderRow(o.id(), o.orderNumber(), o.packageName(), o.credits(), o.amount(), o.currency(), o.status(),
+                o.provider(), o.providerRef(), o.countryCode(), o.createdAt(), o.paidAt(), userName, userId, userEmail,
+                settledAmountEgp, transferReference, transferSenderName, transferSubmittedAt, attachedDreams);
     }
 }

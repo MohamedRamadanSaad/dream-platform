@@ -1,6 +1,6 @@
 # UX + payments review — contract (2026-10-15)
 
-Binding contract between backend and frontend for branch `feat/ux-payments-review`. Migration **V37** (reserved in the project coordination doc).
+Binding contract between backend and frontend for branch `feat/ux-payments-review`. Migration **V39** (reserved in the project coordination doc; V37/V38 went to passwords and order numbers).
 
 Owner's requests, in his order:
 1. Interpreter dashboard: the FIRST tile is "payments that need review".
@@ -74,7 +74,7 @@ Approve / reject stay on the existing InstaPay endpoints (`/admin/payments/insta
 `orders.settled_amount_egp numeric(12,2)` (nullable). Set when an order becomes SUCCESS:
 - currency EGP → `amount`;
 - otherwise the provider's settled EGP amount when it reports one; else `amount / fx_to_usd[EGP] * fx_to_usd[currency]` (rounded half-up, 2 places).
-V37 back-fills SUCCESS/REFUNDED/SUSPICIOUS-with-paid_at EGP orders with `amount`, and others with the FX formula using the current `pricing.fx_to_usd` setting.
+V39 back-fills SUCCESS/REFUNDED/SUSPICIOUS-with-paid_at EGP orders with `amount`, and others with the FX formula using the current `pricing.fx_to_usd` setting.
 
 ## 5. Analytics
 

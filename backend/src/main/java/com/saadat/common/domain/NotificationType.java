@@ -13,5 +13,7 @@ public enum NotificationType {
     /** To interpreters: an InstaPay transfer waits for confirmation (V34). */
     TRANSFER_SUBMITTED,
     /** To the payer: the interpreter could not find the InstaPay transfer (V34). */
-    PAYMENT_REJECTED
+    PAYMENT_REJECTED,
+    /** To the dreamer: the interpreter started interpreting, with the expected number of days (V39). */
+    DREAM_STARTED
 }

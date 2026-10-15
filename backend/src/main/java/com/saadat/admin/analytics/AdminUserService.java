@@ -61,8 +61,8 @@ public class AdminUserService {
         AdminUserRowDto row = analyticsService.userRow(userId);
         List<AuthProvider> providers = identityRepository.findByUserId(userId).stream()
                 .map(AuthIdentity::getProvider).distinct().toList();
-        List<DreamSummaryDto> dreams = dreamRepository.findByUserIdOrderByCreatedAtDesc(userId).stream()
-                .map(dreamMapper::summary).toList();
+        List<DreamSummaryDto> dreams = dreamMapper.summaries(userId,
+                dreamRepository.findByUserIdOrderByCreatedAtDesc(userId));
         List<UserTestimonialDto> testimonials = testimonialRepository.findByUserIdOrderByCreatedAtDesc(userId).stream()
                 .map(t -> new UserTestimonialDto(t.getDreamId(), t.getRating(), t.getComment(), t.isApproved()))
                 .toList();

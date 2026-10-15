@@ -11,12 +11,12 @@ Rules the backend must enforce (the mock in `frontend/src/mocks/handlers.ts` enf
 2. Credits are a ledger (`credit_ledger`), never a counter. `POST /dreams/submit` deducts inside one transaction with `SELECT … FOR UPDATE` on the user row; returns 402 with `code: INSUFFICIENT_CREDITS` and never partially submits.
 3. Orders move to SUCCESS only from a signature-verified webhook whose amount + currency match the stored order; `provider_txn_id` is unique (idempotent). Card-issuer country ≠ IP country → `SUSPICIOUS`, no credits.
 4. After a successful order, drafts listed in `checkout_intent` are auto-submitted (same rules as /dreams/submit).
-5. Dream status machine: DRAFT → IN_REVIEW ⇄ AWAITING_USER_REPLY → INTERPRETED; CANCELLED refunds the credit. Interpreter questions only from IN_REVIEW; user replies only from AWAITING_USER_REPLY.
+5. Dream status machine: DRAFT → IN_REVIEW → IN_PROGRESS ("Start interpreting", V39); IN_REVIEW | IN_PROGRESS ⇄ AWAITING_USER_REPLY → INTERPRETED; CANCELLED refunds the credit. Interpreter questions from IN_REVIEW or IN_PROGRESS; user replies only from AWAITING_USER_REPLY (back to IN_PROGRESS when started, else IN_REVIEW).
 6. Testimonials only on INTERPRETED dreams owned by the caller, one per dream, `approved=false` until the interpreter approves.
 7. `sla_hours_snapshot` is copied onto the dream at submit time; the SLA clock pauses while AWAITING_USER_REPLY.
 8. Every write from the interpreter (prices, promotions, wait-time, manual credits, notes) lands in `audit_log`.
 9. Auth: e-mail + password (since 2026-10-15, see "E-mail + password accounts" below), Google ID token (verified), passkey, or magic link/6-digit code (hashed, 15 min, single use; kept in the API, no longer offered on the login screen). `auth_identities` (provider `GOOGLE` / `MAGIC_LINK` / `PASSWORD`, provider_subject) → one account, many providers. Access JWT 15 min; refresh 30 d in HttpOnly cookie, rotated, reuse-detected.
-10. Emails/push per event: DREAM_SUBMITTED (interpreter), DREAM_RECEIVED, INTERPRETER_QUESTION, USER_REPLIED (interpreter), INTERPRETATION_READY, PAYMENT_SUCCESS.
+10. Emails/push per event: DREAM_SUBMITTED (interpreter), DREAM_RECEIVED, DREAM_STARTED, INTERPRETER_QUESTION, USER_REPLIED (interpreter), INTERPRETATION_READY, PAYMENT_SUCCESS.
 
 ## E-mail + password accounts (V37, owner's decision of 2026-10-15)
 
@@ -142,3 +142,33 @@ Rules: one reference pays one order (partial unique index on live statuses); ref
 digits, spaces); InstaPay orders expire after `payments.instapay.expire_hours` (default 24) when no details were sent.
 New order status `PENDING_REVIEW`, provider `INSTAPAY`, notification types `TRANSFER_SUBMITTED` (interpreters) and
 `PAYMENT_REJECTED` (payer).
+
+## Payments review, attached dreams and "Start interpreting" (V39)
+
+Binding detail: `docs/UX_PAYMENTS_REVIEW_CONTRACT.md`.
+
+| Route | Body / result |
+|---|---|
+| `POST /admin/dreams/{id}/start` | `{expectedDays: 1..30}` → IN_REVIEW → IN_PROGRESS, `startedAt`, `expectedBy = now + days`; returns `AdminDreamDetail`. 409 `NOT_IN_REVIEW`; 400 when the days are out of range. Audit `DREAM_START`; the dreamer gets `DREAM_STARTED` (in-app + push + `dream-started` e-mail, ar/en) |
+| `PUT /dreams/{id}` | allowed for DRAFT, or IN_REVIEW with `startedAt == null` (sets `userEditedAt`); else 409 `NOT_EDITABLE`. Row-locked, so it cannot race the start |
+| `DELETE /dreams/{id}` | DRAFT only (409 `NOT_DRAFT`); 409 `ATTACHED_TO_PAYMENT` when the draft waits on a payment |
+| `GET /dreams?status=` | a `DreamStatus`, `ALL`, or the virtual `PENDING_PAYMENT` (drafts attached to a payment). `DRAFT` leaves the attached drafts out |
+| `POST /dreams/submit` | 409 `ATTACHED_TO_PAYMENT` for a draft that waits on a payment (it is sent by that payment) |
+| `POST /checkout`, `POST /me/orders/{id}/instapay` | 409 `DREAM_ALREADY_ATTACHED` when a dream is in the intent of another live order of the user (INITIATED not expired, PENDING_REVIEW, rejected-and-resendable). Resending the same order with its own dreams is fine |
+| `GET /admin/orders?scope=&q=&page&size` | `scope` = `REVIEW` (InstaPay PENDING_REVIEW, oldest submitted first) · `DOMESTIC` (country EG, newest first) · `INTERNATIONAL` (not EG or no country) · `ALL` (default, CSV export). `q` = order number (see "Order numbers"), combinable with any scope (`?scope=REVIEW&q=15001`). `Page<AdminOrderRow>` |
+| `GET /admin/orders/counts` | `{review, domestic, international}` |
+| `GET /admin/orders/{id}` | `AdminOrderDetail` (`orderNumber`, transfer + `reviewedByName`, buyer with age, dreams = intent ∪ dreams paid by its credits with full text, `canReview`) |
+| `GET /admin/analytics/countries` | `baseCurrency: "EGP"`; each list holds only non-zero rows (cap 250), `topRevenue` ranked by settled EGP; `CountryStat.revenueByCurrency[]` = buyers' own currencies |
+| `GET /admin/analytics/summary` | adds `pendingPayments`, `inProgress`, `revenueEgp` (settled EGP, last 30 days); `overdue` counts IN_REVIEW + IN_PROGRESS |
+| `GET /me/dashboard` | adds `pendingPayment` and `inProgress`; `drafts` excludes attached drafts |
+
+Shapes (field names = types.ts):
+
+- `DreamSummary` / `DreamDetail` add `startedAt`, `expectedDays`, `editable`, `payment: {orderId, status: PENDING_REVIEW|REJECTED, submittedAt, reviewNote} | null`.
+- `AdminDreamRow` adds `startedAt`, `expectedDays`, `userEditedAt`; `AdminDreamDetail` adds `startedAt`, `expectedDays`, `editable`, `userEditedAt` and keeps `payment` = the order that paid the dream.
+- `AdminOrderRow` = `OrderDto` (incl. `orderNumber`) + `userName, userId, userEmail, settledAmountEgp, transferReference, transferSenderName, transferSubmittedAt, attachedDreams`.
+
+Data: `dreams.started_at`, `dreams.expected_days` (1..30), `dreams.user_edited_at`, status `IN_PROGRESS`;
+`orders.settled_amount_egp` set by `PaymentService.confirm` on SUCCESS (EGP → amount, else
+`amount × fx[cur] / fx[EGP]` from `pricing.fx_to_usd`, half-up 2 places) and back-filled by V39; notification type
+`DREAM_STARTED`; settings `mail.event.dream-started`, `mail.theme.dream-started`.

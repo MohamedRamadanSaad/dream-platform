@@ -24,6 +24,7 @@ public class NotificationEmailPolicy {
         m.put(NotificationType.INTERPRETER_QUESTION, MailTemplates.INTERPRETER_QUESTION);
         m.put(NotificationType.USER_REPLIED, MailTemplates.USER_REPLIED);
         m.put(NotificationType.INTERPRETATION_READY, MailTemplates.INTERPRETATION_READY);
+        m.put(NotificationType.DREAM_STARTED, MailTemplates.DREAM_STARTED);
         // PAYMENT_SUCCESS: in-app + push only here — the receipt e-mail (MailTemplates.PAYMENT_RECEIPT, with
         // paidAt and a send-once ref) is sent by payments.service.PaymentService itself.
         // PROMOTION: in-app + push only (marketing e-mail requires an explicit opt-in flow)

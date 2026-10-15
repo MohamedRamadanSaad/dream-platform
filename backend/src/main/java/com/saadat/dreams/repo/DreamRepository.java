@@ -53,8 +53,13 @@ public interface DreamRepository extends JpaRepository<Dream, UUID> {
 
     long countByStatus(DreamStatus status);
 
+    long countByStatusIn(Collection<DreamStatus> statuses);
+
     /** Overdue = IN_REVIEW and expected_by in the past. */
     long countByStatusAndExpectedByBefore(DreamStatus status, Instant now);
+
+    /** Overdue = status in (IN_REVIEW, IN_PROGRESS) and expected_by in the past. */
+    long countByStatusInAndExpectedByBefore(Collection<DreamStatus> statuses, Instant now);
 
     long countByStatusAndInterpretedAtAfter(DreamStatus status, Instant since);
 

@@ -5,6 +5,7 @@ import com.saadat.common.domain.NotificationType;
 import com.saadat.common.tx.AfterCommit;
 import com.saadat.dreams.domain.Dream;
 import com.saadat.dreams.repo.DreamRepository;
+import com.saadat.mail.MailTemplates;
 import com.saadat.notifications.service.InterpreterDirectory;
 import com.saadat.notifications.service.NotificationService;
 import com.saadat.settings.SettingKeys;
@@ -57,6 +58,24 @@ public class DreamNotifier {
 
     public void interpreterQuestion(UUID dreamId) {
         afterCommit.run("interpreter-question:" + dreamId, () -> toOwner(dreamId, NotificationType.INTERPRETER_QUESTION));
+    }
+
+    /**
+     * DREAM_STARTED to the owner: in-app + push + dream-started e-mail with {@code expectedDays} and
+     * {@code expectedBy} (the date it should be ready).
+     */
+    public void started(UUID dreamId) {
+        afterCommit.run("dream-started:" + dreamId, () -> {
+            Dream d = dreamRepository.findById(dreamId).orElse(null);
+            if (d == null) {
+                return;
+            }
+            User owner = userRepository.findById(d.getUserId()).orElse(null);
+            Map<String, Object> args = args(d, owner);
+            args.put("expectedDays", d.getExpectedDays() == null ? "" : d.getExpectedDays());
+            args.put(NotificationService.ARG_REF, MailTemplates.DREAM_STARTED + ":" + dreamId);
+            notificationService.notify(d.getUserId(), NotificationType.DREAM_STARTED, args, DreamLinks.user(dreamId));
+        });
     }
 
     public void interpretationReady(UUID dreamId) {

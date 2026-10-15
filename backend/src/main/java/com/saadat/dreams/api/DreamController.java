@@ -2,7 +2,6 @@ package com.saadat.dreams.api;
 
 import com.saadat.common.api.ApiPaths;
 import com.saadat.common.api.PageResponse;
-import com.saadat.common.domain.DreamStatus;
 import com.saadat.common.security.AuthPrincipal;
 import com.saadat.dreams.service.DreamService;
 import jakarta.validation.Valid;
@@ -26,8 +25,9 @@ public class DreamController {
 
     private final DreamService dreamService;
 
+    /** {@code status}: a DreamStatus, ALL, or the virtual PENDING_PAYMENT (drafts attached to a payment). */
     @GetMapping(ApiPaths.Dreams.ROOT)
-    public PageResponse<DreamSummaryDto> list(@RequestParam(required = false) DreamStatus status,
+    public PageResponse<DreamSummaryDto> list(@RequestParam(required = false) String status,
                                               @RequestParam(required = false) Integer page,
                                               @RequestParam(required = false) Integer size) {
         return dreamService.list(me(), status, page, size);

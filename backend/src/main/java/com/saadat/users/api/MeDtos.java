@@ -30,8 +30,13 @@ public final class MeDtos {
 
     /** types.ts {@code DashboardSummary}. */
     public record DashboardSummary(
+            /* drafts not attached to a payment */
             long drafts,
+            /* drafts attached to a payment under review (or rejected) */
+            long pendingPayment,
             long inReview,
+            /* started by the interpreter */
+            long inProgress,
             long awaitingReply,
             long interpreted,
             int credits,

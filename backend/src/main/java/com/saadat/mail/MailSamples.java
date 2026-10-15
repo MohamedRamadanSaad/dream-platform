@@ -53,6 +53,11 @@ public class MailSamples {
                 m.put("waitMessage", en ? "We usually reply within 48 hours." : "نرد عادةً خلال 48 ساعة.");
                 m.put("link", FrontendPaths.myDream(SAMPLE_DREAM_ID));
             }
+            case MailTemplates.DREAM_STARTED -> {
+                m.put("expectedDays", 3);
+                m.put("expectedBy", now.plus(Duration.ofDays(3)));
+                m.put("link", FrontendPaths.myDream(SAMPLE_DREAM_ID));
+            }
             case MailTemplates.INTERPRETER_QUESTION, MailTemplates.INTERPRETATION_READY,
                  MailTemplates.REPLY_REMINDER, MailTemplates.TESTIMONIAL_REQUEST ->
                     m.put("link", FrontendPaths.myDream(SAMPLE_DREAM_ID));

@@ -2,6 +2,7 @@ package com.saadat.dreams.jobs;
 
 import com.saadat.common.domain.DreamStatus;
 import com.saadat.dreams.repo.DreamRepository;
+import com.saadat.dreams.service.AdminDreamService;
 import com.saadat.dreams.service.DreamLinks;
 import com.saadat.mail.MailService;
 import com.saadat.mail.MailTemplates;
@@ -68,9 +69,10 @@ public class InterpreterDigestJob {
         }
         Map<String, Object> model = new LinkedHashMap<>();
         model.put("date", date.toString());
-        model.put("waiting", dreamRepository.countByStatus(DreamStatus.IN_REVIEW));
+        // open work = in review or being interpreted (V39)
+        model.put("waiting", dreamRepository.countByStatusIn(AdminDreamService.OPEN_WORK));
         model.put("awaitingReply", dreamRepository.countByStatus(DreamStatus.AWAITING_USER_REPLY));
-        model.put("overdue", dreamRepository.countByStatusAndExpectedByBefore(DreamStatus.IN_REVIEW, now));
+        model.put("overdue", dreamRepository.countByStatusInAndExpectedByBefore(AdminDreamService.OPEN_WORK, now));
         model.put("link", DreamLinks.ADMIN_QUEUE);
         boolean sent = false;
         for (User interpreter : userRepository.findAllById(interpreterDirectory.interpreterUserIds())) {

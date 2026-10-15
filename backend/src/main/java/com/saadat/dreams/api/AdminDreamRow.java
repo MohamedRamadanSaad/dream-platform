@@ -16,5 +16,8 @@ public record AdminDreamRow(
         Instant submittedAt,
         Instant slaDeadline,
         boolean overdue,
-        String countryCode) {
+        String countryCode,
+        Instant startedAt,
+        Integer expectedDays,
+        Instant userEditedAt) {
 }

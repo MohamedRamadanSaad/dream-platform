@@ -138,6 +138,8 @@ public final class SettingKeys {
     public static final String MAIL_EVENT_SUPPORT_IN_PROGRESS = "mail.event.support-in-progress";
     /** Support ticket closed: e-mail to the sender with the interpreter's message (V21). */
     public static final String MAIL_EVENT_SUPPORT_CLOSED = "mail.event.support-closed";
+    /** The interpreter started interpreting: e-mail to the dreamer with the expected number of days (V39). */
+    public static final String MAIL_EVENT_DREAM_STARTED = "mail.event.dream-started";
 
     /** Every e-mail event switch (one per template except magic-link). */
     public static final List<String> MAIL_EVENTS = List.of(
@@ -148,7 +150,8 @@ public final class SettingKeys {
             MAIL_EVENT_PAYMENT_RECEIPT, MAIL_EVENT_PAYMENT_SUSPICIOUS, MAIL_EVENT_REPLY_REMINDER,
             MAIL_EVENT_TESTIMONIAL_REQUEST, MAIL_EVENT_INTERPRETER_DIGEST, MAIL_EVENT_YOUTUBE_NEW_VIDEO,
             MAIL_EVENT_SUPPORT_AUTO_REPLY, MAIL_EVENT_NEW_SIGN_IN,
-            MAIL_EVENT_PASSKEY_ADDED, MAIL_EVENT_SUPPORT_IN_PROGRESS, MAIL_EVENT_SUPPORT_CLOSED);
+            MAIL_EVENT_PASSKEY_ADDED, MAIL_EVENT_SUPPORT_IN_PROGRESS, MAIL_EVENT_SUPPORT_CLOSED,
+            MAIL_EVENT_DREAM_STARTED);
 
     /** The switch of an e-mail template: {@code mail.event.<template>}. */
     public static String mailEvent(String template) {
@@ -215,6 +218,7 @@ public final class SettingKeys {
             MAIL_EVENT_TESTIMONIAL_REQUEST, MAIL_EVENT_INTERPRETER_DIGEST, MAIL_EVENT_YOUTUBE_NEW_VIDEO,
             MAIL_EVENT_SUPPORT_AUTO_REPLY, MAIL_EVENT_NEW_SIGN_IN,
             MAIL_EVENT_PASSKEY_ADDED, MAIL_EVENT_SUPPORT_IN_PROGRESS, MAIL_EVENT_SUPPORT_CLOSED,
+            MAIL_EVENT_DREAM_STARTED,
             MAIL_THEME_DEFAULT, MAIL_ASSETS_BASE_URL, MAIL_AUTO_REPLY_COOLDOWN_HOURS, MAIL_SAVE_TO_SENT, MAIL_SENT_FOLDER,
             SUPPORT_FETCH_BODY,
             INSIGHTS_AWAITING_REPLY_DAYS, INSIGHTS_TRAFFIC_CHANGE_PERCENT, INSIGHTS_STREAK_MIN_DAYS,

@@ -1,7 +1,6 @@
 package com.saadat.payments.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.saadat.common.audit.AuditService;
 import com.saadat.common.domain.CountrySource;
@@ -108,6 +107,8 @@ public class PaymentService {
     private final AuditService auditService;
     private final SettingsService settingsService;
     private final AfterCommit afterCommit;
+    private final EgpSettlement egpSettlement;
+    private final DreamAttachments dreamAttachments;
     private final ObjectMapper objectMapper;
     private final OrderNumbers orderNumbers;
     private final Clock clock;
@@ -158,6 +159,8 @@ public class PaymentService {
         }
 
         PaymentProvider provider = providerRegistry.forCurrency(resolved.currency());
+        // a draft already waiting on another payment cannot be paid twice (contract §2)
+        dreamAttachments.requireFree(userId, request.dreamIds(), null);
         Instant now = clock.instant();
 
         Order order = new Order();
@@ -258,6 +261,8 @@ public class PaymentService {
         order.setPaidAt(clock.instant());
         order.setProviderTxnId(event.providerTxnId());
         order.setFailureReason(null);
+        // what the payment brought in EGP (contract §4); no provider reports a settled EGP amount yet
+        order.setSettledAmountEgp(egpSettlement.toEgp(order.getAmount(), order.getCurrency()));
         orderRepository.save(order);
 
         creditService.addPurchase(order.getUserId(), order.getCredits(), order.getId(), purchaseExpiry(order));
@@ -398,28 +403,7 @@ public class PaymentService {
     }
 
     List<UUID> readIntent(String json) {
-        if (json == null || json.isBlank()) {
-            return List.of();
-        }
-        try {
-            JsonNode node = objectMapper.readTree(json);
-            // tolerate a double-encoded JSON string
-            if (node.isTextual()) {
-                node = objectMapper.readTree(node.asText());
-            }
-            List<UUID> ids = new ArrayList<>();
-            for (JsonNode n : node.path(INTENT_DREAM_IDS)) {
-                try {
-                    ids.add(UUID.fromString(n.asText()));
-                } catch (IllegalArgumentException ignored) {
-                    // skip malformed ids
-                }
-            }
-            return ids;
-        } catch (JsonProcessingException e) {
-            log.warn("Unreadable checkout_intent: {}", e.getMessage());
-            return List.of();
-        }
+        return DreamAttachments.parseIntent(objectMapper, json);
     }
 
     /** Paid credits expire after the package's validity (months from payment); null = never (no validity / no package). */

@@ -1,15 +1,20 @@
 package com.saadat.dreams.service;
 
+import com.saadat.common.domain.DreamStatus;
 import com.saadat.common.domain.Role;
 import com.saadat.dreams.api.DreamDetailDto;
 import com.saadat.dreams.api.DreamMessageDto;
+import com.saadat.dreams.api.DreamPaymentLink;
 import com.saadat.dreams.api.DreamSummaryDto;
 import com.saadat.dreams.domain.Dream;
 import com.saadat.dreams.repo.DreamMessageRepository;
 import com.saadat.dreams.repo.InterpretationRepository;
 import com.saadat.dreams.repo.TestimonialRepository;
 import com.saadat.payments.repo.CreditLedgerRepository;
+import com.saadat.payments.service.DreamAttachments;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -26,6 +31,7 @@ public class DreamMapper {
     private final InterpretationRepository interpretationRepository;
     private final TestimonialRepository testimonialRepository;
     private final CreditLedgerRepository ledgerRepository;
+    private final DreamAttachments attachments;
 
     public static String excerpt(String text) {
         if (text == null) {
@@ -34,11 +40,28 @@ public class DreamMapper {
         return text.length() > EXCERPT_LENGTH ? text.substring(0, EXCERPT_LENGTH) + ELLIPSIS : text;
     }
 
+    /** The dreamer may still change the text: DRAFT, or IN_REVIEW before the interpreter started. */
+    public static boolean editable(Dream d) {
+        return d.getStatus() == DreamStatus.DRAFT || (d.getStatus() == DreamStatus.IN_REVIEW && d.getStartedAt() == null);
+    }
+
     /** Summary for the dream's owner: unread = interpreter messages not yet read. */
     public DreamSummaryDto summary(Dream d) {
+        return summary(d, attachments.linkOf(d));
+    }
+
+    /** Summaries of one user's dreams, with the attached-payment lookup done once. */
+    public List<DreamSummaryDto> summaries(UUID userId, List<Dream> dreams) {
+        Map<UUID, DreamPaymentLink> links = dreams.stream().anyMatch(d -> d.getStatus() == DreamStatus.DRAFT)
+                ? attachments.attachedDrafts(userId) : Map.of();
+        return dreams.stream().map(d -> summary(d, links.get(d.getId()))).toList();
+    }
+
+    public DreamSummaryDto summary(Dream d, DreamPaymentLink payment) {
         long unread = messageRepository.countByDreamIdAndSenderRoleAndReadAtIsNull(d.getId(), Role.INTERPRETER);
         return new DreamSummaryDto(d.getId(), excerpt(d.getText()), d.getStatus(), d.getCreatedAt(), d.getSubmittedAt(),
-                d.getInterpretedAt(), d.getExpectedBy(), unread);
+                d.getInterpretedAt(), d.getExpectedBy(), unread, d.getStartedAt(), d.getExpectedDays(), editable(d),
+                d.getStatus() == DreamStatus.DRAFT ? payment : null);
     }
 
     public DreamDetailDto detail(Dream d) {
@@ -58,7 +81,7 @@ public class DreamMapper {
                         .map(e -> new DreamDetailDto.CreditRef(e.getId(), e.getOrderId()))
                         .orElse(new DreamDetailDto.CreditRef(d.getLedgerEntryId(), null));
         return new DreamDetailDto(d.getId(), excerpt(d.getText()), d.getStatus(), d.getCreatedAt(), d.getSubmittedAt(),
-                d.getInterpretedAt(), d.getExpectedBy(), unread, d.getText(), d.getGender(), interpretation, messages,
-                testimonial, credit);
+                d.getInterpretedAt(), d.getExpectedBy(), unread, d.getStartedAt(), d.getExpectedDays(), editable(d),
+                attachments.linkOf(d), d.getText(), d.getGender(), interpretation, messages, testimonial, credit);
     }
 }
