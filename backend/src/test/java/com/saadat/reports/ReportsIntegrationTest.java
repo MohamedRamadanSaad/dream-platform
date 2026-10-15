@@ -105,7 +105,7 @@ class ReportsIntegrationTest extends IntegrationTestBase {
                 .contains("filename=\"dream-" + shortId + ".pdf\"")
                 .contains("filename*=UTF-8''dream-" + shortId + ".pdf");
         assertPdf(dreamPdf);
-        assertThat(text(dreamPdf)).as("the interpreter sees the e-mail and the order").contains("@").contains("MOCK-");
+        assertThat(text(dreamPdf)).as("the interpreter sees the e-mail and the order").contains("@").contains("RN-");
         save("dream-ar.pdf", dreamPdf);
 
         // the owner's copy of the same dream: no e-mail, no payment reference
