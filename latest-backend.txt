@@ -1,11 +1,13 @@
-### commit f4596d62a6f0ab71940da1cc1fa10f4ee501ba49 run 38672180414 Thu Oct 15 02:41:13 UTC 2026
+### commit a14e243383c57e8db1f2190b992cc4a4a650de35 run 38672579590 Thu Oct 15 02:45:49 UTC 2026
 ## tests
 com.saadat.tracking.service.UserAgentsTest tests=20 failures=0 errors=0
 com.saadat.settings.AdminWaitTimeIntegrationTest tests=2 failures=0 errors=0
+com.saadat.payments.OrderNumberIntegrationTest tests=4 failures=0 errors=0
 com.saadat.mail.MailThemesIntegrationTest tests=10 failures=0 errors=0
 com.saadat.passkeys.service.PasskeyAddedMailIntegrationTest tests=2 failures=0 errors=0
 com.saadat.security.AccessControlIntegrationTest tests=6 failures=0 errors=0
 com.saadat.passkeys.PasskeysIntegrationTest tests=15 failures=0 errors=0
+com.saadat.auth.PasswordAuthIntegrationTest tests=7 failures=0 errors=0
 com.saadat.mail.MailEventsIntegrationTest tests=7 failures=0 errors=0
 com.saadat.payments.ProviderRoutingTest tests=2 failures=0 errors=0
 com.saadat.credits.CreditExpiryIntegrationTest tests=2 failures=0 errors=0
@@ -78,13 +80,13 @@ Daemon will be stopped at the end of the build
 OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
 > Task :test
 
-02:41:13.071 INFO  [SpringApplicationShutdownHook] [] o.s.o.j.LocalContainerEntityManagerFactoryBean - Closing JPA EntityManagerFactory for persistence unit 'default'
-02:41:13.075 INFO  [SpringApplicationShutdownHook] [] com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated...
-02:41:13.086 INFO  [SpringApplicationShutdownHook] [] com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed.
+02:45:48.796 INFO  [SpringApplicationShutdownHook] [] o.s.o.j.LocalContainerEntityManagerFactoryBean - Closing JPA EntityManagerFactory for persistence unit 'default'
+02:45:48.797 INFO  [SpringApplicationShutdownHook] [] com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated...
+02:45:48.811 INFO  [SpringApplicationShutdownHook] [] com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed.
 
 > Task :check
 > Task :build
-gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/__run-1792032015902.json
+gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/__run-1792032290572.json
 
-BUILD SUCCESSFUL in 1m
+BUILD SUCCESSFUL in 1m 2s
 7 actionable tasks: 7 executed
