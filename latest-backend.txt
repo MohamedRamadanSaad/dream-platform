@@ -1,13 +1,11 @@
-### commit 866ea88c9312569e0182448d94d23057d6c91421 run 38669523313 Thu Oct 15 02:11:25 UTC 2026
+### commit f4596d62a6f0ab71940da1cc1fa10f4ee501ba49 run 38672180414 Thu Oct 15 02:41:13 UTC 2026
 ## tests
 com.saadat.tracking.service.UserAgentsTest tests=20 failures=0 errors=0
 com.saadat.settings.AdminWaitTimeIntegrationTest tests=2 failures=0 errors=0
-com.saadat.payments.OrderNumberIntegrationTest tests=4 failures=0 errors=0
 com.saadat.mail.MailThemesIntegrationTest tests=10 failures=0 errors=0
 com.saadat.passkeys.service.PasskeyAddedMailIntegrationTest tests=2 failures=0 errors=0
 com.saadat.security.AccessControlIntegrationTest tests=6 failures=0 errors=0
 com.saadat.passkeys.PasskeysIntegrationTest tests=15 failures=0 errors=0
-com.saadat.auth.PasswordAuthIntegrationTest tests=7 failures=0 errors=0
 com.saadat.mail.MailEventsIntegrationTest tests=7 failures=0 errors=0
 com.saadat.payments.ProviderRoutingTest tests=2 failures=0 errors=0
 com.saadat.credits.CreditExpiryIntegrationTest tests=2 failures=0 errors=0
@@ -37,6 +35,7 @@ com.saadat.credits.CreditLotsTest tests=7 failures=0 errors=0
 com.saadat.youtube.service.YoutubeNewVideoMailIntegrationTest tests=1 failures=0 errors=0
 com.saadat.common.web.CountryResolverTest tests=5 failures=0 errors=0
 com.saadat.tracking.TrackIntegrationTest tests=5 failures=0 errors=0
+com.saadat.dreams.UxPaymentsReviewIntegrationTest tests=5 failures=0 errors=0
 com.saadat.admin.analytics.InsightsIntegrationTest tests=2 failures=0 errors=0
 com.saadat.ops.GoLiveResetScriptIntegrationTest tests=1 failures=0 errors=0
 com.saadat.admin.analytics.TrafficIntegrationTest tests=6 failures=0 errors=0
@@ -79,13 +78,13 @@ Daemon will be stopped at the end of the build
 OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
 > Task :test
 
-02:11:24.582 INFO  [SpringApplicationShutdownHook] [] o.s.o.j.LocalContainerEntityManagerFactoryBean - Closing JPA EntityManagerFactory for persistence unit 'default'
-02:11:24.587 INFO  [SpringApplicationShutdownHook] [] com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated...
-02:11:24.603 INFO  [SpringApplicationShutdownHook] [] com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed.
+02:41:13.071 INFO  [SpringApplicationShutdownHook] [] o.s.o.j.LocalContainerEntityManagerFactoryBean - Closing JPA EntityManagerFactory for persistence unit 'default'
+02:41:13.075 INFO  [SpringApplicationShutdownHook] [] com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated...
+02:41:13.086 INFO  [SpringApplicationShutdownHook] [] com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed.
 
 > Task :check
 > Task :build
-gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/__run-1792030207164.json
+gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/__run-1792032015902.json
 
-BUILD SUCCESSFUL in 1m 22s
+BUILD SUCCESSFUL in 1m
 7 actionable tasks: 7 executed
