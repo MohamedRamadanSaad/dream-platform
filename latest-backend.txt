@@ -1,4 +1,4 @@
-### commit a14e243383c57e8db1f2190b992cc4a4a650de35 run 38672579590 Thu Oct 15 02:45:49 UTC 2026
+### commit 3a2320cc3a164b53871d4522d96e9c25e8bb84c8 run 38678532494 Thu Oct 15 03:54:34 UTC 2026
 ## tests
 com.saadat.tracking.service.UserAgentsTest tests=20 failures=0 errors=0
 com.saadat.settings.AdminWaitTimeIntegrationTest tests=2 failures=0 errors=0
@@ -19,6 +19,7 @@ com.saadat.payments.PaymentCreditsCounterIntegrationTest tests=2 failures=0 erro
 com.saadat.users.InterpreterBirthDateMigrationTest tests=2 failures=0 errors=0
 com.saadat.common.geo.GeoIpCountryLookupTest tests=5 failures=0 errors=0
 com.saadat.pricing.PromotionAndCouponMathTest tests=10 failures=0 errors=0
+com.saadat.payments.service.EgpSettlementTest tests=3 failures=0 errors=0
 com.saadat.auth.DevicesIntegrationTest tests=12 failures=0 errors=0
 com.saadat.auth.AuthFlowIntegrationTest tests=14 failures=0 errors=0
 com.saadat.passkeys.service.WebAuthnRelyingPartyTest tests=6 failures=0 errors=0
@@ -27,6 +28,7 @@ com.saadat.common.security.JwtServiceTest tests=11 failures=0 errors=0
 com.saadat.support.SupportTicketsIntegrationTest tests=11 failures=0 errors=0
 com.saadat.pricing.PriceResolverTest tests=10 failures=0 errors=0
 com.saadat.payments.PaymentFlowIntegrationTest tests=7 failures=0 errors=0
+com.saadat.common.util.DayCountsTest tests=2 failures=0 errors=0
 com.saadat.common.geo.GeoIpCountryIntegrationTest tests=3 failures=0 errors=0
 com.saadat.mail.inbound.SupportAutoReplyWebhookIntegrationTest tests=5 failures=0 errors=0
 com.saadat.youtube.YoutubeUnseenServiceTest tests=4 failures=0 errors=0
@@ -37,7 +39,7 @@ com.saadat.credits.CreditLotsTest tests=7 failures=0 errors=0
 com.saadat.youtube.service.YoutubeNewVideoMailIntegrationTest tests=1 failures=0 errors=0
 com.saadat.common.web.CountryResolverTest tests=5 failures=0 errors=0
 com.saadat.tracking.TrackIntegrationTest tests=5 failures=0 errors=0
-com.saadat.dreams.UxPaymentsReviewIntegrationTest tests=5 failures=0 errors=0
+com.saadat.dreams.UxPaymentsReviewIntegrationTest tests=10 failures=0 errors=0
 com.saadat.admin.analytics.InsightsIntegrationTest tests=2 failures=0 errors=0
 com.saadat.ops.GoLiveResetScriptIntegrationTest tests=1 failures=0 errors=0
 com.saadat.admin.analytics.TrafficIntegrationTest tests=6 failures=0 errors=0
@@ -80,13 +82,13 @@ Daemon will be stopped at the end of the build
 OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
 > Task :test
 
-02:45:48.796 INFO  [SpringApplicationShutdownHook] [] o.s.o.j.LocalContainerEntityManagerFactoryBean - Closing JPA EntityManagerFactory for persistence unit 'default'
-02:45:48.797 INFO  [SpringApplicationShutdownHook] [] com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated...
-02:45:48.811 INFO  [SpringApplicationShutdownHook] [] com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed.
+03:54:33.105 INFO  [SpringApplicationShutdownHook] [] o.s.o.j.LocalContainerEntityManagerFactoryBean - Closing JPA EntityManagerFactory for persistence unit 'default'
+03:54:33.111 INFO  [SpringApplicationShutdownHook] [] com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated...
+03:54:33.126 INFO  [SpringApplicationShutdownHook] [] com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed.
 
 > Task :check
 > Task :build
-gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/__run-1792032290572.json
+gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/__run-1792036388141.json
 
-BUILD SUCCESSFUL in 1m 2s
+BUILD SUCCESSFUL in 1m 30s
 7 actionable tasks: 7 executed
