@@ -54,6 +54,11 @@ public class SettingsService {
 
     /** Single-entry map holding the current snapshot (ConcurrentHashMap for safe publication). */
     private final ConcurrentHashMap<String, Snapshot> cache = new ConcurrentHashMap<>();
+    /**
+     * Bumped by every invalidation: a snapshot read from the database while a change was being committed is not
+     * cached when an invalidation happened meanwhile (it could hold the old values for a whole TTL).
+     */
+    private final java.util.concurrent.atomic.AtomicLong generation = new java.util.concurrent.atomic.AtomicLong();
 
     public SettingsService(AppSettingRepository repository, AuditService auditService, ObjectMapper objectMapper,
                            Clock clock) {
@@ -226,6 +231,7 @@ public class SettingsService {
 
     /** Drops the cache; the next read reloads from the database. */
     public void invalidate() {
+        generation.incrementAndGet();
         cache.clear();
     }
 
@@ -317,12 +323,15 @@ public class SettingsService {
             if (current != null && current.loadedAt().plus(TTL).isAfter(now)) {
                 return current;
             }
+            long seen = generation.get();
             Map<String, Entry> values = new HashMap<>();
             for (AppSetting s : repository.findAll()) {
                 values.put(s.getSettingKey(), new Entry(s.getValue(), s.getType()));
             }
             Snapshot fresh = new Snapshot(Collections.unmodifiableMap(values), now);
-            cache.put(SNAPSHOT, fresh);
+            if (generation.get() == seen) {
+                cache.put(SNAPSHOT, fresh);
+            }
             return fresh;
         }
     }
