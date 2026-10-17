@@ -346,6 +346,61 @@ class PaymentsFiltersIntegrationTest extends IntegrationTestBase {
         assertThat(ledgerRepository.findAllByOrderIdAndReasonOrderByCreatedAtAsc(orderId, LedgerReason.REVOKE)).isEmpty();
     }
 
+    @Test
+    void aReapprovalAfterAnUndoDoesNotBringBackTheWithdrawnLeftover() throws Exception {
+        User buyer = egyptianUser("leftover-undo");
+        User interpreter = createUser("leftover-undo-interpreter", Role.INTERPRETER);
+        UUID d1 = createDraft(buyer);
+        JsonNode checkout = json(mvc.perform(post(ApiPaths.Checkout.ROOT).header("Authorization", bearer(buyer))
+                .contentType(MediaType.APPLICATION_JSON).content(objectMapper.writeValueAsString(
+                        Map.of("packageId", PACKAGE_THREE.toString(), "dreamIds", List.of(d1.toString())))))
+                .andExpect(status().isOk()));
+        UUID orderId = UUID.fromString(checkout.get("orderId").asText());
+        String reference = uniqueReference();
+        submitTransfer(buyer, orderId, reference).andExpect(status().isOk());
+        approve(interpreter, orderId, reference).andExpect(status().isOk());
+        assertThat(creditService.balance(buyer.getId())).isEqualTo(2);
+
+        withdraw(interpreter, orderId, null).andExpect(status().isOk())
+                .andExpect(jsonPath("$.leftoverWithdrawnCredits").value(2));
+        // a gift unrelated to the order stays through everything below
+        creditService.add(buyer.getId(), 1, LedgerReason.BONUS, null, "gift", null);
+        int afterWithdrawal = creditService.balance(buyer.getId());
+        assertThat(afterWithdrawal).isEqualTo(1);
+
+        mvc.perform(post(ApiPaths.Admin.INSTAPAY_TRANSFERS + "/" + orderId + "/revoke")
+                        .header("Authorization", bearer(interpreter)).contentType(MediaType.APPLICATION_JSON)
+                        .content("{}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.heldDreams").value(1));
+        assertThat(dreamRepository.findById(d1).orElseThrow().getStatus()).isEqualTo(DreamStatus.AWAITING_PAYMENT);
+        assertThat(creditService.balance(buyer.getId())).isEqualTo(afterWithdrawal);
+
+        submitTransfer(buyer, orderId, reference).andExpect(status().isOk());
+        approve(interpreter, orderId, reference).andExpect(status().isOk());
+        assertThat(dreamRepository.findById(d1).orElseThrow().getStatus()).isEqualTo(DreamStatus.IN_REVIEW);
+        assertThat(creditService.balance(buyer.getId())).isEqualTo(afterWithdrawal);
+        List<CreditLedgerEntry> purchases = ledgerRepository.findAllByOrderIdAndReasonOrderByCreatedAtAsc(orderId,
+                LedgerReason.PURCHASE);
+        assertThat(purchases).extracting(CreditLedgerEntry::getDelta).containsExactly(3, 1);
+        // the dream's credit came from this order; the order page still shows the package's 3 credits, none left
+        CreditLedgerEntry debit = ledgerRepository.findById(
+                dreamRepository.findById(d1).orElseThrow().getLedgerEntryId()).orElseThrow();
+        assertThat(debit.getOrderId()).isEqualTo(orderId);
+        mvc.perform(get(ApiPaths.Admin.DREAMS + "/" + d1).header("Authorization", bearer(interpreter)))
+                .andExpect(jsonPath("$.payment.credits").value(3))
+                .andExpect(jsonPath("$.payment.creditsLeft").value(0));
+        mvc.perform(get(ApiPaths.Admin.ORDERS + "/" + orderId).header("Authorization", bearer(interpreter)))
+                .andExpect(jsonPath("$.leftoverCredits").value(0))
+                .andExpect(jsonPath("$.canWithdrawLeftover").value(false));
+    }
+
+    private ResultActions approve(User interpreter, UUID orderId, String reference) throws Exception {
+        return mvc.perform(post(ApiPaths.Admin.INSTAPAY_TRANSFERS + "/" + orderId + "/approve")
+                .header("Authorization", bearer(interpreter)).contentType(MediaType.APPLICATION_JSON)
+                .content("{\"reference\":\"" + reference + "\"}"));
+    }
+
     // ================================================================== helpers
 
     private Order order(User user, OrderStatus status, PaymentProviderType provider, Currency currency, String amount,

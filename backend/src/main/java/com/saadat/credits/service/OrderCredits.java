@@ -79,8 +79,11 @@ public class OrderCredits {
                 CreditLots.Lot lot = lots.get(r.getId());
                 boolean expired = lot != null && lot.expiresAt() != null && !lot.expiresAt().isAfter(now);
                 if (r.getReason() == LedgerReason.PURCHASE) {
-                    // an order approved again after a revoke (V40) has a newer PURCHASE row: it alone counts
-                    t[0] = r.getDelta();
+                    // an order approved again after a revoke (V40) has newer PURCHASE rows: the package's credits are
+                    // the first one's (a later one may be smaller, without the leftover withdrawn before, V41)
+                    if (t[0] == 0) {
+                        t[0] = r.getDelta();
+                    }
                     t[2] = expired ? 1 : 0;
                 }
                 if (lot != null && !expired) {

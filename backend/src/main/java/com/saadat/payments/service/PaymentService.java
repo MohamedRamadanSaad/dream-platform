@@ -269,7 +269,12 @@ public class PaymentService {
         order.setSettledAmountEgp(egpSettlement.toEgp(order.getAmount(), order.getCurrency()));
         orderRepository.save(order);
 
-        creditService.addPurchase(order.getUserId(), order.getCredits(), order.getId(), purchaseExpiry(order));
+        // credits withdrawn as leftover before an undo (V41) never come back with a later approval
+        int withdrawn = order.getLeftoverWithdrawnCredits() == null ? 0 : order.getLeftoverWithdrawnCredits();
+        int granted = order.getCredits() - withdrawn;
+        if (granted > 0) {
+            creditService.addPurchase(order.getUserId(), granted, order.getId(), purchaseExpiry(order));
+        }
         couponService.redeem(order.getCouponId(), order.getUserId(), order.getId());
         order.setPromotionCounted(promotionService.recordUse(order.getPromotionId()));
         orderRepository.save(order);
