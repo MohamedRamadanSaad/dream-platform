@@ -456,9 +456,9 @@ class UxPaymentsReviewIntegrationTest extends IntegrationTestBase {
         UUID noCountry = checkout(nowhere, PACKAGE_ONE).andExpect(status().isOk()).andReturnOrderId();
         Order n = orderRepository.findById(noCountry).orElseThrow();
         n.setCountryCode(null);
-        // an unpaid booking lives in the UNPAID tab (V41): a failed order shows where its country puts it
-        n.setStatus(OrderStatus.FAILED);
-        n.setFailureReason("TRANSFER_REJECTED"); // a gateway failure would be an unpaid booking
+        // unpaid and failed bookings live in the UNPAID tab (owner rule 2026-10-17): a suspicious order (money
+        // arrived, under check) shows where its country puts it
+        n.setStatus(OrderStatus.SUSPICIOUS);
         orderRepository.save(n);
         assertThat(orderIds(interpreter, "INTERNATIONAL")).contains(noCountry.toString());
         assertThat(orderIds(interpreter, "DOMESTIC")).doesNotContain(noCountry.toString());

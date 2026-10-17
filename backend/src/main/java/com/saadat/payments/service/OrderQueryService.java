@@ -51,7 +51,8 @@ public class OrderQueryService {
     /** Domestic = Egypt (the only country paying by InstaPay transfer). */
     public static final String DOMESTIC_COUNTRY = "EG";
     /** Bookings never paid (tab UNPAID, V41). */
-    static final List<OrderStatus> UNPAID_STATUSES = List.of(OrderStatus.INITIATED, OrderStatus.EXPIRED);
+    static final List<OrderStatus> UNPAID_STATUSES = List.of(OrderStatus.INITIATED, OrderStatus.EXPIRED,
+            OrderStatus.FAILED);
 
     private final OrderRepository orderRepository;
     private final UserRepository userRepository;
@@ -153,7 +154,7 @@ public class OrderQueryService {
         return o.getStatus();
     }
 
-    /** The rows of a tab. DOMESTIC / INTERNATIONAL leave out the unpaid bookings (they live in UNPAID, V41). */
+    /** The rows of a tab. DOMESTIC / INTERNATIONAL leave out the unpaid bookings (they live in UNPAID, the last tab). */
     static Specification<Order> scopeSpec(AdminOrderDtos.Scope scope) {
         return switch (scope) {
             case REVIEW -> (root, query, cb) -> cb.and(
@@ -171,17 +172,13 @@ public class OrderQueryService {
     }
 
     /**
-     * A booking never paid: INITIATED, EXPIRED, or FAILED at the gateway (a failure reason other than the
-     * interpreter's TRANSFER_REJECTED / APPROVAL_REVOKED, or none).
+     * A booking not paid (owner rule 2026-10-17): INITIATED, EXPIRED (an INITIATED order past its deadline is one
+     * too) or FAILED for any reason (gateway failure, TRANSFER_REJECTED, APPROVAL_REVOKED, none). Everything else
+     * (SUCCESS, PENDING_REVIEW, REFUNDED, SUSPICIOUS) lives in DOMESTIC / INTERNATIONAL.
      */
     private static jakarta.persistence.criteria.Predicate unpaid(jakarta.persistence.criteria.Root<Order> root,
                                                                 jakarta.persistence.criteria.CriteriaBuilder cb) {
-        return cb.or(
-                root.get("status").in(UNPAID_STATUSES),
-                cb.and(cb.equal(root.get("status"), OrderStatus.FAILED),
-                        cb.or(cb.isNull(root.get("failureReason")),
-                                cb.not(root.get("failureReason").in(InstapayService.REASON_REJECTED,
-                                        InstapayService.REASON_REVOKED)))));
+        return root.get("status").in(UNPAID_STATUSES);
     }
 
     private static Specification<Order> filterSpec(AdminOrderFilter filter, Instant now) {

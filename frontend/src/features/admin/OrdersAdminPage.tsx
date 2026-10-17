@@ -39,6 +39,32 @@ function ExpiryChip({ o }: { o: AdminOrderRow }) {
   return <span className={cn('chip whitespace-nowrap font-medium', h < 6 ? 'bg-warn/10 text-warn' : 'bg-info/10 text-info')}><span className="h-1.5 w-1.5 rounded-full bg-current" />{t('admin.orders.expiresIn', { x: span })}</span>
 }
 
+/** Why a booking is unpaid: no transfer sent, expired, transfer rejected, approval undone, or a failed payment. */
+export function unpaidReason(o: Pick<AdminOrderRow, 'status' | 'failureReason'>): 'NO_TRANSFER' | 'EXPIRED' | 'REJECTED' | 'REVOKED' | 'FAILED' | null {
+  if (o.status === 'INITIATED') return 'NO_TRANSFER'
+  if (o.status === 'EXPIRED') return 'EXPIRED'
+  if (o.status !== 'FAILED') return null
+  if (o.failureReason === 'TRANSFER_REJECTED') return 'REJECTED'
+  if (o.failureReason === 'APPROVAL_REVOKED') return 'REVOKED'
+  return 'FAILED'
+}
+
+const REASON_STYLE = {
+  NO_TRANSFER: { cls: 'bg-info/10 text-info', icon: 'clock' },
+  EXPIRED: { cls: 'bg-surface-2 text-fg-dim', icon: 'clock' },
+  REJECTED: { cls: 'bg-danger/10 text-danger', icon: 'alert' },
+  REVOKED: { cls: 'bg-danger/10 text-danger', icon: 'undo' },
+  FAILED: { cls: 'bg-warn/10 text-warn', icon: 'wallet' },
+} as const
+
+function UnpaidReasonChip({ o }: { o: AdminOrderRow }) {
+  const { t } = useTranslation()
+  const r = unpaidReason(o)
+  if (!r) return <StatusBadge status={o.status} kind="order" />
+  const s = REASON_STYLE[r]
+  return <span className={cn('chip whitespace-nowrap font-medium', s.cls)}><Icon name={s.icon} size={12} flipRtl={r === 'REVOKED'} />{t(`admin.orders.unpaidReason.${r}`)}</span>
+}
+
 function PaidLaterChip() {
   const { t } = useTranslation()
   return <span className="chip whitespace-nowrap bg-success/10 font-medium text-success"><Icon name="check" size={12} />{t('admin.orders.paidLater')}</span>
@@ -178,9 +204,9 @@ export function OrdersAdminPage() {
                         <div className="shrink-0 text-end"><Amount o={o} /></div>
                       </div>
                       <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2 text-xs text-fg-dim">
-                        <StatusBadge status={o.status} kind="order" />
+                        {unpaid ? <UnpaidReasonChip o={o} /> : <StatusBadge status={o.status} kind="order" />}
                         {resentAfterUndo(o) && <ResentChip />}
-                        {unpaid && <ExpiryChip o={o} />}
+                        {unpaid && o.status === 'INITIATED' && <ExpiryChip o={o} />}
                         {unpaid && o.paidLater && <PaidLaterChip />}
                         <span><span aria-hidden="true">{flagEmoji(o.countryCode)}</span> {o.countryCode}</span>
                         {o.attachedDreams > 0 && <span className="inline-flex items-center gap-1 text-gold-ink"><Icon name="moon" size={13} />{t('admin.orders.dreamsN', { count: o.attachedDreams, n: o.attachedDreams })}</span>}
@@ -223,7 +249,7 @@ export function OrdersAdminPage() {
                         </td>
                         <td className="px-3 py-3">{o.packageName}</td>
                         <td className="px-3 py-3"><Amount o={o} /></td>
-                        <td className="px-3 py-3"><div className={cn('flex items-start gap-1', unpaid ? 'flex-nowrap items-center whitespace-nowrap' : 'flex-col')}><StatusBadge status={o.status} kind="order" />{resentAfterUndo(o) && <ResentChip />}{unpaid && o.paidLater && <PaidLaterChip />}</div></td>
+                        <td className="px-3 py-3"><div className={cn('flex items-start gap-1', unpaid ? 'flex-nowrap items-center whitespace-nowrap' : 'flex-col')}>{unpaid ? <UnpaidReasonChip o={o} /> : <StatusBadge status={o.status} kind="order" />}{resentAfterUndo(o) && <ResentChip />}{unpaid && o.paidLater && <PaidLaterChip />}</div></td>
                         <td className="px-3 py-3 text-xs">
                           {unpaid ? <ExpiryChip o={o} /> : review ? <span dir="ltr" className="font-mono tracking-wider">{o.transferReference ?? ''}</span>
                             : <span dir="ltr" className="inline-block text-start">{o.provider}{o.providerRef ? <span className="block max-w-[10rem] truncate text-[11px] text-fg-dim">{o.providerRef}</span> : null}</span>}

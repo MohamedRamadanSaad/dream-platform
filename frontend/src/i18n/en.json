@@ -1031,6 +1031,13 @@
         "errNegative": "An amount cannot be negative."
       },
       "paidLater": "Paid later",
+      "unpaidReason": {
+        "NO_TRANSFER": "No transfer sent",
+        "EXPIRED": "Booking expired",
+        "REJECTED": "Transfer rejected",
+        "REVOKED": "Approval undone",
+        "FAILED": "Payment failed"
+      },
       "exportView": "Export this view",
       "exportAll": "Export all orders",
       "invalidFilter": "Some filter values are not valid. Fix them or clear the filters."

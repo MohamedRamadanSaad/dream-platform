@@ -194,7 +194,8 @@ class RevokeApprovalIntegrationTest extends IntegrationTestBase {
                 .andExpect(jsonPath("$.revokedAt").isNotEmpty())
                 .andExpect(jsonPath("$.revokeNote").value("The amount in the transfer is different"))
                 .andExpect(jsonPath("$.heldDreams").value(2));
-        mvc.perform(get(ApiPaths.Admin.ORDERS).param("scope", "DOMESTIC").param("size", "100")
+        // a revoked order is FAILED: it waits in the last tab, Unpaid bookings (owner rule 2026-10-17)
+        mvc.perform(get(ApiPaths.Admin.ORDERS).param("scope", "UNPAID").param("size", "100")
                         .header("Authorization", bearer(interpreter)))
                 .andExpect(jsonPath("$.items[?(@.id == '" + orderId + "')].failureReason")
                         .value(org.hamcrest.Matchers.hasItem("APPROVAL_REVOKED")))

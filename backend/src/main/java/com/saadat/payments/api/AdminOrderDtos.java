@@ -25,8 +25,8 @@ public final class AdminOrderDtos {
         /** Orders from outside Egypt (or without a country), newest first. */
         INTERNATIONAL,
         /**
-         * Bookings never paid, newest first (V41): INITIATED, EXPIRED, or FAILED at the gateway (any failure reason
-         * except TRANSFER_REJECTED / APPROVAL_REVOKED).
+         * Bookings not paid, newest first (owner rule 2026-10-17): INITIATED, EXPIRED (incl. lazily expired) or
+         * FAILED for any reason (gateway, TRANSFER_REJECTED, APPROVAL_REVOKED, none).
          */
         UNPAID,
         /** Every order, newest first (CSV export). */

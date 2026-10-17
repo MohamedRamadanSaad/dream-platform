@@ -13,12 +13,15 @@ import type { AdminOrderFilters, Currency, OrderFlag, OrderScope, OrderStatus, P
 export type OrdersTab = Exclude<OrderScope, 'ALL'>
 
 const ALL_STATUSES: OrderStatus[] = ['INITIATED', 'PENDING_REVIEW', 'SUCCESS', 'FAILED', 'EXPIRED', 'REFUNDED', 'SUSPICIOUS']
-/** The statuses each tab can hold: unpaid bookings live only in UNPAID, the review tab is one status. */
+/**
+ * The statuses each tab can hold (owner rule 2026-10-17): every unpaid or failed booking lives in UNPAID, the last
+ * tab; the review tab is one status.
+ */
 export const STATUS_BY_TAB: Record<OrdersTab, OrderStatus[]> = {
   REVIEW: [],
-  DOMESTIC: ['PENDING_REVIEW', 'SUCCESS', 'FAILED', 'REFUNDED', 'SUSPICIOUS'],
-  INTERNATIONAL: ['PENDING_REVIEW', 'SUCCESS', 'FAILED', 'REFUNDED', 'SUSPICIOUS'],
-  // bookings never paid, and card checkouts that failed at the gateway
+  DOMESTIC: ['PENDING_REVIEW', 'SUCCESS', 'REFUNDED', 'SUSPICIOUS'],
+  INTERNATIONAL: ['PENDING_REVIEW', 'SUCCESS', 'REFUNDED', 'SUSPICIOUS'],
+  // never paid, expired, and every failed booking (gateway failure, rejected transfer, undone approval)
   UNPAID: ['INITIATED', 'EXPIRED', 'FAILED'],
 }
 const PROVIDERS: (PaymentProvider | 'MOCK')[] = ['INSTAPAY', 'MOR', 'KASHIER', 'MOCK']
@@ -38,7 +41,8 @@ const shows = (tab: OrdersTab) => ({
   status: STATUS_BY_TAB[tab].length > 0,
   provider: tab !== 'REVIEW',
   country: tab !== 'DOMESTIC',
-  flag: tab !== 'UNPAID',
+  // special cases (undone, resent, leftover withdrawn) on every tab: undone orders wait in UNPAID
+  flag: true,
 })
 
 /** The filters in the address (unknown values are ignored, never sent). */

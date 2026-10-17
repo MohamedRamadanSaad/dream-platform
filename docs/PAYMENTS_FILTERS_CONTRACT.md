@@ -54,3 +54,10 @@ leftoverWithdrawnAt: string|null, leftoverWithdrawnCredits: number|null, leftove
 - A re-approval after an undo grants `credits − leftover_withdrawn_credits` and keeps the first expiry.
 - UNPAID includes gateway FAILED orders; `AdminOrderRow.paidLater`; counts ignore `status` and `flag`.
 - Credit history: `CreditLedgerEntry.kind` + `orderNumber`; `OrderDto.leftoverWithdrawnCredits`.
+
+## 6. Owner rule 2026-10-17: every failed booking in "Unpaid bookings"
+Failed bookings and booked-but-unpaid bookings sit together in the LAST tab.
+- `scope=UNPAID` = INITIATED, EXPIRED (incl. lazily expired) or FAILED whatever the reason (gateway, TRANSFER_REJECTED, APPROVAL_REVOKED, none), newest first.
+- `DOMESTIC` / `INTERNATIONAL` = SUCCESS, PENDING_REVIEW, REFUNDED, SUSPICIOUS. Counts follow the same rules.
+- Flag filters (REVOKED, RESENT, LEFTOVER_WITHDRAWN) keep working on any tab.
+- Frontend: in the Unpaid tab the status chips are INITIATED, EXPIRED, FAILED and the special-case flags are offered; each row shows a reason chip: «لم يُرسل التحويل» / "No transfer sent" (INITIATED), «انتهى الحجز» / "Booking expired" (EXPIRED), «رُفض التحويل» / "Transfer rejected" (TRANSFER_REJECTED), «تم التراجع عن الموافقة» / "Approval undone" (APPROVAL_REVOKED), «فشل الدفع» / "Payment failed" (any other failure); the deadline and paid-later chips stay. Rejected and undone rows open the order page as before.

@@ -142,9 +142,12 @@ const effStatus = (o: MockOrder): T.OrderStatus => {
   const exp = instapayMeta.get(o.id)?.expiresAt
   return o.status === 'INITIATED' && exp && exp < helpers.now() ? 'EXPIRED' : o.status
 }
-const UNPAID: T.OrderStatus[] = ['INITIATED', 'EXPIRED']
-/** Unpaid bookings: never paid (INITIATED / EXPIRED), and card checkouts the gateway failed (not a rejected transfer). */
-const UNPAID_OF = (o: MockOrder) => UNPAID.includes(effStatus(o)) || (o.status === 'FAILED' && o.provider !== 'INSTAPAY')
+const UNPAID: T.OrderStatus[] = ['INITIATED', 'EXPIRED', 'FAILED']
+/**
+ * Unpaid bookings, the last tab (owner rule 2026-10-17): never paid (INITIATED / EXPIRED, lazily expired too) and every
+ * FAILED order whatever the reason (gateway failure, rejected transfer, undone approval).
+ */
+const UNPAID_OF = (o: MockOrder) => UNPAID.includes(effStatus(o))
 const scoped = (scope: string | null) => {
   const all = db.orders as MockOrder[]
   if (scope === 'REVIEW') return all.filter((o) => o.provider === 'INSTAPAY' && o.status === 'PENDING_REVIEW').sort((a, b) => (instapayMeta.get(a.id)?.submittedAt ?? a.createdAt).localeCompare(instapayMeta.get(b.id)?.submittedAt ?? b.createdAt))

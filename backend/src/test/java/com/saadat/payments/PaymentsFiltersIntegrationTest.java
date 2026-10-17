@@ -145,11 +145,14 @@ class PaymentsFiltersIntegrationTest extends IntegrationTestBase {
         assertThat(ids(interpreter, Map.of("flag", "LEFTOVER_WITHDRAWN"))).containsExactly(g.getId().toString());
 
         // combined with a tab
-        assertThat(ids(interpreter, Map.of("scope", "UNPAID"))).containsExactlyInAnyOrder(ids(d, e, f));
+        // every FAILED order (here an undone approval) is an unpaid booking (owner rule 2026-10-17)
+        assertThat(ids(interpreter, Map.of("scope", "UNPAID"))).containsExactlyInAnyOrder(ids(b, d, e, f));
+        assertThat(ids(interpreter, Map.of("scope", "UNPAID", "flag", "REVOKED"))).containsExactly(b.getId().toString());
         assertThat(ids(interpreter, Map.of("scope", "UNPAID", "status", "EXPIRED"))).containsExactlyInAnyOrder(ids(d, f));
-        assertThat(ids(interpreter, Map.of("scope", "INTERNATIONAL"))).containsExactlyInAnyOrder(ids(a, b, c, g));
+        assertThat(ids(interpreter, Map.of("scope", "INTERNATIONAL"))).containsExactlyInAnyOrder(ids(a, c, g));
         assertThat(ids(interpreter, Map.of("scope", "INTERNATIONAL", "currency", "EGP")))
-                .containsExactlyInAnyOrder(ids(b, c, g));
+                .containsExactlyInAnyOrder(ids(c, g));
+        assertThat(ids(interpreter, Map.of("scope", "INTERNATIONAL", "flag", "RESENT"))).containsExactly(c.getId().toString());
         assertThat(ids(interpreter, Map.of("scope", "REVIEW"))).containsExactly(c.getId().toString());
         // and with the order number
         String digits = c.getOrderNumber().substring(c.getOrderNumber().lastIndexOf('-') + 1);
@@ -180,12 +183,12 @@ class PaymentsFiltersIntegrationTest extends IntegrationTestBase {
         JsonNode counts = counts(interpreter, Map.of("country", COUNTRY));
         assertThat(counts.get("review").asLong()).isEqualTo(1);
         assertThat(counts.get("domestic").asLong()).isZero();
-        assertThat(counts.get("international").asLong()).isEqualTo(4);
-        assertThat(counts.get("unpaid").asLong()).isEqualTo(3);
+        assertThat(counts.get("international").asLong()).isEqualTo(3);
+        assertThat(counts.get("unpaid").asLong()).isEqualTo(4);
         counts = counts(interpreter, Map.of("country", COUNTRY, "currency", "EGP"));
         assertThat(counts.get("review").asLong()).isEqualTo(1);
-        assertThat(counts.get("international").asLong()).isEqualTo(3);
-        assertThat(counts.get("unpaid").asLong()).isEqualTo(2);
+        assertThat(counts.get("international").asLong()).isEqualTo(2);
+        assertThat(counts.get("unpaid").asLong()).isEqualTo(3);
         // q is honoured by the counts too (the badges follow the order-number search)
         counts = counts(interpreter, Map.of("country", COUNTRY, "q", c.getOrderNumber()));
         assertThat(counts.get("review").asLong()).isEqualTo(1);
@@ -196,8 +199,8 @@ class PaymentsFiltersIntegrationTest extends IntegrationTestBase {
                 Map.of("flag", "LEFTOVER_WITHDRAWN"), Map.of("status", "SUCCESS", "flag", "REVOKED"))) {
             counts = counts(interpreter, with(tabFilter, "country", COUNTRY));
             assertThat(counts.get("review").asLong()).isEqualTo(1);
-            assertThat(counts.get("international").asLong()).isEqualTo(4);
-            assertThat(counts.get("unpaid").asLong()).isEqualTo(3);
+            assertThat(counts.get("international").asLong()).isEqualTo(3);
+            assertThat(counts.get("unpaid").asLong()).isEqualTo(4);
         }
         // without filters the badges keep working (and include unpaid)
         mvc.perform(get(ApiPaths.Admin.ORDER_COUNTS).header("Authorization", bearer(interpreter)))
@@ -650,27 +653,73 @@ class PaymentsFiltersIntegrationTest extends IntegrationTestBase {
         x4.setFailureReason("TRANSFER_REJECTED");
         x4 = inCountry(x4, country);
 
+        // every FAILED order is an unpaid booking, whatever the reason (owner rule 2026-10-17)
         JsonNode first = json(mvc.perform(get(ApiPaths.Admin.ORDERS).param("scope", "UNPAID").param("country", country)
                         .param("page", "0").param("size", "2").header("Authorization", bearer(interpreter)))
                 .andExpect(status().isOk()));
-        assertThat(first.get("total").asLong()).isEqualTo(3);
-        assertThat(first.get("items").get(0).get("id").asText()).isEqualTo(x3.getId().toString());
+        assertThat(first.get("total").asLong()).isEqualTo(4);
+        assertThat(first.get("items").get(0).get("id").asText()).isEqualTo(x4.getId().toString());
+        assertThat(first.get("items").get(0).get("failureReason").asText()).isEqualTo("TRANSFER_REJECTED");
         assertThat(first.get("items").get(0).get("paidLater").asBoolean()).isFalse();
-        assertThat(first.get("items").get(1).get("id").asText()).isEqualTo(x1.getId().toString());
-        assertThat(first.get("items").get(1).get("paidLater").asBoolean()).isTrue();
-        assertThat(first.get("items").get(1).get("failureReason").asText()).isEqualTo("PROVIDER_REPORTED_FAILURE");
+        assertThat(first.get("items").get(1).get("id").asText()).isEqualTo(x3.getId().toString());
+        assertThat(first.get("items").get(1).get("paidLater").asBoolean()).isFalse();
         JsonNode second = json(mvc.perform(get(ApiPaths.Admin.ORDERS).param("scope", "UNPAID").param("country", country)
                         .param("page", "1").param("size", "2").header("Authorization", bearer(interpreter)))
                 .andExpect(status().isOk()));
-        assertThat(second.get("items")).hasSize(1);
-        assertThat(second.get("items").get(0).get("id").asText()).isEqualTo(x0.getId().toString());
+        assertThat(second.get("items")).hasSize(2);
+        assertThat(second.get("items").get(0).get("id").asText()).isEqualTo(x1.getId().toString());
         assertThat(second.get("items").get(0).get("paidLater").asBoolean()).isTrue();
+        assertThat(second.get("items").get(0).get("failureReason").asText()).isEqualTo("PROVIDER_REPORTED_FAILURE");
+        assertThat(second.get("items").get(1).get("id").asText()).isEqualTo(x0.getId().toString());
+        assertThat(second.get("items").get(1).get("paidLater").asBoolean()).isTrue();
 
         assertThat(ids(interpreter, Map.of("scope", "INTERNATIONAL", "country", country)))
-                .containsExactly(x4.getId().toString(), x2.getId().toString());
+                .containsExactly(x2.getId().toString());
         JsonNode counts = counts(interpreter, Map.of("country", country));
-        assertThat(counts.get("unpaid").asLong()).isEqualTo(3);
-        assertThat(counts.get("international").asLong()).isEqualTo(2);
+        assertThat(counts.get("unpaid").asLong()).isEqualTo(4);
+        assertThat(counts.get("international").asLong()).isEqualTo(1);
+    }
+
+    @Test
+    void aRejectedTransferAndAnUndoneApprovalWaitInUnpaidNotInDomestic() throws Exception {
+        User buyer = egyptianUser("unpaid-failed-buyer");
+        User interpreter = createUser("unpaid-failed-interpreter", Role.INTERPRETER);
+        // a rejected transfer
+        JsonNode checkout = json(mvc.perform(post(ApiPaths.Checkout.ROOT).header("Authorization", bearer(buyer))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(Map.of("packageId", PACKAGE_ONE.toString()))))
+                .andExpect(status().isOk()));
+        UUID rejected = UUID.fromString(checkout.get("orderId").asText());
+        submitTransfer(buyer, rejected, uniqueReference()).andExpect(status().isOk());
+        mvc.perform(post(ApiPaths.Admin.INSTAPAY_TRANSFERS + "/" + rejected + "/reject")
+                        .header("Authorization", bearer(interpreter)).contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"note\":\"No transfer\"}"))
+                .andExpect(status().isOk());
+        // an undone approval
+        UUID undone = paidOrder(buyer, interpreter, PACKAGE_ONE);
+        mvc.perform(post(ApiPaths.Admin.INSTAPAY_TRANSFERS + "/" + undone + "/revoke")
+                        .header("Authorization", bearer(interpreter)).contentType(MediaType.APPLICATION_JSON)
+                        .content("{}"))
+                .andExpect(status().isOk());
+
+        for (UUID id : List.of(rejected, undone)) {
+            String number = orderRepository.findById(id).orElseThrow().getOrderNumber();
+            Map<String, String> byNumber = Map.of("q", number, "country", "EG");
+            assertThat(ids(interpreter, with(byNumber, "scope", "UNPAID"))).containsExactly(id.toString());
+            assertThat(ids(interpreter, with(byNumber, "scope", "DOMESTIC"))).isEmpty();
+            assertThat(ids(interpreter, with(byNumber, "scope", "INTERNATIONAL"))).isEmpty();
+            JsonNode counts = counts(interpreter, byNumber);
+            assertThat(counts.get("unpaid").asLong()).isEqualTo(1);
+            assertThat(counts.get("domestic").asLong()).isZero();
+        }
+        mvc.perform(list(interpreter, Map.of("scope", "UNPAID", "country", "EG", "flag", "REVOKED",
+                        "q", orderRepository.findById(undone).orElseThrow().getOrderNumber())))
+                .andExpect(jsonPath("$.items[0].status").value("FAILED"))
+                .andExpect(jsonPath("$.items[0].failureReason").value("APPROVAL_REVOKED"));
+        // the order page still offers its cards: the rejected one may be resent, the undone one awaits the buyer
+        mvc.perform(get(ApiPaths.Admin.ORDERS + "/" + rejected).header("Authorization", bearer(interpreter)))
+                .andExpect(jsonPath("$.status").value("FAILED"))
+                .andExpect(jsonPath("$.failureReason").value("TRANSFER_REJECTED"));
     }
 
     private Order inCountry(Order o, String country) {
