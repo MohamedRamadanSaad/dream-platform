@@ -1,6 +1,7 @@
 import { useEffect, useState, type KeyboardEvent } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import type { TFunction } from 'i18next'
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { adminApi } from '@/api/endpoints'
 import { useAuthStore } from '@/app/auth-store'
@@ -16,16 +17,25 @@ type Tab = Exclude<OrderScope, 'ALL'>
 const TABS: Tab[] = ['REVIEW', 'DOMESTIC', 'INTERNATIONAL']
 const PAGE_SIZE = 20
 
-/** CSV of every order (scope ALL), fetched page by page. */
-async function exportCsv() {
+/** A payment the buyer sent again after the interpreter undid her approval: worth a second look before approving. */
+const resentAfterUndo = (o: { revokedAt?: string | null; status: string }) => !!o.revokedAt && o.status === 'PENDING_REVIEW'
+
+export function ResentChip() {
+  const { t } = useTranslation()
+  return <span className="chip bg-danger/10 font-medium text-danger"><Icon name="undo" size={12} flipRtl />{t('admin.orders.resentAfterUndo')}</span>
+}
+
+/** CSV of every order (scope ALL), fetched page by page. Failure reasons are written in the page's language. */
+async function exportCsv(t: TFunction) {
   const rows: AdminOrderRow[] = []
   for (let page = 0; ; page++) {
     const res = await adminApi.orders('ALL', page, 100)
     rows.push(...res.items)
     if (res.items.length === 0 || rows.length >= res.total) break
   }
-  const head = 'orderNumber,id,user,email,package,amount,currency,settledEgp,status,provider,ref,transferRef,sender,country,createdAt,paidAt'
-  const csv = [head, ...rows.map((o) => [o.orderNumber, o.id, o.userName, o.userEmail, o.packageName, o.amount, o.currency, o.settledAmountEgp ?? '', o.status, o.provider, o.providerRef ?? '', o.transferReference ?? '', o.transferSenderName ?? '', o.countryCode, o.createdAt, o.paidAt ?? ''].map((x) => `"${String(x).replace(/"/g, '""')}"`).join(','))].join('\n')
+  const head = 'orderNumber,id,user,email,package,amount,currency,settledEgp,status,failureReason,resentAfterUndo,revokedAt,provider,ref,transferRef,sender,country,createdAt,paidAt'
+  const failure = (r?: string | null) => (!r ? '' : r === 'TRANSFER_REJECTED' || r === 'APPROVAL_REVOKED' ? t(`admin.order.failure.${r}`) : t('admin.order.failure.other', { reason: r }))
+  const csv = [head, ...rows.map((o) => [o.orderNumber, o.id, o.userName, o.userEmail, o.packageName, o.amount, o.currency, o.settledAmountEgp ?? '', o.status, failure(o.failureReason), resentAfterUndo(o) ? t('admin.orders.resentAfterUndo') : '', o.revokedAt ?? '', o.provider, o.providerRef ?? '', o.transferReference ?? '', o.transferSenderName ?? '', o.countryCode, o.createdAt, o.paidAt ?? ''].map((x) => `"${String(x).replace(/"/g, '""')}"`).join(','))].join('\n')
   const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob(['﻿' + csv], { type: 'text/csv' })); a.download = 'orders.csv'; a.click()
 }
 
@@ -83,7 +93,7 @@ export function OrdersAdminPage() {
           <h1 className="font-display text-4xl">{t('admin.orders.title')}</h1>
           <p className="mt-1 text-sm font-light text-fg-muted">{t('admin.orders.lead')}</p>
         </div>
-        <Button size="sm" variant="ghost" loading={exporting} onClick={async () => { setExporting(true); try { await exportCsv() } finally { setExporting(false) } }}>
+        <Button size="sm" variant="ghost" loading={exporting} onClick={async () => { setExporting(true); try { await exportCsv(t) } finally { setExporting(false) } }}>
           <Icon name="download" size={15} />{t('admin.orders.export')}
         </Button>
       </div>
@@ -122,6 +132,7 @@ export function OrdersAdminPage() {
                       </div>
                       <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2 text-xs text-fg-dim">
                         <StatusBadge status={o.status} kind="order" />
+                        {resentAfterUndo(o) && <ResentChip />}
                         <span><span aria-hidden="true">{flagEmoji(o.countryCode)}</span> {o.countryCode}</span>
                         {o.attachedDreams > 0 && <span className="inline-flex items-center gap-1 text-gold-ink"><Icon name="moon" size={13} />{t('admin.orders.dreamsN', { count: o.attachedDreams, n: o.attachedDreams })}</span>}
                         <span className="ms-auto">{review && o.transferSubmittedAt ? timeAgo(o.transferSubmittedAt, locale) : fmtDate(o.createdAt, locale)}</span>
@@ -163,7 +174,7 @@ export function OrdersAdminPage() {
                         </td>
                         <td className="px-3 py-3">{o.packageName}</td>
                         <td className="px-3 py-3"><Amount o={o} /></td>
-                        <td className="px-3 py-3"><StatusBadge status={o.status} kind="order" /></td>
+                        <td className="px-3 py-3"><div className="flex flex-col items-start gap-1"><StatusBadge status={o.status} kind="order" />{resentAfterUndo(o) && <ResentChip />}</div></td>
                         <td className="px-3 py-3 text-xs">
                           {review ? <span dir="ltr" className="font-mono tracking-wider">{o.transferReference ?? ''}</span>
                             : <span dir="ltr" className="inline-block text-start">{o.provider}{o.providerRef ? <span className="block max-w-[10rem] truncate text-[11px] text-fg-dim">{o.providerRef}</span> : null}</span>}

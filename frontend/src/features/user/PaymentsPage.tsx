@@ -4,11 +4,12 @@ import { useQuery } from '@tanstack/react-query'
 import { Link, useLocation } from 'react-router-dom'
 import { meApi } from '@/api/endpoints'
 import { useAuthStore } from '@/app/auth-store'
-import { ErrorBox, Skeleton, StatusBadge } from '@/components/ui'
+import { ErrorBox, Skeleton, StatusBadge, TextWith } from '@/components/ui'
 import { Icon } from '@/components/icons/Icon'
 import { PageEnter } from '@/components/motion'
 import { arrowNext, fmtDate, fmtMoney } from '@/lib/utils'
 import { CreditExpiryNotice } from './CreditExpiryNotice'
+import type { CreditLedgerEntry } from '@/api/types'
 import { toast } from '@/components/ui/Toaster'
 
 /** The readable order number (same as in the receipt e-mail); one tap copies it for a support e-mail. */
@@ -28,12 +29,35 @@ function InvoiceNo({ id }: { id: string }) {
   )
 }
 
+/** REVOKE rows of the same order become one row (the newest date, the summed amount); other rows stay as they are. */
+function groupRevokes(entries: CreditLedgerEntry[]): CreditLedgerEntry[] {
+  const out: CreditLedgerEntry[] = []
+  const byOrder = new Map<string, CreditLedgerEntry>()
+  for (const e of entries) {
+    if (e.reason !== 'REVOKE' || !e.orderId) { out.push(e); continue }
+    const seen = byOrder.get(e.orderId)
+    if (seen) { seen.delta += e.delta; if (e.createdAt > seen.createdAt) seen.createdAt = e.createdAt; continue }
+    const row = { ...e }
+    byOrder.set(e.orderId, row)
+    out.push(row)
+  }
+  return out
+}
+
 export function PaymentsPage() {
   const { t } = useTranslation()
   const locale = useAuthStore((s) => s.locale)
   const credits = useQuery({ queryKey: ['me', 'credits'], queryFn: meApi.credits })
   const orders = useQuery({ queryKey: ['me', 'orders'], queryFn: () => meApi.orders(0, 50) })
   const reason = (k: string) => t(`me.payments.reason.${k}`)
+  // the order's readable number for a REVOKE line (the ledger carries the order id; the history above has the number)
+  const numbers = new Map((orders.data?.items ?? []).map((o) => [o.id, o.orderNumber]))
+  const revokeLabel = (orderId: string | null) => {
+    const n = orderId ? numbers.get(orderId) : undefined
+    return n ? <TextWith i18nKey="me.payments.revokeLine" name="number" value={n} /> : t('me.payments.revokeLineNoNumber')
+  }
+  // all credits withdrawn from one order read as one line with their sum
+  const ledger = groupRevokes(credits.data?.entries ?? [])
   // links from the dashboard open a section (#history, #ledger) once its data is on screen
   const { hash } = useLocation()
   const ready = !!credits.data && !!orders.data
@@ -58,6 +82,8 @@ export function PaymentsPage() {
               <div key={o.id} className="flex items-center justify-between gap-4 p-4">
                 <div className="min-w-0"><div className="text-sm">{o.packageName} · {fmtMoney(o.amount, o.currency, locale)}</div><div className="text-xs text-fg-dim">{fmtDate(o.createdAt, locale, true)}</div><InvoiceNo id={o.orderNumber} /></div>
                 <div className="text-end"><StatusBadge status={o.status} kind="order" />
+                  {o.status === 'FAILED' && o.failureReason === 'APPROVAL_REVOKED' && <div className="mt-1 text-xs font-medium text-bad-ink">{t('me.payments.checkPayment')}</div>}
+                  {o.status === 'FAILED' && o.failureReason === 'TRANSFER_REJECTED' && <div className="mt-1 text-xs text-bad-ink">{t('me.payments.rejectedOrder')}</div>}
                   {o.provider === 'INSTAPAY' && (o.status === 'INITIATED' || o.status === 'PENDING_REVIEW' || o.status === 'FAILED')
                     ? <div><Link to={`/me/checkout/instapay/${o.id}`} className="text-xs text-gold-ink">{t('me.payments.openOrder')} {arrowNext(locale)}</Link></div>
                     : (o.status === 'FAILED' || o.status === 'EXPIRED') && <div><Link to="/me/packages" className="text-xs text-gold-ink">{t('me.payments.retry')} {arrowNext(locale)}</Link></div>}
@@ -72,9 +98,9 @@ export function PaymentsPage() {
         <h2 className="mb-3 font-display text-2xl">{t('me.payments.ledger')}</h2>
         {credits.isLoading ? <Skeleton className="h-32" /> : (
           <div className="card divide-y divide-line p-0">
-            {credits.data?.entries.map((e) => (
+            {ledger.map((e) => (
               <div key={e.id} className="flex items-center justify-between p-4 text-sm">
-                <div><div>{reason(e.reason)}</div><div className="text-xs text-fg-dim">{fmtDate(e.createdAt, locale, true)}{e.dreamId && <> · <Link to={`/me/dreams/${e.dreamId}`} className="text-gold-ink">{t('me.detail.dream')}</Link></>}</div></div>
+                <div><div>{e.reason === 'REVOKE' ? revokeLabel(e.orderId) : reason(e.reason)}</div><div className="text-xs text-fg-dim">{fmtDate(e.createdAt, locale, true)}{e.dreamId && <> · <Link to={`/me/dreams/${e.dreamId}`} className="text-gold-ink">{t('me.detail.dream')}</Link></>}</div></div>
                 <div className={e.delta > 0 ? 'text-success' : 'text-fg-muted'} dir="ltr">{e.delta > 0 ? '+' : ''}{e.delta}</div>
               </div>
             ))}

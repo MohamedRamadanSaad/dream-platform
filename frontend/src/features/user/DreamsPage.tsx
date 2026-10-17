@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { dreamsApi, meApi, reportsApi } from '@/api/endpoints'
 import { useAuthStore } from '@/app/auth-store'
-import { Button, Empty, ErrorBox, Skeleton, StatusBadge, Tabs, type BadgeStatus } from '@/components/ui'
+import { Button, Empty, ErrorBox, Skeleton, StatusBadge, Tabs, TextWith, type BadgeStatus } from '@/components/ui'
 import { DownloadButton } from '@/components/ui/DownloadButton'
 import { Icon } from '@/components/icons/Icon'
 import { PageEnter, StaggerGroup } from '@/components/motion'
@@ -58,7 +58,7 @@ export function DreamRow({ d, selectable, selected, onToggle }: { d: DreamSummar
         <div className="mt-3 space-y-2 border-t border-line pt-3 text-xs">
           {held && <StatusBadge status={paymentBadge(d.payment)} />}
           <p className={bad ? 'text-bad-ink' : 'text-fg-muted'}>{t(line.key)}</p>
-          {bad && d.payment.reviewNote && <p className="text-fg-muted">{t('me.dreamPayment.reason', { note: d.payment.reviewNote })}</p>}
+          {bad && d.payment.reviewNote && <p className="text-fg-muted"><TextWith i18nKey="me.dreamPayment.reason" value={d.payment.reviewNote} /></p>}
           <DreamPaymentActions dreamId={d.id} payment={d.payment} held={held} compact />
         </div>
       </div>

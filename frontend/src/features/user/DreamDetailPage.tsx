@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { dreamsApi, reportsApi } from '@/api/endpoints'
 import { useAuthStore } from '@/app/auth-store'
-import { Button, ErrorBox, Label, NotFound, Skeleton, Stars, StatusBadge, Textarea } from '@/components/ui'
+import { Button, ErrorBox, Label, NotFound, Skeleton, Stars, StatusBadge, Textarea, TextWith } from '@/components/ui'
 import { DownloadButton } from '@/components/ui/DownloadButton'
 import { Icon } from '@/components/icons/Icon'
 import { PageEnter } from '@/components/motion'
@@ -65,7 +65,7 @@ function PaymentCard({ d, onGone }: { d: DreamDetail; onGone: () => void }) {
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-2"><span className="font-medium">{t(title)}</span>{held && <StatusBadge status={paymentBadge(p)} />}</div>
         <p className="mt-0.5 text-sm font-light text-fg-muted">{t(line.key)}</p>
-        {bad && p.reviewNote && <p className="mt-1 text-sm text-fg-muted">{t('me.dreamPayment.reason', { note: p.reviewNote })}</p>}
+        {bad && p.reviewNote && <p className="mt-1 text-sm text-fg-muted"><TextWith i18nKey="me.dreamPayment.reason" value={p.reviewNote} /></p>}
         {held && <p className="mt-1 text-xs text-fg-dim">{t('me.detail.heldKept')}</p>}
       </div>
       <div className="sm:max-w-[55%]"><DreamPaymentActions dreamId={d.id} payment={p} held={held} onGone={onGone} /></div>

@@ -47,6 +47,17 @@ export function StatusBadge({ status, kind = 'dream', audience = 'user' }: { sta
   return <span className={cn('chip font-medium', statusColor[status])}><span className="h-1.5 w-1.5 rounded-full bg-current" />{t(kind === 'order' ? `me.orderStatus.${status}` : audience === 'interpreter' ? `admin.status.${status}` : `me.status.${status}`)}</span>
 }
 
+/**
+ * A translated sentence with someone's own text inside it (a note, a reason): the text is isolated in <bdi> so an
+ * English note does not jumble an Arabic sentence (or the reverse). The text is never parsed as markup.
+ */
+export function TextWith({ i18nKey, name = 'note', value, values }: { i18nKey: string; name?: string; value: string; values?: Record<string, unknown> }) {
+  const { t } = useTranslation()
+  const MARK = '\u0000'
+  const [before, after = ''] = String(t(i18nKey, { ...values, [name]: MARK })).split(MARK)
+  return <>{before}<bdi>{value}</bdi>{after}</>
+}
+
 export function Skeleton({ className }: { className?: string }) { return <div className={cn('animate-pulse rounded-xl bg-surface-2', className)} /> }
 export function Empty({ text, action }: { text: string; action?: ReactNode }) {
   return <div className="card p-10 text-center text-fg-muted"><p className="mb-4">{text}</p>{action}</div>

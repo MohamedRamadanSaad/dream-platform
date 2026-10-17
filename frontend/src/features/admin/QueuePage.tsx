@@ -8,14 +8,14 @@ import { Button, Empty, ErrorBox, Input, Modal, Skeleton, StatusBadge, Tabs } fr
 import { DownloadButton } from '@/components/ui/DownloadButton'
 import { Icon } from '@/components/icons/Icon'
 import { PageEnter, StaggerGroup } from '@/components/motion'
-import { cn, flagEmoji, fmtDate, hoursLeft, toISODay } from '@/lib/utils'
+import { arrowNext, cn, flagEmoji, fmtDate, fmtNum, hoursLeft, toISODay } from '@/lib/utils'
 import type { DreamStatus, Gender } from '@/api/types'
 
-type Tab = 'IN_REVIEW' | 'IN_PROGRESS' | 'AWAITING_USER_REPLY' | 'INTERPRETED' | 'CANCELLED'
+type Tab = 'IN_REVIEW' | 'IN_PROGRESS' | 'AWAITING_USER_REPLY' | 'INTERPRETED' | 'CANCELLED' | 'AWAITING_PAYMENT'
 
 interface ExportFilters { status: '' | Tab; from: string; to: string; country: string; gender: '' | Gender; q: string }
 const NO_FILTERS: ExportFilters = { status: '', from: '', to: '', country: '', gender: '', q: '' }
-const STATUS_LABEL: Record<Tab, string> = { IN_REVIEW: 'admin.status.IN_REVIEW', IN_PROGRESS: 'admin.status.IN_PROGRESS', AWAITING_USER_REPLY: 'admin.status.AWAITING_USER_REPLY', INTERPRETED: 'admin.status.INTERPRETED', CANCELLED: 'admin.status.CANCELLED' }
+const STATUS_LABEL: Record<Tab, string> = { IN_REVIEW: 'admin.status.IN_REVIEW', IN_PROGRESS: 'admin.status.IN_PROGRESS', AWAITING_USER_REPLY: 'admin.status.AWAITING_USER_REPLY', INTERPRETED: 'admin.status.INTERPRETED', CANCELLED: 'admin.status.CANCELLED', AWAITING_PAYMENT: 'admin.status.AWAITING_PAYMENT' }
 
 /** "Export to Excel": choose filters, then download GET /admin/dreams/export (one row per dream). */
 function ExportDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
@@ -90,6 +90,9 @@ export function AdminQueuePage() {
   const fromUrl = params.get('status') as Tab | null
   const tab: Tab = fromUrl && fromUrl in STATUS_LABEL ? fromUrl : 'IN_REVIEW'
   const q = useQuery({ queryKey: ['admin', 'dreams', tab], queryFn: () => adminApi.dreams(tab as DreamStatus, 0, 50) })
+  // dreams whose payment approval she took back (the same summary the dashboard reads)
+  const summary = useQuery({ queryKey: ['admin', 'summary'], queryFn: adminApi.summary, staleTime: 30_000 })
+  const heldCount = summary.data?.awaitingPayment
   const [exportOpen, setExportOpen] = useState(false)
   return (
     <PageEnter>
@@ -101,21 +104,34 @@ export function AdminQueuePage() {
       <Tabs value={tab} onChange={(v) => setParams({ status: v })} items={[
         { value: 'IN_REVIEW', label: t('admin.status.IN_REVIEW') }, { value: 'IN_PROGRESS', label: t('admin.status.IN_PROGRESS') }, { value: 'AWAITING_USER_REPLY', label: t('admin.status.AWAITING_USER_REPLY') },
         { value: 'INTERPRETED', label: t('admin.status.INTERPRETED') }, { value: 'CANCELLED', label: t('admin.status.CANCELLED') },
+        { value: 'AWAITING_PAYMENT', label: t('admin.queue.heldTab'), count: heldCount != null ? fmtNum(heldCount, locale) : undefined },
       ]} />
       <div className="mt-6">
         {q.isLoading ? <div className="space-y-3">{[1, 2, 3].map((i) => <Skeleton key={i} className="h-24" />)}</div>
           : q.isError ? <ErrorBox onRetry={() => q.refetch()} />
           : !q.data?.items.length ? <Empty text={t('common.none')} />
           : <StaggerGroup className="space-y-3" stagger={0.05}>
-            {q.data.items.map((r) => (
+            {q.data.items.map((r) => r.heldOrderId ? (
+              // a held dream: the card opens the dream, a separate link opens the payment it waits for (no link in a link)
+              <div key={r.id} className="card card-hover flex flex-col gap-3 border-warn/40 p-5 md:flex-row md:items-center">
+                <Link to={`/admin/dreams/${r.id}`} className="min-w-0 flex-1 rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-gold">
+                  <div className="mb-1 flex flex-wrap items-center gap-2 text-sm"><span className="font-medium">{r.userName}</span><span className="text-fg-dim">· {r.countryCode} · {t(r.gender === 'FEMALE' ? 'auth.female' : 'auth.male')}</span><StatusBadge status={r.status} audience="interpreter" /></div>
+                  <p dir="auto" className="line-clamp-2 text-start text-sm font-light text-fg-muted">{r.excerpt}</p>
+                </Link>
+                <div className="flex items-center justify-between gap-3 text-xs text-fg-dim md:flex-col md:items-end">
+                  <span>{t('admin.queue.submitted')} {fmtDate(r.submittedAt, locale, true)}</span>
+                  <Link to={`/admin/orders/${r.heldOrderId}`} className="inline-flex min-h-9 shrink-0 items-center gap-1.5 whitespace-nowrap font-medium text-gold-ink hover:underline dark:text-gold"><Icon name="wallet" size={14} />{t('admin.queue.openPayment')} <span aria-hidden="true">{arrowNext(locale)}</span></Link>
+                </div>
+              </div>
+            ) : (
               <Link key={r.id} to={`/admin/dreams/${r.id}`} className={cn('card card-hover flex flex-col gap-3 p-5 md:flex-row md:items-center', r.overdue && 'border-danger/40')}>
                 <div className="min-w-0 flex-1">
                   <div className="mb-1 flex flex-wrap items-center gap-2 text-sm"><span className="font-medium">{r.userName}</span><span className="text-fg-dim">· {r.countryCode} · {t(r.gender === 'FEMALE' ? 'auth.female' : 'auth.male')}</span><StatusBadge status={r.status} audience="interpreter" />{r.userEditedAt && r.status === 'IN_REVIEW' && <span className="chip bg-warn/10 text-warn">{t('admin.queue.edited')}</span>}</div>
-                  <p className="line-clamp-2 text-sm font-light text-fg-muted">{r.excerpt}</p>
+                  <p dir="auto" className="line-clamp-2 text-start text-sm font-light text-fg-muted">{r.excerpt}</p>
                 </div>
                 <div className="flex items-center gap-3 text-xs text-fg-dim md:flex-col md:items-end">
                   <span>{t('admin.queue.submitted')} {fmtDate(r.submittedAt, locale, true)}</span>
-                  {r.status === 'AWAITING_USER_REPLY' ? <PausedChip /> : r.status !== 'INTERPRETED' && r.status !== 'CANCELLED' && <SlaChip deadline={r.slaDeadline} overdue={r.overdue} />}
+                  {r.status === 'AWAITING_USER_REPLY' || r.status === 'AWAITING_PAYMENT' ? <PausedChip /> : r.status !== 'INTERPRETED' && r.status !== 'CANCELLED' && <SlaChip deadline={r.slaDeadline} overdue={r.overdue} />}
                 </div>
               </Link>
             ))}

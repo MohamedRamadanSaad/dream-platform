@@ -3,9 +3,9 @@ import { Link, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { dreamsApi, instapayApi } from '@/api/endpoints'
-import { invalidateDreams, useErrorText, useOnce } from '@/lib/apiErrors'
+import { invalidateDreams, isNotFound, useErrorText, useOnce } from '@/lib/apiErrors'
 import { useAuthStore } from '@/app/auth-store'
-import { Button, ErrorBox, Input, Label, Skeleton, Textarea } from '@/components/ui'
+import { Button, ErrorBox, Input, Label, NotFound, Skeleton, Textarea, TextWith } from '@/components/ui'
 import { Icon } from '@/components/icons/Icon'
 import { PageEnter } from '@/components/motion'
 import { toast } from '@/components/ui/Toaster'
@@ -77,6 +77,7 @@ export function InstapayPage() {
   const q = useQuery({
     queryKey: ['instapay', orderId],
     queryFn: () => instapayApi.view(orderId),
+    retry: (n, e) => !isNotFound(e) && n < 1,
     // while the interpreter checks the transfer, the page follows by itself
     refetchInterval: (query) => (query.state.data?.status === 'PENDING_REVIEW' ? 30_000 : false),
   })
@@ -84,6 +85,8 @@ export function InstapayPage() {
   const [editing, setEditing] = useState(false)
 
   if (q.isLoading) return <div className="mx-auto max-w-lg space-y-4"><Skeleton className="h-10 w-1/2" /><Skeleton className="h-40" /><Skeleton className="h-64" /></div>
+  // unknown or someone else's order: say so (asking again gives the same answer, so no retry)
+  if (isNotFound(q.error)) return <PageEnter className="mx-auto max-w-lg"><NotFound text={t('me.checkout.instapay.notFound')} back={<Link to="/me/payments" className="btn btn-sm btn-ghost">{arrowBack(locale)} {t('me.checkout.instapay.toPayments')}</Link>} /></PageEnter>
   if (q.isError || !v) return <PageEnter className="mx-auto max-w-lg"><ErrorBox onRetry={() => q.refetch()} /></PageEnter>
 
   // the interpreter took back her approval: the buyer reviews and resends the same details (the dream is kept)
@@ -106,14 +109,14 @@ export function InstapayPage() {
         <div role="alert" className="card border-danger/40 bg-danger/5 p-5">
           <div className="flex items-center gap-2 text-danger"><Icon name="alert" size={20} /><h2 className="text-lg font-medium">{t('me.checkout.instapay.revokedTitle')}</h2></div>
           <p className="mt-2 text-sm leading-relaxed text-fg-muted">{t('me.checkout.instapay.revokedLead')}</p>
-          {v.reviewNote && <p className="mt-2 text-sm">{t('me.checkout.instapay.rejectedNote', { note: v.reviewNote })}</p>}
+          {v.reviewNote && <p className="mt-2 text-sm"><TextWith i18nKey="me.checkout.instapay.rejectedNote" value={v.reviewNote} /></p>}
         </div>
       )}
       {rejected && (
         <div role="alert" className="card border-danger/40 bg-danger/5 p-5">
           <div className="flex items-center gap-2 text-danger"><Icon name="alert" size={20} /><h2 className="text-lg font-medium">{t('me.checkout.instapay.rejectedTitle')}</h2></div>
           <p className="mt-2 text-sm leading-relaxed text-fg-muted">{t('me.checkout.instapay.rejectedLead')}</p>
-          {v.reviewNote && <p className="mt-2 text-sm">{t('me.checkout.instapay.rejectedNote', { note: v.reviewNote })}</p>}
+          {v.reviewNote && <p className="mt-2 text-sm"><TextWith i18nKey="me.checkout.instapay.rejectedNote" value={v.reviewNote} /></p>}
         </div>
       )}
 
@@ -373,7 +376,7 @@ function DetailsForm({ v, editing, onDone, onCancel }: { v: InstapayOrderView; e
 
       <div className="space-y-2">
         {/* a fake or wrong transfer closes the account: said right where the details are sent */}
-        <div role="alert" className="flex items-start gap-2.5 rounded-xl border border-danger/50 bg-danger/10 p-3.5 text-sm leading-relaxed text-bad-ink">
+        <div role="note" className="flex items-start gap-2.5 rounded-xl border border-danger/50 bg-danger/10 p-3.5 text-sm leading-relaxed text-bad-ink">
           <Icon name="alert" size={18} className="mt-0.5 shrink-0" />
           <p>{t('me.checkout.instapay.fakeWarning')}</p>
         </div>
@@ -389,6 +392,8 @@ function DetailsForm({ v, editing, onDone, onCancel }: { v: InstapayOrderView; e
 function PendingCard({ v, onEdit }: { v: InstapayOrderView; onEdit: () => void }) {
   const { t } = useTranslation()
   const locale = useAuthStore((s) => s.locale)
+  // drafts attached to the order, plus dreams kept on hold by a revoked approval: all of them go on at approval
+  const waiting = v.attachedDreams + (v.heldDreams ?? 0)
   const rows: [string, ReactNode][] = [
     [t('me.checkout.instapay.summaryPackage'), v.packageName],
     [t('me.checkout.instapay.summaryAmount'), <span key="a" dir="ltr" className="font-mono">{fmtMoney(v.amount, v.currency, locale)}</span>],
@@ -405,15 +410,15 @@ function PendingCard({ v, onEdit }: { v: InstapayOrderView; onEdit: () => void }
       <ol className="card space-y-3 p-5" aria-label={t('me.checkout.instapay.pendingTitle')}>
         <li className="flex items-center gap-3"><span aria-hidden="true" className="flex h-7 w-7 items-center justify-center rounded-full bg-success text-night"><Icon name="check" size={16} /></span><span>{t('me.checkout.instapay.stepSent')}</span></li>
         <li className="flex items-center gap-3"><span aria-hidden="true" className="flex h-7 w-7 items-center justify-center rounded-full border-2 border-gold"><span className="h-2.5 w-2.5 rounded-full bg-gold" /></span><span className="font-medium text-gold-ink">{t('me.checkout.instapay.stepCheck')}</span><span className="ms-auto text-xs text-gold-ink">{t('me.checkout.instapay.now')}</span></li>
-        <li className="flex items-center gap-3 text-fg-dim"><span aria-hidden="true" className="h-7 w-7 rounded-full border-2 border-line" /><span>{v.attachedDreams > 0 ? t('me.checkout.instapay.stepCredit') : t('me.checkout.instapay.stepCreditNoDream')}</span></li>
+        <li className="flex items-center gap-3 text-fg-dim"><span aria-hidden="true" className="h-7 w-7 rounded-full border-2 border-line" /><span>{waiting > 0 ? t('me.checkout.instapay.stepCredit') : t('me.checkout.instapay.stepCreditNoDream')}</span></li>
       </ol>
       <dl className="card divide-y divide-line p-0">
         {rows.map(([k, val]) => <div key={k} className="flex items-center justify-between gap-4 px-5 py-3 text-sm"><dt className="text-fg-muted">{k}</dt><dd className="min-w-0 truncate">{val}</dd></div>)}
       </dl>
-      {v.attachedDreams > 0 && (
+      {waiting > 0 && (
         <div className="flex items-start gap-3 rounded-2xl border border-gold/40 bg-gold/5 p-4 text-sm leading-relaxed">
           <Icon name="moon" size={18} className="mt-0.5 shrink-0 text-gold-ink" />
-          <span>{t('me.checkout.instapay.dreamAttached', { n: v.attachedDreams })}</span>
+          <span>{t('me.checkout.instapay.dreamsWaiting', { count: waiting })}</span>
         </div>
       )}
       <div className="flex flex-wrap justify-center gap-3 text-sm">

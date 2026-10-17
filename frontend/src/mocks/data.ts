@@ -26,7 +26,7 @@ export type MockDream = Omit<T.DreamDetail, 'excerpt' | 'unreadMessages' | 'edit
   slaPausedAt?: string | null
 }
 /** InstaPay transfer details of an order (the checkout intent's dreams, the buyer's reference, the review). */
-export type OrderMeta = { dreamIds: string[]; reference: string | null; senderName: string | null; submittedAt: string | null; reviewedAt: string | null; reviewedByName?: string | null; reviewNote: string | null; expiresAt: string }
+export type OrderMeta = { dreamIds: string[]; reference: string | null; senderName: string | null; submittedAt: string | null; reviewedAt: string | null; reviewedByName?: string | null; reviewNote: string | null; expiresAt: string; revokedAt?: string | null; revokeNote?: string | null }
 export const orderMeta = new Map<string, OrderMeta>()
 
 /** pricing.fx_to_usd: one unit of the currency in USD. */
@@ -327,7 +327,7 @@ export const nextOrderNumber = () => {
     { dreamIds: ['d18'], reference: '202311604411', senderName: 'UMM MOHAMED', submittedAt: daysAgo(2, 2), reviewedAt: daysAgo(2), reviewedByName: 'المعبرة فاطمة' })
   // and one whose approval was already taken back: its dream waits for the buyer to review the transfer details
   seed({ ...base, id: 'o-ip6', userId: 'u1', packageName: 'تفسير رؤيا واحدة', credits: 1, amount: 199, currency: 'EGP', status: 'FAILED', failureReason: 'APPROVAL_REVOKED', provider: 'INSTAPAY', providerRef: null, countryCode: 'EG', createdAt: daysAgo(3, 2), paidAt: null },
-    { dreamIds: ['d20'], reference: '202311552290', senderName: 'UMM MOHAMED', submittedAt: daysAgo(3, 1), reviewedAt: daysAgo(0, 6), reviewedByName: 'المعبرة فاطمة', reviewNote: 'لم يظهر هذا التحويل في حساب إنستاباي، يرجى التأكد من رقم العملية والمبلغ.' })
+    { dreamIds: ['d20'], reference: '202311552290', senderName: 'UMM MOHAMED', submittedAt: daysAgo(3, 1), reviewedAt: daysAgo(0, 6), reviewedByName: 'المعبرة فاطمة', reviewNote: 'لم يظهر هذا التحويل في حساب إنستاباي، يرجى التأكد من رقم العملية والمبلغ.', revokedAt: daysAgo(0, 6), revokeNote: 'لم يظهر هذا التحويل في حساب إنستاباي، يرجى التأكد من رقم العملية والمبلغ.' })
   db.ledger.push(
     { id: 'l-ip5', userId: 'u1', delta: 2, reason: 'PURCHASE', orderId: 'o-ip5', dreamId: null, createdAt: daysAgo(2) },
     { id: 'l-ip5a', userId: 'u1', delta: -1, reason: 'SUBMIT', orderId: 'o-ip5', dreamId: 'd18', createdAt: daysAgo(2) },

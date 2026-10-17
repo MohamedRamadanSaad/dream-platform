@@ -331,7 +331,11 @@
       "invoiceNo": "Order number",
       "copy": "Copy order number",
       "copied": "Order number copied",
-      "openOrder": "Open order"
+      "openOrder": "Open order",
+      "checkPayment": "Check your payment details",
+      "rejectedOrder": "Transfer not accepted",
+      "revokeLine": "Credits withdrawn, order {{number}}",
+      "revokeLineNoNumber": "Credits withdrawn, unconfirmed order"
     },
     "orderStatus": {
       "INITIATED": "Not finished",
@@ -456,10 +460,14 @@
         "limitLeft_one": "You can attach 1 more dream to this payment.",
         "limitLeft_other": "You can attach {{count}} more dreams to this payment.",
         "limitFull": "This payment already has as many dreams as its credits.",
-        "fakeWarning": "Warning: a fake or wrong transfer will close the account. Please check the transfer number, the sender name and the amount before you send.",
+        "fakeWarning": "Warning: your account will be closed if the transfer is fake or wrong. Please check the transfer number, the sender name and the amount before you send.",
         "revokedTitle": "Please review your payment details",
         "revokedLead": "The interpreter could not confirm your transfer. Your dream is kept and waits for the payment to be confirmed. Check the transfer number, the sender name and the amount, then send the details again.",
-        "revokedResend": "Send the details for review"
+        "revokedResend": "Send the details for review",
+        "notFound": "We could not find this order, or it is not yours.",
+        "dreamsWaiting_zero": "No dreams are linked to this order.",
+        "dreamsWaiting_one": "1 dream is linked to this order. It goes to the interpreter as soon as the transfer is confirmed.",
+        "dreamsWaiting_other": "{{count}} dreams are linked to this order. They go to the interpreter as soon as the transfer is confirmed."
       },
       "secureEg": "We never ask for your bank details. You transfer from your own app.",
       "continue": "Continue {{amount}}",
@@ -700,7 +708,9 @@
       "open": "Open",
       "overdueBy": "{{x}} overdue",
       "within": "{{x}} left",
-      "edited": "Edited by the dreamer"
+      "edited": "Edited by the dreamer",
+      "heldTab": "Waiting for payment",
+      "openPayment": "Open the payment"
     },
     "dream": {
       "ask": "Send a question",
@@ -944,7 +954,8 @@
       "dreamsN_other": "{{count}} dreams",
       "pager": "Pages of payments",
       "open": "Open payment",
-      "noMatch": "No payment with this number in this tab."
+      "noMatch": "No payment with this number in this tab.",
+      "resentAfterUndo": "Resent after undo"
     },
     "insights": {
       "title": "Recommendations for you",
@@ -1468,7 +1479,13 @@
       "revokeNotePlaceholder": "Example: the money did not arrive in the InstaPay account",
       "revokeConfirm": "Undo approval",
       "revoked": "Approval undone. The buyer was told.",
-      "revokeDreamsCount_zero": "No dream of this payment is in progress."
+      "revokeDreamsCount_zero": "No dream of this payment is in progress.",
+      "resentTitle": "Resent after you undid the approval",
+      "resentLead": "You undid the approval of this payment {{time}}, then the buyer sent the details again. Check them before you accept.",
+      "lastUndoNote": "Your note when you undid it: {{note}}",
+      "heldDreams_zero": "No dreams are waiting for this payment.",
+      "heldDreams_one": "1 dream is waiting for this payment.",
+      "heldDreams_other": "{{count}} dreams are waiting for this payment."
     }
   },
   "common": {

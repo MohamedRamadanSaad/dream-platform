@@ -337,6 +337,8 @@ export interface OrderDto {
   countryCode: string
   createdAt: string
   paidAt: string | null
+  /** FAILED orders: TRANSFER_REJECTED, APPROVAL_REVOKED (approval taken back), …; absent on older servers. */
+  failureReason?: string | null
 }
 
 // ---------- InstaPay (manual transfer, Egypt) ----------
@@ -359,8 +361,13 @@ export interface InstapayOrderView {
   submittedAt: string | null
   reviewNote: string | null
   attachedDreams: number
+  /** Dreams kept on hold by a revoked approval of this order (AWAITING_PAYMENT); they resume on approval. */
+  heldDreams?: number
   /** Why a FAILED order failed: TRANSFER_REJECTED, or APPROVAL_REVOKED when the interpreter took back her approval. */
   failureReason?: string | null
+  /** Last time the interpreter took back her approval (null if never), and her note then. */
+  revokedAt?: string | null
+  revokeNote?: string | null
 }
 export interface InstapaySubmitRequest {
   reference: string
@@ -384,7 +391,14 @@ export interface InstapayTransferRow {
   submittedAt: string | null
   reviewedAt: string | null
   reviewNote: string | null
+  /** Drafts attached to the order (dreams on hold are counted in heldDreams). */
   attachedDreams: number
+  failureReason?: string | null
+  /** Last time the interpreter took back her approval of this order (null if never), and her note then. */
+  revokedAt?: string | null
+  revokeNote?: string | null
+  /** Dreams waiting (AWAITING_PAYMENT) for this order to be approved again. */
+  heldDreams?: number
 }
 export interface InstapayTransferList {
   pending: InstapayTransferRow[]
@@ -458,6 +472,8 @@ export interface AdminSummary {
   inReview: number
   inProgress: number
   awaitingReply: number
+  /** Dreams on hold because the approval of their payment was taken back (AWAITING_PAYMENT). */
+  awaitingPayment?: number
   overdue: number
   interpretedToday: number
   /** Per currency, buyers' own amounts: reference only. */
@@ -498,6 +514,9 @@ export interface AdminDreamRow {
   startedAt: string | null
   expectedDays: number | null
   userEditedAt: string | null
+  /** AWAITING_PAYMENT rows: the order waiting to be approved again, and when the hold started. */
+  heldOrderId?: string | null
+  heldAt?: string | null
 }
 export interface AdminDreamDetail extends Omit<DreamDetail, 'payment'> {
   userEditedAt: string | null
@@ -545,6 +564,12 @@ export interface AdminOrderRow extends OrderDto {
   transferSenderName: string | null
   transferSubmittedAt: string | null
   attachedDreams: number
+  failureReason?: string | null
+  /** Last time the interpreter took back her approval of this order (null if never), and her note then. */
+  revokedAt?: string | null
+  revokeNote?: string | null
+  /** Dreams waiting (AWAITING_PAYMENT) for this order to be approved again. */
+  heldDreams?: number
 }
 export interface AdminOrderCounts {
   review: number
@@ -580,6 +605,11 @@ export interface AdminOrderDetail {
   canRevoke: boolean
   /** Why "Undo approval" is not possible on a SUCCESS InstaPay order; null otherwise. */
   revokeBlockedReason: 'DREAM_ALREADY_INTERPRETED' | null
+  /** Last time the interpreter took back her approval of this order (null if never), and her note then. */
+  revokedAt?: string | null
+  revokeNote?: string | null
+  /** Dreams waiting (AWAITING_PAYMENT) for this order to be approved again. */
+  heldDreams?: number
 }
 export interface WaitTimeSettings {
   busy: boolean

@@ -88,11 +88,21 @@ function completeOrder(order: MockOrder, dreamIds: string[]) {
   }
 }
 
-/** AWAITING_PAYMENT → IN_PROGRESS (started) or IN_REVIEW; the deadline moves forward by the paused time. */
+/**
+ * AWAITING_PAYMENT → back where it was: AWAITING_USER_REPLY while the interpreter's last question is unanswered (the
+ * clock stays paused), else IN_PROGRESS (started) or IN_REVIEW with the deadline moved forward by the paused time.
+ */
 function resumeHeld(d: MockDream, credit: MockDream['credit']) {
+  const asking = d.messages.length > 0 && d.messages[d.messages.length - 1].senderRole === 'INTERPRETER'
+  if (asking) { Object.assign(d, { status: 'AWAITING_USER_REPLY', heldOrderId: null, credit }); return }
   const paused = d.slaPausedAt ? Date.now() - new Date(d.slaPausedAt).getTime() : 0
   const expectedBy = d.expectedBy ? new Date(new Date(d.expectedBy).getTime() + paused).toISOString() : d.expectedBy
   Object.assign(d, { status: d.startedAt ? 'IN_PROGRESS' : 'IN_REVIEW', expectedBy, slaPausedAt: null, heldOrderId: null, credit })
+}
+/** The undo fields every order view carries (contract follow-up): when, her note, and the dreams on hold. */
+const undoInfo = (o: MockOrder) => {
+  const m = instapayMeta.get(o.id)
+  return { revokedAt: m?.revokedAt ?? null, revokeNote: m?.revokeNote ?? null, heldDreams: db.dreams.filter((d) => d.heldOrderId === o.id && d.status === 'AWAITING_PAYMENT').length }
 }
 
 /** Dreams whose credit came from this order (a SUBMIT row with the order as its source). */
@@ -114,6 +124,7 @@ const adminOrderRow = (o: MockOrder): T.AdminOrderRow => {
     id: o.id, orderNumber: o.orderNumber, packageName: o.packageName, credits: o.credits, amount: o.amount, currency: o.currency, status: o.status, provider: o.provider, providerRef: o.providerRef, countryCode: o.countryCode, createdAt: o.createdAt, paidAt: o.paidAt,
     userName: usr?.name ?? '', userId: o.userId, userEmail: usr?.email ?? '', settledAmountEgp: o.settledAmountEgp ?? null,
     transferReference: m?.reference ?? null, transferSenderName: m?.senderName ?? null, transferSubmittedAt: m?.submittedAt ?? null, attachedDreams: orderDreams(o).length,
+    failureReason: o.failureReason ?? null, ...undoInfo(o),
   }
 }
 const scoped = (scope: string | null) => {
@@ -137,6 +148,7 @@ const adminOrderDetail = (o: MockOrder): T.AdminOrderDetail => {
     canReview: o.provider === 'INSTAPAY' && o.status === 'PENDING_REVIEW',
     canRevoke: o.provider === 'INSTAPAY' && o.status === 'SUCCESS' && !revokeBlocked(o),
     revokeBlockedReason: o.provider === 'INSTAPAY' && o.status === 'SUCCESS' ? revokeBlocked(o) : null,
+    ...undoInfo(o),
   }
 }
 /** Dreams the interpreter has to work on (contract §1: IN_PROGRESS counts as open work too). */
@@ -153,14 +165,17 @@ const instapayView = (o: MockOrder): T.InstapayOrderView => {
   return {
     orderId: o.id, orderNumber: o.orderNumber, status: o.status, packageName: o.packageName, credits: o.credits, amount: o.amount, currency: o.currency,
     address: db.settings['payments.instapay.address'] ?? '', link: db.settings['payments.instapay.link'] ?? '', recipientName: db.settings['payments.instapay.recipient_name'] ?? '',
-    createdAt: o.createdAt, expiresAt: m.expiresAt, reference: m.reference, senderName: m.senderName, submittedAt: m.submittedAt, reviewNote: m.reviewNote, attachedDreams: m.dreamIds.length,
-    failureReason: o.failureReason ?? null,
+    createdAt: o.createdAt, expiresAt: m.expiresAt, reference: m.reference, senderName: m.senderName, submittedAt: m.submittedAt, reviewNote: m.reviewNote,
+    failureReason: o.failureReason ?? null, heldDreams: undoInfo(o).heldDreams,
+    // drafts only: a dream on hold is counted under heldDreams (attached + held = the dreams that go on at approval)
+    attachedDreams: m.dreamIds.filter((id) => db.dreams.some((d) => d.id === id && d.status === 'DRAFT')).length,
+    revokedAt: m.revokedAt ?? null, revokeNote: m.revokeNote ?? null,
   }
 }
 const transferRow = (o: MockOrder): T.InstapayTransferRow => {
   const m = instapayMeta.get(o.id)!
   const usr = db.users.find((x) => x.id === o.userId)
-  return { orderId: o.id, orderNumber: o.orderNumber, userId: o.userId, userName: usr?.name ?? '', userEmail: usr?.email ?? '', packageName: o.packageName, credits: o.credits, amount: o.amount, currency: o.currency, status: o.status, reference: m.reference, senderName: m.senderName, createdAt: o.createdAt, submittedAt: m.submittedAt, reviewedAt: m.reviewedAt, reviewNote: m.reviewNote, attachedDreams: m.dreamIds.length }
+  return { orderId: o.id, orderNumber: o.orderNumber, userId: o.userId, userName: usr?.name ?? '', userEmail: usr?.email ?? '', packageName: o.packageName, credits: o.credits, amount: o.amount, currency: o.currency, status: o.status, reference: m.reference, senderName: m.senderName, createdAt: o.createdAt, submittedAt: m.submittedAt, reviewedAt: m.reviewedAt, reviewNote: m.reviewNote, attachedDreams: m.dreamIds.filter((id) => db.dreams.some((d) => d.id === id && d.status === 'DRAFT')).length, failureReason: o.failureReason ?? null, ...undoInfo(o) }
 }
 const toDigits = (raw: string) => raw.replace(/[\u0660-\u0669]/g, (d) => String(d.charCodeAt(0) - 0x660)).replace(/[\u06f0-\u06f9]/g, (d) => String(d.charCodeAt(0) - 0x6f0)).replace(/[\s-]/g, '')
 const instapayOrders = () => (db.orders as MockOrder[]).filter((o) => o.provider === 'INSTAPAY' && instapayMeta.has(o.id))
@@ -559,7 +574,8 @@ export const handlers = [
     const ref = toDigits(b.reference)
     if (!/^\d{6,24}$/.test(ref)) return problem(422, 'Unprocessable', 'Bad reference', { code: 'INVALID_REFERENCE' })
     if ((b.senderName ?? '').trim().length < 3) return problem(422, 'Unprocessable', 'Bad sender', { code: 'INVALID_SENDER' })
-    const taken = instapayOrders().some((x) => x.id !== o.id && instapayMeta.get(x.id)!.reference === ref && ['PENDING_REVIEW', 'SUCCESS', 'SUSPICIOUS', 'REFUNDED'].includes(x.status))
+    // a revoked order keeps its reference (its buyer may resend it), so no other order can use it
+    const taken = instapayOrders().some((x) => x.id !== o.id && instapayMeta.get(x.id)!.reference === ref && (['PENDING_REVIEW', 'SUCCESS', 'SUSPICIOUS', 'REFUNDED'].includes(x.status) || x.failureReason === 'APPROVAL_REVOKED'))
     if (taken) return problem(409, 'Conflict', 'Reference used', { code: 'DUPLICATE_REFERENCE' })
     if (new Set([...m.dreamIds, ...(b.dreamIds ?? [])]).size > o.credits) return problem(400, 'Bad Request', 'More dreams than the package credits', { code: 'TOO_MANY_DREAMS' })
     for (const id of b.dreamIds ?? []) if (!m.dreamIds.includes(id)) m.dreamIds.push(id)
@@ -628,7 +644,7 @@ export const handlers = [
     const lot = db.ledger.filter((l) => l.orderId === o.id).reduce((a, l) => a + l.delta, 0)
     const take = Math.min(lot, balanceOf(o.userId))
     if (take > 0) db.ledger.push({ id: uid(), userId: o.userId, delta: -take, reason: 'REVOKE', orderId: o.id, dreamId: null, createdAt: helpers.now() })
-    Object.assign(m, { reviewedAt: helpers.now(), reviewedByName: me.name, reviewNote: note || null })
+    Object.assign(m, { reviewedAt: helpers.now(), reviewedByName: me.name, reviewNote: note || null, revokedAt: helpers.now(), revokeNote: note || null })
     Object.assign(o, { status: 'FAILED', failureReason: 'APPROVAL_REVOKED', settledAmountEgp: null, paidAt: null, providerRef: null })
     db.notifications.unshift({ id: uid(), userId: o.userId, type: 'PAYMENT_REVOKED', title: 'نحتاج إلى مراجعتك لبيانات الدفع', body: `لم تتمكن المعبّرة من تأكيد تحويل طلب ${o.packageName}. رؤاك محفوظة، راجع رقم العملية واسم المحوِّل والمبلغ وأرسلها مرة أخرى.`, link: `/me/checkout/instapay/${o.id}`, createdAt: helpers.now(), readAt: null })
     return HttpResponse.json(transferRow(o))
@@ -714,6 +730,7 @@ export const handlers = [
       inReview: all.filter((d) => d.status === 'IN_REVIEW').length,
       inProgress: all.filter((d) => d.status === 'IN_PROGRESS').length,
       awaitingReply: all.filter((d) => d.status === 'AWAITING_USER_REPLY').length,
+      awaitingPayment: all.filter((d) => d.status === 'AWAITING_PAYMENT').length,
       overdue: all.filter((d) => OPEN.includes(d.status) && d.expectedBy && new Date(d.expectedBy) < new Date()).length,
       interpretedToday: 2,
       revenue: [...byCur].map(([currency, amount]) => ({ currency, amount })).sort((a, b) => toEgp(b.amount, b.currency) - toEgp(a.amount, a.currency)),
@@ -858,8 +875,8 @@ export const handlers = [
     const st = q.get('status')
     const rows: T.AdminDreamRow[] = db.dreams.filter((d) => d.status !== 'DRAFT' && (!st || d.status === st)).map((d) => {
       const usr = db.users.find((x) => x.id === d.userId)!
-      return { id: d.id, userId: usr.id, userName: usr.name, gender: d.gender, excerpt: toSummary(d).excerpt, status: d.status, submittedAt: d.submittedAt!, slaDeadline: d.expectedBy!, overdue: OPEN.includes(d.status) && !!d.expectedBy && new Date(d.expectedBy) < new Date(), countryCode: usr.countryCode, startedAt: d.startedAt ?? null, expectedDays: d.expectedDays ?? null, userEditedAt: d.userEditedAt ?? null }
-    }).sort((a, b) => a.submittedAt.localeCompare(b.submittedAt))
+      return { id: d.id, userId: usr.id, userName: usr.name, gender: d.gender, excerpt: toSummary(d).excerpt, status: d.status, submittedAt: d.submittedAt!, slaDeadline: d.expectedBy!, overdue: OPEN.includes(d.status) && !!d.expectedBy && new Date(d.expectedBy) < new Date(), countryCode: usr.countryCode, startedAt: d.startedAt ?? null, expectedDays: d.expectedDays ?? null, userEditedAt: d.userEditedAt ?? null, heldOrderId: d.heldOrderId ?? null, heldAt: d.status === 'AWAITING_PAYMENT' ? d.slaPausedAt ?? null : null }
+    }).sort((a, b) => (st === 'AWAITING_PAYMENT' ? (a.heldAt ?? '').localeCompare(b.heldAt ?? '') : a.submittedAt.localeCompare(b.submittedAt)))
     return HttpResponse.json(page(rows, q))
   })),
   http.get(u('/admin/dreams/:id'), wrap(async ({ request, params }) => {

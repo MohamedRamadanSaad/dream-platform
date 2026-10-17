@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { useQuery } from '@tanstack/react-query'
 import { adminApi } from '@/api/endpoints'
 import { useAuthStore } from '@/app/auth-store'
-import { Button, ErrorBox, Label, NotFound, Skeleton, StatusBadge, type BadgeStatus } from '@/components/ui'
+import { Button, ErrorBox, Label, NotFound, Skeleton, StatusBadge, TextWith, type BadgeStatus } from '@/components/ui'
 import { isNotFound } from '@/lib/apiErrors'
 import { Avatar } from '@/components/ui/Avatar'
 import { Chevron } from '@/components/ui/Pager'
@@ -13,6 +13,7 @@ import { PageEnter } from '@/components/motion'
 import { arrowBack, arrowNext, cn, flagEmoji, fmtDate, fmtMoney, regionName, timeAgo } from '@/lib/utils'
 import type { AdminOrderDetail } from '@/api/types'
 import { CopyButton, RevokeApprovalModal, TransferReviewModals } from './InstapayAdmin'
+import { ResentChip } from './OrdersAdminPage'
 
 /** One "label: value" line of the summary card. */
 function Row({ label, children }: { label: string; children: ReactNode }) {
@@ -78,6 +79,7 @@ export function AdminOrderPage() {
   const o = q.data
   const failure = o.failureReason ? (o.failureReason === 'TRANSFER_REJECTED' || o.failureReason === 'APPROVAL_REVOKED' ? t(`admin.order.failure.${o.failureReason}`) : t('admin.order.failure.other', { reason: o.failureReason })) : null
   const revoked = o.status === 'FAILED' && o.failureReason === 'APPROVAL_REVOKED'
+  const resent = !!o.revokedAt && o.status === 'PENDING_REVIEW'
   // "Undo approval": every approved InstaPay order shows it; the server says whether it is still possible
   const approvedInstapay = o.provider === 'INSTAPAY' && o.status === 'SUCCESS'
   const heldDreams = o.dreams.filter((d) => d.status === 'IN_REVIEW' || d.status === 'IN_PROGRESS' || d.status === 'AWAITING_USER_REPLY').length
@@ -94,7 +96,7 @@ export function AdminOrderPage() {
             <CopyButton text={o.orderNumber} label={t('admin.order.copyNumber')} />
           </h1>
         </div>
-        <div className="flex flex-wrap items-center gap-2"><StatusBadge status={o.status} kind="order" />{failure && <span className="text-xs text-bad-ink">{failure}</span>}</div>
+        <div className="flex flex-wrap items-center gap-2"><StatusBadge status={o.status} kind="order" />{resent && <ResentChip />}{failure && <span className="text-xs text-bad-ink">{failure}</span>}</div>
       </div>
 
       {revoked && (
@@ -103,6 +105,7 @@ export function AdminOrderPage() {
           <div className="min-w-0">
             <div className="font-medium">{t('admin.order.revokedBanner')}</div>
             <p className="mt-1 text-sm font-light leading-relaxed text-fg-muted">{t('admin.order.revokedBannerLead')}</p>
+            <p className="mt-1.5 flex items-center gap-1.5 text-sm text-warn"><Icon name="moon" size={14} />{t('admin.order.heldDreams', { count: o.heldDreams ?? o.dreams.filter((d) => d.status === 'AWAITING_PAYMENT').length })}</p>
           </div>
         </div>
       )}
@@ -113,6 +116,15 @@ export function AdminOrderPage() {
             <section aria-labelledby="review-title" className="card border-gold/50 p-5 md:p-6">
               <h2 id="review-title" className="flex items-center gap-2 font-display text-2xl"><span className="text-gold-ink"><Icon name="wallet" size={22} /></span>{t('admin.instapay.title')}</h2>
               <p className="mt-1 text-sm font-light text-fg-muted">{t('admin.order.reviewHint')}</p>
+              {resent && (
+                // context before approving again: when she undid it, her note then, and the dreams that resume
+                <div className="mt-4 space-y-1.5 rounded-xl border border-danger/30 bg-danger/5 p-4 text-sm leading-relaxed">
+                  <div className="flex items-center gap-2 font-medium text-bad-ink"><Icon name="undo" size={16} flipRtl />{t('admin.order.resentTitle')}</div>
+                  <p className="text-fg-muted">{t('admin.order.resentLead', { time: timeAgo(o.revokedAt!, locale) })}</p>
+                  {o.revokeNote && <p><TextWith i18nKey="admin.order.lastUndoNote" value={o.revokeNote} /></p>}
+                  <p className="flex items-center gap-1.5 text-warn"><Icon name="moon" size={14} />{t('admin.order.heldDreams', { count: o.heldDreams ?? o.dreams.filter((d) => d.status === 'AWAITING_PAYMENT').length })}</p>
+                </div>
+              )}
               <div className="mt-4 grid gap-4 sm:grid-cols-3">
                 <div>
                   <div className="text-xs text-fg-dim">{t('admin.instapay.amount')}</div>
@@ -193,7 +205,7 @@ export function AdminOrderPage() {
                 <Row label={t('admin.instapay.sender')}><span dir="ltr">{o.transfer.senderName}</span></Row>
                 <Row label={t('admin.order.submitted')}>{fmtDate(o.transfer.submittedAt, locale, true)}</Row>
                 {o.transfer.reviewedAt && <Row label={t('admin.order.reviewed')}>{fmtDate(o.transfer.reviewedAt, locale, true)}{o.transfer.reviewedByName && <div className="text-xs text-fg-dim">{t('admin.order.reviewedBy', { name: o.transfer.reviewedByName })}</div>}</Row>}
-                {o.transfer.reviewNote && <div className="py-2.5"><div className="text-sm text-fg-muted">{t('admin.order.note')}</div><p className="mt-1 whitespace-pre-wrap text-sm">{o.transfer.reviewNote}</p></div>}
+                {o.transfer.reviewNote && <div className="py-2.5"><div className="text-sm text-fg-muted">{t('admin.order.note')}</div><p dir="auto" className="mt-1 whitespace-pre-wrap text-start text-sm">{o.transfer.reviewNote}</p></div>}
               </dl>
             ) : <p className="text-sm text-fg-muted">{t('admin.order.noTransfer')}</p>}
           </div>
