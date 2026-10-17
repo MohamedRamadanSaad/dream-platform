@@ -1,0 +1,19 @@
+### commit 73fd5c9991cc14e807ef4dcc4ccc23ae4054a5dd run 39025536544 Sat Oct 17 10:37:53 UTC 2026
+## tests
+## failures
+## build.log (errors + tail)
+...
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.14.3/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+> Task :compileJava
+> Task :processResources
+> Task :classes
+> Task :resolveMainClassName
+> Task :bootJar
+> Task :jar SKIPPED
+> Task :assemble
+> Task :compileTestJava
+> Task :processTestResources
+> Task :testClasses
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+> Task :test

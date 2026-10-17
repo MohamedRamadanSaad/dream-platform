@@ -1,72 +1,5 @@
-### commit 358bcebfff7f32a5cb56caee5fb1eac0c0541563 run 39025373755 Sat Oct 17 10:35:48 UTC 2026
+### commit 73fd5c9991cc14e807ef4dcc4ccc23ae4054a5dd run 39025536544 Sat Oct 17 10:37:53 UTC 2026
 ## tests
-com.saadat.tracking.service.UserAgentsTest tests=20 failures=0 errors=0
-com.saadat.settings.AdminWaitTimeIntegrationTest tests=2 failures=0 errors=0
-com.saadat.payments.OrderNumberIntegrationTest tests=4 failures=0 errors=0
-com.saadat.mail.MailThemesIntegrationTest tests=10 failures=0 errors=0
-com.saadat.passkeys.service.PasskeyAddedMailIntegrationTest tests=2 failures=0 errors=0
-com.saadat.security.AccessControlIntegrationTest tests=6 failures=0 errors=0
-com.saadat.passkeys.PasskeysIntegrationTest tests=15 failures=0 errors=0
-com.saadat.auth.PasswordAuthIntegrationTest tests=7 failures=0 errors=0
-com.saadat.mail.MailEventsIntegrationTest tests=7 failures=0 errors=0
-com.saadat.payments.ProviderRoutingTest tests=2 failures=0 errors=0
-com.saadat.credits.CreditExpiryIntegrationTest tests=2 failures=0 errors=0
-com.saadat.auth.GoogleAfterMagicLinkIntegrationTest tests=2 failures=0 errors=0
-com.saadat.mail.inbound.InboundMailParserTest tests=9 failures=0 errors=0
-com.saadat.auth.RememberMeIntegrationTest tests=9 failures=0 errors=0
-com.saadat.youtube.service.YoutubeChannelIdResolverTest tests=7 failures=0 errors=0
-com.saadat.payments.PaymentCreditsCounterIntegrationTest tests=2 failures=0 errors=0
-com.saadat.users.InterpreterBirthDateMigrationTest tests=2 failures=0 errors=0
-com.saadat.common.geo.GeoIpCountryLookupTest tests=5 failures=0 errors=0
-com.saadat.pricing.PromotionAndCouponMathTest tests=10 failures=0 errors=0
-com.saadat.payments.service.EgpSettlementTest tests=3 failures=0 errors=0
-com.saadat.auth.DevicesIntegrationTest tests=12 failures=0 errors=0
-com.saadat.auth.AuthFlowIntegrationTest tests=14 failures=0 errors=0
-com.saadat.passkeys.service.WebAuthnRelyingPartyTest tests=6 failures=0 errors=0
-com.saadat.pricing.CatalogCurrencyIntegrationTest tests=3 failures=0 errors=0
-com.saadat.common.security.JwtServiceTest tests=11 failures=0 errors=0
-com.saadat.support.SupportTicketsIntegrationTest tests=11 failures=0 errors=0
-com.saadat.pricing.PriceResolverTest tests=10 failures=0 errors=0
-com.saadat.push.PushIntegrationTest tests=3 failures=0 errors=0
-com.saadat.payments.PaymentFlowIntegrationTest tests=7 failures=0 errors=0
-com.saadat.common.util.DayCountsTest tests=2 failures=0 errors=0
-com.saadat.common.geo.GeoIpCountryIntegrationTest tests=3 failures=0 errors=0
-com.saadat.mail.inbound.SupportAutoReplyWebhookIntegrationTest tests=5 failures=0 errors=0
-com.saadat.youtube.YoutubeUnseenServiceTest tests=4 failures=0 errors=0
-com.saadat.notifications.NotificationsIntegrationTest tests=4 failures=0 errors=0
-com.saadat.payments.RevokeApprovalIntegrationTest tests=12 failures=0 errors=0
-com.saadat.mail.inbound.MailBodyTextTest tests=6 failures=0 errors=0
-com.saadat.common.web.ProxyClientIpTest tests=5 failures=0 errors=0
-com.saadat.credits.CreditLotsTest tests=7 failures=0 errors=0
-com.saadat.youtube.service.YoutubeNewVideoMailIntegrationTest tests=1 failures=0 errors=0
-com.saadat.common.web.CountryResolverTest tests=5 failures=0 errors=0
-com.saadat.tracking.TrackIntegrationTest tests=5 failures=0 errors=0
-com.saadat.dreams.UxPaymentsReviewIntegrationTest tests=10 failures=0 errors=0
-com.saadat.admin.analytics.InsightsIntegrationTest tests=2 failures=0 errors=0
-com.saadat.ops.GoLiveResetScriptIntegrationTest tests=1 failures=0 errors=0
-com.saadat.admin.analytics.TrafficIntegrationTest tests=6 failures=0 errors=0
-com.saadat.publicapi.PublicInfoControllerIntegrationTest tests=4 failures=0 errors=0
-com.saadat.common.SoftDeleteIntegrationTest tests=9 failures=0 errors=0
-com.saadat.reports.ReportsIntegrationTest tests=2 failures=0 errors=0
-com.saadat.youtube.YoutubeIntegrationTest tests=2 failures=0 errors=0
-com.saadat.ops.PrelaunchResetScriptIntegrationTest tests=1 failures=0 errors=0
-com.saadat.users.DashboardActivityIntegrationTest tests=2 failures=0 errors=0
-com.saadat.payments.InstapayFlowIntegrationTest tests=8 failures=0 errors=0
-com.saadat.mail.inbound.InboxMessageReaderTest tests=3 failures=0 errors=0
-com.saadat.ContextLoadsTest tests=6 failures=0 errors=0
-com.saadat.mail.SentFolderArchiverTest tests=3 failures=0 errors=0
-com.saadat.mail.MailServiceIntegrationTest tests=7 failures=0 errors=0
-com.saadat.reports.pdf.ArabicPdfReordererTest tests=4 failures=0 errors=0
-com.saadat.reports.ExcelExportIntegrationTest tests=2 failures=0 errors=0
-com.saadat.users.MeControllerIntegrationTest tests=5 failures=0 errors=0
-com.saadat.youtube.ChannelMailOptOutIntegrationTest tests=1 failures=0 errors=0
-com.saadat.payments.CheckoutMatchesCatalogIntegrationTest tests=2 failures=0 errors=0
-com.saadat.pricing.PricingGapsIntegrationTest tests=2 failures=0 errors=0
-com.saadat.auth.service.NewSignInMailIntegrationTest tests=5 failures=0 errors=0
-com.saadat.youtube.YoutubeFeedParserTest tests=3 failures=0 errors=0
-com.saadat.dreams.DreamFlowIntegrationTest tests=7 failures=0 errors=0
-com.saadat.youtube.service.YoutubeChannelPageParserTest tests=8 failures=0 errors=0
-com.saadat.payments.PaymentsFiltersIntegrationTest tests=5 failures=0 errors=0
 ## failures
 ## build.log (errors + tail)
 ...
@@ -84,17 +17,3 @@ Daemon will be stopped at the end of the build
 > Task :testClasses
 OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
 > Task :test
-
-10:35:47.753 INFO  [SpringApplicationShutdownHook] [] o.s.o.j.LocalContainerEntityManagerFactoryBean - Closing JPA EntityManagerFactory for persistence unit 'default'
-10:35:47.758 INFO  [SpringApplicationShutdownHook] [] com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated...
-10:35:47.771 INFO  [SpringApplicationShutdownHook] [] com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed.
-10:35:47.803 INFO  [SpringApplicationShutdownHook] [] o.s.o.j.LocalContainerEntityManagerFactoryBean - Closing JPA EntityManagerFactory for persistence unit 'default'
-10:35:47.804 INFO  [SpringApplicationShutdownHook] [] com.zaxxer.hikari.HikariDataSource - HikariPool-2 - Shutdown initiated...
-10:35:47.815 INFO  [SpringApplicationShutdownHook] [] com.zaxxer.hikari.HikariDataSource - HikariPool-2 - Shutdown completed.
-
-> Task :check
-> Task :build
-gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/__run-1792233253667.json
-
-BUILD SUCCESSFUL in 1m 39s
-7 actionable tasks: 7 executed
