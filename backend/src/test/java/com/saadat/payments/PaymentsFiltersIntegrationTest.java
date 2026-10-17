@@ -226,7 +226,7 @@ class PaymentsFiltersIntegrationTest extends IntegrationTestBase {
                 now.minus(Duration.ofHours(2)), now.plus(Duration.ofHours(10)), PACKAGE_ONE));
         Order expired = egyptian(order(buyer, OrderStatus.EXPIRED, PaymentProviderType.INSTAPAY, Currency.EGP, amount,
                 now.minus(Duration.ofHours(1)), null, PACKAGE_ONE));
-        Map<String, String> byAmount = Map.of("minAmount", amount, "maxAmount", amount);
+        Map<String, String> byAmount = Map.of("minAmount", amount, "maxAmount", amount, "country", "EG");
 
         assertThat(ids(interpreter, with(byAmount, "scope", "DOMESTIC"))).containsExactly(paid.getId().toString());
         assertThat(ids(interpreter, with(byAmount, "scope", "UNPAID")))
@@ -380,7 +380,7 @@ class PaymentsFiltersIntegrationTest extends IntegrationTestBase {
     private MockHttpServletRequestBuilder list(User interpreter, Map<String, String> params) {
         MockHttpServletRequestBuilder request = get(ApiPaths.Admin.ORDERS).param("size", "100")
                 .header("Authorization", bearer(interpreter));
-        if (!params.containsKey("country") && !params.containsKey("minAmount")) {
+        if (!params.containsKey("country")) {
             request = request.param("country", COUNTRY);
         }
         for (Map.Entry<String, String> e : params.entrySet()) {
