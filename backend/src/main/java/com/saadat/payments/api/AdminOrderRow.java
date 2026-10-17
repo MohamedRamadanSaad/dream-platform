@@ -47,16 +47,24 @@ public record AdminOrderRow(
         /** When the interpreter withdrew the unused credits of this order (V41); else null. */
         Instant leftoverWithdrawnAt,
         /** The same user has a SUCCESS order created after this one (an unpaid booking paid later, V41). */
-        boolean paidLater) {
+        boolean paidLater,
+        /** Credits of this order withdrawn by the interpreter (V41), else null. */
+        Integer leftoverWithdrawnCredits,
+        /** UNCONFIRMED | AMOUNT_SHORT | OTHER (V41), else null. */
+        String leftoverReason,
+        /** The interpreter's note of the withdrawal (V41), else null. */
+        String leftoverNote) {
 
     public static AdminOrderRow of(OrderDto o, UUID userId, String userName, String userEmail,
                                    BigDecimal settledAmountEgp, String transferReference, String transferSenderName,
                                    Instant transferSubmittedAt, int attachedDreams, String failureReason,
                                    Instant revokedAt, String revokeNote, int heldDreams, Instant expiresAt,
-                                   UUID packageId, Instant leftoverWithdrawnAt, boolean paidLater) {
+                                   UUID packageId, Instant leftoverWithdrawnAt, boolean paidLater,
+                                   Integer leftoverWithdrawnCredits, String leftoverReason, String leftoverNote) {
         return new AdminOrderRow(o.id(), o.orderNumber(), o.packageName(), o.credits(), o.amount(), o.currency(), o.status(),
                 o.provider(), o.providerRef(), o.countryCode(), o.createdAt(), o.paidAt(), userName, userId, userEmail,
                 settledAmountEgp, transferReference, transferSenderName, transferSubmittedAt, attachedDreams,
-                failureReason, revokedAt, revokeNote, heldDreams, expiresAt, packageId, leftoverWithdrawnAt, paidLater);
+                failureReason, revokedAt, revokeNote, heldDreams, expiresAt, packageId, leftoverWithdrawnAt, paidLater,
+                leftoverWithdrawnCredits, leftoverReason, leftoverNote);
     }
 }

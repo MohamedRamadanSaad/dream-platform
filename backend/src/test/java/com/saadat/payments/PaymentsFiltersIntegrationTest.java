@@ -167,7 +167,12 @@ class PaymentsFiltersIntegrationTest extends IntegrationTestBase {
                 .andExpect(jsonPath("$.items[?(@.id == '" + e.getId() + "')].packageId")
                         .value(org.hamcrest.Matchers.hasItem(PACKAGE_ONE.toString())));
         mvc.perform(list(interpreter, Map.of("flag", "LEFTOVER_WITHDRAWN")))
-                .andExpect(jsonPath("$.items[0].leftoverWithdrawnAt").isNotEmpty());
+                .andExpect(jsonPath("$.items[0].leftoverWithdrawnAt").isNotEmpty())
+                .andExpect(jsonPath("$.items[0].leftoverWithdrawnCredits").value(1))
+                .andExpect(jsonPath("$.items[0].leftoverReason").isEmpty())
+                .andExpect(jsonPath("$.items[0].leftoverNote").isEmpty());
+        mvc.perform(list(interpreter, Map.of("status", "FAILED")))
+                .andExpect(jsonPath("$.items[0].leftoverWithdrawnCredits").isEmpty());
         mvc.perform(get(ApiPaths.Admin.ORDERS + "/" + d.getId()).header("Authorization", bearer(interpreter)))
                 .andExpect(jsonPath("$.status").value("EXPIRED"));
 
@@ -326,7 +331,10 @@ class PaymentsFiltersIntegrationTest extends IntegrationTestBase {
         mvc.perform(get(ApiPaths.Admin.ORDERS).param("flag", "LEFTOVER_WITHDRAWN").param("q", order.getOrderNumber())
                         .header("Authorization", bearer(interpreter)))
                 .andExpect(jsonPath("$.total").value(1))
-                .andExpect(jsonPath("$.items[0].leftoverWithdrawnAt").isNotEmpty());
+                .andExpect(jsonPath("$.items[0].leftoverWithdrawnAt").isNotEmpty())
+                .andExpect(jsonPath("$.items[0].leftoverWithdrawnCredits").value(1))
+                .andExpect(jsonPath("$.items[0].leftoverReason").value("UNCONFIRMED"))
+                .andExpect(jsonPath("$.items[0].leftoverNote").value("The transfer could not be confirmed"));
         assertThat(withdrawnMails(orderId)).isEqualTo(1);
     }
 

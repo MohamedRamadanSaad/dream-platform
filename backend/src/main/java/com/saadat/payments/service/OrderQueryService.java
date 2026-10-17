@@ -139,7 +139,8 @@ public class OrderQueryService {
                     o.getApprovalRevokedAt(), o.getRevokeNote(), held.getOrDefault(o.getId(), 0L).intValue(),
                     o.getExpiresAt(), o.getPackageId(), o.getLeftoverWithdrawnAt(),
                     lastPaid.get(o.getUserId()) != null && o.getCreatedAt() != null
-                            && lastPaid.get(o.getUserId()).isAfter(o.getCreatedAt()));
+                            && lastPaid.get(o.getUserId()).isAfter(o.getCreatedAt()),
+                    o.getLeftoverWithdrawnCredits(), o.getLeftoverReason(), o.getLeftoverNote());
         };
         return PageResponse.from(orders, mapper);
     }

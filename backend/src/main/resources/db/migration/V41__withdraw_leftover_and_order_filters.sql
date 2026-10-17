@@ -15,9 +15,13 @@ ALTER TABLE orders ADD COLUMN leftover_reason            varchar(16) CONSTRAINT 
 -- the credit history tells an undone approval from a withdrawn or restored leftover (REVOKE / REFUND rows)
 ALTER TABLE credit_ledger ADD COLUMN kind varchar(24) CONSTRAINT credit_ledger_kind_check
     CHECK (kind IS NULL OR kind IN ('APPROVAL_REVOKED', 'LEFTOVER_WITHDRAWN', 'LEFTOVER_RESTORED'));
--- before V41 every REVOKE row (and the REFUND of a held dream) came from an undone approval
-UPDATE credit_ledger SET kind = 'APPROVAL_REVOKED' WHERE reason = 'REVOKE';
-UPDATE credit_ledger SET kind = 'APPROVAL_REVOKED' WHERE reason = 'REFUND' AND note = 'APPROVAL_REVOKED';
+-- before V41 every REVOKE row (and the REFUND of a dream held by an undo, written with note APPROVAL_REVOKED)
+-- came from an undone approval: production may already hold such rows from V40
+UPDATE credit_ledger SET kind = 'APPROVAL_REVOKED' WHERE reason = 'REVOKE' AND kind IS NULL;
+UPDATE credit_ledger SET kind = 'APPROVAL_REVOKED'
+WHERE reason = 'REFUND' AND kind IS NULL AND note = 'APPROVAL_REVOKED' AND dream_id IS NOT NULL;
+-- from now on a REVOKE row always says what it was for
+ALTER TABLE credit_ledger ADD CONSTRAINT credit_ledger_revoke_kind_check CHECK (reason <> 'REVOKE' OR kind IS NOT NULL);
 
 -- ------------------------------------------------------------------ filters of /admin/orders
 CREATE INDEX IF NOT EXISTS ix_orders_status_created ON orders (status, created_at DESC);

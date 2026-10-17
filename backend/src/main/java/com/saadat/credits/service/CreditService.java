@@ -198,6 +198,7 @@ public class CreditService {
      */
     @Transactional(propagation = org.springframework.transaction.annotation.Propagation.MANDATORY)
     public int revokeOrderCredits(UUID userId, UUID orderId, String note, UUID createdBy, LedgerKind kind) {
+        java.util.Objects.requireNonNull(kind, "a REVOKE row always says what it was for");
         int balance = lockAndGetBalance(userId);
         List<CreditLedgerEntry> rows = ledgerRepository.findByUserIdOrderByCreatedAtAsc(userId);
         Map<UUID, CreditLedgerEntry> byId = new HashMap<>();
