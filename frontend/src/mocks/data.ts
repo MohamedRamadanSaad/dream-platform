@@ -13,6 +13,9 @@ export type MockOrder = T.OrderDto & {
   discount?: number
   couponCode?: string | null
   countrySource?: string | null
+  leftoverWithdrawnAt?: string | null
+  leftoverWithdrawnCredits?: number | null
+  leftoverNote?: string | null
 }
 export type MockDream = Omit<T.DreamDetail, 'excerpt' | 'unreadMessages' | 'editable' | 'payment' | 'startedAt' | 'expectedDays'> & {
   userId: string
@@ -124,8 +127,8 @@ export const db = {
 
   ledger: [
     { id: 'l1', userId: 'u1', delta: 3, reason: 'PURCHASE', orderId: 'o1', dreamId: null, createdAt: daysAgo(9) },
-    { id: 'l2', userId: 'u1', delta: -1, reason: 'SUBMIT', orderId: null, dreamId: 'd2', createdAt: daysAgo(8) },
-    { id: 'l3', userId: 'u1', delta: -1, reason: 'SUBMIT', orderId: null, dreamId: 'd3', createdAt: daysAgo(1, 5) },
+    { id: 'l2', userId: 'u1', delta: -1, reason: 'SUBMIT', orderId: 'o1', dreamId: 'd2', createdAt: daysAgo(8) },
+    { id: 'l3', userId: 'u1', delta: -1, reason: 'SUBMIT', orderId: 'o1', dreamId: 'd3', createdAt: daysAgo(1, 5) },
     { id: 'l4', userId: 'u1', delta: 2, reason: 'PURCHASE', orderId: 'o2', dreamId: null, createdAt: daysAgo(2) },
   ] as (T.CreditLedgerEntry & { userId: string })[],
 
@@ -237,7 +240,7 @@ export const MAIL_EVENTS = [
   'welcome', 'payment-failed', 'dream-cancelled', 'credits-adjusted', 'testimonial-approved', 'account-deleted', 'new-user',
   'testimonial-received', 'dream-submitted', 'dream-received', 'interpreter-question', 'user-replied', 'interpretation-ready',
   'payment-receipt', 'payment-suspicious', 'reply-reminder', 'testimonial-request', 'interpreter-digest', 'youtube-new-video',
-  'support-auto-reply', 'new-sign-in', 'passkey-added', 'support-in-progress', 'support-closed', 'payment-review-needed',
+  'support-auto-reply', 'new-sign-in', 'passkey-added', 'support-in-progress', 'support-closed', 'payment-review-needed', 'credits-withdrawn',
 ] as const
 
 /** Every e-mail template (GET /admin/mail/templates); the sign-in and code e-mails have no on/off switch. */
@@ -348,6 +351,23 @@ export const nextOrderNumber = () => {
       text: 'رأيت أنني أعبر جسراً طويلاً فوق نهر صافٍ، وعلى الضفة الأخرى أطفال يلوّحون لي ويضحكون.',
       messages: [], interpretation: null, testimonial: null, credit: null },
   )
+  // an approved InstaPay payment with one dream already interpreted and two credits unused: the leftover question
+  seed({ ...base, id: 'o-ip7', userId: 'u5', packageName: 'تفسير ثلاث رؤى', credits: 3, amount: 499, currency: 'EGP', status: 'SUCCESS', provider: 'INSTAPAY', providerRef: 'INSTAPAY-REF-202311633107', countryCode: 'EG', createdAt: daysAgo(6, 2), paidAt: daysAgo(6) },
+    { reference: '202311633107', senderName: 'YOUSSEF HASSAN', submittedAt: daysAgo(6, 1), reviewedAt: daysAgo(6), reviewedByName: 'المعبرة فاطمة' })
+  db.ledger.push(
+    { id: 'l-ip7', userId: 'u5', delta: 3, reason: 'PURCHASE', orderId: 'o-ip7', dreamId: null, createdAt: daysAgo(6) },
+    { id: 'l-ip7a', userId: 'u5', delta: -1, reason: 'SUBMIT', orderId: 'o-ip7', dreamId: 'd21', createdAt: daysAgo(5, 20) },
+  )
+  db.dreams.push({ id: 'd21', userId: 'u5', gender: 'MALE', status: 'INTERPRETED', createdAt: daysAgo(6), submittedAt: daysAgo(5, 20), interpretedAt: daysAgo(3), expectedBy: daysAgo(3),
+    text: 'رأيت أنني أصلي في مسجد واسع وحدي، ثم امتلأ المسجد بالناس فجأة وكلهم يلبسون الأبيض.', messages: [],
+    interpretation: { text: 'المسجد الواسع سعة في الرزق والطمأنينة، وامتلاؤه بالناس في ثياب بيضاء صلاح الحال واجتماع الخير حولك. والله أعلم.', interpretedAt: daysAgo(3) },
+    testimonial: null, credit: { ledgerEntryId: 'l-ip7a', orderId: 'o-ip7' } })
+  // bookings never paid: one still open, one past its deadline (the expiry job has not run), one card checkout left open
+  seed({ ...base, id: 'o-un1', userId: 'u5', packageName: 'تفسير رؤيتين', credits: 2, amount: 349, currency: 'EGP', status: 'INITIATED', provider: 'INSTAPAY', providerRef: null, countryCode: 'EG', createdAt: daysAgo(0, 19), paidAt: null },
+    { expiresAt: new Date(Date.now() + 5 * 36e5).toISOString() })
+  seed({ ...base, id: 'o-un2', userId: 'u4', packageName: 'تفسير رؤيا واحدة', credits: 1, amount: 199, currency: 'EGP', status: 'INITIATED', provider: 'INSTAPAY', providerRef: null, countryCode: 'EG', createdAt: daysAgo(1, 6), paidAt: null },
+    { expiresAt: daysAgo(0, 6) })
+  seed({ ...base, id: 'o-un3', userId: 'u6', packageName: 'Three dreams', credits: 3, amount: 39, currency: 'USD', status: 'INITIATED', provider: 'MOR', providerRef: null, countryCode: 'JO', createdAt: daysAgo(0, 3), paidAt: null })
   for (const o of db.orders) if ((o.status === 'SUCCESS' || o.status === 'REFUNDED') && o.settledAmountEgp == null) o.settledAmountEgp = toEgp(o.amount, o.currency)
   // readable numbers for the seeded orders, oldest first, after the fixed ones
   for (const o of [...db.orders].filter((x) => !x.orderNumber).sort((a, b) => a.createdAt.localeCompare(b.createdAt))) o.orderNumber = nextOrderNumber()

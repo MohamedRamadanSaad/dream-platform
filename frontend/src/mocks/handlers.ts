@@ -121,25 +121,90 @@ const adminOrderRow = (o: MockOrder): T.AdminOrderRow => {
   const usr = db.users.find((x) => x.id === o.userId)
   const m = instapayMeta.get(o.id)
   return {
-    id: o.id, orderNumber: o.orderNumber, packageName: o.packageName, credits: o.credits, amount: o.amount, currency: o.currency, status: o.status, provider: o.provider, providerRef: o.providerRef, countryCode: o.countryCode, createdAt: o.createdAt, paidAt: o.paidAt,
+    id: o.id, orderNumber: o.orderNumber, packageName: o.packageName, credits: o.credits, amount: o.amount, currency: o.currency, status: effStatus(o), provider: o.provider, providerRef: o.providerRef, countryCode: o.countryCode, createdAt: o.createdAt, paidAt: o.paidAt,
     userName: usr?.name ?? '', userId: o.userId, userEmail: usr?.email ?? '', settledAmountEgp: o.settledAmountEgp ?? null,
     transferReference: m?.reference ?? null, transferSenderName: m?.senderName ?? null, transferSubmittedAt: m?.submittedAt ?? null, attachedDreams: orderDreams(o).length,
     failureReason: o.failureReason ?? null, ...undoInfo(o),
+    expiresAt: m?.expiresAt ?? null, packageId: packageIdOf(o), leftoverWithdrawnAt: o.leftoverWithdrawnAt ?? null,
   }
 }
+/** A booking past its deadline reads EXPIRED even before the expiry job ran (contract §3). */
+const effStatus = (o: MockOrder): T.OrderStatus => {
+  const exp = instapayMeta.get(o.id)?.expiresAt
+  return o.status === 'INITIATED' && exp && exp < helpers.now() ? 'EXPIRED' : o.status
+}
+const UNPAID: T.OrderStatus[] = ['INITIATED', 'EXPIRED']
 const scoped = (scope: string | null) => {
   const all = db.orders as MockOrder[]
   if (scope === 'REVIEW') return all.filter((o) => o.provider === 'INSTAPAY' && o.status === 'PENDING_REVIEW').sort((a, b) => (instapayMeta.get(a.id)?.submittedAt ?? a.createdAt).localeCompare(instapayMeta.get(b.id)?.submittedAt ?? b.createdAt))
   const newest = (xs: MockOrder[]) => [...xs].sort((a, b) => b.createdAt.localeCompare(a.createdAt))
-  if (scope === 'DOMESTIC') return newest(all.filter((o) => o.countryCode === 'EG'))
-  if (scope === 'INTERNATIONAL') return newest(all.filter((o) => o.countryCode !== 'EG'))
+  const paidSide = (o: MockOrder) => !UNPAID.includes(effStatus(o))
+  if (scope === 'DOMESTIC') return newest(all.filter((o) => o.countryCode === 'EG' && paidSide(o)))
+  if (scope === 'INTERNATIONAL') return newest(all.filter((o) => o.countryCode !== 'EG' && paidSide(o)))
+  if (scope === 'UNPAID') return newest(all.filter((o) => !paidSide(o)))
   return newest(all)
+}
+
+/** Unused credits of an order's lot (purchase minus what was spent, refunded or withdrawn from it). */
+const lotLeft = (orderId: string) => Math.max(0, db.ledger.filter((l) => l.orderId === orderId).reduce((a, l) => a + l.delta, 0))
+/** The lot a new submit spends from: the oldest paid order of the user that still has credits (else none). */
+const lotFor = (userId: string) => (db.orders as MockOrder[]).filter((o) => o.userId === userId && o.status === 'SUCCESS' && lotLeft(o.id) > 0).sort((a, b) => (a.paidAt ?? a.createdAt).localeCompare(b.paidAt ?? b.createdAt))[0]?.id ?? null
+const leftoverOf = (o: MockOrder) => (o.status === 'SUCCESS' ? Math.min(lotLeft(o.id), Math.max(0, balanceOf(o.userId))) : 0)
+const packageIdOf = (o: MockOrder) => db.packages.find((p) => p.nameAr === o.packageName || p.nameEn === o.packageName)?.id ?? null
+
+type FilterParse = { ok: true; f: T.AdminOrderFilters } | { ok: false; field: string }
+/** GET /admin/orders filters like the server: unknown values → 400 INVALID_FILTER with the field. */
+function parseFilters(q: URLSearchParams): FilterParse {
+  const f: T.AdminOrderFilters = {}
+  const STAT: T.OrderStatus[] = ['INITIATED', 'PENDING_REVIEW', 'SUCCESS', 'FAILED', 'EXPIRED', 'REFUNDED', 'SUSPICIOUS']
+  const st = q.getAll('status').flatMap((x) => x.split(',')).filter(Boolean)
+  if (st.some((x) => !STAT.includes(x as T.OrderStatus))) return { ok: false, field: 'status' }
+  if (st.length) f.status = st as T.OrderStatus[]
+  const one = <X extends string>(k: keyof T.AdminOrderFilters, list: readonly X[] | null, re?: RegExp): string | null => {
+    const v = q.get(k)
+    if (v == null || v === '') return null
+    if ((list && !list.includes(v as X)) || (re && !re.test(v))) return k
+    ;(f as Record<string, unknown>)[k] = v
+    return null
+  }
+  const bad = one('provider', ['INSTAPAY', 'MOR', 'MOCK', 'KASHIER']) ?? one('country', null, /^[A-Z]{2}$/) ?? one('currency', ['EGP', 'SAR', 'USD'])
+    ?? one('from', null, /^\d{4}-\d{2}-\d{2}$/) ?? one('to', null, /^\d{4}-\d{2}-\d{2}$/) ?? one('packageId', null) ?? one('flag', ['REVOKED', 'RESENT', 'LEFTOVER_WITHDRAWN'])
+  if (bad) return { ok: false, field: bad }
+  for (const k of ['minAmount', 'maxAmount'] as const) {
+    const v = q.get(k)
+    if (v == null || v === '') continue
+    const n = Number(v)
+    if (!Number.isFinite(n) || n < 0) return { ok: false, field: k }
+    f[k] = n
+  }
+  return { ok: true, f }
+}
+const day = (iso: string) => new Date(new Date(iso).getTime() + 3 * 36e5).toISOString().slice(0, 10) // Riyadh day
+function applyFilters(rows: MockOrder[], f: T.AdminOrderFilters, raw: string) {
+  const m = raw ? /^#?\s*(?:([A-Za-z][A-Za-z0-9]*?)\s*-?\s*)?(\d{1,18})$/.exec(raw) : null
+  return rows.filter((o) => {
+    const meta = instapayMeta.get(o.id)
+    if (raw && (!m || !(m[1] ? o.orderNumber.toUpperCase() === `${m[1].toUpperCase()}-${m[2]}` : o.orderNumber.endsWith(`-${m[2]}`)))) return false
+    if (f.status && !f.status.includes(effStatus(o))) return false
+    if (f.provider && o.provider !== f.provider) return false
+    if (f.country && o.countryCode !== f.country) return false
+    if (f.currency && o.currency !== f.currency) return false
+    if (f.from && day(o.createdAt) < f.from) return false
+    if (f.to && day(o.createdAt) > f.to) return false
+    if (f.minAmount != null && o.amount < f.minAmount) return false
+    if (f.maxAmount != null && o.amount > f.maxAmount) return false
+    if (f.packageId && packageIdOf(o) !== f.packageId) return false
+    if (f.flag === 'REVOKED' && !meta?.revokedAt) return false
+    if (f.flag === 'RESENT' && !(meta?.revokedAt && o.status === 'PENDING_REVIEW')) return false
+    if (f.flag === 'LEFTOVER_WITHDRAWN' && !o.leftoverWithdrawnAt) return false
+    return true
+  })
 }
 const adminOrderDetail = (o: MockOrder): T.AdminOrderDetail => {
   const usr = db.users.find((x) => x.id === o.userId)!
   const m = instapayMeta.get(o.id)
   return {
-    id: o.id, orderNumber: o.orderNumber, status: o.status, failureReason: o.failureReason ?? null, provider: o.provider, providerRef: o.providerRef, packageName: o.packageName, credits: o.credits, amount: o.amount, currency: o.currency,
+    id: o.id, orderNumber: o.orderNumber, status: effStatus(o), failureReason: o.failureReason ?? null, provider: o.provider, providerRef: o.providerRef, packageName: o.packageName, credits: o.credits, amount: o.amount, currency: o.currency,
     settledAmountEgp: o.settledAmountEgp ?? null, discount: o.discount ?? 0, couponCode: o.couponCode ?? null, countryCode: o.countryCode, countrySource: o.countrySource ?? 'CF_IPCOUNTRY',
     createdAt: o.createdAt, paidAt: o.paidAt, expiresAt: m?.expiresAt ?? null,
     transfer: m?.reference ? { reference: m.reference, senderName: m.senderName ?? '', submittedAt: m.submittedAt ?? o.createdAt, reviewedAt: m.reviewedAt, reviewedByName: m.reviewedByName ?? null, reviewNote: m.reviewNote } : null,
@@ -149,6 +214,8 @@ const adminOrderDetail = (o: MockOrder): T.AdminOrderDetail => {
     canRevoke: o.provider === 'INSTAPAY' && o.status === 'SUCCESS' && !revokeBlocked(o),
     revokeBlockedReason: o.provider === 'INSTAPAY' && o.status === 'SUCCESS' ? revokeBlocked(o) : null,
     ...undoInfo(o),
+    leftoverCredits: leftoverOf(o), interpretedDreams: paidFrom(o).filter((d) => d.status === 'INTERPRETED').length, canWithdrawLeftover: leftoverOf(o) > 0,
+    leftoverWithdrawnAt: o.leftoverWithdrawnAt ?? null, leftoverWithdrawnCredits: o.leftoverWithdrawnCredits ?? null, leftoverNote: o.leftoverNote ?? null,
   }
 }
 /** Dreams the interpreter has to work on (contract §1: IN_PROGRESS counts as open work too). */
@@ -460,17 +527,19 @@ export const handlers = [
     const bal = balanceOf(me.id)
     if (bal < picked.length) return problem(402, 'Payment required', `تحتاج ${picked.length - bal} رؤيا إضافية`, { code: 'INSUFFICIENT_CREDITS' })
     for (const d of picked.filter((x) => x.status === 'AWAITING_PAYMENT')) {
-      const entry = { id: uid(), userId: me.id, delta: -1, reason: 'SUBMIT' as const, orderId: null, dreamId: d.id, createdAt: helpers.now() }
+      const lot = lotFor(me.id)
+      const entry = { id: uid(), userId: me.id, delta: -1, reason: 'SUBMIT' as const, orderId: lot, dreamId: d.id, createdAt: helpers.now() }
       db.ledger.push(entry)
-      resumeHeld(d, { ledgerEntryId: entry.id, orderId: null })
+      resumeHeld(d, { ledgerEntryId: entry.id, orderId: lot })
     }
     const drafts = picked.filter((x) => x.status === 'DRAFT')
     const w = db.waitTime
     const hours = w.busy ? w.busyMaxDays * 24 : w.normalHours
     for (const d of drafts) {
-      const entry = { id: uid(), userId: me.id, delta: -1, reason: 'SUBMIT' as const, orderId: null, dreamId: d.id, createdAt: helpers.now() }
+      const lot = lotFor(me.id)
+      const entry = { id: uid(), userId: me.id, delta: -1, reason: 'SUBMIT' as const, orderId: lot, dreamId: d.id, createdAt: helpers.now() }
       db.ledger.push(entry)
-      Object.assign(d, { status: 'IN_REVIEW', submittedAt: helpers.now(), expectedBy: new Date(Date.now() + hours * 36e5).toISOString(), credit: { ledgerEntryId: entry.id, orderId: null } })
+      Object.assign(d, { status: 'IN_REVIEW', submittedAt: helpers.now(), expectedBy: new Date(Date.now() + hours * 36e5).toISOString(), credit: { ledgerEntryId: entry.id, orderId: lot } })
       db.notifications.unshift({ id: uid(), userId: me.id, type: 'DREAM_RECEIVED', title: 'وصلت رؤياك', body: 'سنبدأ دراستها، وسيصلك إشعار عند جاهزية التفسير.', link: `/me/dreams/${d.id}`, createdAt: helpers.now(), readAt: null })
       db.notifications.unshift({ id: uid(), userId: 'admin', type: 'DREAM_SUBMITTED', title: 'رؤية جديدة', body: `${me.name} قدّمت رؤيا جديدة.`, link: `/admin/dreams/${d.id}`, createdAt: helpers.now(), readAt: null })
     }
@@ -1034,9 +1103,30 @@ export const handlers = [
   })),
   http.patch(u('/admin/testimonials/:id'), wrap(async ({ request, params }) => { requireAdmin(request); const d = db.dreams.find((x) => x.id === params.id); if (d?.testimonial) d.testimonial.approved = ((await request.json()) as { approved: boolean }).approved; return new HttpResponse(null, { status: 204 }) })),
   // contract §3: counts and :id stay above the list's catch-all order
+  // the counts honour the same filters, so a tab badge matches its filtered list
   http.get(u('/admin/orders/counts'), wrap(async ({ request }) => {
+    requireAdmin(request); const q = new URL(request.url).searchParams
+    const pf = parseFilters(q)
+    if (!pf.ok) return problem(400, 'Bad Request', `Invalid filter: ${pf.field}`, { code: 'INVALID_FILTER', errors: { [pf.field]: ['invalid'] } })
+    const n = (s: string) => applyFilters(scoped(s), pf.f, (q.get('q') ?? '').trim()).length
+    return HttpResponse.json({ review: n('REVIEW'), domestic: n('DOMESTIC'), international: n('INTERNATIONAL'), unpaid: n('UNPAID') } satisfies T.AdminOrderCounts)
+  })),
+  // withdraw the unused credits of a paid order (contract §2): dreams untouched, order stays SUCCESS
+  http.post(u('/admin/payments/orders/:id/withdraw-leftover'), wrap(async ({ request, params }) => {
     requireAdmin(request)
-    return HttpResponse.json({ review: scoped('REVIEW').length, domestic: scoped('DOMESTIC').length, international: scoped('INTERNATIONAL').length } satisfies T.AdminOrderCounts)
+    const o = (db.orders as MockOrder[]).find((x) => x.id === params.id)
+    if (!o) return problem(404, 'Not found')
+    if (o.status !== 'SUCCESS') return problem(409, 'Conflict', 'Only a successful order', { code: 'NOT_WITHDRAWABLE' })
+    const left = leftoverOf(o)
+    if (left < 1) return problem(409, 'Conflict', 'Nothing left to withdraw', { code: 'NOTHING_TO_WITHDRAW' })
+    const b = (await request.json().catch(() => ({}))) as { note?: string }
+    const note = (b.note ?? '').trim()
+    if (note.length > 500) return problem(400, 'Validation failed', 'note: at most 500 characters', { errors: { note: ['max 500'] } })
+    db.ledger.push({ id: uid(), userId: o.userId, delta: -left, reason: 'REVOKE', orderId: o.id, dreamId: null, createdAt: helpers.now() })
+    Object.assign(o, { leftoverWithdrawnAt: helpers.now(), leftoverWithdrawnCredits: left, leftoverNote: note || null })
+    const words = left === 1 ? 'رؤيا واحدة' : left === 2 ? 'رؤيتان' : left <= 10 ? `${left} رؤى` : `${left} رؤيا`
+    db.notifications.unshift({ id: uid(), userId: o.userId, type: 'CREDITS_WITHDRAWN', title: 'خصم من رصيدك', body: `تم خصم ${words} من رصيد الطلب ${o.orderNumber} لأننا لم نتمكن من تأكيد الدفع. رؤاك التي فُسِّرت أو التي قيد التعبير لا تتأثر. للاستفسار تواصل معنا.`, link: '/me/payments', createdAt: helpers.now(), readAt: null })
+    return HttpResponse.json(adminOrderDetail(o))
   })),
   http.get(u('/admin/orders/:id'), wrap(async ({ request, params }) => {
     requireAdmin(request)
@@ -1045,11 +1135,10 @@ export const handlers = [
   })),
   http.get(u('/admin/orders'), wrap(async ({ request }) => {
     requireAdmin(request); const q = new URL(request.url).searchParams
-    const raw = (q.get('q') ?? '').trim()
-    if (!raw) return HttpResponse.json(page(scoped(q.get('scope')).map(adminOrderRow), q))
-    // like the server (OrderNumbers.parseQuery): "15001", "rn-15001", "#RN 15001"; any other text finds nothing
-    const m = /^#?\s*(?:([A-Za-z][A-Za-z0-9]*?)\s*-?\s*)?(\d{1,18})$/.exec(raw)
-    const rows = !m ? [] : scoped(q.get('scope')).filter((o) => m[1] ? o.orderNumber.toUpperCase() === `${m[1].toUpperCase()}-${m[2]}` : o.orderNumber.endsWith(`-${m[2]}`))
+    const pf = parseFilters(q)
+    if (!pf.ok) return problem(400, 'Bad Request', `Invalid filter: ${pf.field}`, { code: 'INVALID_FILTER', errors: { [pf.field]: ['invalid'] } })
+    // q like the server (OrderNumbers.parseQuery): "15001", "rn-15001", "#RN 15001"; any other text finds nothing
+    const rows = applyFilters(scoped(q.get('scope')), pf.f, (q.get('q') ?? '').trim())
     return HttpResponse.json(page(rows.map(adminOrderRow), q))
   })),
 ]

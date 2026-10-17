@@ -334,8 +334,8 @@
       "openOrder": "Open order",
       "checkPayment": "Check your payment details",
       "rejectedOrder": "Transfer not accepted",
-      "revokeLine": "Credits withdrawn, order {{number}}",
-      "revokeLineNoNumber": "Credits withdrawn, unconfirmed order"
+      "revokeLine": "Leftover credits withdrawn, order {{number}}",
+      "revokeLineNoNumber": "Leftover credits withdrawn"
     },
     "orderStatus": {
       "INITIATED": "Not finished",
@@ -615,7 +615,8 @@
       "empty": "No notifications",
       "types": {
         "DREAM_EDITED": "Dream edited",
-        "PAYMENT_REVOKED": "Review your payment"
+        "PAYMENT_REVOKED": "Review your payment",
+        "CREDITS_WITHDRAWN": "Credits withdrawn"
       }
     },
     "expiry": {
@@ -752,7 +753,8 @@
       "notFound": "This dream was not found.",
       "heldTitle": "Waiting for payment confirmation",
       "heldLead": "You undid the approval of the payment for this dream, so work on it is paused until the payment is confirmed again. You cannot start, ask or interpret it now.",
-      "heldOpenOrder": "Open the payment"
+      "heldOpenOrder": "Open the payment",
+      "openOrder": "Open payment {{number}}"
     },
     "pricing": {
       "gaps": {
@@ -938,13 +940,15 @@
       "empty": {
         "REVIEW": "No payments are waiting for review.",
         "DOMESTIC": "No payments from Egypt yet.",
-        "INTERNATIONAL": "No payments from outside Egypt yet."
+        "INTERNATIONAL": "No payments from outside Egypt yet.",
+        "UNPAID": "No unpaid bookings."
       },
       "lead": "Open a payment to see its details and the dreams attached to it.",
       "tabs": {
         "REVIEW": "Needs review",
         "DOMESTIC": "Domestic",
-        "INTERNATIONAL": "International"
+        "INTERNATIONAL": "International",
+        "UNPAID": "Unpaid bookings"
       },
       "settled": "Received",
       "reference": "Reference",
@@ -955,7 +959,52 @@
       "pager": "Pages of payments",
       "open": "Open payment",
       "noMatch": "No payment with this number in this tab.",
-      "resentAfterUndo": "Resent after undo"
+      "resentAfterUndo": "Resent after undo",
+      "noFilterMatch": "No payments match these filters.",
+      "expired": "Expired",
+      "expiresIn": "Expires in {{x}}",
+      "deadline": "Deadline",
+      "errors": {
+        "INVALID_FILTER": "One of the filters is not valid. Clear it and try again."
+      },
+      "filters": {
+        "title": "Filter",
+        "show": "Show results",
+        "active": "Active filters",
+        "clearAll": "Clear all",
+        "remove": "Remove {{label}}",
+        "any": "All",
+        "status": "Status",
+        "provider": "Payment method",
+        "country": "Country",
+        "currency": "Currency",
+        "package": "Package",
+        "from": "From date",
+        "to": "To date",
+        "minAmount": "Lowest amount",
+        "maxAmount": "Highest amount",
+        "flag": "Special cases",
+        "chipFrom": "From {{date}}",
+        "chipTo": "Until {{date}}",
+        "chipMin": "Amount from {{n}}",
+        "chipMax": "Amount up to {{n}}",
+        "providers": {
+          "INSTAPAY": "InstaPay",
+          "MOR": "International gateway",
+          "KASHIER": "Kashier",
+          "MOCK": "Test payment"
+        },
+        "currencies": {
+          "EGP": "Egyptian pound",
+          "SAR": "Saudi riyal",
+          "USD": "US dollar"
+        },
+        "flags": {
+          "REVOKED": "Approval undone",
+          "RESENT": "Resent after undo",
+          "LEFTOVER_WITHDRAWN": "Leftover credits withdrawn"
+        }
+      }
     },
     "insights": {
       "title": "Recommendations for you",
@@ -1228,6 +1277,10 @@
         "payment-review-needed": {
           "label": "Payment review needed",
           "desc": "To the user, when you undo the approval of their payment."
+        },
+        "credits-withdrawn": {
+          "label": "Leftover credits withdrawn",
+          "desc": "To the user, when you withdraw the unused credits of one of their payments."
         }
       },
       "toSupport": "Replies to support e-mails",
@@ -1406,7 +1459,9 @@
         "ATTACHED_TO_PAYMENT": "This dream is attached to a payment under review, so it cannot be deleted now. Remove it from the payment first.",
         "NOT_RELEASABLE": "Dreams can no longer be removed from this payment.",
         "NOT_REVOCABLE": "This approval can no longer be undone.",
-        "DREAM_ALREADY_INTERPRETED": "You cannot undo it: a dream paid by this payment is already interpreted."
+        "DREAM_ALREADY_INTERPRETED": "You cannot undo it: a dream paid by this payment is already interpreted.",
+        "NOTHING_TO_WITHDRAW": "No unused credits are left on this payment.",
+        "NOT_WITHDRAWABLE": "Credits can only be withdrawn from a successful payment."
       },
       "orderNo": "Order number"
     },
@@ -1485,7 +1540,25 @@
       "lastUndoNote": "Your note when you undid it: {{note}}",
       "heldDreams_zero": "No dreams are waiting for this payment.",
       "heldDreams_one": "1 dream is waiting for this payment.",
-      "heldDreams_other": "{{count}} dreams are waiting for this payment."
+      "heldDreams_other": "{{count}} dreams are waiting for this payment.",
+      "interpretedNotice": "A dream from this payment was interpreted, so the approval cannot be undone.",
+      "leftoverQuestion": "Do you want to withdraw the credits left on this payment? ({{credits}})",
+      "leftoverQuestionLead": "Only the credits the buyer has not used from this payment are removed. His dreams are not affected.",
+      "leftoverYes": "Yes, withdraw the credits",
+      "leftoverNo": "No",
+      "leftoverSecondaryTitle": "Credits left on this payment",
+      "leftoverSecondaryLead": "The buyer has not used {{credits}} of this payment yet.",
+      "leftoverAction": "Withdraw the leftover credits",
+      "leftoverTitle": "Withdraw the leftover credits",
+      "leftoverBody": "{{credits}} will be removed from the buyer's balance: what he has not used from this payment.",
+      "leftoverKeep": "The payment stays successful. Interpreted dreams and dreams in progress do not change.",
+      "leftoverBuyer": "The buyer gets a notification and an e-mail.",
+      "leftoverNote": "Note (optional)",
+      "leftoverNotePlaceholder": "Example: the rest of the money did not arrive",
+      "leftoverConfirm": "Withdraw credits",
+      "leftoverDone": "Leftover credits withdrawn. The buyer was told.",
+      "leftoverWithdrawn": "{{credits}} withdrawn from the leftover on {{date}}",
+      "leftoverWithdrawnNote": "Note: {{note}}"
     }
   },
   "common": {

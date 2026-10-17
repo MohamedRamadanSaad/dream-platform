@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { adminApi, reportsApi } from '@/api/endpoints'
 import { useAuthStore } from '@/app/auth-store'
-import { Button, ErrorBox, Input, Label, Modal, NotFound, Skeleton, Stars, StatusBadge, Textarea } from '@/components/ui'
+import { Button, ErrorBox, Input, Label, Modal, NotFound, Skeleton, Stars, StatusBadge, Textarea, TextWith } from '@/components/ui'
 import { invalidateDreams, isNotFound, useErrorText, useOnce } from '@/lib/apiErrors'
 import { toast } from '@/components/ui/Toaster'
 import { DownloadButton } from '@/components/ui/DownloadButton'
@@ -155,7 +155,7 @@ export function AdminDreamPage() {
       <aside className="space-y-5">
         <div className="card p-5">
           <Label>{t('admin.dream.payment')}</Label>
-          {d.payment ? (
+          {d.payment ? (<>
             <dl className="space-y-2 text-sm">
               <div className="flex justify-between"><dt className="text-fg-muted">{t('admin.dream.payer')}</dt><dd className="text-end">{d.payment.payerName}<div className="text-xs text-fg-dim" dir="ltr">{d.payment.payerEmail}</div></dd></div>
               <div className="flex justify-between"><dt className="text-fg-muted">{t('admin.dream.paidAt')}</dt><dd>{fmtDate(d.payment.paidAt, locale, true)}</dd></div>
@@ -169,7 +169,12 @@ export function AdminDreamPage() {
               </dd></div>
               <div className="flex justify-between"><dt className="text-fg-muted">{t('admin.dream.ref')}</dt><dd dir="ltr" className="text-xs">{d.payment.provider} · {d.payment.providerRef}</dd></div>
             </dl>
-          ) : d.heldOrderId ? (
+              <div className="mt-3 border-t border-line pt-3">
+                <Link to={`/admin/orders/${d.payment.orderId}`} className="btn btn-sm btn-ghost min-h-11 w-full">
+                  <Icon name="wallet" size={15} /><TextWith i18nKey="admin.dream.openOrder" name="number" value={d.payment.orderNumber} /> <span aria-hidden="true">{arrowNext(locale)}</span>
+                </Link>
+              </div>
+          </>) : d.heldOrderId ? (
             // its credit went back with the revoked approval: the payment it waits for
             <Link to={`/admin/orders/${d.heldOrderId}`} className="inline-flex items-center gap-1.5 text-sm font-medium text-gold-ink hover:underline dark:text-gold">{t('admin.dream.heldOpenOrder')} <span aria-hidden="true">{arrowNext(locale)}</span></Link>
           ) : <p className="text-sm text-fg-muted">{t('admin.dream.noOrder')}</p>}

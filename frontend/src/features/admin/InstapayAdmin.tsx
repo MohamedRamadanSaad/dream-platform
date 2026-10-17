@@ -114,6 +114,39 @@ export function RevokeApprovalModal({ orderId, orderNumber, heldDreams, open, on
   )
 }
 
+/**
+ * Withdraw the unused credits of a SUCCESS order (any provider): the order stays SUCCESS, the dreams do not change,
+ * the buyer is told. The page shows the server's answer at once.
+ */
+export function WithdrawLeftoverModal({ orderId, orderNumber, credits, open, onClose }: { orderId: string; orderNumber: string; credits: number; open: boolean; onClose: () => void }) {
+  const { t } = useTranslation()
+  const qc = useQueryClient()
+  const errorText = useInstapayErrorText()
+  const once = useOnce()
+  const [note, setNote] = useState('')
+  useEffect(() => { if (open) setNote('') }, [open])
+  const withdraw = useMutation({
+    mutationFn: () => adminApi.withdrawLeftover(orderId, note.trim() || undefined),
+    meta: { toast: false },
+    onSuccess: (detail) => { qc.setQueryData(['admin', 'order', orderId], detail); toast.success(t('admin.order.leftoverDone')); onClose(); invalidateAfterReview(qc, orderId) },
+    onError: (e) => { toast.error(errorText(e)); onClose(); invalidateAfterReview(qc, orderId) },
+  })
+  const amount = t('admin.order.credits', { count: credits, n: credits })
+  return (
+    <Modal open={open} onClose={onClose} title={t('admin.order.leftoverTitle')} size="sm" focusField={false}
+      footer={<><Button variant="ghost" onClick={onClose}>{t('common.cancel')}</Button><Button variant="ghost" className="border-danger text-danger" loading={withdraw.isPending} onClick={() => once(() => withdraw.mutateAsync())}>{t('admin.order.leftoverConfirm')}</Button></>}>
+      <p className="mb-3 text-xs text-fg-dim">{t('admin.instapay.orderNo')}: <span dir="ltr" className="select-all font-mono font-medium text-fg-muted">{orderNumber}</span></p>
+      <p className="rounded-xl bg-danger/10 p-3 text-sm font-medium text-bad-ink">{t('admin.order.leftoverBody', { credits: amount })}</p>
+      <ul className="mt-3 space-y-2 text-sm leading-relaxed text-fg-muted">
+        {[t('admin.order.leftoverKeep'), t('admin.order.leftoverBuyer')].map((e) => <li key={e} className="flex items-start gap-2"><span aria-hidden="true" className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-gold" />{e}</li>)}
+      </ul>
+      <label htmlFor="leftover-note" className="mt-4 block"><Label>{t('admin.order.leftoverNote')}</Label></label>
+      <Textarea id="leftover-note" rows={3} maxLength={500} value={note} onChange={(e) => setNote(e.target.value)} placeholder={t('admin.order.leftoverNotePlaceholder')} />
+      <div dir="ltr" className="mt-1 text-end text-[11px] tabular-nums text-fg-dim">{note.length}/500</div>
+    </Modal>
+  )
+}
+
 /** Small copy button (copied text confirmed with a toast; the value stays selectable when the clipboard is blocked). */
 export function CopyButton({ text, label, done }: { text: string; label: string; done?: string }) {
   const { t } = useTranslation()
