@@ -48,9 +48,15 @@ public final class AnalyticsDtos {
                                            List<CountryStatDto> topDreams, List<CountryStatDto> topRevenue) {
     }
 
-    /** types.ts AdminUserRow. */
+    /**
+     * types.ts AdminUserRow. Money paid (SUCCESS orders): {@code totalPaid} in the user's own currency
+     * {@code totalPaidCurrency} (EGP for a country whose default currency is EGP, i.e. Egypt; USD for everyone else,
+     * through {@code pricing.fx_to_usd}); {@code totalPaidEgp} = the same in EGP (settled EGP), the ranking base;
+     * {@code totalPaidBase} = {@code totalPaidEgp} (kept for compatibility; it was USD before).
+     */
     public record AdminUserRowDto(UUID id, String name, String email, String countryCode, long visits, long dreams,
-                                  long drafts, double totalPaidBase, Double avgRating, Instant lastSeenAt) {
+                                  long drafts, double totalPaidBase, Double avgRating, Instant lastSeenAt,
+                                  double totalPaid, Currency totalPaidCurrency, double totalPaidEgp) {
     }
 
     /** types.ts AdminUser360 (AdminUserRow + detail, flattened; {@code dreams} is the count). */
@@ -76,7 +82,11 @@ public final class AnalyticsDtos {
             List<DreamSummaryDto> dreamList,
             List<UserTestimonialDto> testimonials,
             String notes,
-            List<String> tags) {
+            List<String> tags,
+            /** Same money fields as AdminUserRow (the user's own currency, and EGP). */
+            double totalPaid,
+            Currency totalPaidCurrency,
+            double totalPaidEgp) {
     }
 
     public record UserTestimonialDto(UUID dreamId, int rating, String comment, boolean approved) {

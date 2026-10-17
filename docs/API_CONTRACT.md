@@ -256,3 +256,7 @@ Round 3 (BA/QA):
 - A re-approval after an undo never revives credits that expired before (the new PURCHASE keeps the first one's expiry) nor credits withdrawn as leftover (it grants `credits − leftoverWithdrawnCredits`).
 
 Owner rule 2026-10-17 (unpaid tab): `scope=UNPAID` (the LAST tab, "Unpaid bookings") = INITIATED, EXPIRED (incl. an INITIATED order past `expires_at`) or FAILED for ANY reason (gateway failure, `TRANSFER_REJECTED`, `APPROVAL_REVOKED`, none), newest first. `DOMESTIC` / `INTERNATIONAL` = everything else (SUCCESS, PENDING_REVIEW, REFUNDED, SUSPICIOUS). Counts follow the same rules; the flag filters (REVOKED, RESENT, LEFTOVER_WITHDRAWN) work on every tab. This replaces the round-3 rule that kept rejected / undone orders in Domestic / International.
+
+## Users screen money in the user's own currency (owner request 2026-10-17)
+
+`GET /admin/analytics/users` rows (`AdminUserRow`) and `GET /admin/users/{id}` (`AdminUser360`) add `totalPaid: number` + `totalPaidCurrency: 'EGP' | 'USD'` (the user's own: EGP when the country's default currency is EGP, i.e. Egypt, summed from `orders.settled_amount_egp`, the amount for an EGP order without it; USD for everyone else through `pricing.fx_to_usd`) and `totalPaidEgp: number`. `totalPaidBase` is kept for compatibility but is now EGP (= `totalPaidEgp`, it was USD); `list=top-paying` ranks by it, like the country dashboard. Only SUCCESS orders count (unchanged). The 360 `orders[]` already carry each order's own currency.

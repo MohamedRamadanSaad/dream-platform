@@ -754,9 +754,15 @@ export interface AdminUserRow {
   visits: number
   dreams: number
   drafts: number
+  /** Paid (SUCCESS orders) in EGP, the ranking base (was USD before; kept for compatibility, = totalPaidEgp). */
   totalPaidBase: number
   avgRating: number | null
   lastSeenAt: string
+  /** Paid in the user's own currency: EGP for Egypt, USD for everyone else. Show with totalPaidCurrency. */
+  totalPaid: number
+  totalPaidCurrency: Currency
+  /** Paid in EGP (settled EGP). */
+  totalPaidEgp: number
 }
 export interface AdminUser360 extends Omit<AdminUserRow, 'dreams'> {
   dreams: number

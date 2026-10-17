@@ -35,7 +35,7 @@ export function UsersPage() {
                   <td className="px-4 py-3"><div className="flex items-center gap-3"><Avatar name={u.name || u.email} size={34} /><div><Link to={`/admin/users/${u.id}`} className="font-medium hover:text-gold-ink">{u.name || u.email}</Link><div className="text-xs text-fg-dim" dir="ltr">{u.email}</div></div></div></td>
                   <td className="px-4 py-3">{u.countryCode}</td><td className="px-4 py-3">{fmtNum(u.visits, locale)}</td><td className="px-4 py-3">{fmtNum(u.dreams, locale)}</td>
                   <td className="px-4 py-3">{u.drafts > 0 ? <span className="chip bg-warn/10 text-warn">{u.drafts}</span> : '-'}</td>
-                  <td className="px-4 py-3">{fmtMoney(Math.round(u.totalPaidBase), 'USD', locale)}</td>
+                  <td className="px-4 py-3">{fmtMoney(Math.round(u.totalPaid), u.totalPaidCurrency, locale)}</td>
                   <td className="px-4 py-3">{u.avgRating !== null ? <Stars value={Math.round(u.avgRating)} size={12} /> : '-'}</td>
                   <td className="px-4 py-3 text-xs text-fg-dim">{timeAgo(u.lastSeenAt, locale)}</td>
                 </tr>
@@ -79,10 +79,10 @@ export function User360Page() {
         </div>
       </div>
       <StaggerGroup className="grid grid-cols-2 gap-3 md:grid-cols-5" stagger={0.05}>
-        {[[t('admin.users.credits'), fmtNum(u.credits.balance, locale)], [t('admin.users.visits'), fmtNum(u.visits, locale)], [t('admin.users.dreams'), fmtNum(u.dreams, locale)], [t('admin.users.drafts'), fmtNum(u.drafts, locale)], [t('admin.users.paid'), fmtMoney(Math.round(u.totalPaidBase), 'USD', locale)]].map(([l, v]) => <div key={l} className="card p-4"><div className="text-xs text-fg-muted">{l}</div><div className="font-display text-2xl">{v}</div></div>)}
+        {[[t('admin.users.credits'), fmtNum(u.credits.balance, locale)], [t('admin.users.visits'), fmtNum(u.visits, locale)], [t('admin.users.dreams'), fmtNum(u.dreams, locale)], [t('admin.users.drafts'), fmtNum(u.drafts, locale)], [t('admin.users.paid'), fmtMoney(Math.round(u.totalPaid), u.totalPaidCurrency, locale)]].map(([l, v]) => <div key={l} className="card p-4"><div className="text-xs text-fg-muted">{l}</div><div className="font-display text-2xl">{v}</div></div>)}
       </StaggerGroup>
       <div className="grid gap-5 lg:grid-cols-3">
-        <div className="lg:col-span-2">
+        <div className="min-w-0 lg:col-span-2">
           <Tabs value={tab} onChange={setTab} items={[{ value: 'dreams', label: t('admin.users.userDreams'), count: u.dreamList.length }, { value: 'orders', label: t('admin.users.orders'), count: u.orders.length }, { value: 'credits', label: t('admin.users.credits') }, { value: 'testimonials', label: t('admin.users.testimonials'), count: u.testimonials.length }]} />
           <div className="mt-4 space-y-2">
             {tab === 'dreams' && (u.dreamList.length ? u.dreamList.map((d) => <Link key={d.id} to={d.status === 'DRAFT' ? '#' : `/admin/dreams/${d.id}`} className="card card-hover block p-4"><div className="mb-1 flex justify-between"><StatusBadge status={d.status} audience="interpreter" /><span className="text-xs text-fg-dim">{fmtDate(d.createdAt, locale)}</span></div><p className="line-clamp-2 text-sm font-light">{d.status === 'DRAFT' ? t('admin.users.draftHidden') : d.excerpt}</p></Link>) : <Empty text={t('common.none')} />)}

@@ -81,7 +81,10 @@ public class AdminUserService {
                 dreams,
                 testimonials,
                 note == null ? "" : note.getNotes(),
-                note == null ? List.of() : List.copyOf(note.getTags()));
+                note == null ? List.of() : List.copyOf(note.getTags()),
+                row == null ? 0 : row.totalPaid(),
+                row == null ? analyticsService.paidCurrency(u.getCountryCode()) : row.totalPaidCurrency(),
+                row == null ? 0 : row.totalPaidEgp());
     }
 
     @Transactional

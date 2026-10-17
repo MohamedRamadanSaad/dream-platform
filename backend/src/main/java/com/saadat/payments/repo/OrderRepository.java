@@ -115,6 +115,10 @@ public interface OrderRepository extends JpaRepository<Order, UUID>, JpaSpecific
             + "where o.status = :status and o.paidAt >= :since group by o.countryCode")
     List<Object[]> sumSettledEgpByCountrySince(@Param("status") OrderStatus status, @Param("since") Instant since);
 
+    /** [userId, currency, amount, settledAmountEgp] of every order with the given statuses (users' money). */
+    @Query("select o.userId, o.currency, o.amount, o.settledAmountEgp from PaymentOrder o where o.status in :statuses")
+    List<Object[]> paidAmountsByUser(@Param("statuses") Collection<OrderStatus> statuses);
+
     /** [userId, currency, sum(amount)] of orders with the given statuses. */
     @Query("select o.userId, o.currency, sum(o.amount) from PaymentOrder o "
             + "where o.status in :statuses group by o.userId, o.currency")

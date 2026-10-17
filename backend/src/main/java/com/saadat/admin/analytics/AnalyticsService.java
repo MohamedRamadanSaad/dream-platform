@@ -52,7 +52,7 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class AnalyticsService {
 
-    /** Base currency of the users list ({@code totalPaidBase}). */
+    /** The USD side of the users' money (non-Egyptian users are shown in USD; {@code toBase}). */
     static final Currency BASE_CURRENCY = Currency.USD;
     /** Base currency of the country dashboard: what the payments brought in EGP. */
     static final Currency COUNTRY_BASE_CURRENCY = Currency.EGP;
@@ -211,11 +211,12 @@ public class AnalyticsService {
     public PageResponse<AdminUserRowDto> users(String list, String q, Integer page, Integer size) {
         String kind = list == null || list.isBlank() ? LIST_ALL : list.trim();
         String needle = q == null ? "" : q.trim().toLowerCase(java.util.Locale.ROOT);
-        Map<UUID, BigDecimal> paid = paidBaseByUser();
+        Map<UUID, Paid> paid = paidByUser();
+        Map<String, Currency> currencies = countryCurrencies();
 
         List<AdminUserRowDto> rows = new ArrayList<>();
         for (Object[] r : analyticsRepository.userRows()) {
-            AdminUserRowDto row = toRow(r, paid);
+            AdminUserRowDto row = toRow(r, paid, currencies);
             if (!needle.isEmpty() && !contains(row.name(), needle) && !contains(row.email(), needle)) {
                 continue;
             }
@@ -251,26 +252,75 @@ public class AnalyticsService {
         if (rows.isEmpty()) {
             return null;
         }
-        return toRow(rows.get(0), paidBaseByUser());
+        return toRow(rows.get(0), paidByUser(), countryCurrencies());
     }
 
-    private AdminUserRowDto toRow(Object[] r, Map<UUID, BigDecimal> paid) {
+    private AdminUserRowDto toRow(Object[] r, Map<UUID, Paid> paid, Map<String, Currency> currencies) {
         UUID id = Rows.uuid(r[0]);
         Double avg = Rows.doubleOrNull(r[7]);
-        return new AdminUserRowDto(id, Rows.string(r[1]), Rows.string(r[2]), Rows.string(r[3]), Rows.longValue(r[4]),
-                Rows.longValue(r[5]), Rows.longValue(r[6]),
-                paid.getOrDefault(id, BigDecimal.ZERO).setScale(2, RoundingMode.HALF_UP).doubleValue(),
-                avg == null ? null : round1(avg), Rows.instant(r[8]));
+        String country = Rows.string(r[3]);
+        Paid p = paid.getOrDefault(id, Paid.NONE);
+        Currency own = paidCurrency(country, currencies);
+        double egp = money(p.egp());
+        return new AdminUserRowDto(id, Rows.string(r[1]), Rows.string(r[2]), country, Rows.longValue(r[4]),
+                Rows.longValue(r[5]), Rows.longValue(r[6]), egp,
+                avg == null ? null : round1(avg), Rows.instant(r[8]),
+                own == Currency.EGP ? egp : money(p.usd()), own, egp);
     }
 
-    private Map<UUID, BigDecimal> paidBaseByUser() {
+    /** What a user paid (SUCCESS orders): in EGP (settled EGP) and in USD (through {@code pricing.fx_to_usd}). */
+    record Paid(BigDecimal egp, BigDecimal usd) {
+        static final Paid NONE = new Paid(BigDecimal.ZERO, BigDecimal.ZERO);
+
+        Paid plus(BigDecimal e, BigDecimal u) {
+            return new Paid(egp.add(e), usd.add(u));
+        }
+    }
+
+    private Map<UUID, Paid> paidByUser() {
         Map<String, BigDecimal> fx = fxToUsd();
-        Map<UUID, BigDecimal> paid = new HashMap<>();
-        for (Object[] row : orderRepository.sumAmountByUserAndCurrency(List.of(OrderStatus.SUCCESS))) {
+        Map<UUID, Paid> paid = new HashMap<>();
+        for (Object[] row : orderRepository.paidAmountsByUser(List.of(OrderStatus.SUCCESS))) {
             UUID userId = Rows.uuid(row[0]);
-            paid.merge(userId, toBase(Rows.decimal(row[2]), toCurrency(row[1]), fx), BigDecimal::add);
+            Currency currency = toCurrency(row[1]);
+            BigDecimal amount = Rows.decimal(row[2]);
+            BigDecimal settled = row[3] == null ? null : Rows.decimal(row[3]);
+            // the settled EGP of the order; an EGP order without one is its amount; older ones through the FX rates
+            BigDecimal egp = settled != null ? settled
+                    : currency == Currency.EGP ? amount
+                    : com.saadat.payments.service.EgpSettlement.toEgp(amount, currency, fx);
+            paid.merge(userId, Paid.NONE.plus(egp == null ? BigDecimal.ZERO : egp, toBase(amount, currency, fx)),
+                    (a, b) -> a.plus(b.egp(), b.usd()));
         }
         return paid;
+    }
+
+    /** Country code → its default currency (from the countries table). */
+    private Map<String, Currency> countryCurrencies() {
+        Map<String, Currency> out = new HashMap<>();
+        for (Country c : countryRepository.findAll()) {
+            if (c.getCode() != null && c.getDefaultCurrency() != null) {
+                out.put(c.getCode().trim().toUpperCase(java.util.Locale.ROOT), c.getDefaultCurrency());
+            }
+        }
+        return out;
+    }
+
+    /** The currency a user's money is shown in: EGP where the country's default currency is EGP, else USD. */
+    public Currency paidCurrency(String countryCode) {
+        return paidCurrency(countryCode, countryCurrencies());
+    }
+
+    static Currency paidCurrency(String countryCode, Map<String, Currency> currencies) {
+        if (countryCode == null || countryCode.isBlank()) {
+            return Currency.USD;
+        }
+        return currencies.get(countryCode.trim().toUpperCase(java.util.Locale.ROOT)) == Currency.EGP
+                ? Currency.EGP : Currency.USD;
+    }
+
+    private static double money(BigDecimal v) {
+        return (v == null ? BigDecimal.ZERO : v).setScale(2, RoundingMode.HALF_UP).doubleValue();
     }
 
     // ================================================================== fx & helpers

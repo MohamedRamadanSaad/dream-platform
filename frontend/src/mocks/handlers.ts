@@ -142,6 +142,17 @@ const effStatus = (o: MockOrder): T.OrderStatus => {
   const exp = instapayMeta.get(o.id)?.expiresAt
   return o.status === 'INITIATED' && exp && exp < helpers.now() ? 'EXPIRED' : o.status
 }
+/**
+ * What a user paid (SUCCESS orders): in his own currency (EGP for Egypt, USD for everyone else) and in EGP (settled
+ * EGP, the ranking base, also sent as totalPaidBase).
+ */
+const paidOf = (usr: { id: string; countryCode: string }) => {
+  const paid = (db.orders as MockOrder[]).filter((o) => o.userId === usr.id && o.status === 'SUCCESS')
+  const egp = paid.reduce((a, o) => a + (o.settledAmountEgp ?? toEgp(o.amount, o.currency)), 0)
+  const usd = paid.reduce((a, o) => a + (o.currency === 'SAR' ? o.amount / 3.75 : o.currency === 'EGP' ? o.amount / 48 : o.amount), 0)
+  const eg = usr.countryCode === 'EG'
+  return { totalPaidBase: egp, totalPaidEgp: egp, totalPaid: eg ? egp : usd, totalPaidCurrency: (eg ? 'EGP' : 'USD') as T.Currency }
+}
 const UNPAID: T.OrderStatus[] = ['INITIATED', 'EXPIRED', 'FAILED']
 /**
  * Unpaid bookings, the last tab (owner rule 2026-10-17): never paid (INITIATED / EXPIRED, lazily expired too) and every
@@ -1098,7 +1109,7 @@ export const handlers = [
       return { id: usr.id, name: usr.name, email: usr.email, countryCode: usr.countryCode,
         visits: db.visits.filter((v) => v.userId === usr.id).reduce((a, v) => a + v.count, 0),
         dreams: mine.filter((d) => d.status !== 'DRAFT').length, drafts: mine.filter((d) => d.status === 'DRAFT').length,
-        totalPaidBase: db.orders.filter((o) => o.userId === usr.id && o.status === 'SUCCESS').reduce((a, o) => a + (o.currency === 'SAR' ? o.amount / 3.75 : o.currency === 'EGP' ? o.amount / 48 : o.amount), 0),
+        ...paidOf(usr),
         avgRating: rated.length ? rated.reduce((a, b) => a + b, 0) / rated.length : null, lastSeenAt: helpers.daysAgo(Math.floor(Math.random() * 5)) }
     }).filter((r) => !qq || r.name.toLowerCase().includes(qq) || r.email.toLowerCase().includes(qq))
     const sorted = list === 'top-visits' ? rows.sort((a, b) => b.visits - a.visits) : list === 'top-paying' ? rows.sort((a, b) => b.totalPaidBase - a.totalPaidBase)
@@ -1115,7 +1126,7 @@ export const handlers = [
     const r: T.AdminUser360 = {
       id: usr.id, name: usr.name, email: usr.email, countryCode: usr.countryCode, birthDate: usr.birthDate, age: usr.age, visits: db.visits.filter((v) => v.userId === usr.id).reduce((a, v) => a + v.count, 0),
       dreams: mine.filter((d) => d.status !== 'DRAFT').length, drafts: mine.filter((d) => d.status === 'DRAFT').length,
-      totalPaidBase: db.orders.filter((o) => o.userId === usr.id && o.status === 'SUCCESS').reduce((a, o) => a + (o.currency === 'SAR' ? o.amount / 3.75 : o.currency === 'EGP' ? o.amount / 48 : o.amount), 0),
+      ...paidOf(usr),
       avgRating: rated.length ? rated.reduce((a, d) => a + d.testimonial!.rating, 0) / rated.length : null, lastSeenAt: helpers.daysAgo(1),
       gender: usr.gender, locale: usr.locale, providers: usr.providers, createdAt: usr.createdAt,
       credits: { balance: balanceOf(usr.id), entries: db.ledger.filter((l) => l.userId === usr.id) },
