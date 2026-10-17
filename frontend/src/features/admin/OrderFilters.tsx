@@ -18,12 +18,19 @@ export const STATUS_BY_TAB: Record<OrdersTab, OrderStatus[]> = {
   REVIEW: [],
   DOMESTIC: ['PENDING_REVIEW', 'SUCCESS', 'FAILED', 'REFUNDED', 'SUSPICIOUS'],
   INTERNATIONAL: ['PENDING_REVIEW', 'SUCCESS', 'FAILED', 'REFUNDED', 'SUSPICIOUS'],
-  UNPAID: ['INITIATED', 'EXPIRED'],
+  // bookings never paid, and card checkouts that failed at the gateway
+  UNPAID: ['INITIATED', 'EXPIRED', 'FAILED'],
 }
 const PROVIDERS: (PaymentProvider | 'MOCK')[] = ['INSTAPAY', 'MOR', 'KASHIER', 'MOCK']
 const CURRENCIES: Currency[] = ['EGP', 'SAR', 'USD']
 const FLAGS: OrderFlag[] = ['REVOKED', 'RESENT', 'LEFTOVER_WITHDRAWN']
 const DAY = /^\d{4}-\d{2}-\d{2}$/
+/** A real calendar day (2026-13-40 or 2026-02-30 are not): never trusted from the address as is. */
+export const isDay = (v: string | null | undefined): v is string => {
+  if (!v || !DAY.test(v)) return false
+  const d = new Date(`${v}T00:00:00Z`)
+  return !Number.isNaN(d.getTime()) && d.toISOString().slice(0, 10) === v
+}
 /** The URL keys the filters use (the API's own names). */
 const KEYS = ['status', 'provider', 'country', 'currency', 'from', 'to', 'minAmount', 'maxAmount', 'packageId', 'flag'] as const
 
@@ -39,12 +46,14 @@ export function readFilters(p: URLSearchParams): AdminOrderFilters {
   const num = (k: string) => { const v = p.get(k); if (v == null || v === '') return undefined; const n = Number(v); return Number.isFinite(n) && n >= 0 ? n : undefined }
   const pick = <X extends string>(k: string, list: readonly X[]) => { const v = p.get(k) as X | null; return v && list.includes(v) ? v : undefined }
   const status = (p.get('status') ?? '').split(',').filter((s): s is OrderStatus => (ALL_STATUSES as string[]).includes(s))
-  const day = (k: string) => { const v = p.get(k); return v && DAY.test(v) ? v : undefined }
+  const day = (k: string) => { const v = p.get(k); return isDay(v) ? v : undefined }
   const country = p.get('country')
   return {
     status: status.length ? status : undefined,
     provider: pick('provider', PROVIDERS), country: country && /^[A-Z]{2}$/.test(country) ? country : undefined, currency: pick('currency', CURRENCIES),
-    from: day('from'), to: day('to'), minAmount: num('minAmount'), maxAmount: num('maxAmount'),
+    from: day('from'), to: day('to'),
+    // an amount only means something in one currency
+    minAmount: pick('currency', CURRENCIES) ? num('minAmount') : undefined, maxAmount: pick('currency', CURRENCIES) ? num('maxAmount') : undefined,
     packageId: p.get('packageId') || undefined, flag: pick('flag', FLAGS),
   }
 }
@@ -68,6 +77,16 @@ export function fitToTab(f: AdminOrderFilters, tab: OrdersTab): AdminOrderFilter
   return { ...f, status: status?.length ? status : undefined, provider: s.provider ? f.provider : undefined, country: s.country ? f.country : undefined, flag: s.flag ? f.flag : undefined }
 }
 
+export type FilterErrors = { amount?: string; date?: string }
+/** Combinations the server refuses (400 INVALID_FILTER): the list is not asked for while one is shown. */
+export function validateFilters(f: AdminOrderFilters): FilterErrors {
+  const e: FilterErrors = {}
+  if (f.minAmount != null && f.maxAmount != null && f.minAmount > f.maxAmount) e.amount = 'admin.orders.filters.errMinMax'
+  if (f.from && f.to && f.from > f.to) e.date = 'admin.orders.filters.errFromTo'
+  return e
+}
+export const hasErrors = (e: FilterErrors) => !!(e.amount || e.date)
+
 export const activeCount = (f: AdminOrderFilters) =>
   (f.status?.length ?? 0) + KEYS.filter((k) => k !== 'status' && f[k] !== undefined).length
 
@@ -83,8 +102,10 @@ function useOptions(enabled: boolean) {
 }
 
 /** The amount fields wait for a short pause in typing before the list reloads. */
-function AmountInput({ id, value, onCommit, label }: { id: string; value?: number; onCommit: (v?: number) => void; label: string }) {
+function AmountInput({ id, value, onCommit, label, disabled, invalid }: { id: string; value?: number; onCommit: (v?: number) => void; label: string; disabled?: boolean; invalid?: boolean }) {
+  const { t } = useTranslation()
   const [text, setText] = useState(value != null ? String(value) : '')
+  const negative = text.trim() !== '' && Number(text) < 0
   useEffect(() => { setText(value != null ? String(value) : '') }, [value])
   useEffect(() => {
     const v = text.trim() === '' ? undefined : Number(text)
@@ -94,13 +115,16 @@ function AmountInput({ id, value, onCommit, label }: { id: string; value?: numbe
   }, [text]) // eslint-disable-line react-hooks/exhaustive-deps
   return (
     <label htmlFor={id} className="min-w-0"><span className="label">{label}</span>
-      <Input id={id} type="number" inputMode="decimal" min={0} dir="ltr" value={text} onChange={(e) => setText(e.target.value)} className="h-10" />
+      <Input id={id} type="number" inputMode="decimal" min={0} dir="ltr" value={text} onChange={(e) => setText(e.target.value)} disabled={disabled}
+        aria-invalid={negative || invalid} aria-describedby={negative ? `${id}-err` : undefined} className={cn('h-10 disabled:opacity-50', (negative || invalid) && 'border-danger')} />
+      {negative && <span id={`${id}-err`} role="alert" className="mt-1 block text-xs text-bad-ink">{t('admin.orders.filters.errNegative')}</span>}
     </label>
   )
 }
 
 function Fields({ tab, f, set, idPrefix }: { tab: OrdersTab; f: AdminOrderFilters; set: (patch: Partial<AdminOrderFilters>) => void; idPrefix: string }) {
   const { t } = useTranslation()
+  const errors = validateFilters(f)
   const opts = useOptions(true)
   const s = shows(tab)
   const statuses = STATUS_BY_TAB[tab]
@@ -146,7 +170,7 @@ function Fields({ tab, f, set, idPrefix }: { tab: OrdersTab; f: AdminOrderFilter
         </label>
       )}
       <label htmlFor={id('currency')} className="min-w-0"><span className="label">{t('admin.orders.filters.currency')}</span>
-        <select id={id('currency')} className={select} value={f.currency ?? ''} onChange={(e) => set({ currency: (e.target.value || undefined) as Currency | undefined })}>
+        <select id={id('currency')} className={select} value={f.currency ?? ''} onChange={(e) => set(e.target.value ? { currency: e.target.value as Currency } : { currency: undefined, minAmount: undefined, maxAmount: undefined })}>
           <option value="">{t('admin.orders.filters.any')}</option>
           {CURRENCIES.map((c) => <option key={c} value={c}>{t(`admin.orders.filters.currencies.${c}`)}</option>)}
         </select>
@@ -163,8 +187,15 @@ function Fields({ tab, f, set, idPrefix }: { tab: OrdersTab; f: AdminOrderFilter
       <label htmlFor={id('to')} className="min-w-0"><span className="label">{t('admin.orders.filters.to')}</span>
         <Input id={id('to')} type="date" dir="ltr" className="h-10" value={f.to ?? ''} min={f.from || undefined} onChange={(e) => set({ to: e.target.value || undefined })} />
       </label>
-      <AmountInput id={id('min')} label={t('admin.orders.filters.minAmount')} value={f.minAmount} onCommit={(v) => set({ minAmount: v })} />
-      <AmountInput id={id('max')} label={t('admin.orders.filters.maxAmount')} value={f.maxAmount} onCommit={(v) => set({ maxAmount: v })} />
+      <AmountInput id={id('min')} label={t('admin.orders.filters.minAmount')} value={f.minAmount} onCommit={(v) => set({ minAmount: v })} disabled={!f.currency} invalid={!!errors.amount} />
+      <AmountInput id={id('max')} label={t('admin.orders.filters.maxAmount')} value={f.maxAmount} onCommit={(v) => set({ maxAmount: v })} disabled={!f.currency} invalid={!!errors.amount} />
+      {(!f.currency || errors.amount || errors.date) && (
+        <div className="col-span-2 space-y-1 text-xs md:col-span-4 xl:col-span-6">
+          {!f.currency && <p className="text-fg-dim">{t('admin.orders.filters.currencyFirst')}</p>}
+          {errors.amount && <p role="alert" className="text-bad-ink">{t(errors.amount)}</p>}
+          {errors.date && <p role="alert" className="text-bad-ink">{t(errors.date)}</p>}
+        </div>
+      )}
       {s.flag && (
         <label htmlFor={id('flag')} className="col-span-2 min-w-0"><span className="label">{t('admin.orders.filters.flag')}</span>
           <select id={id('flag')} className={select} value={f.flag ?? ''} onChange={(e) => set({ flag: (e.target.value || undefined) as OrderFlag | undefined })}>
@@ -186,10 +217,12 @@ function Chips({ f, set, clear }: { f: AdminOrderFilters; set: (patch: Partial<A
   for (const s of f.status ?? []) chips.push({ key: `s-${s}`, label: t(`me.orderStatus.${s}`), drop: () => { const next = (f.status ?? []).filter((x) => x !== s); set({ status: next.length ? next : undefined }) } })
   if (f.provider) chips.push({ key: 'provider', label: t(`admin.orders.filters.providers.${f.provider}`), drop: () => set({ provider: undefined }) })
   if (f.country) chips.push({ key: 'country', label: `${flagEmoji(f.country)} ${opts.countries.find((c) => c.code === f.country)?.name ?? f.country}`, drop: () => set({ country: undefined }) })
-  if (f.currency) chips.push({ key: 'currency', label: t(`admin.orders.filters.currencies.${f.currency}`), drop: () => set({ currency: undefined }) })
+  if (f.currency) chips.push({ key: 'currency', label: t(`admin.orders.filters.currencies.${f.currency}`), drop: () => set({ currency: undefined, minAmount: undefined, maxAmount: undefined }) })
   if (f.packageId) chips.push({ key: 'package', label: opts.packages.find((p) => p.id === f.packageId)?.name ?? t('admin.orders.filters.package'), drop: () => set({ packageId: undefined }) })
-  if (f.from) chips.push({ key: 'from', label: t('admin.orders.filters.chipFrom', { date: fmtDate(`${f.from}T12:00:00`, locale) }), drop: () => set({ from: undefined }) })
-  if (f.to) chips.push({ key: 'to', label: t('admin.orders.filters.chipTo', { date: fmtDate(`${f.to}T12:00:00`, locale) }), drop: () => set({ to: undefined }) })
+  // a bad day never reaches the date formatter (it would throw on an invalid date)
+  const dayText = (v: string) => { try { return isDay(v) ? fmtDate(`${v}T12:00:00`, locale) : v } catch { return v } }
+  if (f.from) chips.push({ key: 'from', label: t('admin.orders.filters.chipFrom', { date: dayText(f.from) }), drop: () => set({ from: undefined }) })
+  if (f.to) chips.push({ key: 'to', label: t('admin.orders.filters.chipTo', { date: dayText(f.to) }), drop: () => set({ to: undefined }) })
   if (f.minAmount != null) chips.push({ key: 'min', label: t('admin.orders.filters.chipMin', { n: fmtNum(f.minAmount, locale) }), drop: () => set({ minAmount: undefined }) })
   if (f.maxAmount != null) chips.push({ key: 'max', label: t('admin.orders.filters.chipMax', { n: fmtNum(f.maxAmount, locale) }), drop: () => set({ maxAmount: undefined }) })
   if (f.flag) chips.push({ key: 'flag', label: t(`admin.orders.filters.flags.${f.flag}`), drop: () => set({ flag: undefined }) })
@@ -214,12 +247,13 @@ function Chips({ f, set, clear }: { f: AdminOrderFilters; set: (patch: Partial<A
  * Phones: a "Filter" button opening a bottom sheet. Desktops: the fields inline in a compact bar. Both apply at once;
  * the active filters always show as chips under it.
  */
-export function OrderFilterBar({ tab, filters, onChange, search }: { tab: OrdersTab; filters: AdminOrderFilters; onChange: (f: AdminOrderFilters) => void; search: ReactNode }) {
+export function OrderFilterBar({ tab, filters, onPatch, onClear, search }: { tab: OrdersTab; filters: AdminOrderFilters; onPatch: (patch: Partial<AdminOrderFilters>) => void; onClear: () => void; search: ReactNode }) {
   const { t } = useTranslation()
   const [open, setOpen] = useState(false)
   const n = activeCount(filters)
-  const set = (patch: Partial<AdminOrderFilters>) => onChange({ ...filters, ...patch })
-  const clear = () => onChange({})
+  // a patch, merged with the address as it is when applied (two quick edits never undo each other)
+  const set = onPatch
+  const clear = onClear
   return (
     <div className="mt-5">
       <div className="md:max-w-md">{search}</div>

@@ -166,9 +166,12 @@ export const adminApi = {
   orders: (scope: T.OrderScope = 'ALL', page = 0, size = 20, q = '', filters: T.AdminOrderFilters = {}) =>
     http.get<T.Page<T.AdminOrderRow>>('/admin/orders', { scope, page, size, q, ...filterQuery(filters) }),
   /** Tab counts; with filters they match the filtered view. */
-  orderCounts: (filters: T.AdminOrderFilters = {}, q = '') => http.get<T.AdminOrderCounts>('/admin/orders/counts', { q, ...filterQuery(filters) }),
-  /** Removes the unused credits of a SUCCESS order (409 NOTHING_TO_WITHDRAW / NOT_WITHDRAWABLE). */
-  withdrawLeftover: (orderId: string, note?: string) => http.post<T.AdminOrderDetail>(`/admin/payments/orders/${orderId}/withdraw-leftover`, note ? { note } : {}),
+  /** Tab counts: status and flag are left out (each tab has its own statuses), the other filters apply. */
+  orderCounts: (filters: T.AdminOrderFilters = {}, q = '') => http.get<T.AdminOrderCounts>('/admin/orders/counts', { q, ...filterQuery({ ...filters, status: undefined, flag: undefined }) }),
+  /** Removes the unused credits of a SUCCESS InstaPay order (409 NOTHING_TO_WITHDRAW / NOT_WITHDRAWABLE, 400 NOTE_REQUIRED). */
+  withdrawLeftover: (orderId: string, reason: T.WithdrawReason, note?: string) => http.post<T.AdminOrderDetail>(`/admin/payments/orders/${orderId}/withdraw-leftover`, note ? { reason, note } : { reason }),
+  /** Gives back the credits of the last withdrawal (409 NOTHING_TO_RESTORE). */
+  restoreLeftover: (orderId: string) => http.post<T.AdminOrderDetail>(`/admin/payments/orders/${orderId}/restore-leftover`, {}),
   order: (id: string) => http.get<T.AdminOrderDetail>(`/admin/orders/${id}`),
   /** InstaPay transfers waiting for the interpreter (oldest first) and the latest decisions. */
   instapayTransfers: () => http.get<T.InstapayTransferList>('/admin/payments/instapay/transfers'),

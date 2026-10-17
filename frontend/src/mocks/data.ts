@@ -16,6 +16,9 @@ export type MockOrder = T.OrderDto & {
   leftoverWithdrawnAt?: string | null
   leftoverWithdrawnCredits?: number | null
   leftoverNote?: string | null
+  leftoverReason?: T.WithdrawReason | null
+  /** The last withdrawal can still be given back. */
+  leftoverRestorable?: boolean
 }
 export type MockDream = Omit<T.DreamDetail, 'excerpt' | 'unreadMessages' | 'editable' | 'payment' | 'startedAt' | 'expectedDays'> & {
   userId: string
@@ -338,7 +341,7 @@ export const nextOrderNumber = () => {
     { id: 'l-ip6', userId: 'u1', delta: 1, reason: 'PURCHASE', orderId: 'o-ip6', dreamId: null, createdAt: daysAgo(3) },
     { id: 'l-ip6a', userId: 'u1', delta: -1, reason: 'SUBMIT', orderId: 'o-ip6', dreamId: 'd20', createdAt: daysAgo(3) },
     { id: 'l-ip6b', userId: 'u1', delta: 1, reason: 'REFUND', orderId: 'o-ip6', dreamId: 'd20', createdAt: daysAgo(0, 6) },
-    { id: 'l-ip6c', userId: 'u1', delta: -1, reason: 'REVOKE', orderId: 'o-ip6', dreamId: null, createdAt: daysAgo(0, 6) },
+    { id: 'l-ip6c', userId: 'u1', delta: -1, reason: 'REVOKE', orderId: 'o-ip6', dreamId: null, createdAt: daysAgo(0, 6), kind: 'APPROVAL_REVOKED' },
   )
   db.dreams.push(
     { id: 'd18', userId: 'u1', gender: 'FEMALE', status: 'IN_PROGRESS', createdAt: daysAgo(2, 4), submittedAt: daysAgo(2), interpretedAt: null, expectedBy: daysAhead(2), startedAt: daysAgo(1), expectedDays: 3,
@@ -362,6 +365,10 @@ export const nextOrderNumber = () => {
     text: 'رأيت أنني أصلي في مسجد واسع وحدي، ثم امتلأ المسجد بالناس فجأة وكلهم يلبسون الأبيض.', messages: [],
     interpretation: { text: 'المسجد الواسع سعة في الرزق والطمأنينة، وامتلاؤه بالناس في ثياب بيضاء صلاح الحال واجتماع الخير حولك. والله أعلم.', interpretedAt: daysAgo(3) },
     testimonial: null, credit: { ledgerEntryId: 'l-ip7a', orderId: 'o-ip7' } })
+  // an approved InstaPay payment nobody used yet (no dream): the quiet "withdraw the leftover" action, and Undo
+  seed({ ...base, id: 'o-ip8', userId: 'u4', packageName: 'تفسير رؤيتين', credits: 2, amount: 349, currency: 'EGP', status: 'SUCCESS', provider: 'INSTAPAY', providerRef: 'INSTAPAY-REF-202311640022', countryCode: 'EG', createdAt: daysAgo(0, 4), paidAt: daysAgo(0, 3) },
+    { reference: '202311640022', senderName: 'MONA ABDALLAH', submittedAt: daysAgo(0, 4), reviewedAt: daysAgo(0, 3), reviewedByName: 'المعبرة فاطمة' })
+  db.ledger.push({ id: 'l-ip8', userId: 'u4', delta: 2, reason: 'PURCHASE', orderId: 'o-ip8', dreamId: null, createdAt: daysAgo(0, 3) })
   // bookings never paid: one still open, one past its deadline (the expiry job has not run), one card checkout left open
   seed({ ...base, id: 'o-un1', userId: 'u5', packageName: 'تفسير رؤيتين', credits: 2, amount: 349, currency: 'EGP', status: 'INITIATED', provider: 'INSTAPAY', providerRef: null, countryCode: 'EG', createdAt: daysAgo(0, 19), paidAt: null },
     { expiresAt: new Date(Date.now() + 5 * 36e5).toISOString() })

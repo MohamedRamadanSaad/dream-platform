@@ -105,6 +105,12 @@ const undoInfo = (o: MockOrder) => {
   return { revokedAt: m?.revokedAt ?? null, revokeNote: m?.revokeNote ?? null, heldDreams: db.dreams.filter((d) => d.heldOrderId === o.id && d.status === 'AWAITING_PAYMENT').length }
 }
 
+/** A cancel gives the credit back unless none is held (on hold) or its payment's leftover was withdrawn. */
+const cancelRefunds = (d: MockDream) => {
+  if (d.status === 'AWAITING_PAYMENT' || !d.credit) return false
+  const o = d.credit.orderId ? (db.orders as MockOrder[]).find((x) => x.id === d.credit!.orderId) : null
+  return !o?.leftoverWithdrawnAt
+}
 /** Dreams whose credit came from this order (a SUBMIT row with the order as its source). */
 const paidFrom = (o: MockOrder) => {
   const ids = new Set(db.ledger.filter((l) => l.orderId === o.id && l.reason === 'SUBMIT' && l.dreamId).map((l) => l.dreamId!))
@@ -126,6 +132,9 @@ const adminOrderRow = (o: MockOrder): T.AdminOrderRow => {
     transferReference: m?.reference ?? null, transferSenderName: m?.senderName ?? null, transferSubmittedAt: m?.submittedAt ?? null, attachedDreams: orderDreams(o).length,
     failureReason: o.failureReason ?? null, ...undoInfo(o),
     expiresAt: m?.expiresAt ?? null, packageId: packageIdOf(o), leftoverWithdrawnAt: o.leftoverWithdrawnAt ?? null,
+    leftoverWithdrawnCredits: o.leftoverWithdrawnCredits ?? null, leftoverReason: o.leftoverReason ?? null, leftoverNote: o.leftoverNote ?? null,
+    // a booking the buyer paid later through another order
+    paidLater: UNPAID_OF(o) && (db.orders as MockOrder[]).some((x) => x.userId === o.userId && x.status === 'SUCCESS' && x.createdAt > o.createdAt && new Date(x.createdAt).getTime() - new Date(o.createdAt).getTime() < 3 * 864e5),
   }
 }
 /** A booking past its deadline reads EXPIRED even before the expiry job ran (contract §3). */
@@ -134,11 +143,13 @@ const effStatus = (o: MockOrder): T.OrderStatus => {
   return o.status === 'INITIATED' && exp && exp < helpers.now() ? 'EXPIRED' : o.status
 }
 const UNPAID: T.OrderStatus[] = ['INITIATED', 'EXPIRED']
+/** Unpaid bookings: never paid (INITIATED / EXPIRED), and card checkouts the gateway failed (not a rejected transfer). */
+const UNPAID_OF = (o: MockOrder) => UNPAID.includes(effStatus(o)) || (o.status === 'FAILED' && o.provider !== 'INSTAPAY')
 const scoped = (scope: string | null) => {
   const all = db.orders as MockOrder[]
   if (scope === 'REVIEW') return all.filter((o) => o.provider === 'INSTAPAY' && o.status === 'PENDING_REVIEW').sort((a, b) => (instapayMeta.get(a.id)?.submittedAt ?? a.createdAt).localeCompare(instapayMeta.get(b.id)?.submittedAt ?? b.createdAt))
   const newest = (xs: MockOrder[]) => [...xs].sort((a, b) => b.createdAt.localeCompare(a.createdAt))
-  const paidSide = (o: MockOrder) => !UNPAID.includes(effStatus(o))
+  const paidSide = (o: MockOrder) => !UNPAID_OF(o)
   if (scope === 'DOMESTIC') return newest(all.filter((o) => o.countryCode === 'EG' && paidSide(o)))
   if (scope === 'INTERNATIONAL') return newest(all.filter((o) => o.countryCode !== 'EG' && paidSide(o)))
   if (scope === 'UNPAID') return newest(all.filter((o) => !paidSide(o)))
@@ -177,6 +188,12 @@ function parseFilters(q: URLSearchParams): FilterParse {
     if (!Number.isFinite(n) || n < 0) return { ok: false, field: k }
     f[k] = n
   }
+  // a real calendar day, and ranges the right way round
+  const realDay = (v?: string) => !v || (() => { const d = new Date(`${v}T00:00:00Z`); return !Number.isNaN(d.getTime()) && d.toISOString().slice(0, 10) === v })()
+  if (!realDay(f.from)) return { ok: false, field: 'from' }
+  if (!realDay(f.to)) return { ok: false, field: 'to' }
+  if (f.from && f.to && f.from > f.to) return { ok: false, field: 'to' }
+  if (f.minAmount != null && f.maxAmount != null && f.minAmount > f.maxAmount) return { ok: false, field: 'maxAmount' }
   return { ok: true, f }
 }
 const day = (iso: string) => new Date(new Date(iso).getTime() + 3 * 36e5).toISOString().slice(0, 10) // Riyadh day
@@ -214,8 +231,9 @@ const adminOrderDetail = (o: MockOrder): T.AdminOrderDetail => {
     canRevoke: o.provider === 'INSTAPAY' && o.status === 'SUCCESS' && !revokeBlocked(o),
     revokeBlockedReason: o.provider === 'INSTAPAY' && o.status === 'SUCCESS' ? revokeBlocked(o) : null,
     ...undoInfo(o),
-    leftoverCredits: leftoverOf(o), interpretedDreams: paidFrom(o).filter((d) => d.status === 'INTERPRETED').length, canWithdrawLeftover: leftoverOf(o) > 0,
+    leftoverCredits: leftoverOf(o), interpretedDreams: paidFrom(o).filter((d) => d.status === 'INTERPRETED').length, canWithdrawLeftover: o.provider === 'INSTAPAY' && leftoverOf(o) > 0,
     leftoverWithdrawnAt: o.leftoverWithdrawnAt ?? null, leftoverWithdrawnCredits: o.leftoverWithdrawnCredits ?? null, leftoverNote: o.leftoverNote ?? null,
+    leftoverReason: o.leftoverReason ?? null, canRestoreLeftover: !!o.leftoverRestorable && (o.leftoverWithdrawnCredits ?? 0) > 0,
   }
 }
 /** Dreams the interpreter has to work on (contract §1: IN_PROGRESS counts as open work too). */
@@ -224,7 +242,8 @@ const OPEN: T.DreamStatus[] = ['IN_REVIEW', 'IN_PROGRESS']
 /** The payment's counter as the backend computes it: dreams that used it (oldest first) and what is left. */
 const orderCounter = (orderId: string, credits: number, dreamId: string) => {
   const used = db.ledger.filter((l) => l.orderId === orderId && l.reason === 'SUBMIT' && l.dreamId).sort((a, b) => a.createdAt.localeCompare(b.createdAt)).map((l) => l.dreamId!)
-  return { credits, creditsLeft: Math.max(0, credits - used.length), dreamNumber: used.indexOf(dreamId) + 1, creditsExpired: false }
+  // what is left of the lot: spent, refunded, withdrawn and restored credits all count
+  return { credits, creditsLeft: lotLeft(orderId), dreamNumber: used.indexOf(dreamId) + 1, creditsExpired: false }
 }
 
 const instapayView = (o: MockOrder): T.InstapayOrderView => {
@@ -454,6 +473,7 @@ export const handlers = [
   http.get(u('/me/credits'), wrap(async ({ request }) => {
     const me = requireUser(request)
     const entries = db.ledger.filter((l) => l.userId === me.id).sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+      .map(({ userId: _u, ...l }) => ({ ...l, kind: l.kind ?? null, orderNumber: l.orderId ? db.orders.find((o) => o.id === l.orderId)?.orderNumber ?? null : null }))
     return HttpResponse.json({ balance: balanceOf(me.id), entries } satisfies T.CreditsSummary)
   })),
   http.get(u('/me/orders'), wrap(async ({ request }) => {
@@ -712,7 +732,7 @@ export const handlers = [
     // what is left of the order's lot leaves the balance (never below 0)
     const lot = db.ledger.filter((l) => l.orderId === o.id).reduce((a, l) => a + l.delta, 0)
     const take = Math.min(lot, balanceOf(o.userId))
-    if (take > 0) db.ledger.push({ id: uid(), userId: o.userId, delta: -take, reason: 'REVOKE', orderId: o.id, dreamId: null, createdAt: helpers.now() })
+    if (take > 0) db.ledger.push({ id: uid(), userId: o.userId, delta: -take, reason: 'REVOKE', orderId: o.id, dreamId: null, createdAt: helpers.now(), kind: 'APPROVAL_REVOKED' })
     Object.assign(m, { reviewedAt: helpers.now(), reviewedByName: me.name, reviewNote: note || null, revokedAt: helpers.now(), revokeNote: note || null })
     Object.assign(o, { status: 'FAILED', failureReason: 'APPROVAL_REVOKED', settledAmountEgp: null, paidAt: null, providerRef: null })
     db.notifications.unshift({ id: uid(), userId: o.userId, type: 'PAYMENT_REVOKED', title: 'نحتاج إلى مراجعتك لبيانات الدفع', body: `لم تتمكن المعبّرة من تأكيد تحويل طلب ${o.packageName}. رؤاك محفوظة، راجع رقم العملية واسم المحوِّل والمبلغ وأرسلها مرة أخرى.`, link: `/me/checkout/instapay/${o.id}`, createdAt: helpers.now(), readAt: null })
@@ -956,7 +976,7 @@ export const handlers = [
     const order = d.credit?.orderId ? db.orders.find((o) => o.id === d.credit!.orderId) : null
     d.messages.forEach((m) => { if (m.senderRole === 'USER') m.readAt ??= helpers.now() })
     const { payment: _ignored, ...detail } = toDetail(d)
-    const r: T.AdminDreamDetail = { ...detail, userEditedAt: d.userEditedAt ?? null, heldOrderId: d.heldOrderId ?? null, user: { id: usr.id, name: usr.name, email: usr.email, countryCode: usr.countryCode, age: usr.age },
+    const r: T.AdminDreamDetail = { ...detail, userEditedAt: d.userEditedAt ?? null, heldOrderId: d.heldOrderId ?? null, cancelRefunds: cancelRefunds(d), user: { id: usr.id, name: usr.name, email: usr.email, countryCode: usr.countryCode, age: usr.age },
       payment: order ? { orderId: order.id, orderNumber: order.orderNumber, payerName: usr.name, payerEmail: usr.email, paidAt: order.paidAt ?? order.createdAt, packageName: order.packageName, amount: order.amount, currency: order.currency, provider: order.provider, providerRef: order.providerRef ?? '-', countryCode: order.countryCode, ...orderCounter(order.id, order.credits, d.id) } : null }
     return HttpResponse.json(r)
   })),
@@ -977,6 +997,17 @@ export const handlers = [
     const { text } = (await request.json()) as T.InterpretationRequest
     d.interpretation = { text, interpretedAt: helpers.now() }; d.status = 'INTERPRETED'; d.interpretedAt = helpers.now()
     db.notifications.unshift({ id: uid(), userId: d.userId, type: 'INTERPRETATION_READY', title: 'تم تفسير رؤياك', body: 'التفسير جاهز الآن في حسابك.', link: `/me/dreams/${d.id}`, createdAt: helpers.now(), readAt: null })
+    return new HttpResponse(null, { status: 204 })
+  })),
+  http.post(u('/admin/dreams/:id/cancel'), wrap(async ({ request, params }) => {
+    requireAdmin(request)
+    const d = db.dreams.find((x) => x.id === params.id)
+    if (!d) return problem(404, 'Not found')
+    if (!['IN_REVIEW', 'IN_PROGRESS', 'AWAITING_USER_REPLY', 'AWAITING_PAYMENT'].includes(d.status)) return problem(409, 'Conflict', 'This dream can no longer be cancelled')
+    const refund = cancelRefunds(d)
+    if (refund) db.ledger.push({ id: uid(), userId: d.userId, delta: 1, reason: 'REFUND', orderId: d.credit?.orderId ?? null, dreamId: d.id, createdAt: helpers.now() })
+    Object.assign(d, { status: 'CANCELLED', heldOrderId: null })
+    db.notifications.unshift({ id: uid(), userId: d.userId, type: 'DREAM_RECEIVED', title: 'أُلغيت رؤياك', body: refund ? 'أُلغيت رؤياك وأُعيد رصيدها إليك.' : 'أُلغيت رؤياك.', link: `/me/dreams/${d.id}`, createdAt: helpers.now(), readAt: null })
     return new HttpResponse(null, { status: 204 })
   })),
   // "Start interpreting": the text becomes final and the user is told how many days it will take
@@ -1108,7 +1139,9 @@ export const handlers = [
     requireAdmin(request); const q = new URL(request.url).searchParams
     const pf = parseFilters(q)
     if (!pf.ok) return problem(400, 'Bad Request', `Invalid filter: ${pf.field}`, { code: 'INVALID_FILTER', errors: { [pf.field]: ['invalid'] } })
-    const n = (s: string) => applyFilters(scoped(s), pf.f, (q.get('q') ?? '').trim()).length
+    // status and flag do not narrow the badges (each tab has its own statuses)
+    const f = { ...pf.f, status: undefined, flag: undefined }
+    const n = (s: string) => applyFilters(scoped(s), f, (q.get('q') ?? '').trim()).length
     return HttpResponse.json({ review: n('REVIEW'), domestic: n('DOMESTIC'), international: n('INTERNATIONAL'), unpaid: n('UNPAID') } satisfies T.AdminOrderCounts)
   })),
   // withdraw the unused credits of a paid order (contract §2): dreams untouched, order stays SUCCESS
@@ -1116,16 +1149,33 @@ export const handlers = [
     requireAdmin(request)
     const o = (db.orders as MockOrder[]).find((x) => x.id === params.id)
     if (!o) return problem(404, 'Not found')
-    if (o.status !== 'SUCCESS') return problem(409, 'Conflict', 'Only a successful order', { code: 'NOT_WITHDRAWABLE' })
+    if (o.status !== 'SUCCESS' || o.provider !== 'INSTAPAY') return problem(409, 'Conflict', 'Only a successful InstaPay order', { code: 'NOT_WITHDRAWABLE' })
     const left = leftoverOf(o)
     if (left < 1) return problem(409, 'Conflict', 'Nothing left to withdraw', { code: 'NOTHING_TO_WITHDRAW' })
-    const b = (await request.json().catch(() => ({}))) as { note?: string }
+    const b = (await request.json().catch(() => ({}))) as { reason?: string; note?: string }
+    const reason = b.reason as T.WithdrawReason
+    if (!['UNCONFIRMED', 'AMOUNT_SHORT', 'OTHER'].includes(reason)) return problem(400, 'Validation failed', 'reason is required', { errors: { reason: ['invalid'] } })
     const note = (b.note ?? '').trim()
+    if (reason === 'OTHER' && !note) return problem(400, 'Validation failed', 'A note is required for OTHER', { code: 'NOTE_REQUIRED' })
     if (note.length > 500) return problem(400, 'Validation failed', 'note: at most 500 characters', { errors: { note: ['max 500'] } })
-    db.ledger.push({ id: uid(), userId: o.userId, delta: -left, reason: 'REVOKE', orderId: o.id, dreamId: null, createdAt: helpers.now() })
-    Object.assign(o, { leftoverWithdrawnAt: helpers.now(), leftoverWithdrawnCredits: left, leftoverNote: note || null })
-    const words = left === 1 ? 'رؤيا واحدة' : left === 2 ? 'رؤيتان' : left <= 10 ? `${left} رؤى` : `${left} رؤيا`
+    db.ledger.push({ id: uid(), userId: o.userId, delta: -left, reason: 'REVOKE', orderId: o.id, dreamId: null, createdAt: helpers.now(), kind: 'LEFTOVER_WITHDRAWN' })
+    Object.assign(o, { leftoverWithdrawnAt: helpers.now(), leftoverWithdrawnCredits: left, leftoverNote: note || null, leftoverReason: reason, leftoverRestorable: true })
+    // after «خصم» the count is genitive: «رؤيتين»
+    const words = left === 1 ? 'رؤيا واحدة' : left === 2 ? 'رؤيتين' : left <= 10 ? `${left} رؤى` : `${left} رؤيا`
     db.notifications.unshift({ id: uid(), userId: o.userId, type: 'CREDITS_WITHDRAWN', title: 'خصم من رصيدك', body: `تم خصم ${words} من رصيد الطلب ${o.orderNumber} لأننا لم نتمكن من تأكيد الدفع. رؤاك التي فُسِّرت أو التي قيد التعبير لا تتأثر. للاستفسار تواصل معنا.`, link: '/me/payments', createdAt: helpers.now(), readAt: null })
+    return HttpResponse.json(adminOrderDetail(o))
+  })),
+  // give back the credits of the last withdrawal
+  http.post(u('/admin/payments/orders/:id/restore-leftover'), wrap(async ({ request, params }) => {
+    requireAdmin(request)
+    const o = (db.orders as MockOrder[]).find((x) => x.id === params.id)
+    if (!o) return problem(404, 'Not found')
+    const n = o.leftoverWithdrawnCredits ?? 0
+    if (!o.leftoverRestorable || n < 1) return problem(409, 'Conflict', 'Nothing to restore', { code: 'NOTHING_TO_RESTORE' })
+    db.ledger.push({ id: uid(), userId: o.userId, delta: n, reason: 'REFUND', orderId: o.id, dreamId: null, createdAt: helpers.now(), kind: 'LEFTOVER_RESTORED' })
+    Object.assign(o, { leftoverWithdrawnAt: null, leftoverWithdrawnCredits: null, leftoverNote: null, leftoverReason: null, leftoverRestorable: false })
+    const words = n === 1 ? 'رؤيا واحدة' : n === 2 ? 'رؤيتين' : n <= 10 ? `${n} رؤى` : `${n} رؤيا`
+    db.notifications.unshift({ id: uid(), userId: o.userId, type: 'CREDITS_RESTORED', title: 'أُعيد رصيدك', body: `تمت إعادة ${words} إلى رصيدك من الطلب ${o.orderNumber}.`, link: '/me/payments', createdAt: helpers.now(), readAt: null })
     return HttpResponse.json(adminOrderDetail(o))
   })),
   http.get(u('/admin/orders/:id'), wrap(async ({ request, params }) => {

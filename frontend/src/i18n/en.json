@@ -335,7 +335,18 @@
       "checkPayment": "Check your payment details",
       "rejectedOrder": "Transfer not accepted",
       "revokeLine": "Leftover credits withdrawn, order {{number}}",
-      "revokeLineNoNumber": "Leftover credits withdrawn"
+      "revokeLineNoNumber": "Leftover credits withdrawn",
+      "withdrawnChip": "Credits withdrawn: {{n}}",
+      "kind": {
+        "APPROVAL_REVOKED": "Credits taken back, order {{number}} (approval undone)",
+        "LEFTOVER_WITHDRAWN": "Leftover credits withdrawn, order {{number}}",
+        "LEFTOVER_RESTORED": "Withdrawn credits given back, order {{number}}"
+      },
+      "kindNoNumber": {
+        "APPROVAL_REVOKED": "Credits taken back after an approval was undone",
+        "LEFTOVER_WITHDRAWN": "Leftover credits withdrawn from one of your orders",
+        "LEFTOVER_RESTORED": "Withdrawn credits given back to one of your orders"
+      }
     },
     "orderStatus": {
       "INITIATED": "Not finished",
@@ -616,7 +627,8 @@
       "types": {
         "DREAM_EDITED": "Dream edited",
         "PAYMENT_REVOKED": "Review your payment",
-        "CREDITS_WITHDRAWN": "Credits withdrawn"
+        "CREDITS_WITHDRAWN": "Credits withdrawn",
+        "CREDITS_RESTORED": "Credits given back"
       }
     },
     "expiry": {
@@ -754,7 +766,16 @@
       "heldTitle": "Waiting for payment confirmation",
       "heldLead": "You undid the approval of the payment for this dream, so work on it is paused until the payment is confirmed again. You cannot start, ask or interpret it now.",
       "heldOpenOrder": "Open the payment",
-      "openOrder": "Open payment {{number}}"
+      "openOrder": "Open payment {{number}}",
+      "cancel": "Cancel the dream",
+      "cancelTitle": "Cancel this dream?",
+      "cancelBody": "The dream is cancelled and can no longer be interpreted. The dreamer gets a notification.",
+      "cancelRefund": "The credit of this dream goes back to the buyer.",
+      "cancelNoRefund": "The credit will not go back, because the leftover of this payment was withdrawn.",
+      "cancelNoRefundHeld": "No credit goes back, because this dream is waiting for its payment to be confirmed.",
+      "cancelReason": "Reason (the dreamer sees it)",
+      "cancelConfirm": "Cancel the dream",
+      "cancelled": "Dream cancelled"
     },
     "pricing": {
       "gaps": {
@@ -979,8 +1000,8 @@
         "country": "Country",
         "currency": "Currency",
         "package": "Package",
-        "from": "From date",
-        "to": "To date",
+        "from": "Created from",
+        "to": "Created to",
         "minAmount": "Lowest amount",
         "maxAmount": "Highest amount",
         "flag": "Special cases",
@@ -1003,8 +1024,16 @@
           "REVOKED": "Approval undone",
           "RESENT": "Resent after undo",
           "LEFTOVER_WITHDRAWN": "Leftover credits withdrawn"
-        }
-      }
+        },
+        "currencyFirst": "Choose a currency first to set an amount.",
+        "errMinMax": "The lowest amount is higher than the highest amount.",
+        "errFromTo": "The start date is after the end date.",
+        "errNegative": "An amount cannot be negative."
+      },
+      "paidLater": "Paid later",
+      "exportView": "Export this view",
+      "exportAll": "Export all orders",
+      "invalidFilter": "Some filter values are not valid. Fix them or clear the filters."
     },
     "insights": {
       "title": "Recommendations for you",
@@ -1461,7 +1490,9 @@
         "NOT_REVOCABLE": "This approval can no longer be undone.",
         "DREAM_ALREADY_INTERPRETED": "You cannot undo it: a dream paid by this payment is already interpreted.",
         "NOTHING_TO_WITHDRAW": "No unused credits are left on this payment.",
-        "NOT_WITHDRAWABLE": "Credits can only be withdrawn from a successful payment."
+        "NOT_WITHDRAWABLE": "Credits can only be withdrawn from a successful payment.",
+        "NOTE_REQUIRED": "Write a note that explains the reason.",
+        "NOTHING_TO_RESTORE": "There are no withdrawn credits to give back."
       },
       "orderNo": "Order number"
     },
@@ -1515,7 +1546,7 @@
       "notFound": "This payment was not found.",
       "fxEstimate": "Estimate at the recorded exchange rate",
       "revokedBanner": "Approval undone, waiting for the buyer to review",
-      "revokedBannerLead": "The buyer was asked to review the transfer details and send them again. When he does, the payment comes back to you for review. His dreams are kept until then.",
+      "revokedBannerLead": "The buyer was asked to review the transfer details and send them again. When they do, the payment comes back to you for review. The buyer's dreams are kept until then.",
       "revokeSection": "Approved this payment by mistake?",
       "revokeHint": "You can undo the approval. The dreams are kept and the buyer is asked to review the transfer details.",
       "revoke": "Undo approval",
@@ -1529,7 +1560,7 @@
       "revokeDreams": "The dreams paid by it are kept with their text and messages. Their status becomes “Waiting for payment confirmation”.",
       "revokeDreamsCount_one": "1 dream will wait for the payment.",
       "revokeDreamsCount_other": "{{count}} dreams will wait for the payment.",
-      "revokeBuyer": "The buyer gets a notification and an e-mail asking him to review the transfer details and send them again. Then the payment comes back to you for review.",
+      "revokeBuyer": "The buyer gets a notification and an e-mail asking them to review the transfer details and send them again. Then the payment comes back to you for review.",
       "revokeNote": "Note to the buyer (optional)",
       "revokeNotePlaceholder": "Example: the money did not arrive in the InstaPay account",
       "revokeConfirm": "Undo approval",
@@ -1543,14 +1574,14 @@
       "heldDreams_other": "{{count}} dreams are waiting for this payment.",
       "interpretedNotice": "A dream from this payment was interpreted, so the approval cannot be undone.",
       "leftoverQuestion": "Do you want to withdraw the credits left on this payment? ({{credits}})",
-      "leftoverQuestionLead": "Only the credits the buyer has not used from this payment are removed. His dreams are not affected.",
+      "leftoverQuestionLead": "Only the credits the buyer has not used from this payment are removed. The buyer's dreams are not affected.",
       "leftoverYes": "Yes, withdraw the credits",
       "leftoverNo": "No",
       "leftoverSecondaryTitle": "Credits left on this payment",
       "leftoverSecondaryLead": "The buyer has not used {{credits}} of this payment yet.",
       "leftoverAction": "Withdraw the leftover credits",
       "leftoverTitle": "Withdraw the leftover credits",
-      "leftoverBody": "{{credits}} will be removed from the buyer's balance: what he has not used from this payment.",
+      "leftoverBody": "{{credits}} will be removed from the buyer's balance: what the buyer has not used from this payment.",
       "leftoverKeep": "The payment stays successful. Interpreted dreams and dreams in progress do not change.",
       "leftoverBuyer": "The buyer gets a notification and an e-mail.",
       "leftoverNote": "Note (optional)",
@@ -1558,7 +1589,24 @@
       "leftoverConfirm": "Withdraw credits",
       "leftoverDone": "Leftover credits withdrawn. The buyer was told.",
       "leftoverWithdrawn": "{{credits}} withdrawn from the leftover on {{date}}",
-      "leftoverWithdrawnNote": "Note: {{note}}"
+      "leftoverWithdrawnNote": "Note: {{note}}",
+      "creditsObj_zero": "{{count}} dreams",
+      "creditsObj_one": "1 dream",
+      "creditsObj_other": "{{count}} dreams",
+      "leftoverReasonLabel": "Reason",
+      "leftoverReasonLine": "Reason: {{reason}}",
+      "leftoverReasons": {
+        "UNCONFIRMED": "We could not confirm the payment",
+        "AMOUNT_SHORT": "Less money arrived than the price",
+        "OTHER": "Other reason"
+      },
+      "leftoverNoteRequired": "Write the reason in the note.",
+      "leftoverNoteForOther": "Note (needed for another reason)",
+      "restore": "Give back the withdrawn credits",
+      "restoreTitle": "Give back the withdrawn credits",
+      "restoreBody": "{{credits}} will go back to the buyer's balance. The buyer gets a notification.",
+      "restoreConfirm": "Give back credits",
+      "restored": "The withdrawn credits were given back"
     }
   },
   "common": {
@@ -1855,5 +1903,8 @@
     "doneBody": "You will not get new video emails anymore. You can turn them back on at any time from My account.",
     "invalid": "This link is not valid. You can stop the alerts from My account.",
     "home": "Back to the site"
+  },
+  "app": {
+    "guardError": "We could not check your account right now. Check your connection and try again."
   }
 }

@@ -2,13 +2,13 @@ import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useMutation, useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query'
 import { adminApi } from '@/api/endpoints'
-import { invalidateDreams, useErrorText, useOnce } from '@/lib/apiErrors'
+import { errorCode, invalidateDreams, useErrorText, useOnce } from '@/lib/apiErrors'
 import { useAuthStore } from '@/app/auth-store'
 import { Button, ErrorBox, Input, Label, Modal, Skeleton, Switch, Textarea } from '@/components/ui'
 import { toast } from '@/components/ui/Toaster'
 import { fmtMoney } from '@/lib/utils'
 import { InstapayQr } from '@/features/user/InstapayPage'
-import type { Currency, InstapaySettings } from '@/api/types'
+import type { Currency, InstapaySettings, WithdrawReason } from '@/api/types'
 
 export const INSTAPAY_COUNTS_KEY = ['admin', 'instapay', 'counts'] as const
 
@@ -115,34 +115,74 @@ export function RevokeApprovalModal({ orderId, orderNumber, heldDreams, open, on
 }
 
 /**
- * Withdraw the unused credits of a SUCCESS order (any provider): the order stays SUCCESS, the dreams do not change,
- * the buyer is told. The page shows the server's answer at once.
+ * Withdraw the unused credits of a SUCCESS InstaPay order: a reason (a note is required for "other"), the order stays
+ * SUCCESS, the dreams do not change, the buyer is told. The page shows the server's answer at once.
  */
+const REASONS: WithdrawReason[] = ['UNCONFIRMED', 'AMOUNT_SHORT', 'OTHER']
 export function WithdrawLeftoverModal({ orderId, orderNumber, credits, open, onClose }: { orderId: string; orderNumber: string; credits: number; open: boolean; onClose: () => void }) {
   const { t } = useTranslation()
   const qc = useQueryClient()
   const errorText = useInstapayErrorText()
   const once = useOnce()
+  const [reason, setReason] = useState<WithdrawReason>('UNCONFIRMED')
   const [note, setNote] = useState('')
-  useEffect(() => { if (open) setNote('') }, [open])
+  const [tried, setTried] = useState(false)
+  useEffect(() => { if (open) { setNote(''); setReason('UNCONFIRMED'); setTried(false) } }, [open])
+  const needsNote = reason === 'OTHER' && !note.trim()
   const withdraw = useMutation({
-    mutationFn: () => adminApi.withdrawLeftover(orderId, note.trim() || undefined),
+    mutationFn: () => adminApi.withdrawLeftover(orderId, reason, note.trim() || undefined),
     meta: { toast: false },
     onSuccess: (detail) => { qc.setQueryData(['admin', 'order', orderId], detail); toast.success(t('admin.order.leftoverDone')); onClose(); invalidateAfterReview(qc, orderId) },
-    onError: (e) => { toast.error(errorText(e)); onClose(); invalidateAfterReview(qc, orderId) },
+    onError: (e) => { toast.error(errorText(e)); if (errorCode(e) !== 'NOTE_REQUIRED') { onClose(); invalidateAfterReview(qc, orderId) } },
   })
-  const amount = t('admin.order.credits', { count: credits, n: credits })
+  const amount = t('admin.order.creditsObj', { count: credits })
+  const submit = () => { setTried(true); if (!needsNote) once(() => withdraw.mutateAsync()) }
   return (
     <Modal open={open} onClose={onClose} title={t('admin.order.leftoverTitle')} size="sm" focusField={false}
-      footer={<><Button variant="ghost" onClick={onClose}>{t('common.cancel')}</Button><Button variant="ghost" className="border-danger text-danger" loading={withdraw.isPending} onClick={() => once(() => withdraw.mutateAsync())}>{t('admin.order.leftoverConfirm')}</Button></>}>
+      footer={<><Button variant="ghost" onClick={onClose}>{t('common.cancel')}</Button><Button variant="ghost" className="border-danger text-danger" loading={withdraw.isPending} onClick={submit}>{t('admin.order.leftoverConfirm')}</Button></>}>
       <p className="mb-3 text-xs text-fg-dim">{t('admin.instapay.orderNo')}: <span dir="ltr" className="select-all font-mono font-medium text-fg-muted">{orderNumber}</span></p>
       <p className="rounded-xl bg-danger/10 p-3 text-sm font-medium text-bad-ink">{t('admin.order.leftoverBody', { credits: amount })}</p>
       <ul className="mt-3 space-y-2 text-sm leading-relaxed text-fg-muted">
         {[t('admin.order.leftoverKeep'), t('admin.order.leftoverBuyer')].map((e) => <li key={e} className="flex items-start gap-2"><span aria-hidden="true" className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-gold" />{e}</li>)}
       </ul>
-      <label htmlFor="leftover-note" className="mt-4 block"><Label>{t('admin.order.leftoverNote')}</Label></label>
-      <Textarea id="leftover-note" rows={3} maxLength={500} value={note} onChange={(e) => setNote(e.target.value)} placeholder={t('admin.order.leftoverNotePlaceholder')} />
-      <div dir="ltr" className="mt-1 text-end text-[11px] tabular-nums text-fg-dim">{note.length}/500</div>
+      <fieldset className="mt-4">
+        <legend className="label">{t('admin.order.leftoverReasonLabel')}</legend>
+        <div className="space-y-2" role="radiogroup">
+          {REASONS.map((r) => (
+            <label key={r} className={`flex min-h-11 cursor-pointer items-center gap-3 rounded-xl border px-3 py-2 text-sm transition-colors ${reason === r ? 'border-gold bg-gold/10' : 'border-line'}`}>
+              <input type="radio" name="leftover-reason" value={r} checked={reason === r} onChange={() => setReason(r)} className="h-4 w-4 accent-gold" />
+              {t(`admin.order.leftoverReasons.${r}`)}
+            </label>
+          ))}
+        </div>
+      </fieldset>
+      <label htmlFor="leftover-note" className="mt-4 block"><Label>{t(reason === 'OTHER' ? 'admin.order.leftoverNoteForOther' : 'admin.order.leftoverNote')}</Label></label>
+      <Textarea id="leftover-note" rows={3} maxLength={500} value={note} onChange={(e) => setNote(e.target.value)} placeholder={t('admin.order.leftoverNotePlaceholder')}
+        aria-invalid={tried && needsNote} aria-describedby={tried && needsNote ? 'leftover-note-err' : undefined} className={tried && needsNote ? 'border-danger' : undefined} />
+      <div className="mt-1 flex items-start justify-between gap-3 text-[11px]">
+        <span id="leftover-note-err" role={tried && needsNote ? 'alert' : undefined} className="text-bad-ink">{tried && needsNote ? t('admin.order.leftoverNoteRequired') : ''}</span>
+        <span dir="ltr" className="tabular-nums text-fg-dim">{note.length}/500</span>
+      </div>
+    </Modal>
+  )
+}
+
+/** Give back the credits of the last withdrawal (a mistaken one, or the money arrived after all). */
+export function RestoreLeftoverModal({ orderId, credits, open, onClose }: { orderId: string; credits: number; open: boolean; onClose: () => void }) {
+  const { t } = useTranslation()
+  const qc = useQueryClient()
+  const errorText = useInstapayErrorText()
+  const once = useOnce()
+  const restore = useMutation({
+    mutationFn: () => adminApi.restoreLeftover(orderId),
+    meta: { toast: false },
+    onSuccess: (detail) => { qc.setQueryData(['admin', 'order', orderId], detail); toast.success(t('admin.order.restored')); onClose(); invalidateAfterReview(qc, orderId) },
+    onError: (e) => { toast.error(errorText(e)); onClose(); invalidateAfterReview(qc, orderId) },
+  })
+  return (
+    <Modal open={open} onClose={onClose} title={t('admin.order.restoreTitle')} size="sm" focusField={false}
+      footer={<><Button variant="ghost" onClick={onClose}>{t('common.cancel')}</Button><Button loading={restore.isPending} onClick={() => once(() => restore.mutateAsync())}>{t('admin.order.restoreConfirm')}</Button></>}>
+      <p className="text-sm leading-relaxed">{t('admin.order.restoreBody', { credits: t('admin.order.creditsObj', { count: credits }) })}</p>
     </Modal>
   )
 }

@@ -84,13 +84,24 @@ export function Tabs<T extends string>({ value, onChange, items }: { value: T; o
   const rowRef = useRef<HTMLDivElement>(null)
   // faded edges show there are more tabs to scroll to (start / end in reading order)
   const [edges, setEdges] = useState({ start: false, end: false })
+  const firstRun = useRef(true)
   useEffect(() => {
+    const reveal = (behavior: ScrollBehavior) => {
+      const row = rowRef.current
+      const tab = row?.querySelector<HTMLElement>('[aria-selected="true"]')
+      if (!row || !tab) return
+      const r = row.getBoundingClientRect(), b = tab.getBoundingClientRect()
+      if (b.left < r.left) row.scrollBy({ left: b.left - r.left - 16, behavior })
+      else if (b.right > r.right) row.scrollBy({ left: b.right - r.right + 16, behavior })
+    }
+    if (!firstRun.current) { reveal('smooth'); return }
+    // on arrival: once the page has laid out (fonts, counts, the enter animation), the active tab is shown at once
+    firstRun.current = false
     const row = rowRef.current
-    const tab = row?.querySelector<HTMLElement>('[aria-selected="true"]')
-    if (!row || !tab) return
-    const r = row.getBoundingClientRect(), b = tab.getBoundingClientRect()
-    if (b.left < r.left) row.scrollBy({ left: b.left - r.left - 16, behavior: 'smooth' })
-    else if (b.right > r.right) row.scrollBy({ left: b.right - r.right + 16, behavior: 'smooth' })
+    if (row) row.scrollLeft = 0
+    let id = requestAnimationFrame(() => { id = requestAnimationFrame(() => reveal('instant')) })
+    const late = window.setTimeout(() => reveal('instant'), 450)
+    return () => { cancelAnimationFrame(id); window.clearTimeout(late) }
   }, [value])
   useEffect(() => {
     const row = rowRef.current

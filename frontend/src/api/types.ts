@@ -34,6 +34,8 @@ export type NotificationType =
   | 'PAYMENT_REVOKED'
   /** To the buyer: the interpreter withdrew the unused credits of one of his payments (link /me/payments). */
   | 'CREDITS_WITHDRAWN'
+  /** To the buyer: withdrawn credits were given back (link /me/payments). */
+  | 'CREDITS_RESTORED'
 
 export interface ApiProblem {
   type: string
@@ -304,6 +306,10 @@ export interface CreditLedgerEntry {
   delta: number
   /** REVOKE: credits of an InstaPay payment whose approval the interpreter took back. */
   reason: 'PURCHASE' | 'SUBMIT' | 'REFUND' | 'MANUAL' | 'BONUS' | 'EXPIRE' | 'REVOKE'
+  /** What a REVOKE / REFUND row was about, for its label; null for ordinary rows. */
+  kind?: 'APPROVAL_REVOKED' | 'LEFTOVER_WITHDRAWN' | 'LEFTOVER_RESTORED' | null
+  /** The readable number of orderId, when the row has one. */
+  orderNumber?: string | null
   orderId: string | null
   dreamId: string | null
   createdAt: string
@@ -341,6 +347,8 @@ export interface OrderDto {
   paidAt: string | null
   /** FAILED orders: TRANSFER_REJECTED, APPROVAL_REVOKED (approval taken back), …; absent on older servers. */
   failureReason?: string | null
+  /** Credits the interpreter withdrew from this order's leftover (null / 0 when none). */
+  leftoverWithdrawnCredits?: number | null
 }
 
 // ---------- InstaPay (manual transfer, Egypt) ----------
@@ -524,6 +532,8 @@ export interface AdminDreamDetail extends Omit<DreamDetail, 'payment'> {
   userEditedAt: string | null
   /** AWAITING_PAYMENT: the order whose approval was taken back (the dream waits for it); null otherwise. */
   heldOrderId?: string | null
+  /** Cancelling gives the credit back (false when its payment's leftover was withdrawn, or no credit is held). */
+  cancelRefunds?: boolean
   user: { id: string; name: string; email: string; countryCode: string; age: number | null }
   payment: {
     orderId: string
@@ -592,6 +602,11 @@ export interface AdminOrderRow extends OrderDto {
   /** Dreams waiting (AWAITING_PAYMENT) for this order to be approved again. */
   heldDreams?: number
   leftoverWithdrawnAt?: string | null
+  leftoverWithdrawnCredits?: number | null
+  leftoverReason?: WithdrawReason | null
+  leftoverNote?: string | null
+  /** Unpaid tab: the buyer paid this booking later through another order. */
+  paidLater?: boolean
   /** Unpaid bookings: when the booking lapses (null for providers without a deadline). */
   expiresAt?: string | null
   packageId?: string | null
@@ -645,7 +660,12 @@ export interface AdminOrderDetail {
   leftoverWithdrawnAt: string | null
   leftoverWithdrawnCredits: number | null
   leftoverNote: string | null
+  leftoverReason?: WithdrawReason | null
+  /** Withdrawn credits can be given back (the last withdrawal was not restored yet). */
+  canRestoreLeftover?: boolean
 }
+/** Why the interpreter withdrew a payment's leftover; OTHER needs a note (400 NOTE_REQUIRED). */
+export type WithdrawReason = 'UNCONFIRMED' | 'AMOUNT_SHORT' | 'OTHER'
 export interface WaitTimeSettings {
   busy: boolean
   normalHours: number

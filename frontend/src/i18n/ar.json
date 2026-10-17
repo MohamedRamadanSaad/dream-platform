@@ -354,7 +354,18 @@
       "checkPayment": "راجع بيانات الدفع",
       "rejectedOrder": "لم يُقبل التحويل",
       "revokeLine": "خصم الرصيد المتبقي للطلب {{number}}",
-      "revokeLineNoNumber": "خصم الرصيد المتبقي لطلب"
+      "revokeLineNoNumber": "خصم الرصيد المتبقي لطلب",
+      "withdrawnChip": "رصيد مخصوم: {{n}}",
+      "kind": {
+        "APPROVAL_REVOKED": "سحب رصيد الطلب {{number}} (تراجع عن الموافقة)",
+        "LEFTOVER_WITHDRAWN": "خصم الرصيد المتبقي للطلب {{number}}",
+        "LEFTOVER_RESTORED": "استرجاع الرصيد المخصوم للطلب {{number}}"
+      },
+      "kindNoNumber": {
+        "APPROVAL_REVOKED": "سحب رصيد طلب بعد التراجع عن الموافقة",
+        "LEFTOVER_WITHDRAWN": "خصم الرصيد المتبقي من أحد طلباتك",
+        "LEFTOVER_RESTORED": "استرجاع رصيد مخصوم من أحد طلباتك"
+      }
     },
     "orderStatus": {
       "INITIATED": "لم يكتمل",
@@ -653,7 +664,8 @@
       "types": {
         "DREAM_EDITED": "تعديل رؤيا",
         "PAYMENT_REVOKED": "مراجعة بيانات الدفع",
-        "CREDITS_WITHDRAWN": "خصم رصيد"
+        "CREDITS_WITHDRAWN": "خصم رصيد",
+        "CREDITS_RESTORED": "استرجاع رصيد"
       }
     },
     "expiry": {
@@ -795,7 +807,16 @@
       "heldTitle": "بانتظار تأكيد الدفع",
       "heldLead": "تراجعتِ عن الموافقة على الدفعة التي دُفعت منها هذه الرؤيا، فتوقف العمل عليها حتى يُؤكَّد الدفع من جديد. لا يمكن البدء أو الاستفسار أو التعبير الآن.",
       "heldOpenOrder": "فتح الدفعة",
-      "openOrder": "فتح الدفعة {{number}}"
+      "openOrder": "فتح الدفعة {{number}}",
+      "cancel": "إلغاء الرؤيا",
+      "cancelTitle": "إلغاء هذه الرؤيا؟",
+      "cancelBody": "تُلغى الرؤيا ولا يمكن تعبيرها بعد ذلك، ويصل صاحبها إشعار بالإلغاء.",
+      "cancelRefund": "يُعاد رصيد هذه الرؤيا إلى المشتري.",
+      "cancelNoRefund": "لن يُعاد الرصيد لأن الرصيد المتبقي لهذه الدفعة خُصم.",
+      "cancelNoRefundHeld": "لن يُعاد رصيد لأن هذه الرؤيا بانتظار تأكيد الدفع.",
+      "cancelReason": "سبب الإلغاء (يراه صاحب الرؤيا)",
+      "cancelConfirm": "إلغاء الرؤيا",
+      "cancelled": "أُلغيت الرؤيا"
     },
     "pricing": {
       "gaps": {
@@ -1032,8 +1053,8 @@
         "country": "البلد",
         "currency": "العملة",
         "package": "الباقة",
-        "from": "من تاريخ",
-        "to": "إلى تاريخ",
+        "from": "تاريخ الإنشاء من",
+        "to": "تاريخ الإنشاء إلى",
         "minAmount": "أقل مبلغ",
         "maxAmount": "أعلى مبلغ",
         "flag": "حالات خاصة",
@@ -1056,8 +1077,16 @@
           "REVOKED": "تم التراجع عن موافقتها",
           "RESENT": "أُعيد إرسالها بعد التراجع",
           "LEFTOVER_WITHDRAWN": "خُصم رصيدها المتبقي"
-        }
-      }
+        },
+        "currencyFirst": "اختاري العملة أولًا لتحديد المبلغ.",
+        "errMinMax": "أقل مبلغ أكبر من أعلى مبلغ.",
+        "errFromTo": "تاريخ البداية بعد تاريخ النهاية.",
+        "errNegative": "المبلغ لا يكون سالبًا."
+      },
+      "paidLater": "دفع لاحقًا",
+      "exportView": "تصدير هذه النتائج",
+      "exportAll": "تصدير كل الطلبات",
+      "invalidFilter": "قيم التصفية غير صحيحة. صحّحها أو امسح التصفية."
     },
     "insights": {
       "title": "توصيات لكِ",
@@ -1526,7 +1555,9 @@
         "NOT_REVOCABLE": "لم يعد ممكنًا التراجع عن هذه الموافقة.",
         "DREAM_ALREADY_INTERPRETED": "لا يمكن التراجع: إحدى الرؤى المدفوعة من هذه الدفعة فُسِّرت بالفعل.",
         "NOTHING_TO_WITHDRAW": "لم يبقَ رصيد غير مستخدم في هذه الدفعة.",
-        "NOT_WITHDRAWABLE": "لا يمكن خصم الرصيد إلا من دفعة ناجحة."
+        "NOT_WITHDRAWABLE": "لا يمكن خصم الرصيد إلا من دفعة ناجحة.",
+        "NOTE_REQUIRED": "اكتبي ملاحظة توضّح السبب.",
+        "NOTHING_TO_RESTORE": "لا يوجد رصيد مخصوم لاسترجاعه."
       },
       "orderNo": "رقم الطلب"
     },
@@ -1625,15 +1656,35 @@
       "leftoverSecondaryLead": "لم يستخدم المشتري {{credits}} من هذه الدفعة بعد.",
       "leftoverAction": "خصم الرصيد المتبقي",
       "leftoverTitle": "خصم الرصيد المتبقي",
-      "leftoverBody": "سيُخصم {{credits}} من رصيد المشتري، وهو ما لم يستخدمه من هذه الدفعة.",
+      "leftoverBody": "سيتم خصم {{credits}} من رصيد المشتري، وهو ما لم يستخدمه من هذه الدفعة.",
       "leftoverKeep": "تبقى الدفعة ناجحة، ولا تتغير الرؤى المفسَّرة أو التي قيد التعبير.",
       "leftoverBuyer": "يصل المشتري إشعار وبريد بالخصم.",
       "leftoverNote": "ملاحظة (اختيارية)",
       "leftoverNotePlaceholder": "مثال: لم يصل باقي المبلغ",
       "leftoverConfirm": "خصم الرصيد",
       "leftoverDone": "تم خصم الرصيد المتبقي وأُبلغ المشتري",
-      "leftoverWithdrawn": "خُصم {{credits}} من الرصيد المتبقي في {{date}}",
-      "leftoverWithdrawnNote": "الملاحظة: {{note}}"
+      "leftoverWithdrawn": "تم خصم {{credits}} من الرصيد المتبقي في {{date}}",
+      "leftoverWithdrawnNote": "الملاحظة: {{note}}",
+      "creditsObj_zero": "{{count}} رؤيا",
+      "creditsObj_one": "رؤيا واحدة",
+      "creditsObj_two": "رؤيتين",
+      "creditsObj_few": "{{count}} رؤى",
+      "creditsObj_many": "{{count}} رؤيا",
+      "creditsObj_other": "{{count}} رؤيا",
+      "leftoverReasonLabel": "سبب الخصم",
+      "leftoverReasonLine": "السبب: {{reason}}",
+      "leftoverReasons": {
+        "UNCONFIRMED": "لم نتمكن من تأكيد الدفع",
+        "AMOUNT_SHORT": "المبلغ المحوَّل أقل من المطلوب",
+        "OTHER": "سبب آخر"
+      },
+      "leftoverNoteRequired": "اكتبي السبب في الملاحظة.",
+      "leftoverNoteForOther": "ملاحظة (مطلوبة لسبب آخر)",
+      "restore": "استرجاع الرصيد المخصوم",
+      "restoreTitle": "استرجاع الرصيد المخصوم",
+      "restoreBody": "سيتم إرجاع {{credits}} إلى رصيد المشتري، ويصله إشعار بذلك.",
+      "restoreConfirm": "استرجاع الرصيد",
+      "restored": "أُعيد الرصيد المخصوم إلى المشتري"
     }
   },
   "common": {
@@ -1937,5 +1988,8 @@
     "doneBody": "لن تصلك رسائل الفيديوهات الجديدة بعد الآن. يمكنك إعادة تشغيلها في أي وقت من صفحة «حسابي».",
     "invalid": "هذا الرابط غير صالح. يمكنك إيقاف التنبيهات من صفحة «حسابي».",
     "home": "العودة إلى الموقع"
+  },
+  "app": {
+    "guardError": "تعذّر التحقق من حسابك الآن. تأكد من الاتصال ثم أعد المحاولة."
   }
 }

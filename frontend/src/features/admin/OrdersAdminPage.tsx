@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next'
 import type { TFunction } from 'i18next'
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { adminApi } from '@/api/endpoints'
-import { useErrorText } from '@/lib/apiErrors'
+import { errorCode, useErrorText } from '@/lib/apiErrors'
 import { useAuthStore } from '@/app/auth-store'
 import { Button, Empty, ErrorBox, Input, Skeleton, StatusBadge, Tabs } from '@/components/ui'
 import { Pager, Chevron } from '@/components/ui/Pager'
@@ -13,7 +13,7 @@ import { Icon } from '@/components/icons/Icon'
 import { PageEnter } from '@/components/motion'
 import { cn, flagEmoji, fmtDate, fmtMoney, fmtNum, timeAgo } from '@/lib/utils'
 import type { AdminOrderFilters, AdminOrderRow, OrderScope } from '@/api/types'
-import { OrderFilterBar, activeCount, fitToTab, readFilters, writeFilters, type OrdersTab } from './OrderFilters'
+import { OrderFilterBar, activeCount, fitToTab, hasErrors, readFilters, validateFilters, writeFilters, type OrdersTab } from './OrderFilters'
 import { hoursLeft } from '@/lib/utils'
 
 type Tab = OrdersTab
@@ -25,20 +25,26 @@ const resentAfterUndo = (o: { revokedAt?: string | null; status: string }) => !!
 
 export function ResentChip() {
   const { t } = useTranslation()
-  return <span className="chip bg-danger/10 font-medium text-danger"><Icon name="undo" size={12} flipRtl />{t('admin.orders.resentAfterUndo')}</span>
+  return <span className="chip whitespace-nowrap bg-danger/10 font-medium text-danger"><Icon name="undo" size={12} flipRtl />{t('admin.orders.resentAfterUndo')}</span>
 }
 
 /** "Expires in 5 hours" for a booking still open, "Expired" once past (or EXPIRED). */
 function ExpiryChip({ o }: { o: AdminOrderRow }) {
   const { t } = useTranslation()
   const h = o.expiresAt ? hoursLeft(o.expiresAt) : null
-  if (o.status === 'EXPIRED' || (h != null && h <= 0)) return <span className="chip bg-surface-2 text-fg-dim"><span className="h-1.5 w-1.5 rounded-full bg-current" />{t('admin.orders.expired')}</span>
+  if (o.status === 'FAILED') return null
+  if (o.status === 'EXPIRED' || (h != null && h <= 0)) return <span className="chip whitespace-nowrap bg-surface-2 text-fg-dim"><span className="h-1.5 w-1.5 rounded-full bg-current" />{t('admin.orders.expired')}</span>
   if (h == null) return null
   const span = h < 48 ? t('common.hourCount', { count: Math.max(1, Math.round(h)) }) : t('common.dayCount', { count: Math.round(h / 24) })
-  return <span className={cn('chip font-medium', h < 6 ? 'bg-warn/10 text-warn' : 'bg-info/10 text-info')}><span className="h-1.5 w-1.5 rounded-full bg-current" />{t('admin.orders.expiresIn', { x: span })}</span>
+  return <span className={cn('chip whitespace-nowrap font-medium', h < 6 ? 'bg-warn/10 text-warn' : 'bg-info/10 text-info')}><span className="h-1.5 w-1.5 rounded-full bg-current" />{t('admin.orders.expiresIn', { x: span })}</span>
 }
 
-/** CSV of the orders of the current tab and filters, fetched page by page. Failure reasons in the page's language. */
+function PaidLaterChip() {
+  const { t } = useTranslation()
+  return <span className="chip whitespace-nowrap bg-success/10 font-medium text-success"><Icon name="check" size={12} />{t('admin.orders.paidLater')}</span>
+}
+
+/** CSV of the current tab and filters ("this view") or of every order (ALL, no filters), page by page. */
 async function exportCsv(t: TFunction, scope: OrderScope, q: string, filters: AdminOrderFilters) {
   const rows: AdminOrderRow[] = []
   for (let page = 0; ; page++) {
@@ -46,9 +52,11 @@ async function exportCsv(t: TFunction, scope: OrderScope, q: string, filters: Ad
     rows.push(...res.items)
     if (res.items.length === 0 || rows.length >= res.total) break
   }
-  const head = 'orderNumber,id,user,email,package,amount,currency,settledEgp,status,failureReason,resentAfterUndo,revokedAt,provider,ref,transferRef,sender,country,createdAt,paidAt'
+  const head = 'orderNumber,id,user,email,package,credits,amount,currency,settledEgp,status,failureReason,resentAfterUndo,revokedAt,leftoverWithdrawnAt,leftoverWithdrawnCredits,leftoverReason,leftoverNote,provider,ref,transferRef,sender,country,createdAt,expiresAt,paidAt'
   const failure = (r?: string | null) => (!r ? '' : r === 'TRANSFER_REJECTED' || r === 'APPROVAL_REVOKED' ? t(`admin.order.failure.${r}`) : t('admin.order.failure.other', { reason: r }))
-  const csv = [head, ...rows.map((o) => [o.orderNumber, o.id, o.userName, o.userEmail, o.packageName, o.amount, o.currency, o.settledAmountEgp ?? '', o.status, failure(o.failureReason), resentAfterUndo(o) ? t('admin.orders.resentAfterUndo') : '', o.revokedAt ?? '', o.provider, o.providerRef ?? '', o.transferReference ?? '', o.transferSenderName ?? '', o.countryCode, o.createdAt, o.paidAt ?? ''].map((x) => `"${String(x).replace(/"/g, '""')}"`).join(','))].join('\n')
+  const csv = [head, ...rows.map((o) => [o.orderNumber, o.id, o.userName, o.userEmail, o.packageName, o.credits, o.amount, o.currency, o.settledAmountEgp ?? '', o.status, failure(o.failureReason), resentAfterUndo(o) ? t('admin.orders.resentAfterUndo') : '', o.revokedAt ?? '',
+    o.leftoverWithdrawnAt ?? '', o.leftoverWithdrawnCredits ?? '', o.leftoverReason ? t(`admin.order.leftoverReasons.${o.leftoverReason}`) : '', o.leftoverNote ?? '',
+    o.provider, o.providerRef ?? '', o.transferReference ?? '', o.transferSenderName ?? '', o.countryCode, o.createdAt, o.expiresAt ?? '', o.paidAt ?? ''].map((x) => `"${String(x).replace(/"/g, '""')}"`).join(','))].join('\n')
   const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob(['﻿' + csv], { type: 'text/csv' })); a.download = 'orders.csv'; a.click()
 }
 
@@ -72,7 +80,7 @@ export function OrdersAdminPage() {
   const fromUrl = params.get('tab') as Tab | null
   const tab: Tab = fromUrl && TABS.includes(fromUrl) ? fromUrl : 'REVIEW'
   const page = Math.max(0, Number(params.get('page') ?? 1) - 1) || 0
-  const [exporting, setExporting] = useState(false)
+  const [exporting, setExporting] = useState<'view' | 'all' | null>(null)
   // order-number search inside the current tab; the server searches after a short pause in typing
   const [search, setSearch] = useState(params.get('q') ?? '')
   const term = params.get('q') ?? ''
@@ -86,12 +94,18 @@ export function OrdersAdminPage() {
 
   const filters = useMemo(() => readFilters(params), [params])
   const fkey = JSON.stringify(filters)
-  const counts = useQuery({ queryKey: ['admin', 'orders', 'counts', fkey, term], queryFn: () => adminApi.orderCounts(filters, term), refetchInterval: 60_000, placeholderData: keepPreviousData })
-  const q = useQuery({ queryKey: ['admin', 'orders', tab, page, term, fkey], queryFn: () => adminApi.orders(tab, page, PAGE_SIZE, term, filters), placeholderData: keepPreviousData })
+  // a combination the server would refuse is never sent: the fields say what to fix
+  const invalid = hasErrors(validateFilters(filters))
+  // tab badges ignore status and flag (each tab has its own statuses)
+  const ckey = JSON.stringify({ ...filters, status: undefined, flag: undefined })
+  const counts = useQuery({ queryKey: ['admin', 'orders', 'counts', ckey, term], queryFn: () => adminApi.orderCounts(filters, term), refetchInterval: 60_000, placeholderData: keepPreviousData, enabled: !invalid })
+  const q = useQuery({ queryKey: ['admin', 'orders', tab, page, term, fkey], queryFn: () => adminApi.orders(tab, page, PAGE_SIZE, term, filters), placeholderData: keepPreviousData, enabled: !invalid })
   const errorText = useErrorText('admin.orders.errors')
   // a new history entry per tab and per filter change: Back returns to the view before
   const setTab = (v: Tab) => { if (v !== tab) setParams((p) => { const n = writeFilters(p, fitToTab(readFilters(p), v)); n.set('tab', v); return n }) }
   const setFilters = (f: AdminOrderFilters) => setParams((p) => writeFilters(p, f))
+  // the address as it is now (two edits in the same moment, like both amounts, must not undo each other)
+  const patchFilters = (patch: Partial<AdminOrderFilters>) => setParams(() => { const p = new URLSearchParams(window.location.search); return writeFilters(p, { ...readFilters(p), ...patch }) })
   const setPage = (v: number) => {
     setParams((p) => { const n = new URLSearchParams(p); if (v > 0) n.set('page', String(v + 1)); else n.delete('page'); return n })
     window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -111,9 +125,14 @@ export function OrdersAdminPage() {
           <h1 className="font-display text-4xl">{t('admin.orders.title')}</h1>
           <p className="mt-1 text-sm font-light text-fg-muted">{t('admin.orders.lead')}</p>
         </div>
-        <Button size="sm" variant="ghost" loading={exporting} onClick={async () => { setExporting(true); try { await exportCsv(t, tab, term, filters) } finally { setExporting(false) } }}>
-          <Icon name="download" size={15} />{t('admin.orders.export')}
-        </Button>
+        <div className="flex flex-wrap gap-2">
+          <Button size="sm" variant="ghost" loading={exporting === 'view'} disabled={!!exporting || invalid} onClick={async () => { setExporting('view'); try { await exportCsv(t, tab, term, filters) } finally { setExporting(null) } }}>
+            <Icon name="download" size={15} />{t('admin.orders.exportView')}
+          </Button>
+          <Button size="sm" variant="ghost" loading={exporting === 'all'} disabled={!!exporting} onClick={async () => { setExporting('all'); try { await exportCsv(t, 'ALL', '', {}) } finally { setExporting(null) } }}>
+            <Icon name="download" size={15} />{t('admin.orders.exportAll')}
+          </Button>
+        </div>
       </div>
 
       <Tabs value={tab} onChange={setTab} items={[
@@ -123,7 +142,7 @@ export function OrdersAdminPage() {
         { value: 'UNPAID', label: t('admin.orders.tabs.UNPAID'), count: c?.unpaid != null ? fmtNum(c.unpaid, locale) : undefined },
       ]} />
 
-      <OrderFilterBar tab={tab} filters={filters} onChange={setFilters} search={
+      <OrderFilterBar tab={tab} filters={filters} onPatch={patchFilters} onClear={() => setFilters({})} search={
         <div className="relative">
           <span className="pointer-events-none absolute inset-y-0 start-3 flex items-center text-fg-dim"><Icon name="search" size={18} /></span>
           <Input type="search" value={search} onChange={(e) => setSearch(e.target.value)} placeholder={t('admin.orders.search')} aria-label={t('admin.orders.search')} className="h-11 ps-10" />
@@ -131,7 +150,14 @@ export function OrdersAdminPage() {
       } />
 
       <div className={cn('mt-4 transition-opacity', q.isPlaceholderData && 'opacity-60')}>
-        {q.isLoading ? <div className="space-y-3">{[1, 2, 3, 4].map((i) => <Skeleton key={i} className="h-20" />)}</div>
+        {invalid || errorCode(q.error) === 'INVALID_FILTER' ? (
+          // asking again would give the same answer: say what is wrong and offer to clear the filters
+          <div role="alert" className="card flex flex-col items-center gap-3 border-danger/30 p-8 text-center">
+            <span className="text-bad-ink"><Icon name="filter" size={26} /></span>
+            <p className="text-sm text-fg-muted">{t('admin.orders.invalidFilter')}</p>
+            <Button size="sm" variant="ghost" onClick={() => setFilters({})}>{t('admin.orders.filters.clearAll')}</Button>
+          </div>
+        ) : q.isLoading ? <div className="space-y-3">{[1, 2, 3, 4].map((i) => <Skeleton key={i} className="h-20" />)}</div>
           : q.isError ? <ErrorBox message={errorText(q.error)} onRetry={() => q.refetch()} />
           : items.length === 0 ? <Empty text={term ? t('admin.orders.noMatch') : activeCount(filters) > 0 ? t('admin.orders.noFilterMatch') : t(`admin.orders.empty.${tab}`)} />
           : (
@@ -154,7 +180,8 @@ export function OrdersAdminPage() {
                       <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2 text-xs text-fg-dim">
                         <StatusBadge status={o.status} kind="order" />
                         {resentAfterUndo(o) && <ResentChip />}
-                        {unpaid && o.status === 'INITIATED' && <ExpiryChip o={o} />}
+                        {unpaid && <ExpiryChip o={o} />}
+                        {unpaid && o.paidLater && <PaidLaterChip />}
                         <span><span aria-hidden="true">{flagEmoji(o.countryCode)}</span> {o.countryCode}</span>
                         {o.attachedDreams > 0 && <span className="inline-flex items-center gap-1 text-gold-ink"><Icon name="moon" size={13} />{t('admin.orders.dreamsN', { count: o.attachedDreams, n: o.attachedDreams })}</span>}
                         <span className="ms-auto">{review && o.transferSubmittedAt ? timeAgo(o.transferSubmittedAt, locale) : fmtDate(o.createdAt, locale)}</span>
@@ -196,7 +223,7 @@ export function OrdersAdminPage() {
                         </td>
                         <td className="px-3 py-3">{o.packageName}</td>
                         <td className="px-3 py-3"><Amount o={o} /></td>
-                        <td className="px-3 py-3"><div className="flex flex-col items-start gap-1"><StatusBadge status={o.status} kind="order" />{resentAfterUndo(o) && <ResentChip />}</div></td>
+                        <td className="px-3 py-3"><div className={cn('flex items-start gap-1', unpaid ? 'flex-nowrap items-center whitespace-nowrap' : 'flex-col')}><StatusBadge status={o.status} kind="order" />{resentAfterUndo(o) && <ResentChip />}{unpaid && o.paidLater && <PaidLaterChip />}</div></td>
                         <td className="px-3 py-3 text-xs">
                           {unpaid ? <ExpiryChip o={o} /> : review ? <span dir="ltr" className="font-mono tracking-wider">{o.transferReference ?? ''}</span>
                             : <span dir="ltr" className="inline-block text-start">{o.provider}{o.providerRef ? <span className="block max-w-[10rem] truncate text-[11px] text-fg-dim">{o.providerRef}</span> : null}</span>}

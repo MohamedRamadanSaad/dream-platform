@@ -66,6 +66,34 @@ function StartDialog({ open, onClose, dreamId }: { open: boolean; onClose: () =>
   )
 }
 
+/** Cancel a dream still being worked on; says plainly whether its credit goes back to the buyer. */
+function CancelDialog({ open, onClose, dreamId, refunds, held }: { open: boolean; onClose: () => void; dreamId: string; refunds: boolean; held: boolean }) {
+  const { t } = useTranslation()
+  const qc = useQueryClient()
+  const once = useOnce()
+  const errorText = useErrorText('admin.dream.errors', 'me.dreamErrors')
+  const [reason, setReason] = useState('')
+  useEffect(() => { if (open) setReason('') }, [open])
+  const refresh = () => { qc.invalidateQueries({ queryKey: ['admin'] }); invalidateDreams(qc, [dreamId]) }
+  const cancel = useMutation({
+    mutationFn: () => adminApi.cancel(dreamId, reason.trim()),
+    meta: { toast: false },
+    onSuccess: () => { toast.success(t('admin.dream.cancelled')); onClose(); refresh() },
+    onError: (e) => { toast.error(errorText(e)); refresh() },
+  })
+  return (
+    <Modal open={open} onClose={onClose} title={t('admin.dream.cancelTitle')} size="sm" focusField={false}
+      footer={<><Button variant="ghost" onClick={onClose}>{t('common.cancel')}</Button><Button variant="ghost" className="border-danger text-danger" loading={cancel.isPending} onClick={() => once(() => cancel.mutateAsync())}>{t('admin.dream.cancelConfirm')}</Button></>}>
+      <p className="text-sm leading-relaxed text-fg-muted">{t('admin.dream.cancelBody')}</p>
+      <p className={cn('mt-3 rounded-xl p-3 text-sm', refunds ? 'bg-success/10 text-success' : 'bg-warn/10 text-warn')}>
+        {t(refunds ? 'admin.dream.cancelRefund' : held ? 'admin.dream.cancelNoRefundHeld' : 'admin.dream.cancelNoRefund')}
+      </p>
+      <label htmlFor="cancel-reason" className="mt-4 block"><Label>{t('admin.dream.cancelReason')}</Label></label>
+      <Textarea id="cancel-reason" rows={3} maxLength={500} value={reason} onChange={(e) => setReason(e.target.value)} />
+    </Modal>
+  )
+}
+
 export function AdminDreamPage() {
   const { t } = useTranslation()
   const { id } = useParams()
@@ -77,6 +105,7 @@ export function AdminDreamPage() {
   const [text, setText] = useState('')
   const [confirm, setConfirm] = useState(false)
   const [starting, setStarting] = useState(false)
+  const [cancelling, setCancelling] = useState(false)
   const inv = () => { qc.invalidateQueries({ queryKey: ['admin'] }); qc.invalidateQueries({ queryKey: ['notifications'] }) }
   const ask = useMutation({ mutationFn: () => adminApi.ask(id!, question), meta: { toast: 'common.sent' }, onSuccess: () => { setQuestion(''); inv() } })
   const publish = useMutation({ mutationFn: () => adminApi.interpret(id!, { text }), meta: { toast: 'common.published' }, onSuccess: () => { setConfirm(false); inv(); navigate('/admin/dreams') } })
@@ -180,7 +209,11 @@ export function AdminDreamPage() {
           ) : <p className="text-sm text-fg-muted">{t('admin.dream.noOrder')}</p>}
         </div>
         <Link to={`/admin/users/${d.user.id}`} className="card card-hover flex items-center gap-3 p-5 text-sm"><span className="text-gold-ink"><Icon name="user" size={22} /></span>{t('admin.dream.user360')} {arrowNext(locale)}</Link>
+        {(open || d.status === 'AWAITING_PAYMENT') && (
+          <Button variant="ghost" className="min-h-11 w-full border-danger/50 text-danger hover:bg-danger/5" aria-haspopup="dialog" onClick={() => setCancelling(true)}>{t('admin.dream.cancel')}</Button>
+        )}
       </aside>
+      <CancelDialog open={cancelling} onClose={() => setCancelling(false)} dreamId={d.id} refunds={d.status !== 'AWAITING_PAYMENT' && d.cancelRefunds !== false} held={d.status === 'AWAITING_PAYMENT'} />
 
       <StartDialog open={starting} onClose={() => setStarting(false)} dreamId={d.id} />
       <Modal open={confirm} onClose={() => setConfirm(false)} title={t('admin.dream.publish')} size="sm"

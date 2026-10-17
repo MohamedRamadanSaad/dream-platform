@@ -3,7 +3,7 @@ import { createBrowserRouter, Navigate, Outlet, useLocation, useNavigate } from 
 import { useTranslation } from 'react-i18next'
 import { useQuery } from '@tanstack/react-query'
 import { adminApi, meApi } from '@/api/endpoints'
-import { Skeleton } from '@/components/ui'
+import { ErrorBox, Skeleton } from '@/components/ui'
 import { useAuthStore, isInterpreter } from './auth-store'
 import { AppShell } from '@/components/layout'
 import LandingPage from '@/features/public/LandingPage'
@@ -89,6 +89,7 @@ function landingOf(role: 'USER' | 'INTERPRETER', loc: { pathname: string; hash: 
  * /admin URL or editing local storage cannot open them (the API refuses non-interpreters with 403 anyway).
  */
 function RequireAuth({ role }: { role?: 'USER' | 'INTERPRETER' }) {
+  const { t } = useTranslation()
   const user = useAuthStore((s) => s.user)
   const setUser = useAuthStore((s) => s.setUser)
   const loc = useLocation()
@@ -96,14 +97,16 @@ function RequireAuth({ role }: { role?: 'USER' | 'INTERPRETER' }) {
   useEffect(() => { if (me.data) setUser(me.data) }, [me.data, setUser])
   // the hash survives the sign-in (e.g. #devices from the new sign-in e-mail)
   if (!user) return <Navigate to={`/login?next=${encodeURIComponent(loc.pathname + loc.search + loc.hash)}`} replace />
+  // the server could not answer: never bounce between /me and /admin (each guard would send to the other)
+  const guardError = <div className="mx-auto max-w-lg px-4 py-16"><ErrorBox message={t('app.guardError')} onRetry={() => me.refetch()} /></div>
   if (role === 'INTERPRETER') {
-    if (me.isError) return <Navigate to="/me" replace />
+    if (me.isError) return guardError
     if (!me.data) return <div className="mx-auto max-w-6xl space-y-4 px-4 py-10"><Skeleton className="h-10 w-1/3" /><Skeleton className="h-64" /></div>
     if (!isInterpreter(me.data)) return <Navigate to={landingOf('USER', loc)} replace />
   }
   const current = me.data ?? user
   if (!current.onboarded && loc.pathname !== '/onboarding') return <Navigate to="/onboarding" replace />
-  if (role === 'USER' && isInterpreter(current)) return <Navigate to={landingOf('INTERPRETER', loc)} replace />
+  if (role === 'USER' && isInterpreter(current)) return me.isError ? guardError : <Navigate to={landingOf('INTERPRETER', loc)} replace />
   return <Outlet />
 }
 
