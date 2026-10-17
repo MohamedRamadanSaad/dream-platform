@@ -1,4 +1,4 @@
-### commit fee57d1a693666f9a549d9005294352e04a52c21 run 39025583416 Sat Oct 17 10:39:38 UTC 2026
+### commit 58bf724645704cd24d9ac3c93e2f929ee28cff95 run 39027382149 Sat Oct 17 11:07:42 UTC 2026
 ## tests
 com.saadat.tracking.service.UserAgentsTest tests=20 failures=0 errors=0
 com.saadat.settings.AdminWaitTimeIntegrationTest tests=2 failures=0 errors=0
@@ -41,7 +41,7 @@ com.saadat.credits.CreditLotsTest tests=7 failures=0 errors=0
 com.saadat.youtube.service.YoutubeNewVideoMailIntegrationTest tests=1 failures=0 errors=0
 com.saadat.common.web.CountryResolverTest tests=5 failures=0 errors=0
 com.saadat.tracking.TrackIntegrationTest tests=5 failures=0 errors=0
-com.saadat.dreams.UxPaymentsReviewIntegrationTest tests=10 failures=0 errors=0
+com.saadat.dreams.UxPaymentsReviewIntegrationTest tests=10 failures=1 errors=0
 com.saadat.admin.analytics.InsightsIntegrationTest tests=2 failures=0 errors=0
 com.saadat.ops.GoLiveResetScriptIntegrationTest tests=1 failures=0 errors=0
 com.saadat.admin.analytics.TrafficIntegrationTest tests=6 failures=0 errors=0
@@ -56,6 +56,7 @@ com.saadat.mail.inbound.InboxMessageReaderTest tests=3 failures=0 errors=0
 com.saadat.ContextLoadsTest tests=6 failures=0 errors=0
 com.saadat.mail.SentFolderArchiverTest tests=3 failures=0 errors=0
 com.saadat.mail.MailServiceIntegrationTest tests=7 failures=0 errors=0
+com.saadat.common.util.CreditCountsTest tests=1 failures=0 errors=0
 com.saadat.reports.pdf.ArabicPdfReordererTest tests=4 failures=0 errors=0
 com.saadat.reports.ExcelExportIntegrationTest tests=2 failures=0 errors=0
 com.saadat.users.MeControllerIntegrationTest tests=5 failures=0 errors=0
@@ -66,9 +67,26 @@ com.saadat.auth.service.NewSignInMailIntegrationTest tests=5 failures=0 errors=0
 com.saadat.youtube.YoutubeFeedParserTest tests=3 failures=0 errors=0
 com.saadat.dreams.DreamFlowIntegrationTest tests=7 failures=0 errors=0
 com.saadat.youtube.service.YoutubeChannelPageParserTest tests=8 failures=0 errors=0
-com.saadat.payments.PaymentsFiltersIntegrationTest tests=6 failures=0 errors=0
+com.saadat.payments.PaymentsFiltersIntegrationTest tests=13 failures=0 errors=0
 ## failures
+--- backend/build/test-results/test/TEST-com.saadat.dreams.UxPaymentsReviewIntegrationTest.xml
+    <failure message="java.lang.AssertionError: &#10;Expecting ArrayList:&#10;  []&#10;to contain:&#10;  [&quot;12347a21-ffb7-4d6b-b8a9-33651ddb7d5b&quot;]&#10;but could not find the following element(s):&#10;  [&quot;12347a21-ffb7-4d6b-b8a9-33651ddb7d5b&quot;]&#10;" type="java.lang.AssertionError">java.lang.AssertionError: 
+Expecting ArrayList:
+  []
+to contain:
+  [&quot;12347a21-ffb7-4d6b-b8a9-33651ddb7d5b&quot;]
+but could not find the following element(s):
+  [&quot;12347a21-ffb7-4d6b-b8a9-33651ddb7d5b&quot;]
+
+	at com.saadat.dreams.UxPaymentsReviewIntegrationTest.ordersWithoutACountryAreInternationalAndTheReviewTabIsOldestFirst(UxPaymentsReviewIntegrationTest.java:462)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+</failure>
 ## build.log (errors + tail)
+16:UxPaymentsReviewIntegrationTest > ordersWithoutACountryAreInternationalAndTheReviewTabIsOldestFirst() FAILED
+37:> Task :test FAILED
+49:BUILD FAILED in 1m 39s
 ...
 To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.14.3/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
 Daemon will be stopped at the end of the build 
@@ -85,16 +103,38 @@ Daemon will be stopped at the end of the build
 OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
 > Task :test
 
-10:39:37.942 INFO  [SpringApplicationShutdownHook] [] o.s.o.j.LocalContainerEntityManagerFactoryBean - Closing JPA EntityManagerFactory for persistence unit 'default'
-10:39:37.946 INFO  [SpringApplicationShutdownHook] [] com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated...
-10:39:37.967 INFO  [SpringApplicationShutdownHook] [] com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed.
-10:39:37.980 INFO  [SpringApplicationShutdownHook] [] o.s.o.j.LocalContainerEntityManagerFactoryBean - Closing JPA EntityManagerFactory for persistence unit 'default'
-10:39:37.982 INFO  [SpringApplicationShutdownHook] [] com.zaxxer.hikari.HikariDataSource - HikariPool-2 - Shutdown initiated...
-10:39:37.990 INFO  [SpringApplicationShutdownHook] [] com.zaxxer.hikari.HikariDataSource - HikariPool-2 - Shutdown completed.
+UxPaymentsReviewIntegrationTest > ordersWithoutACountryAreInternationalAndTheReviewTabIsOldestFirst() FAILED
+    java.lang.AssertionError: 
+    Expecting ArrayList:
+      []
+    to contain:
+      ["12347a21-ffb7-4d6b-b8a9-33651ddb7d5b"]
+    but could not find the following element(s):
+      ["12347a21-ffb7-4d6b-b8a9-33651ddb7d5b"]
+        at com.saadat.dreams.UxPaymentsReviewIntegrationTest.ordersWithoutACountryAreInternationalAndTheReviewTabIsOldestFirst(UxPaymentsReviewIntegrationTest.java:462)
 
-> Task :check
-> Task :build
-gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/__run-1792233507514.json
+11:07:41.375 INFO  [SpringApplicationShutdownHook] [] o.s.o.j.LocalContainerEntityManagerFactoryBean - Closing JPA EntityManagerFactory for persistence unit 'default'
+11:07:41.379 INFO  [SpringApplicationShutdownHook] [] com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated...
+11:07:41.396 INFO  [SpringApplicationShutdownHook] [] com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed.
+11:07:41.411 INFO  [SpringApplicationShutdownHook] [] o.s.o.j.LocalContainerEntityManagerFactoryBean - Closing JPA EntityManagerFactory for persistence unit 'default'
+11:07:41.411 INFO  [SpringApplicationShutdownHook] [] com.zaxxer.hikari.HikariDataSource - HikariPool-2 - Shutdown initiated...
+11:07:41.425 INFO  [SpringApplicationShutdownHook] [] com.zaxxer.hikari.HikariDataSource - HikariPool-2 - Shutdown completed.
 
-BUILD SUCCESSFUL in 1m 14s
+> Task :test
+
+381 tests completed, 1 failed
+
+> Task :test FAILED
+gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/__run-1792235167055.json
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':test'.
+> There were failing tests. See the report at: file:///home/runner/work/dream-platform/dream-platform/backend/build/reports/tests/test/index.html
+
+* Try:
+> Run with --scan to get full insights.
+
+BUILD FAILED in 1m 39s
 7 actionable tasks: 7 executed
