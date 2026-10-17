@@ -1,4 +1,4 @@
-### commit 23f8a3f6f008afa957fc0174c7227fd347a03d6b run 39019955890 Sat Oct 17 09:09:42 UTC 2026
+### commit 5725b7d497c4eb6988c0d077b68f7a11c84fe63a run 39021602434 Sat Oct 17 09:35:40 UTC 2026
 ## tests
 com.saadat.tracking.service.UserAgentsTest tests=20 failures=0 errors=0
 com.saadat.settings.AdminWaitTimeIntegrationTest tests=2 failures=0 errors=0
@@ -34,7 +34,7 @@ com.saadat.common.geo.GeoIpCountryIntegrationTest tests=3 failures=0 errors=0
 com.saadat.mail.inbound.SupportAutoReplyWebhookIntegrationTest tests=5 failures=0 errors=0
 com.saadat.youtube.YoutubeUnseenServiceTest tests=4 failures=0 errors=0
 com.saadat.notifications.NotificationsIntegrationTest tests=4 failures=0 errors=0
-com.saadat.payments.RevokeApprovalIntegrationTest tests=6 failures=0 errors=0
+com.saadat.payments.RevokeApprovalIntegrationTest tests=12 failures=0 errors=0
 com.saadat.mail.inbound.MailBodyTextTest tests=6 failures=0 errors=0
 com.saadat.common.web.ProxyClientIpTest tests=5 failures=0 errors=0
 com.saadat.credits.CreditLotsTest tests=7 failures=0 errors=0
@@ -84,13 +84,16 @@ Daemon will be stopped at the end of the build
 OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
 > Task :test
 
-09:09:41.239 INFO  [SpringApplicationShutdownHook] [] o.s.o.j.LocalContainerEntityManagerFactoryBean - Closing JPA EntityManagerFactory for persistence unit 'default'
-09:09:41.242 INFO  [SpringApplicationShutdownHook] [] com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated...
-09:09:41.259 INFO  [SpringApplicationShutdownHook] [] com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed.
+09:35:38.864 INFO  [SpringApplicationShutdownHook] [] o.s.o.j.LocalContainerEntityManagerFactoryBean - Closing JPA EntityManagerFactory for persistence unit 'default'
+09:35:38.868 INFO  [SpringApplicationShutdownHook] [] com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated...
+09:35:38.889 INFO  [SpringApplicationShutdownHook] [] com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed.
+09:35:38.909 INFO  [SpringApplicationShutdownHook] [] o.s.o.j.LocalContainerEntityManagerFactoryBean - Closing JPA EntityManagerFactory for persistence unit 'default'
+09:35:38.910 INFO  [SpringApplicationShutdownHook] [] com.zaxxer.hikari.HikariDataSource - HikariPool-2 - Shutdown initiated...
+09:35:38.922 INFO  [SpringApplicationShutdownHook] [] com.zaxxer.hikari.HikariDataSource - HikariPool-2 - Shutdown completed.
 
 > Task :check
 > Task :build
-gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/__run-1792228094995.json
+gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/__run-1792229649646.json
 
-BUILD SUCCESSFUL in 1m 31s
+BUILD SUCCESSFUL in 1m 34s
 7 actionable tasks: 7 executed
