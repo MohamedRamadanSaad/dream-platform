@@ -176,6 +176,14 @@ class PaymentsFiltersIntegrationTest extends IntegrationTestBase {
         assertThat(counts.get("review").asLong()).isEqualTo(1);
         assertThat(counts.get("international").asLong()).isEqualTo(3);
         assertThat(counts.get("unpaid").asLong()).isEqualTo(2);
+        // q is honoured by the counts too (the badges follow the order-number search)
+        counts = counts(interpreter, Map.of("country", COUNTRY, "q", c.getOrderNumber()));
+        assertThat(counts.get("review").asLong()).isEqualTo(1);
+        assertThat(counts.get("international").asLong()).isEqualTo(1);
+        assertThat(counts.get("unpaid").asLong()).isZero();
+        counts = counts(interpreter, Map.of("country", COUNTRY, "status", "INITIATED,EXPIRED"));
+        assertThat(counts.get("unpaid").asLong()).isEqualTo(3);
+        assertThat(counts.get("international").asLong()).isZero();
         counts = counts(interpreter, Map.of("country", COUNTRY, "status", "EXPIRED"));
         assertThat(counts.get("unpaid").asLong()).isEqualTo(2);
         assertThat(counts.get("international").asLong()).isZero();
