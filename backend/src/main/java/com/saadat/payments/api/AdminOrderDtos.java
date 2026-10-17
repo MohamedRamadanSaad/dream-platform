@@ -24,12 +24,14 @@ public final class AdminOrderDtos {
         DOMESTIC,
         /** Orders from outside Egypt (or without a country), newest first. */
         INTERNATIONAL,
+        /** Bookings never paid: INITIATED or EXPIRED, newest first (V41). */
+        UNPAID,
         /** Every order, newest first (CSV export). */
         ALL
     }
 
     /** types.ts AdminOrderCounts. */
-    public record Counts(long review, long domestic, long international) {
+    public record Counts(long review, long domestic, long international, long unpaid) {
     }
 
     /** types.ts AdminOrderDetail. */
@@ -65,7 +67,16 @@ public final class AdminOrderDtos {
             /** The interpreter's note of that undo (V40). */
             String revokeNote,
             /** Dreams waiting (AWAITING_PAYMENT) for this order to be approved again (V40). */
-            int heldDreams) {
+            int heldDreams,
+            /** Unused, unexpired credits of this order right now (V41). */
+            int leftoverCredits,
+            /** Dreams paid by this order that are INTERPRETED (V41). */
+            int interpretedDreams,
+            /** SUCCESS && leftoverCredits > 0: its unused credits may be withdrawn (V41). */
+            boolean canWithdrawLeftover,
+            Instant leftoverWithdrawnAt,
+            Integer leftoverWithdrawnCredits,
+            String leftoverNote) {
     }
 
     /** The InstaPay transfer the buyer reported, and the interpreter's decision. */

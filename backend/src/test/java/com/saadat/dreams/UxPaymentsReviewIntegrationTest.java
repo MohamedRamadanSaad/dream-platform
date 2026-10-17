@@ -456,6 +456,8 @@ class UxPaymentsReviewIntegrationTest extends IntegrationTestBase {
         UUID noCountry = checkout(nowhere, PACKAGE_ONE).andExpect(status().isOk()).andReturnOrderId();
         Order n = orderRepository.findById(noCountry).orElseThrow();
         n.setCountryCode(null);
+        // an unpaid booking lives in the UNPAID tab (V41): a failed order shows where its country puts it
+        n.setStatus(OrderStatus.FAILED);
         orderRepository.save(n);
         assertThat(orderIds(interpreter, "INTERNATIONAL")).contains(noCountry.toString());
         assertThat(orderIds(interpreter, "DOMESTIC")).doesNotContain(noCountry.toString());
@@ -474,6 +476,9 @@ class UxPaymentsReviewIntegrationTest extends IntegrationTestBase {
 
         User foreign = createUser("orders-foreign", Role.USER); // SA → USD through the mock gateway
         UUID foreignOrder = checkout(foreign, null).andExpect(status().isOk()).andReturnOrderId();
+        // paid (an unpaid booking would be in the UNPAID tab, V41)
+        mvc.perform(post(ApiPaths.Webhooks.ROOT + "/mock/" + foreignOrder).param("success", "true"))
+                .andExpect(status().isOk());
 
         JsonNode counts = json(mvc.perform(get(ApiPaths.Admin.ORDER_COUNTS).header("Authorization", bearer(interpreter)))
                 .andExpect(status().isOk()));

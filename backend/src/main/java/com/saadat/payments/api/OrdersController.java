@@ -3,7 +3,9 @@ package com.saadat.payments.api;
 import com.saadat.common.api.ApiPaths;
 import com.saadat.common.api.PageResponse;
 import com.saadat.common.security.AuthPrincipal;
+import com.saadat.payments.service.AdminOrderFilter;
 import com.saadat.payments.service.DreamAttachments;
+import com.saadat.payments.service.LeftoverWithdrawalService;
 import com.saadat.payments.service.OrderQueryService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Size;
@@ -24,6 +26,7 @@ public class OrdersController {
 
     private final OrderQueryService orderQueryService;
     private final DreamAttachments dreamAttachments;
+    private final LeftoverWithdrawalService leftoverWithdrawalService;
 
     @GetMapping(ApiPaths.Me.ORDERS)
     public PageResponse<OrderDto> myOrders(@RequestParam(required = false) Integer page,
@@ -52,18 +55,58 @@ public class OrdersController {
     public record ReleaseDreamsResponse(List<UUID> released) {
     }
 
-    /** {@code scope}: REVIEW | DOMESTIC | INTERNATIONAL | ALL (default, kept for the CSV export). */
+    /**
+     * {@code scope}: REVIEW | DOMESTIC | INTERNATIONAL | UNPAID | ALL (default, CSV export); {@code q} = order number;
+     * filters (all optional, combinable): status (repeatable or comma list), provider, country, currency, from, to
+     * (ISO dates, Riyadh days, {@code to} inclusive), minAmount, maxAmount, packageId, flag (REVOKED |
+     * LEFTOVER_WITHDRAWN | RESENT). 400 INVALID_FILTER (+ field) for a bad value.
+     */
     @GetMapping(ApiPaths.Admin.ORDERS)
     public PageResponse<AdminOrderRow> adminOrders(@RequestParam(required = false) AdminOrderDtos.Scope scope,
                                                    @RequestParam(required = false) Integer page,
                                                    @RequestParam(required = false) Integer size,
-                                                   @RequestParam(required = false) String q) {
-        return orderQueryService.admin(scope, q, page, size);
+                                                   @RequestParam(required = false) String q,
+                                                   @RequestParam(required = false) List<String> status,
+                                                   @RequestParam(required = false) String provider,
+                                                   @RequestParam(required = false) String country,
+                                                   @RequestParam(required = false) String currency,
+                                                   @RequestParam(required = false) String from,
+                                                   @RequestParam(required = false) String to,
+                                                   @RequestParam(required = false) String minAmount,
+                                                   @RequestParam(required = false) String maxAmount,
+                                                   @RequestParam(required = false) String packageId,
+                                                   @RequestParam(required = false) String flag) {
+        return orderQueryService.admin(scope, q, AdminOrderFilter.parse(status, provider, country, currency, from, to,
+                minAmount, maxAmount, packageId, flag), page, size);
     }
 
+    /** Tab badges {review, domestic, international, unpaid}; honour the same filters (and q) as the list. */
     @GetMapping(ApiPaths.Admin.ORDER_COUNTS)
-    public AdminOrderDtos.Counts adminOrderCounts() {
-        return orderQueryService.counts();
+    public AdminOrderDtos.Counts adminOrderCounts(@RequestParam(required = false) String q,
+                                                  @RequestParam(required = false) List<String> status,
+                                                  @RequestParam(required = false) String provider,
+                                                  @RequestParam(required = false) String country,
+                                                  @RequestParam(required = false) String currency,
+                                                  @RequestParam(required = false) String from,
+                                                  @RequestParam(required = false) String to,
+                                                  @RequestParam(required = false) String minAmount,
+                                                  @RequestParam(required = false) String maxAmount,
+                                                  @RequestParam(required = false) String packageId,
+                                                  @RequestParam(required = false) String flag) {
+        return orderQueryService.counts(AdminOrderFilter.parse(status, provider, country, currency, from, to,
+                minAmount, maxAmount, packageId, flag), q);
+    }
+
+    /** Withdraws the unused credits of a paid order (interpreter only). */
+    @PostMapping(ApiPaths.Admin.ORDER_WITHDRAW_LEFTOVER)
+    public AdminOrderDtos.Detail withdrawLeftover(@PathVariable UUID id,
+                                                  @Valid @RequestBody(required = false) WithdrawLeftoverRequest body) {
+        return leftoverWithdrawalService.withdraw(AuthPrincipal.current().userId(), id,
+                body == null ? null : body.note());
+    }
+
+    /** Why the credits are withdrawn (shown to the buyer). */
+    public record WithdrawLeftoverRequest(@Size(max = 500) String note) {
     }
 
     @GetMapping(ApiPaths.Admin.ORDER)

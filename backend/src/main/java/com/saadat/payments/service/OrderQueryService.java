@@ -22,6 +22,7 @@ import com.saadat.pricing.domain.Coupon;
 import com.saadat.pricing.repo.CouponRepository;
 import com.saadat.users.domain.User;
 import com.saadat.users.repo.UserRepository;
+import java.time.Clock;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -49,6 +50,8 @@ public class OrderQueryService {
 
     /** Domestic = Egypt (the only country paying by InstaPay transfer). */
     public static final String DOMESTIC_COUNTRY = "EG";
+    /** Bookings never paid (tab UNPAID, V41). */
+    static final List<OrderStatus> UNPAID_STATUSES = List.of(OrderStatus.INITIATED, OrderStatus.EXPIRED);
 
     private final OrderRepository orderRepository;
     private final UserRepository userRepository;
@@ -57,6 +60,7 @@ public class OrderQueryService {
     private final CouponRepository couponRepository;
     private final DreamAttachments dreamAttachments;
     private final OrderCredits orderCredits;
+    private final Clock clock;
 
     @Transactional(readOnly = true)
     public PageResponse<OrderDto> mine(UUID userId, Integer page, Integer size) {
@@ -86,35 +90,29 @@ public class OrderQueryService {
         return admin(AdminOrderDtos.Scope.ALL, q, page, size);
     }
 
-    /**
-     * One tab of the interpreter's payments page (contract §3), optionally narrowed by {@code q} = order number,
-     * ignoring case and with or without the prefix ("15001", "rn-15001", "RN-15001"); a {@code q} that is not an order
-     * number finds nothing. Example: {@code ?scope=REVIEW&q=15001}.
-     */
     @Transactional(readOnly = true)
     public PageResponse<AdminOrderRow> admin(AdminOrderDtos.Scope scope, String q, Integer page, Integer size) {
+        return admin(scope, q, AdminOrderFilter.none(), page, size);
+    }
+
+    /**
+     * One tab of the interpreter's payments page, optionally narrowed by {@code q} = order number (ignoring case,
+     * with or without the prefix: "15001", "rn-15001"; a {@code q} that is not an order number finds nothing) and by
+     * the filters (docs/PAYMENTS_FILTERS_CONTRACT.md §3). Example: {@code ?scope=REVIEW&q=15001&currency=EGP}.
+     */
+    @Transactional(readOnly = true)
+    public PageResponse<AdminOrderRow> admin(AdminOrderDtos.Scope scope, String q, AdminOrderFilter filter,
+                                             Integer page, Integer size) {
         AdminOrderDtos.Scope s = scope == null ? AdminOrderDtos.Scope.ALL : scope;
-        Specification<Order> spec = switch (s) {
-            case REVIEW -> (root, query, cb) -> cb.and(
-                    cb.equal(root.get("provider"), PaymentProviderType.INSTAPAY),
-                    cb.equal(root.get("status"), OrderStatus.PENDING_REVIEW));
-            case DOMESTIC -> (root, query, cb) -> cb.equal(root.get("countryCode"), DOMESTIC_COUNTRY);
-            case INTERNATIONAL -> (root, query, cb) -> cb.or(
-                    cb.isNull(root.get("countryCode")),
-                    cb.notEqual(root.get("countryCode"), DOMESTIC_COUNTRY));
-            case ALL -> (root, query, cb) -> cb.conjunction();
-        };
-        if (q != null && !q.isBlank()) {
-            Optional<OrderNumbers.Query> parsed = OrderNumbers.parseQuery(q);
-            if (parsed.isEmpty()) {
-                Pageable p = Pages.of(page, size);
-                return PageResponse.of(List.<AdminOrderRow>of(), p.getPageNumber(), p.getPageSize(), 0);
-            }
-            OrderNumbers.Query number = parsed.get();
-            Specification<Order> byNumber = number.hasPrefix()
-                    ? (root, query, cb) -> cb.equal(cb.upper(root.<String>get("orderNumber")), number.number())
-                    : (root, query, cb) -> cb.like(root.<String>get("orderNumber"), "%-" + number.digits());
-            spec = spec.and(byNumber);
+        Instant now = clock.instant();
+        Optional<Specification<Order>> byNumber = numberSpec(q);
+        if (byNumber == null) {
+            Pageable p = Pages.of(page, size);
+            return PageResponse.of(List.<AdminOrderRow>of(), p.getPageNumber(), p.getPageSize(), 0);
+        }
+        Specification<Order> spec = scopeSpec(s).and(filterSpec(filter, now));
+        if (byNumber.isPresent()) {
+            spec = spec.and(byNumber.get());
         }
         Sort sort = s == AdminOrderDtos.Scope.REVIEW
                 ? Sort.by(Sort.Order.asc("transferSubmittedAt"), Sort.Order.asc("createdAt"))
@@ -126,13 +124,60 @@ public class OrderQueryService {
         Map<UUID, Long> held = heldCounts(orders.getContent().stream().map(Order::getId).toList());
         Function<Order, AdminOrderRow> mapper = o -> {
             User u = users.get(o.getUserId());
-            return AdminOrderRow.of(OrderDto.from(o), o.getUserId(), u == null ? "" : u.getName(),
+            return AdminOrderRow.of(OrderDto.from(o).withStatus(shownStatus(o, now)), o.getUserId(),
+                    u == null ? "" : u.getName(),
                     u == null ? "" : u.getEmail(), o.getSettledAmountEgp(), o.getTransferReference(),
                     o.getTransferSenderName(), o.getTransferSubmittedAt(),
                     dreamAttachments.readIntent(o.getCheckoutIntent()).size(), o.getFailureReason(),
-                    o.getApprovalRevokedAt(), o.getRevokeNote(), held.getOrDefault(o.getId(), 0L).intValue());
+                    o.getApprovalRevokedAt(), o.getRevokeNote(), held.getOrDefault(o.getId(), 0L).intValue(),
+                    o.getExpiresAt(), o.getPackageId(), o.getLeftoverWithdrawnAt());
         };
         return PageResponse.from(orders, mapper);
+    }
+
+    /** An INITIATED order past its expiry is shown (and filtered) as EXPIRED before the expiry job runs (V41). */
+    static OrderStatus shownStatus(Order o, Instant now) {
+        if (o.getStatus() == OrderStatus.INITIATED && o.getExpiresAt() != null && !o.getExpiresAt().isAfter(now)) {
+            return OrderStatus.EXPIRED;
+        }
+        return o.getStatus();
+    }
+
+    /** The rows of a tab. DOMESTIC / INTERNATIONAL leave out the unpaid bookings (they live in UNPAID, V41). */
+    static Specification<Order> scopeSpec(AdminOrderDtos.Scope scope) {
+        return switch (scope) {
+            case REVIEW -> (root, query, cb) -> cb.and(
+                    cb.equal(root.get("provider"), PaymentProviderType.INSTAPAY),
+                    cb.equal(root.get("status"), OrderStatus.PENDING_REVIEW));
+            case DOMESTIC -> (root, query, cb) -> cb.and(
+                    cb.equal(root.get("countryCode"), DOMESTIC_COUNTRY),
+                    root.get("status").in(UNPAID_STATUSES).not());
+            case INTERNATIONAL -> (root, query, cb) -> cb.and(
+                    cb.or(cb.isNull(root.get("countryCode")), cb.notEqual(root.get("countryCode"), DOMESTIC_COUNTRY)),
+                    root.get("status").in(UNPAID_STATUSES).not());
+            case UNPAID -> (root, query, cb) -> root.get("status").in(UNPAID_STATUSES);
+            case ALL -> (root, query, cb) -> cb.conjunction();
+        };
+    }
+
+    private static Specification<Order> filterSpec(AdminOrderFilter filter, Instant now) {
+        return (filter == null ? AdminOrderFilter.none() : filter).toSpec(now);
+    }
+
+    /** Empty = no search; null = a {@code q} that is not an order number (finds nothing). */
+    private static Optional<Specification<Order>> numberSpec(String q) {
+        if (q == null || q.isBlank()) {
+            return Optional.empty();
+        }
+        Optional<OrderNumbers.Query> parsed = OrderNumbers.parseQuery(q);
+        if (parsed.isEmpty()) {
+            return null;
+        }
+        OrderNumbers.Query number = parsed.get();
+        Specification<Order> spec = number.hasPrefix()
+                ? (root, query, cb) -> cb.equal(cb.upper(root.<String>get("orderNumber")), number.number())
+                : (root, query, cb) -> cb.like(root.<String>get("orderNumber"), "%-" + number.digits());
+        return Optional.of(spec);
     }
 
     /** Held (AWAITING_PAYMENT) dreams per order (V40). */
@@ -149,10 +194,25 @@ public class OrderQueryService {
 
     @Transactional(readOnly = true)
     public AdminOrderDtos.Counts counts() {
+        return counts(AdminOrderFilter.none(), null);
+    }
+
+    /** Tab badges; with filters (and {@code q}) they match the filtered view (V41). */
+    @Transactional(readOnly = true)
+    public AdminOrderDtos.Counts counts(AdminOrderFilter filter, String q) {
+        Optional<Specification<Order>> byNumber = numberSpec(q);
+        if (byNumber == null) {
+            return new AdminOrderDtos.Counts(0, 0, 0, 0);
+        }
+        Specification<Order> common = filterSpec(filter, clock.instant());
+        if (byNumber.isPresent()) {
+            common = common.and(byNumber.get());
+        }
         return new AdminOrderDtos.Counts(
-                orderRepository.countByProviderAndStatus(PaymentProviderType.INSTAPAY, OrderStatus.PENDING_REVIEW),
-                orderRepository.countByCountryCode(DOMESTIC_COUNTRY),
-                orderRepository.countOutsideCountry(DOMESTIC_COUNTRY));
+                orderRepository.count(scopeSpec(AdminOrderDtos.Scope.REVIEW).and(common)),
+                orderRepository.count(scopeSpec(AdminOrderDtos.Scope.DOMESTIC).and(common)),
+                orderRepository.count(scopeSpec(AdminOrderDtos.Scope.INTERNATIONAL).and(common)),
+                orderRepository.count(scopeSpec(AdminOrderDtos.Scope.UNPAID).and(common)));
     }
 
     /**
@@ -204,21 +264,29 @@ public class OrderQueryService {
         boolean canReview = o.getProvider() == PaymentProviderType.INSTAPAY && o.getStatus() == OrderStatus.PENDING_REVIEW;
         boolean revocable = o.getProvider() == PaymentProviderType.INSTAPAY && o.getStatus() == OrderStatus.SUCCESS;
         String revokeBlockedReason = null;
-        if (revocable) {
-            // the dreams it currently pays for (debits not given back): one already interpreted blocks the revoke
-            Set<UUID> paid = orderCredits.openDebits(o.getUserId(), o.getId()).stream()
-                    .map(CreditLedgerEntry::getDreamId).collect(Collectors.toSet());
-            boolean interpreted = !paid.isEmpty() && dreamRepository.findAllById(paid).stream()
-                    .anyMatch(d -> d.getStatus() == DreamStatus.INTERPRETED);
-            if (interpreted) {
-                revokeBlockedReason = InstapayService.CODE_DREAM_ALREADY_INTERPRETED;
-            }
+        // the dreams it currently pays for (debits not given back): one already interpreted blocks the revoke
+        Set<UUID> paid = orderCredits.openDebits(o.getUserId(), o.getId()).stream()
+                .map(CreditLedgerEntry::getDreamId).collect(Collectors.toSet());
+        int interpretedDreams = paid.isEmpty() ? 0 : (int) dreamRepository.findAllById(paid).stream()
+                .filter(d -> d.getStatus() == DreamStatus.INTERPRETED).count();
+        if (revocable && interpretedDreams > 0) {
+            revokeBlockedReason = InstapayService.CODE_DREAM_ALREADY_INTERPRETED;
         }
-        return new AdminOrderDtos.Detail(o.getId(), o.getOrderNumber(), o.getStatus(), o.getFailureReason(), OrderDto.displayProvider(o),
+        int leftover = leftoverCredits(o);
+        return new AdminOrderDtos.Detail(o.getId(), o.getOrderNumber(), shownStatus(o, clock.instant()),
+                o.getFailureReason(), OrderDto.displayProvider(o),
                 o.getProviderTxnId(), o.getPackageNameSnapshot(), o.getCredits(), o.getAmount(), o.getCurrency(),
                 o.getSettledAmountEgp(), o.getDiscount(), couponCode, o.getCountryCode(), o.getCountrySource(),
                 o.getCreatedAt(), o.getPaidAt(), o.getExpiresAt(), transfer, user, dreams, canReview,
                 revocable && revokeBlockedReason == null, revokeBlockedReason, o.getApprovalRevokedAt(),
-                o.getRevokeNote(), heldCounts(List.of(o.getId())).getOrDefault(o.getId(), 0L).intValue());
+                o.getRevokeNote(), heldCounts(List.of(o.getId())).getOrDefault(o.getId(), 0L).intValue(),
+                leftover, interpretedDreams, o.getStatus() == OrderStatus.SUCCESS && leftover > 0,
+                o.getLeftoverWithdrawnAt(), o.getLeftoverWithdrawnCredits(), o.getLeftoverNote());
+    }
+
+    /** Unused, unexpired credits of the order's lots right now (0 for an unpaid order, V41). */
+    int leftoverCredits(Order o) {
+        OrderCredits.Usage usage = orderCredits.of(o.getUserId(), o.getId());
+        return usage == null ? 0 : usage.remaining();
     }
 }

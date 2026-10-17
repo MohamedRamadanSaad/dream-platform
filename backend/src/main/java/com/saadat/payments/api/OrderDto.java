@@ -38,6 +38,12 @@ public record OrderDto(
                 o.getPaidAt(), o.getFailureReason());
     }
 
+    /** The same order shown with another status (an INITIATED order past its expiry is shown EXPIRED, V41). */
+    public OrderDto withStatus(OrderStatus newStatus) {
+        return new OrderDto(id, orderNumber, packageName, credits, amount, currency, newStatus, provider, providerRef,
+                countryCode, createdAt, paidAt, failureReason);
+    }
+
     public static PaymentProviderType displayProvider(Order o) {
         return o.getProvider() == PaymentProviderType.MOCK ? ProviderRegistry.nominal(o.getCurrency()) : o.getProvider();
     }

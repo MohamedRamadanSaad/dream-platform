@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<!--/* credits-withdrawn (en): copy is literal here (per-locale file); subject + preheader: messages mail.credits-withdrawn.* */-->
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{mail/_layout :: layout('ltr', 'en', ~{::content})}">
+<head><title>credits-withdrawn</title></head>
+<body>
+<div th:fragment="content">
+  <p style="margin:0 0 18px 0;font-size:18px;line-height:1.7;font-weight:600;color:#0A1128;">Assalamu alaikum<th:block th:if="${!#strings.isEmpty(name)}"> <span th:text="${name}">…</span></th:block>,</p>
+  <p style="margin:0 0 16px 0;">We removed <strong th:text="${creditsText}">…</strong> of order <span th:text="${orderRef}">…</span> from your balance because we could not confirm the payment.</p>
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:4px 0 16px 0;border-collapse:collapse;background-color:#FFFFFF;border:1px solid #E6DCC8;border-radius:12px;">
+    <tr th:if="${!#strings.isEmpty(orderRef)}">
+      <td align="left" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;" th:text="#{mail.label.order}">Label</td>
+      <td align="left" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;" dir="ltr" th:text="${orderRef}">—</td>
+    </tr>
+    <tr th:if="${!#strings.isEmpty(packageName)}">
+      <td align="left" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;" th:text="#{mail.label.package}">Label</td>
+      <td align="left" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;" th:text="${packageName}">—</td>
+    </tr>
+    <tr th:if="${balance != null}">
+      <td align="left" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:14px;color:#5B6478;width:40%;" th:text="#{mail.label.balance}">Label</td>
+      <td align="left" style="padding:10px 16px;border-bottom:1px solid #F0E9DC;font-size:15px;font-weight:600;color:#0A1128;" th:text="${balance}">—</td>
+    </tr>
+  </table>
+  <p th:if="${!#strings.isEmpty(note)}" style="margin:0 0 16px 0;">Note from the interpreter: <strong th:text="${note}">…</strong></p>
+  <p style="margin:0 0 16px 0;">Your dreams that were interpreted or are being interpreted are not affected.</p>
+  <p style="margin:0 0 16px 0;font-size:14px;line-height:1.8;color:#5B6478;">If you have a question, please write to us at the address below.</p>
+  <table th:replace="~{mail/_layout :: cta(${ctaUrl}, 'View my payments')}"></table>
+</div>
+</body>
+</html>

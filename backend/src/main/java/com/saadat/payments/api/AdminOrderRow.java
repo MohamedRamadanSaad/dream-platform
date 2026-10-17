@@ -39,15 +39,22 @@ public record AdminOrderRow(
         /** The interpreter's note of that undo (V40). */
         String revokeNote,
         /** Dreams waiting (AWAITING_PAYMENT) for this order to be approved again (V40). */
-        int heldDreams) {
+        int heldDreams,
+        /** Until when an unpaid booking can be paid (V41: "expires in …" / "expired" chip). */
+        Instant expiresAt,
+        /** The package bought (null when the package was deleted). */
+        UUID packageId,
+        /** When the interpreter withdrew the unused credits of this order (V41); else null. */
+        Instant leftoverWithdrawnAt) {
 
     public static AdminOrderRow of(OrderDto o, UUID userId, String userName, String userEmail,
                                    BigDecimal settledAmountEgp, String transferReference, String transferSenderName,
                                    Instant transferSubmittedAt, int attachedDreams, String failureReason,
-                                   Instant revokedAt, String revokeNote, int heldDreams) {
+                                   Instant revokedAt, String revokeNote, int heldDreams, Instant expiresAt,
+                                   UUID packageId, Instant leftoverWithdrawnAt) {
         return new AdminOrderRow(o.id(), o.orderNumber(), o.packageName(), o.credits(), o.amount(), o.currency(), o.status(),
                 o.provider(), o.providerRef(), o.countryCode(), o.createdAt(), o.paidAt(), userName, userId, userEmail,
                 settledAmountEgp, transferReference, transferSenderName, transferSubmittedAt, attachedDreams,
-                failureReason, revokedAt, revokeNote, heldDreams);
+                failureReason, revokedAt, revokeNote, heldDreams, expiresAt, packageId, leftoverWithdrawnAt);
     }
 }

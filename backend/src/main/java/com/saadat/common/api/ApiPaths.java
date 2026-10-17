@@ -222,6 +222,11 @@ public final class ApiPaths {
          * AWAITING_PAYMENT, buyer asked to resend; docs/REVOKE_APPROVAL_CONTRACT.md); returns TransferRow.
          */
         public static final String INSTAPAY_TRANSFER_REVOKE = INSTAPAY_TRANSFERS + "/{id}/revoke";
+        /**
+         * POST {note?}: withdraws the unused credits of a paid order (any provider, SUCCESS; dreams untouched;
+         * docs/PAYMENTS_FILTERS_CONTRACT.md §2); returns AdminOrderDetail.
+         */
+        public static final String ORDER_WITHDRAW_LEFTOVER = ROOT + "/payments/orders/{id}/withdraw-leftover";
 
         public static final String YOUTUBE_REFRESH = ROOT + "/youtube/refresh";
 

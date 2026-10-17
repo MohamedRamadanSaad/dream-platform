@@ -22,5 +22,7 @@ public enum NotificationType {
      * To the payer: the interpreter took back the approval of his InstaPay transfer; his dreams are kept and wait for
      * the payment to be confirmed; he should check and resend the transfer details (V40).
      */
-    PAYMENT_REVOKED
+    PAYMENT_REVOKED,
+    /** To the payer: the interpreter withdrew the unused credits of one of his payments (V41). */
+    CREDITS_WITHDRAWN
 }

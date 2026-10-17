@@ -170,6 +170,18 @@ public class Order {
     @Column(name = "promotion_counted", nullable = false)
     private boolean promotionCounted;
 
+    /** When the interpreter withdrew the unused credits of this paid order (V41); null when never. */
+    @Column(name = "leftover_withdrawn_at")
+    private Instant leftoverWithdrawnAt;
+
+    /** How many unused credits were withdrawn (V41; summed when withdrawn more than once). */
+    @Column(name = "leftover_withdrawn_credits")
+    private Integer leftoverWithdrawnCredits;
+
+    /** The interpreter's note of the withdrawal (V41). */
+    @Column(name = "leftover_note", columnDefinition = "text")
+    private String leftoverNote;
+
     @PrePersist
     void onCreate() {
         if (createdAt == null) {

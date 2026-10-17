@@ -231,3 +231,18 @@ Service worker (`frontend/src/sw.ts`, vite-plugin-pwa `injectManifest`, served a
 fallback (denylist `/api`, `/ops/`), `push` → `showNotification(title, {body, icon, badge, data: {url}, tag: url,
 renotify, lang: 'ar', dir: 'auto'})` for every push (a silent push makes iOS revoke the subscription),
 `notificationclick` → focus an open page of the site and navigate to `url`, else open a new window.
+
+## Payment filters, unpaid bookings, leftover withdrawal (V41)
+
+Binding detail: `docs/PAYMENTS_FILTERS_CONTRACT.md`.
+
+| Route | Body / result |
+|---|---|
+| `POST /admin/payments/orders/{id}/withdraw-leftover` | `{note?: string ≤ 500}` → `AdminOrderDetail` (interpreter only, 403 otherwise; 404 unknown). Any provider, order must be SUCCESS (else 409 `NOT_WITHDRAWABLE`); 409 `NOTHING_TO_WITHDRAW` when no unused, unexpired credit is left (also on a second call). One transaction (order row, then the user's balance): one ledger `REVOKE` row per lot of the order (expired credits not counted twice, never below 0); dreams untouched; order stays SUCCESS with `leftoverWithdrawnAt`, `leftoverWithdrawnCredits` (summed), `leftoverNote`. Audit `ORDER_LEFTOVER_WITHDRAWN`. Buyer: `CREDITS_WITHDRAWN` (in-app + push, link `/me/payments`) + e-mail `credits-withdrawn` (ar/en, switch `mail.event.credits-withdrawn`, theme `mail.theme.credits-withdrawn`) |
+| `GET /admin/orders?scope=&q=&page&size&…filters` | `scope` adds `UNPAID` (INITIATED or EXPIRED, newest first). `DOMESTIC` / `INTERNATIONAL` exclude INITIATED and EXPIRED. Filters (optional, combinable with scope and q): `status` (repeatable or comma list of OrderStatus), `provider` (INSTAPAY / MOR / MOCK / KASHIER), `country` (ISO-2), `currency` (EGP / SAR / USD), `from` / `to` (ISO dates on `created_at`, Asia/Riyadh days, `to` inclusive), `minAmount` / `maxAmount` (order currency), `packageId`, `flag` (`REVOKED` / `LEFTOVER_WITHDRAWN` / `RESENT`). Invalid value → 400 `INVALID_FILTER` + `field`. An INITIATED order past `expires_at` is returned with `status: "EXPIRED"` and matches `status=EXPIRED` (not `INITIATED`) |
+| `GET /admin/orders/counts?q&…filters` | `{review, domestic, international, unpaid}`, honouring the same filters (and q) |
+
+Shapes:
+- `AdminOrderRow` adds `expiresAt: string`, `packageId: uuid | null`, `leftoverWithdrawnAt: string | null`.
+- `AdminOrderDetail` adds `leftoverCredits: number` (unused, unexpired credits now), `interpretedDreams: number` (dreams paid by the order that are INTERPRETED), `canWithdrawLeftover: boolean` (SUCCESS && leftoverCredits > 0), `leftoverWithdrawnAt: string | null`, `leftoverWithdrawnCredits: number | null`, `leftoverNote: string | null`; its `status` shows EXPIRED for a lazily expired booking.
+- `AdminOrderCounts` adds `unpaid`. `NotificationType` adds `CREDITS_WITHDRAWN`.

@@ -76,6 +76,15 @@ public class MailSamples {
                 m.put("paidAt", now);
                 m.put("link", FrontendPaths.MY_PAYMENTS);
             }
+            case MailTemplates.CREDITS_WITHDRAWN -> {
+                m.put("orderRef", "RN-15001");
+                m.put("packageName", en ? "Three dreams" : "ثلاث رؤى");
+                m.put("credits", 2);
+                m.put("creditsText", com.saadat.common.util.CreditCounts.text(2, locale));
+                m.put("note", en ? "The transfer could not be confirmed." : "لم نتمكن من تأكيد التحويل.");
+                m.put("balance", 0);
+                m.put("link", FrontendPaths.MY_PAYMENTS);
+            }
             case MailTemplates.PAYMENT_REVIEW_NEEDED -> {
                 m.put("packageName", en ? "Three dreams" : "ثلاث رؤى");
                 m.put("amount", new BigDecimal("450.00"));
