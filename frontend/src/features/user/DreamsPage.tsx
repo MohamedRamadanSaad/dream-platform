@@ -9,7 +9,7 @@ import { DownloadButton } from '@/components/ui/DownloadButton'
 import { Icon } from '@/components/icons/Icon'
 import { PageEnter, StaggerGroup } from '@/components/motion'
 import { arrowNext, cn, fmtDate, timeAgo } from '@/lib/utils'
-import type { DreamSummary } from '@/api/types'
+import type { DreamPaymentLink, DreamSummary } from '@/api/types'
 import { replyTimeText } from '@/lib/waitTime'
 import { CreditExpiryNotice } from './CreditExpiryNotice'
 import { UserOverview } from './UserOverview'
@@ -21,8 +21,18 @@ type Tab = 'DRAFT' | 'PENDING_PAYMENT' | 'IN_REVIEW' | 'IN_PROGRESS' | 'AWAITING
 const TABS: Tab[] = ['DRAFT', 'PENDING_PAYMENT', 'IN_REVIEW', 'IN_PROGRESS', 'AWAITING_USER_REPLY', 'INTERPRETED']
 const EMPTY_KEY: Record<Tab, string> = { DRAFT: 'drafts', PENDING_PAYMENT: 'pendingPayment', IN_REVIEW: 'inReview', IN_PROGRESS: 'inProgress', AWAITING_USER_REPLY: 'awaiting', INTERPRETED: 'interpreted' }
 
-/** A draft attached to a payment shows the payment's state instead of "draft". */
-export const dreamBadge = (d: DreamSummary): BadgeStatus => (d.payment ? (d.payment.status === 'REJECTED' ? 'PAYMENT_REJECTED' : 'PENDING_PAYMENT') : d.status)
+/** The payment's own state as a badge: under review, rejected, or revoked ("check your payment details"). */
+export const paymentBadge = (p: DreamPaymentLink): BadgeStatus => (p.status === 'REVOKED' ? 'PAYMENT_REVOKED' : p.status === 'REJECTED' ? 'PAYMENT_REJECTED' : 'PENDING_PAYMENT')
+/** A draft attached to a payment shows the payment's state instead of "draft"; a held dream keeps its own status. */
+export const dreamBadge = (d: DreamSummary): BadgeStatus => (d.payment && d.status === 'DRAFT' ? paymentBadge(d.payment) : d.status)
+/** What the payment line under a dream says: a held dream (AWAITING_PAYMENT) is kept and waits; a draft is not sent yet. */
+export function paymentLine(d: DreamSummary): { key: string; tone: 'bad' | 'muted' } {
+  const p = d.payment!
+  if (p.status === 'REVOKED') return { key: 'me.dreamPayment.revoked', tone: 'bad' }
+  const held = d.status === 'AWAITING_PAYMENT'
+  if (p.status === 'REJECTED') return { key: held ? 'me.dreamPayment.heldRejected' : 'me.dreamPayment.rejected', tone: 'bad' }
+  return { key: held ? 'me.dreamPayment.heldUnderReview' : 'me.dreamPayment.underReview', tone: 'muted' }
+}
 
 export function DreamRow({ d, selectable, selected, onToggle }: { d: DreamSummary; selectable?: boolean; selected?: boolean; onToggle?: () => void }) {
   const { t } = useTranslation()
@@ -39,14 +49,17 @@ export function DreamRow({ d, selectable, selected, onToggle }: { d: DreamSummar
   )
   if (d.payment) {
     // not selectable: it waits for its payment; the card opens the dream, the link opens the payment
-    const rejected = d.payment.status === 'REJECTED'
+    const line = paymentLine(d)
+    const bad = line.tone === 'bad'
+    const held = d.status === 'AWAITING_PAYMENT'
     return (
-      <div className={cn('card flex flex-col p-5', rejected ? 'border-danger/30' : 'border-warn/30')}>
+      <div className={cn('card flex flex-col p-5', bad ? 'border-danger/30' : 'border-warn/30')}>
         <Link to={`/me/dreams/${d.id}`} className="block rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-gold">{inner}</Link>
         <div className="mt-3 space-y-2 border-t border-line pt-3 text-xs">
-          <p className={rejected ? 'text-bad-ink' : 'text-fg-muted'}>{t(rejected ? 'me.dreamPayment.rejected' : 'me.dreamPayment.underReview')}</p>
-          {rejected && d.payment.reviewNote && <p className="text-fg-muted">{t('me.dreamPayment.reason', { note: d.payment.reviewNote })}</p>}
-          <DreamPaymentActions dreamId={d.id} payment={d.payment} compact />
+          {held && <StatusBadge status={paymentBadge(d.payment)} />}
+          <p className={bad ? 'text-bad-ink' : 'text-fg-muted'}>{t(line.key)}</p>
+          {bad && d.payment.reviewNote && <p className="text-fg-muted">{t('me.dreamPayment.reason', { note: d.payment.reviewNote })}</p>}
+          <DreamPaymentActions dreamId={d.id} payment={d.payment} held={held} compact />
         </div>
       </div>
     )

@@ -79,12 +79,33 @@ function completeOrder(order: MockOrder, dreamIds: string[]) {
     db.ledger.push(entry)
     Object.assign(d, { status: 'IN_REVIEW', submittedAt: helpers.now(), expectedBy: new Date(Date.now() + hours * 36e5).toISOString(), credit: { ledgerEntryId: entry.id, orderId: order.id } })
   }
+  // dreams held by a revoked approval of this order resume from its own credits (contract §3)
+  for (const d of db.dreams.filter((x) => x.heldOrderId === order.id && x.status === 'AWAITING_PAYMENT')) {
+    if (balanceOf(order.userId) < 1) break
+    const entry = { id: uid(), userId: order.userId, delta: -1, reason: 'SUBMIT' as const, orderId: order.id, dreamId: d.id, createdAt: helpers.now() }
+    db.ledger.push(entry)
+    resumeHeld(d, { ledgerEntryId: entry.id, orderId: order.id })
+  }
 }
+
+/** AWAITING_PAYMENT → IN_PROGRESS (started) or IN_REVIEW; the deadline moves forward by the paused time. */
+function resumeHeld(d: MockDream, credit: MockDream['credit']) {
+  const paused = d.slaPausedAt ? Date.now() - new Date(d.slaPausedAt).getTime() : 0
+  const expectedBy = d.expectedBy ? new Date(new Date(d.expectedBy).getTime() + paused).toISOString() : d.expectedBy
+  Object.assign(d, { status: d.startedAt ? 'IN_PROGRESS' : 'IN_REVIEW', expectedBy, slaPausedAt: null, heldOrderId: null, credit })
+}
+
+/** Dreams whose credit came from this order (a SUBMIT row with the order as its source). */
+const paidFrom = (o: MockOrder) => {
+  const ids = new Set(db.ledger.filter((l) => l.orderId === o.id && l.reason === 'SUBMIT' && l.dreamId).map((l) => l.dreamId!))
+  return db.dreams.filter((d) => ids.has(d.id) || d.credit?.orderId === o.id)
+}
+const revokeBlocked = (o: MockOrder): 'DREAM_ALREADY_INTERPRETED' | null => (paidFrom(o).some((d) => d.status === 'INTERPRETED') ? 'DREAM_ALREADY_INTERPRETED' : null)
 
 /** A dream lives in a live order when it is attached to it, or when its credit came from it. */
 const orderDreams = (o: MockOrder) => {
   const ids = new Set(instapayMeta.get(o.id)?.dreamIds ?? [])
-  return db.dreams.filter((d) => ids.has(d.id) || d.credit?.orderId === o.id).sort((a, b) => a.createdAt.localeCompare(b.createdAt))
+  return db.dreams.filter((d) => ids.has(d.id) || d.credit?.orderId === o.id || d.heldOrderId === o.id).sort((a, b) => a.createdAt.localeCompare(b.createdAt))
 }
 const adminOrderRow = (o: MockOrder): T.AdminOrderRow => {
   const usr = db.users.find((x) => x.id === o.userId)
@@ -114,6 +135,8 @@ const adminOrderDetail = (o: MockOrder): T.AdminOrderDetail => {
     user: { id: usr.id, name: usr.name, email: usr.email, countryCode: usr.countryCode, age: usr.age ?? null },
     dreams: orderDreams(o).map((d) => ({ id: d.id, status: d.status, text: d.text, createdAt: d.createdAt, submittedAt: d.submittedAt })),
     canReview: o.provider === 'INSTAPAY' && o.status === 'PENDING_REVIEW',
+    canRevoke: o.provider === 'INSTAPAY' && o.status === 'SUCCESS' && !revokeBlocked(o),
+    revokeBlockedReason: o.provider === 'INSTAPAY' && o.status === 'SUCCESS' ? revokeBlocked(o) : null,
   }
 }
 /** Dreams the interpreter has to work on (contract §1: IN_PROGRESS counts as open work too). */
@@ -131,6 +154,7 @@ const instapayView = (o: MockOrder): T.InstapayOrderView => {
     orderId: o.id, orderNumber: o.orderNumber, status: o.status, packageName: o.packageName, credits: o.credits, amount: o.amount, currency: o.currency,
     address: db.settings['payments.instapay.address'] ?? '', link: db.settings['payments.instapay.link'] ?? '', recipientName: db.settings['payments.instapay.recipient_name'] ?? '',
     createdAt: o.createdAt, expiresAt: m.expiresAt, reference: m.reference, senderName: m.senderName, submittedAt: m.submittedAt, reviewNote: m.reviewNote, attachedDreams: m.dreamIds.length,
+    failureReason: o.failureReason ?? null,
   }
 }
 const transferRow = (o: MockOrder): T.InstapayTransferRow => {
@@ -415,10 +439,17 @@ export const handlers = [
   http.post(u('/dreams/submit'), wrap(async ({ request }) => {
     const me = requireUser(request)
     const b = (await request.json()) as T.SubmitDreamsRequest
-    const drafts = b.dreamIds.map((id) => db.dreams.find((d) => d.id === id && d.userId === me.id && d.status === 'DRAFT' && attachedOrder(d)?.status !== 'PENDING_REVIEW')).filter(Boolean) as MockDream[]
-    if (drafts.length !== b.dreamIds.length) return problem(409, 'Conflict', 'بعض الرؤى ليست مسودات')
+    // drafts, and dreams held by a revoked approval (they resume with ordinary credits, contract §3)
+    const picked = b.dreamIds.map((id) => db.dreams.find((d) => d.id === id && d.userId === me.id && ((d.status === 'DRAFT' && attachedOrder(d)?.status !== 'PENDING_REVIEW') || d.status === 'AWAITING_PAYMENT'))).filter(Boolean) as MockDream[]
+    if (picked.length !== b.dreamIds.length) return problem(409, 'Conflict', 'بعض الرؤى ليست مسودات')
     const bal = balanceOf(me.id)
-    if (bal < drafts.length) return problem(402, 'Payment required', `تحتاج ${drafts.length - bal} رؤيا إضافية`, { code: 'INSUFFICIENT_CREDITS' })
+    if (bal < picked.length) return problem(402, 'Payment required', `تحتاج ${picked.length - bal} رؤيا إضافية`, { code: 'INSUFFICIENT_CREDITS' })
+    for (const d of picked.filter((x) => x.status === 'AWAITING_PAYMENT')) {
+      const entry = { id: uid(), userId: me.id, delta: -1, reason: 'SUBMIT' as const, orderId: null, dreamId: d.id, createdAt: helpers.now() }
+      db.ledger.push(entry)
+      resumeHeld(d, { ledgerEntryId: entry.id, orderId: null })
+    }
+    const drafts = picked.filter((x) => x.status === 'DRAFT')
     const w = db.waitTime
     const hours = w.busy ? w.busyMaxDays * 24 : w.normalHours
     for (const d of drafts) {
@@ -428,7 +459,7 @@ export const handlers = [
       db.notifications.unshift({ id: uid(), userId: me.id, type: 'DREAM_RECEIVED', title: 'وصلت رؤياك', body: 'سنبدأ دراستها، وسيصلك إشعار عند جاهزية التفسير.', link: `/me/dreams/${d.id}`, createdAt: helpers.now(), readAt: null })
       db.notifications.unshift({ id: uid(), userId: 'admin', type: 'DREAM_SUBMITTED', title: 'رؤية جديدة', body: `${me.name} قدّمت رؤيا جديدة.`, link: `/admin/dreams/${d.id}`, createdAt: helpers.now(), readAt: null })
     }
-    return HttpResponse.json({ submitted: drafts.map((d) => d.id), remainingCredits: balanceOf(me.id) } satisfies T.SubmitDreamsResponse)
+    return HttpResponse.json({ submitted: picked.map((d) => d.id), remainingCredits: balanceOf(me.id) } satisfies T.SubmitDreamsResponse)
   })),
   http.post(u('/dreams/:id/messages'), wrap(async ({ request, params }) => {
     const me = requireUser(request)
@@ -574,6 +605,32 @@ export const handlers = [
     Object.assign(m, { reviewedAt: helpers.now(), reviewedByName: me.name, reviewNote: b.note?.trim() || null })
     o.status = 'FAILED'; o.failureReason = 'TRANSFER_REJECTED'
     db.notifications.unshift({ id: uid(), userId: o.userId, type: 'PAYMENT_REJECTED', title: 'لم نجد تحويلك', body: `لم نجد تحويلاً مطابقاً لطلب ${o.packageName}، ولم يُضف أي رصيد.`, link: `/me/checkout/instapay/${o.id}`, createdAt: helpers.now(), readAt: null })
+    return HttpResponse.json(transferRow(o))
+  })),
+  // "Undo approval" (docs/REVOKE_APPROVAL_CONTRACT.md §2): credits back out, paid dreams held, the buyer reviews and resends
+  http.post(u('/admin/payments/instapay/transfers/:id/revoke'), wrap(async ({ request, params }) => {
+    const me = requireAdmin(request)
+    const o = instapayOrders().find((x) => x.id === params.id)
+    if (!o) return problem(404, 'Not found')
+    if (o.status !== 'SUCCESS') return problem(409, 'Conflict', 'Only an approved InstaPay payment can be taken back', { code: 'NOT_REVOCABLE' })
+    if (revokeBlocked(o)) return problem(409, 'Conflict', 'A dream paid by this order was already interpreted', { code: 'DREAM_ALREADY_INTERPRETED' })
+    const m = instapayMeta.get(o.id)!
+    const b = (await request.json().catch(() => ({}))) as { note?: string }
+    const note = (b.note ?? '').trim()
+    if (note.length > 500) return problem(400, 'Validation failed', 'note: at most 500 characters', { errors: { note: ['max 500'] } })
+    const held: string[] = []
+    for (const d of paidFrom(o).filter((x) => x.status === 'IN_REVIEW' || x.status === 'IN_PROGRESS' || x.status === 'AWAITING_USER_REPLY')) {
+      db.ledger.push({ id: uid(), userId: o.userId, delta: 1, reason: 'REFUND', orderId: o.id, dreamId: d.id, createdAt: helpers.now() })
+      Object.assign(d, { status: 'AWAITING_PAYMENT', heldOrderId: o.id, slaPausedAt: d.slaPausedAt ?? helpers.now(), credit: null })
+      held.push(d.id)
+    }
+    // what is left of the order's lot leaves the balance (never below 0)
+    const lot = db.ledger.filter((l) => l.orderId === o.id).reduce((a, l) => a + l.delta, 0)
+    const take = Math.min(lot, balanceOf(o.userId))
+    if (take > 0) db.ledger.push({ id: uid(), userId: o.userId, delta: -take, reason: 'REVOKE', orderId: o.id, dreamId: null, createdAt: helpers.now() })
+    Object.assign(m, { reviewedAt: helpers.now(), reviewedByName: me.name, reviewNote: note || null })
+    Object.assign(o, { status: 'FAILED', failureReason: 'APPROVAL_REVOKED', settledAmountEgp: null, paidAt: null, providerRef: null })
+    db.notifications.unshift({ id: uid(), userId: o.userId, type: 'PAYMENT_REVOKED', title: 'نحتاج إلى مراجعتك لبيانات الدفع', body: `لم تتمكن المعبّرة من تأكيد تحويل طلب ${o.packageName}. رؤاك محفوظة، راجع رقم العملية واسم المحوِّل والمبلغ وأرسلها مرة أخرى.`, link: `/me/checkout/instapay/${o.id}`, createdAt: helpers.now(), readAt: null })
     return HttpResponse.json(transferRow(o))
   })),
   http.get(u('/admin/payments/instapay/settings'), wrap(async ({ request }) => {
@@ -813,7 +870,7 @@ export const handlers = [
     const order = d.credit?.orderId ? db.orders.find((o) => o.id === d.credit!.orderId) : null
     d.messages.forEach((m) => { if (m.senderRole === 'USER') m.readAt ??= helpers.now() })
     const { payment: _ignored, ...detail } = toDetail(d)
-    const r: T.AdminDreamDetail = { ...detail, userEditedAt: d.userEditedAt ?? null, user: { id: usr.id, name: usr.name, email: usr.email, countryCode: usr.countryCode, age: usr.age },
+    const r: T.AdminDreamDetail = { ...detail, userEditedAt: d.userEditedAt ?? null, heldOrderId: d.heldOrderId ?? null, user: { id: usr.id, name: usr.name, email: usr.email, countryCode: usr.countryCode, age: usr.age },
       payment: order ? { orderId: order.id, orderNumber: order.orderNumber, payerName: usr.name, payerEmail: usr.email, paidAt: order.paidAt ?? order.createdAt, packageName: order.packageName, amount: order.amount, currency: order.currency, provider: order.provider, providerRef: order.providerRef ?? '-', countryCode: order.countryCode, ...orderCounter(order.id, order.credits, d.id) } : null }
     return HttpResponse.json(r)
   })),

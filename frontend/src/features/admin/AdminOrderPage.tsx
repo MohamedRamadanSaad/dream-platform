@@ -12,7 +12,7 @@ import { Icon } from '@/components/icons/Icon'
 import { PageEnter } from '@/components/motion'
 import { arrowBack, arrowNext, cn, flagEmoji, fmtDate, fmtMoney, regionName, timeAgo } from '@/lib/utils'
 import type { AdminOrderDetail } from '@/api/types'
-import { CopyButton, TransferReviewModals } from './InstapayAdmin'
+import { CopyButton, RevokeApprovalModal, TransferReviewModals } from './InstapayAdmin'
 
 /** One "label: value" line of the summary card. */
 function Row({ label, children }: { label: string; children: ReactNode }) {
@@ -69,13 +69,19 @@ export function AdminOrderPage() {
   const locale = useAuthStore((s) => s.locale)
   const q = useQuery({ queryKey: ['admin', 'order', id], queryFn: () => adminApi.order(id!), retry: (n, e) => !isNotFound(e) && n < 1 })
   const [mode, setMode] = useState<'approve' | 'reject' | null>(null)
+  const [revoking, setRevoking] = useState(false)
 
   const back = <Link to="/admin/orders" className="inline-flex items-center gap-1 text-sm text-fg-muted hover:text-fg">{arrowBack(locale)} {t('admin.order.back')}</Link>
   if (q.isLoading) return <div className="space-y-4"><Skeleton className="h-6 w-32" /><Skeleton className="h-10 w-64" /><div className="grid gap-5 lg:grid-cols-3"><Skeleton className="h-80 lg:col-span-2" /><Skeleton className="h-64" /></div></div>
   if (isNotFound(q.error)) return <PageEnter><NotFound text={t('admin.order.notFound')} back={<Link to="/admin/orders" className="btn btn-sm btn-ghost">{arrowBack(locale)} {t('admin.order.back')}</Link>} /></PageEnter>
   if (q.isError || !q.data) return <div className="space-y-4">{back}<ErrorBox onRetry={() => q.refetch()} /></div>
   const o = q.data
-  const failure = o.failureReason ? (o.failureReason === 'TRANSFER_REJECTED' ? t('admin.order.failure.TRANSFER_REJECTED') : t('admin.order.failure.other', { reason: o.failureReason })) : null
+  const failure = o.failureReason ? (o.failureReason === 'TRANSFER_REJECTED' || o.failureReason === 'APPROVAL_REVOKED' ? t(`admin.order.failure.${o.failureReason}`) : t('admin.order.failure.other', { reason: o.failureReason })) : null
+  const revoked = o.status === 'FAILED' && o.failureReason === 'APPROVAL_REVOKED'
+  // "Undo approval": every approved InstaPay order shows it; the server says whether it is still possible
+  const approvedInstapay = o.provider === 'INSTAPAY' && o.status === 'SUCCESS'
+  const heldDreams = o.dreams.filter((d) => d.status === 'IN_REVIEW' || d.status === 'IN_PROGRESS' || d.status === 'AWAITING_USER_REPLY').length
+  const blocked = approvedInstapay && !o.canRevoke ? t(`admin.order.revokeBlocked.${o.revokeBlockedReason ?? 'other'}`) : null
 
   return (
     <PageEnter className="space-y-5">
@@ -90,6 +96,16 @@ export function AdminOrderPage() {
         </div>
         <div className="flex flex-wrap items-center gap-2"><StatusBadge status={o.status} kind="order" />{failure && <span className="text-xs text-bad-ink">{failure}</span>}</div>
       </div>
+
+      {revoked && (
+        <div role="status" className="card flex items-start gap-3 border-warn/40 bg-warn/5 p-5">
+          <span className="mt-0.5 shrink-0 text-warn"><Icon name="clock" size={22} /></span>
+          <div className="min-w-0">
+            <div className="font-medium">{t('admin.order.revokedBanner')}</div>
+            <p className="mt-1 text-sm font-light leading-relaxed text-fg-muted">{t('admin.order.revokedBannerLead')}</p>
+          </div>
+        </div>
+      )}
 
       <div className="grid items-start gap-5 lg:grid-cols-3">
         <div className="space-y-5 lg:col-span-2">
@@ -159,6 +175,16 @@ export function AdminOrderPage() {
         </div>
 
         <aside className="space-y-5">
+          {approvedInstapay && (
+            <section aria-labelledby="revoke-title" className="card p-5">
+              <h2 id="revoke-title" className="font-medium">{t('admin.order.revokeSection')}</h2>
+              <p className="mt-1 text-sm font-light leading-relaxed text-fg-muted">{t('admin.order.revokeHint')}</p>
+              <Button variant="ghost" className="mt-4 min-h-11 w-full border-danger/60 text-danger hover:bg-danger/5" disabled={!o.canRevoke} aria-describedby={blocked ? 'revoke-blocked' : undefined} aria-haspopup="dialog" onClick={() => setRevoking(true)}>
+                <Icon name="undo" size={16} flipRtl />{t('admin.order.revoke')}
+              </Button>
+              {blocked && <p id="revoke-blocked" className="mt-2 text-xs leading-relaxed text-bad-ink">{blocked}</p>}
+            </section>
+          )}
           <div className="card p-5">
             <Label>{t('admin.order.transfer')}</Label>
             {o.transfer ? (
@@ -175,6 +201,7 @@ export function AdminOrderPage() {
         </aside>
       </div>
 
+      {approvedInstapay && <RevokeApprovalModal orderId={o.id} orderNumber={o.orderNumber} heldDreams={heldDreams} open={revoking} onClose={() => setRevoking(false)} />}
       {o.transfer && <TransferReviewModals orderId={o.id} orderNumber={o.orderNumber} amount={o.amount} currency={o.currency} reference={o.transfer.reference} mode={mode} onClose={() => setMode(null)} />}
     </PageEnter>
   )

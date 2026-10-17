@@ -14,8 +14,10 @@ import type { DreamPaymentLink } from '@/api/types'
 /**
  * What a dream attached to a payment can do. Under review: open the payment, or remove the dream from it (back to
  * Drafts; the payment stays as it is). Rejected: also send it with the balance, attach it to a new payment, or delete it.
+ * Held (AWAITING_PAYMENT, the approval was taken back): open the payment to review it, or send it with the balance;
+ * it never leaves its payment and is never deleted (its text and messages are kept).
  */
-export function DreamPaymentActions({ dreamId, payment, compact, onGone }: { dreamId: string; payment: DreamPaymentLink; compact?: boolean; onGone?: () => void }) {
+export function DreamPaymentActions({ dreamId, payment, held, compact, onGone }: { dreamId: string; payment: DreamPaymentLink; held?: boolean; compact?: boolean; onGone?: () => void }) {
   const { t } = useTranslation()
   const locale = useAuthStore((s) => s.locale)
   const qc = useQueryClient()
@@ -23,7 +25,8 @@ export function DreamPaymentActions({ dreamId, payment, compact, onGone }: { dre
   const once = useOnce()
   const errorText = useErrorText('me.dreamErrors')
   const rejected = payment.status === 'REJECTED'
-  const dash = useQuery({ queryKey: ['me', 'dashboard'], queryFn: meApi.dashboard, enabled: rejected })
+  const canUseBalance = rejected || !!held
+  const dash = useQuery({ queryKey: ['me', 'dashboard'], queryFn: meApi.dashboard, enabled: canUseBalance })
   const credits = dash.data?.credits ?? 0
   const [confirm, setConfirm] = useState<'release' | 'delete' | null>(null)
 
@@ -52,15 +55,15 @@ export function DreamPaymentActions({ dreamId, payment, compact, onGone }: { dre
   const quiet = 'inline-flex min-h-9 items-center gap-1.5 text-fg-muted hover:text-fg'
   return (
     <div role="group" aria-label={t('me.dreamPayment.actions')} className={cn('flex flex-wrap items-center gap-x-4 gap-y-1', compact ? 'text-xs' : 'text-sm')}>
-      <Link to={`/me/checkout/instapay/${payment.orderId}`} className={link}>{t('me.dreamPayment.open')} <span aria-hidden="true">{arrowNext(locale)}</span></Link>
-      {rejected && credits > 0 && (
+      <Link to={`/me/checkout/instapay/${payment.orderId}`} className={link}>{t(payment.status === 'REVOKED' ? 'me.dreamPayment.review' : 'me.dreamPayment.open')} <span aria-hidden="true">{arrowNext(locale)}</span></Link>
+      {canUseBalance && credits > 0 && (
         <button type="button" className={link} disabled={submit.isPending} onClick={() => once(() => submit.mutateAsync())}>
           <Icon name="moon" size={14} />{t('me.dreamPayment.sendWithBalance')}
         </button>
       )}
-      {rejected && <Link to={`/me/packages?dreams=${dreamId}`} className={link}>{t('me.dreamPayment.payAgain')}</Link>}
-      <button type="button" className={quiet} aria-haspopup="dialog" onClick={() => setConfirm('release')}>{t('me.dreamPayment.release')}</button>
-      {rejected && <button type="button" className={cn(quiet, 'hover:text-danger')} aria-haspopup="dialog" onClick={() => setConfirm('delete')}><Icon name="trash" size={14} />{t('common.delete')}</button>}
+      {rejected && !held && <Link to={`/me/packages?dreams=${dreamId}`} className={link}>{t('me.dreamPayment.payAgain')}</Link>}
+      {!held && <button type="button" className={quiet} aria-haspopup="dialog" onClick={() => setConfirm('release')}>{t('me.dreamPayment.release')}</button>}
+      {rejected && !held && <button type="button" className={cn(quiet, 'hover:text-danger')} aria-haspopup="dialog" onClick={() => setConfirm('delete')}><Icon name="trash" size={14} />{t('common.delete')}</button>}
 
       <Modal open={confirm === 'release'} onClose={() => setConfirm(null)} title={t('me.dreamPayment.releaseTitle')} size="sm" focusField={false}
         footer={<><Button variant="ghost" onClick={() => setConfirm(null)}>{t('common.cancel')}</Button><Button loading={release.isPending} onClick={() => once(() => release.mutateAsync())}>{t('me.dreamPayment.releaseConfirm')}</Button></>}>

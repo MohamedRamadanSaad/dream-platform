@@ -162,6 +162,8 @@ export const adminApi = {
   instapayCounts: () => http.get<{ pending: number }>('/admin/payments/instapay/transfers/counts'),
   approveTransfer: (orderId: string, reference: string) => http.post<T.InstapayTransferRow>(`/admin/payments/instapay/transfers/${orderId}/approve`, { reference }),
   rejectTransfer: (orderId: string, note: string) => http.post<T.InstapayTransferRow>(`/admin/payments/instapay/transfers/${orderId}/reject`, { note }),
+  /** Takes back the approval of a SUCCESS InstaPay order (409 NOT_REVOCABLE / DREAM_ALREADY_INTERPRETED). */
+  revokeTransfer: (orderId: string, note?: string) => http.post<T.InstapayTransferRow>(`/admin/payments/instapay/transfers/${orderId}/revoke`, note ? { note } : {}),
   instapaySettings: () => http.get<T.InstapaySettings>('/admin/payments/instapay/settings'),
   saveInstapaySettings: (body: T.InstapaySettings) => http.put<T.InstapaySettings>('/admin/payments/instapay/settings', body),
 

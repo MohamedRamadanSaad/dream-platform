@@ -1,7 +1,11 @@
 // Single source of truth for the API contract. Mirrors docs/BUILD_PACK.md and docs/SPEC_v2.md.
 
-export type DreamStatus = 'DRAFT' | 'IN_REVIEW' | 'IN_PROGRESS' | 'AWAITING_USER_REPLY' | 'INTERPRETED' | 'CANCELLED'
-/** GET /dreams?status= also takes the virtual PENDING_PAYMENT: drafts attached to a payment under review or rejected. */
+/**
+ * AWAITING_PAYMENT: the interpreter took back the approval of the payment that paid for this dream
+ * (docs/REVOKE_APPROVAL_CONTRACT.md). The dream is kept and waits for that payment to be confirmed again.
+ */
+export type DreamStatus = 'DRAFT' | 'IN_REVIEW' | 'IN_PROGRESS' | 'AWAITING_USER_REPLY' | 'AWAITING_PAYMENT' | 'INTERPRETED' | 'CANCELLED'
+/** GET /dreams?status= also takes the virtual PENDING_PAYMENT: drafts attached to a payment under review or rejected, and AWAITING_PAYMENT dreams. */
 export type DreamListFilter = DreamStatus | 'PENDING_PAYMENT' | 'ALL'
 export type OrderStatus = 'INITIATED' | 'PENDING_REVIEW' | 'SUCCESS' | 'FAILED' | 'EXPIRED' | 'REFUNDED' | 'SUSPICIOUS'
 /** INSTAPAY: manual transfer inside Egypt, confirmed by the interpreter. */
@@ -26,6 +30,8 @@ export type NotificationType =
   | 'PAYMENT_REJECTED'
   /** To the interpreter: a dreamer changed a dream's text before she started (link /admin/dreams/:id). */
   | 'DREAM_EDITED'
+  /** To the buyer: the interpreter took back the approval of an InstaPay payment (link /me/checkout/instapay/:orderId). */
+  | 'PAYMENT_REVOKED'
 
 export interface ApiProblem {
   type: string
@@ -253,12 +259,16 @@ export interface DreamSummary {
   expectedDays: number | null
   /** The user may still change the text (DRAFT, or not yet started by the interpreter): follow this flag only. */
   editable: boolean
-  /** The payment this draft waits on (PENDING_REVIEW) or that was rejected; null otherwise. */
+  /** The payment this draft (or AWAITING_PAYMENT dream) waits on, or that was rejected / revoked; null otherwise. */
   payment: DreamPaymentLink | null
 }
+/**
+ * REVOKED: the approval was taken back and the buyer must review and resend the transfer details
+ * (only for AWAITING_PAYMENT dreams); PENDING_REVIEW after he resent them; REJECTED after a reject.
+ */
 export interface DreamPaymentLink {
   orderId: string
-  status: 'PENDING_REVIEW' | 'REJECTED'
+  status: 'PENDING_REVIEW' | 'REJECTED' | 'REVOKED'
   submittedAt: string | null
   reviewNote: string | null
 }
@@ -290,7 +300,8 @@ export interface TestimonialRequest {
 export interface CreditLedgerEntry {
   id: string
   delta: number
-  reason: 'PURCHASE' | 'SUBMIT' | 'REFUND' | 'MANUAL' | 'BONUS' | 'EXPIRE'
+  /** REVOKE: credits of an InstaPay payment whose approval the interpreter took back. */
+  reason: 'PURCHASE' | 'SUBMIT' | 'REFUND' | 'MANUAL' | 'BONUS' | 'EXPIRE' | 'REVOKE'
   orderId: string | null
   dreamId: string | null
   createdAt: string
@@ -348,6 +359,8 @@ export interface InstapayOrderView {
   submittedAt: string | null
   reviewNote: string | null
   attachedDreams: number
+  /** Why a FAILED order failed: TRANSFER_REJECTED, or APPROVAL_REVOKED when the interpreter took back her approval. */
+  failureReason?: string | null
 }
 export interface InstapaySubmitRequest {
   reference: string
@@ -488,6 +501,8 @@ export interface AdminDreamRow {
 }
 export interface AdminDreamDetail extends Omit<DreamDetail, 'payment'> {
   userEditedAt: string | null
+  /** AWAITING_PAYMENT: the order whose approval was taken back (the dream waits for it); null otherwise. */
+  heldOrderId?: string | null
   user: { id: string; name: string; email: string; countryCode: string; age: number | null }
   payment: {
     orderId: string
@@ -561,6 +576,10 @@ export interface AdminOrderDetail {
   dreams: { id: string; status: DreamStatus; text: string; createdAt: string; submittedAt: string | null }[]
   /** INSTAPAY and PENDING_REVIEW. */
   canReview: boolean
+  /** INSTAPAY and SUCCESS and no dream paid from it is INTERPRETED: "Undo approval" is possible. */
+  canRevoke: boolean
+  /** Why "Undo approval" is not possible on a SUCCESS InstaPay order; null otherwise. */
+  revokeBlockedReason: 'DREAM_ALREADY_INTERPRETED' | null
 }
 export interface WaitTimeSettings {
   busy: boolean

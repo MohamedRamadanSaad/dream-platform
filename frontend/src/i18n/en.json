@@ -296,7 +296,10 @@
       "editHint": "You can still edit the text until the interpreter starts.",
       "pendingTitle": "Payment under review",
       "rejectedTitle": "The payment was not confirmed",
-      "notFound": "This dream was not found. It may have been deleted."
+      "notFound": "This dream was not found. It may have been deleted.",
+      "revokedTitle": "Please review your payment details",
+      "heldPendingTitle": "Your payment details are under review",
+      "heldKept": "Your dream is kept with its text and messages. It continues after the payment is confirmed."
     },
     "status": {
       "DRAFT": "Draft",
@@ -306,7 +309,9 @@
       "CANCELLED": "Cancelled",
       "IN_PROGRESS": "Being interpreted",
       "PENDING_PAYMENT": "Payment under review",
-      "PAYMENT_REJECTED": "Payment rejected"
+      "PAYMENT_REJECTED": "Payment rejected",
+      "AWAITING_PAYMENT": "Waiting for payment confirmation",
+      "PAYMENT_REVOKED": "Check your payment details"
     },
     "payments": {
       "title": "Payments",
@@ -320,7 +325,8 @@
         "REFUND": "Refund",
         "MANUAL": "Added by the interpreter",
         "BONUS": "Gift",
-        "EXPIRE": "Expired"
+        "EXPIRE": "Expired",
+        "REVOKE": "Credits of an unconfirmed payment removed"
       },
       "invoiceNo": "Order number",
       "copy": "Copy order number",
@@ -449,7 +455,11 @@
         "limit_other": "You can attach up to {{count}} dreams to this payment.",
         "limitLeft_one": "You can attach 1 more dream to this payment.",
         "limitLeft_other": "You can attach {{count}} more dreams to this payment.",
-        "limitFull": "This payment already has as many dreams as its credits."
+        "limitFull": "This payment already has as many dreams as its credits.",
+        "fakeWarning": "Warning: a fake or wrong transfer will close the account. Please check the transfer number, the sender name and the amount before you send.",
+        "revokedTitle": "Please review your payment details",
+        "revokedLead": "The interpreter could not confirm your transfer. Your dream is kept and waits for the payment to be confirmed. Check the transfer number, the sender name and the amount, then send the details again.",
+        "revokedResend": "Send the details for review"
       },
       "secureEg": "We never ask for your bank details. You transfer from your own app.",
       "continue": "Continue {{amount}}",
@@ -596,7 +606,8 @@
       "readAll": "Mark all as read",
       "empty": "No notifications",
       "types": {
-        "DREAM_EDITED": "Dream edited"
+        "DREAM_EDITED": "Dream edited",
+        "PAYMENT_REVOKED": "Review your payment"
       }
     },
     "expiry": {
@@ -621,7 +632,11 @@
       "deleteTitle": "Delete this dream?",
       "deleteBody": "The dream is deleted for good and cannot be brought back.",
       "deleted": "Dream deleted",
-      "actions": "Dream actions"
+      "actions": "Dream actions",
+      "revoked": "The interpreter could not confirm your transfer. Your dream is kept. Check your payment details and send them again.",
+      "heldUnderReview": "Your dream continues as soon as your payment is confirmed.",
+      "heldRejected": "Your transfer is not confirmed yet. Your dream is kept. Check the details and send them again.",
+      "review": "Review the payment details"
     },
     "dreamErrors": {
       "DREAM_ALREADY_ATTACHED": "This dream is already attached to another payment. Remove it from that payment first.",
@@ -724,7 +739,10 @@
       "errors": {
         "NOT_IN_REVIEW": "This dream is no longer waiting, so it cannot be started now."
       },
-      "notFound": "This dream was not found."
+      "notFound": "This dream was not found.",
+      "heldTitle": "Waiting for payment confirmation",
+      "heldLead": "You undid the approval of the payment for this dream, so work on it is paused until the payment is confirmed again. You cannot start, ask or interpret it now.",
+      "heldOpenOrder": "Open the payment"
     },
     "pricing": {
       "gaps": {
@@ -882,7 +900,8 @@
         "REFUND": "Refund",
         "MANUAL": "Manual",
         "BONUS": "Gift",
-        "EXPIRE": "Expired"
+        "EXPIRE": "Expired",
+        "REVOKE": "Approval undone"
       },
       "reason": "Reason",
       "draftHidden": "[Draft, hidden until it is submitted]",
@@ -1194,6 +1213,10 @@
         "email-code": {
           "label": "Account or password code",
           "desc": "To the user, when they create an account or reset their password. It cannot be switched off."
+        },
+        "payment-review-needed": {
+          "label": "Payment review needed",
+          "desc": "To the user, when you undo the approval of their payment."
         }
       },
       "toSupport": "Replies to support e-mails",
@@ -1309,7 +1332,9 @@
       "CANCELLED": "Cancelled",
       "IN_PROGRESS": "Being interpreted",
       "PENDING_PAYMENT": "Payment under review",
-      "PAYMENT_REJECTED": "Payment rejected"
+      "PAYMENT_REJECTED": "Payment rejected",
+      "AWAITING_PAYMENT": "Waiting for payment confirmation",
+      "PAYMENT_REVOKED": "Waiting for the buyer to review"
     },
     "legal": {
       "title": "Seller details",
@@ -1368,7 +1393,9 @@
         "DREAM_ALREADY_ATTACHED": "This dream is already attached to another payment. Remove it from that payment first.",
         "TOO_MANY_DREAMS": "You attached more dreams than this package covers. Attach fewer dreams or choose a bigger package.",
         "ATTACHED_TO_PAYMENT": "This dream is attached to a payment under review, so it cannot be deleted now. Remove it from the payment first.",
-        "NOT_RELEASABLE": "Dreams can no longer be removed from this payment."
+        "NOT_RELEASABLE": "Dreams can no longer be removed from this payment.",
+        "NOT_REVOCABLE": "This approval can no longer be undone.",
+        "DREAM_ALREADY_INTERPRETED": "You cannot undo it: a dream paid by this payment is already interpreted."
       },
       "orderNo": "Order number"
     },
@@ -1399,7 +1426,8 @@
       "providerRef": "Provider reference",
       "failure": {
         "TRANSFER_REJECTED": "Transfer rejected",
-        "other": "Failed: {{reason}}"
+        "other": "Failed: {{reason}}",
+        "APPROVAL_REVOKED": "Approval undone"
       },
       "user": "Buyer",
       "userProfile": "Open the user profile",
@@ -1419,7 +1447,28 @@
       "hideText": "Hide the dream text",
       "approveRef": "Reference to confirm",
       "notFound": "This payment was not found.",
-      "fxEstimate": "Estimate at the recorded exchange rate"
+      "fxEstimate": "Estimate at the recorded exchange rate",
+      "revokedBanner": "Approval undone, waiting for the buyer to review",
+      "revokedBannerLead": "The buyer was asked to review the transfer details and send them again. When he does, the payment comes back to you for review. His dreams are kept until then.",
+      "revokeSection": "Approved this payment by mistake?",
+      "revokeHint": "You can undo the approval. The dreams are kept and the buyer is asked to review the transfer details.",
+      "revoke": "Undo approval",
+      "revokeBlocked": {
+        "DREAM_ALREADY_INTERPRETED": "You cannot undo it: a dream paid by this payment is already interpreted.",
+        "other": "This approval cannot be undone now."
+      },
+      "revokeTitle": "Undo the payment approval",
+      "revokeWhat": "What will happen:",
+      "revokeCredits": "The credits of this payment are taken from the buyer's account.",
+      "revokeDreams": "The dreams paid by it are kept with their text and messages. Their status becomes “Waiting for payment confirmation”.",
+      "revokeDreamsCount_one": "1 dream will wait for the payment.",
+      "revokeDreamsCount_other": "{{count}} dreams will wait for the payment.",
+      "revokeBuyer": "The buyer gets a notification and an e-mail asking him to review the transfer details and send them again. Then the payment comes back to you for review.",
+      "revokeNote": "Note to the buyer (optional)",
+      "revokeNotePlaceholder": "Example: the money did not arrive in the InstaPay account",
+      "revokeConfirm": "Undo approval",
+      "revoked": "Approval undone. The buyer was told.",
+      "revokeDreamsCount_zero": "No dream of this payment is in progress."
     }
   },
   "common": {
