@@ -3,13 +3,14 @@
 # ONE-OFF, owner's request 2026-10-17 16:40 Riyadh: remove the owner's own test data (account m.ramadansaad@gmail.com).
 # Kept: the account itself, order RN-15004 (a real 100 EGP InstaPay transfer) and its PURCHASE credit, so his balance
 # ends at 1 dream. Removed: his 4 test dreams, order RN-15001, every other credit row of his, his notifications.
+# (Run 1 at 13:41 UTC only took a save point: pg_dump swallowed the script from stdin, nothing was changed.)
 # Full pg_dump save point first; one transaction; aborts (nothing changed) if the data is not exactly as inspected.
 set -euo pipefail
 cd /opt/saadat/deploy
 dc() { docker compose --env-file .env "$@"; }
 mkdir -p /opt/saadat/backups
 backup=/opt/saadat/backups/before-owner-test-cleanup-$(date -u +%Y%m%d-%H%M%S).dump
-dc exec -T postgres sh -c 'pg_dump -U "$POSTGRES_USER" -d "$POSTGRES_DB" -Fc' > "$backup"
+dc exec -T postgres sh -c 'pg_dump -U "$POSTGRES_USER" -d "$POSTGRES_DB" -Fc' > "$backup" < /dev/null   # the script itself arrives on stdin: never let pg_dump read it
 test -s "$backup"
 echo "save point: $backup ($(du -h "$backup" | cut -f1))"
 
