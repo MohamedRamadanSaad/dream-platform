@@ -83,7 +83,7 @@ function CancelDialog({ open, onClose, dreamId, refunds, held }: { open: boolean
   })
   return (
     <Modal open={open} onClose={onClose} title={t('admin.dream.cancelTitle')} size="sm" focusField={false}
-      footer={<><Button variant="ghost" onClick={onClose}>{t('common.cancel')}</Button><Button variant="ghost" className="border-danger text-danger" loading={cancel.isPending} onClick={() => once(() => cancel.mutateAsync())}>{t('admin.dream.cancelConfirm')}</Button></>}>
+      footer={<><Button variant="ghost" onClick={onClose}>{t('common.back')}</Button><Button variant="ghost" className="border-danger text-danger" loading={cancel.isPending} onClick={() => once(() => cancel.mutateAsync())}>{t('admin.dream.cancelConfirm')}</Button></>}>
       <p className="text-sm leading-relaxed text-fg-muted">{t('admin.dream.cancelBody')}</p>
       <p className={cn('mt-3 rounded-xl p-3 text-sm', refunds ? 'bg-success/10 text-success' : 'bg-warn/10 text-warn')}>
         {t(refunds ? 'admin.dream.cancelRefund' : held ? 'admin.dream.cancelNoRefundHeld' : 'admin.dream.cancelNoRefund')}
