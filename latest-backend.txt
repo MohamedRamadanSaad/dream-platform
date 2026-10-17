@@ -1,4 +1,4 @@
-### commit 90d9fad357813991b3f02e15c6c1be9e053f0f35 run 39027545172 Sat Oct 17 11:10:05 UTC 2026
+### commit 70e68d0b897dce7ee0deeb8bf477c73a918230b9 run 39027714052 Sat Oct 17 11:12:37 UTC 2026
 ## tests
 com.saadat.tracking.service.UserAgentsTest tests=20 failures=0 errors=0
 com.saadat.settings.AdminWaitTimeIntegrationTest tests=2 failures=0 errors=0
@@ -51,7 +51,7 @@ com.saadat.reports.ReportsIntegrationTest tests=2 failures=0 errors=0
 com.saadat.youtube.YoutubeIntegrationTest tests=2 failures=0 errors=0
 com.saadat.ops.PrelaunchResetScriptIntegrationTest tests=1 failures=0 errors=0
 com.saadat.users.DashboardActivityIntegrationTest tests=2 failures=0 errors=0
-com.saadat.payments.InstapayFlowIntegrationTest tests=8 failures=1 errors=0
+com.saadat.payments.InstapayFlowIntegrationTest tests=8 failures=0 errors=0
 com.saadat.mail.inbound.InboxMessageReaderTest tests=3 failures=0 errors=0
 com.saadat.ContextLoadsTest tests=6 failures=0 errors=0
 com.saadat.mail.SentFolderArchiverTest tests=3 failures=0 errors=0
@@ -69,24 +69,7 @@ com.saadat.dreams.DreamFlowIntegrationTest tests=7 failures=0 errors=0
 com.saadat.youtube.service.YoutubeChannelPageParserTest tests=8 failures=0 errors=0
 com.saadat.payments.PaymentsFiltersIntegrationTest tests=13 failures=0 errors=0
 ## failures
---- backend/build/test-results/test/TEST-com.saadat.payments.InstapayFlowIntegrationTest.xml
-    <failure message="java.lang.AssertionError: JSON path &quot;$.address&quot; expected:&lt;mariam.saad@instapay&gt; but was:&lt;vcbow1694@instapay&gt;" type="java.lang.AssertionError">java.lang.AssertionError: JSON path &quot;$.address&quot; expected:&lt;mariam.saad@instapay&gt; but was:&lt;vcbow1694@instapay&gt;
-	at org.springframework.test.util.AssertionErrors.fail(AssertionErrors.java:59)
-	at org.springframework.test.util.AssertionErrors.assertEquals(AssertionErrors.java:122)
-	at org.springframework.test.util.JsonPathExpectationsHelper.assertValue(JsonPathExpectationsHelper.java:123)
-	at org.springframework.test.web.servlet.result.JsonPathResultMatchers.lambda$value$2(JsonPathResultMatchers.java:111)
-	at org.springframework.test.web.servlet.MockMvc$1.andExpect(MockMvc.java:214)
-	at com.saadat.payments.InstapayFlowIntegrationTest.theInterpreterChangesTheReceivingAccount(InstapayFlowIntegrationTest.java:261)
-	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
-	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
-	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
-</failure>
-  </testcase>
-  <testcase name="oneReferencePaysOneOrderOnly()" classname="com.saadat.payments.InstapayFlowIntegrationTest" time="0.053"/>
 ## build.log (errors + tail)
-16:InstapayFlowIntegrationTest > theInterpreterChangesTheReceivingAccount() FAILED
-36:> Task :test FAILED
-48:BUILD FAILED in 1m 25s
 ...
 To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.14.3/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
 Daemon will be stopped at the end of the build 
@@ -103,37 +86,16 @@ Daemon will be stopped at the end of the build
 OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
 > Task :test
 
-InstapayFlowIntegrationTest > theInterpreterChangesTheReceivingAccount() FAILED
-    java.lang.AssertionError: JSON path "$.address" expected:<mariam.saad@instapay> but was:<vcbow1694@instapay>
-        at org.springframework.test.util.AssertionErrors.fail(AssertionErrors.java:59)
-        at org.springframework.test.util.AssertionErrors.assertEquals(AssertionErrors.java:122)
-        at org.springframework.test.util.JsonPathExpectationsHelper.assertValue(JsonPathExpectationsHelper.java:123)
-        at org.springframework.test.web.servlet.result.JsonPathResultMatchers.lambda$value$2(JsonPathResultMatchers.java:111)
-        at org.springframework.test.web.servlet.MockMvc$1.andExpect(MockMvc.java:214)
-        at com.saadat.payments.InstapayFlowIntegrationTest.theInterpreterChangesTheReceivingAccount(InstapayFlowIntegrationTest.java:261)
+11:12:36.355 INFO  [SpringApplicationShutdownHook] [] o.s.o.j.LocalContainerEntityManagerFactoryBean - Closing JPA EntityManagerFactory for persistence unit 'default'
+11:12:36.367 INFO  [SpringApplicationShutdownHook] [] com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated...
+11:12:36.371 INFO  [SpringApplicationShutdownHook] [] com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed.
+11:12:36.379 INFO  [SpringApplicationShutdownHook] [] o.s.o.j.LocalContainerEntityManagerFactoryBean - Closing JPA EntityManagerFactory for persistence unit 'default'
+11:12:36.380 INFO  [SpringApplicationShutdownHook] [] com.zaxxer.hikari.HikariDataSource - HikariPool-2 - Shutdown initiated...
+11:12:36.390 INFO  [SpringApplicationShutdownHook] [] com.zaxxer.hikari.HikariDataSource - HikariPool-2 - Shutdown completed.
 
-11:10:04.513 INFO  [SpringApplicationShutdownHook] [] o.s.o.j.LocalContainerEntityManagerFactoryBean - Closing JPA EntityManagerFactory for persistence unit 'default'
-11:10:04.527 INFO  [SpringApplicationShutdownHook] [] com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated...
-11:10:04.535 INFO  [SpringApplicationShutdownHook] [] com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed.
-11:10:04.547 INFO  [SpringApplicationShutdownHook] [] o.s.o.j.LocalContainerEntityManagerFactoryBean - Closing JPA EntityManagerFactory for persistence unit 'default'
-11:10:04.548 INFO  [SpringApplicationShutdownHook] [] com.zaxxer.hikari.HikariDataSource - HikariPool-2 - Shutdown initiated...
-11:10:04.556 INFO  [SpringApplicationShutdownHook] [] com.zaxxer.hikari.HikariDataSource - HikariPool-2 - Shutdown completed.
+> Task :check
+> Task :build
+gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/__run-1792235479441.json
 
-> Task :test
-
-381 tests completed, 1 failed
-
-> Task :test FAILED
-gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/__run-1792235325395.json
-
-FAILURE: Build failed with an exception.
-
-* What went wrong:
-Execution failed for task ':test'.
-> There were failing tests. See the report at: file:///home/runner/work/dream-platform/dream-platform/backend/build/reports/tests/test/index.html
-
-* Try:
-> Run with --scan to get full insights.
-
-BUILD FAILED in 1m 25s
+BUILD SUCCESSFUL in 1m 21s
 7 actionable tasks: 7 executed
