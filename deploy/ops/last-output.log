@@ -1,1 +1,33 @@
-### Sat Oct 17 13:41:23 UTC 2026 — commit 5c2fe5b
+### Sat Oct 17 13:42:07 UTC 2026 — commit ba7d762
+save point: /opt/saadat/backups/before-owner-test-cleanup-20261017-134209.dump (192K)
+BEGIN
+SELECT 1
+SELECT 1
+SELECT 1
+SELECT 4
+SELECT 1
+DO
+UPDATE 4
+UPDATE 0
+DELETE 9
+DELETE 4
+DELETE 0
+DELETE 1
+DELETE 7
+DO
+COMMIT
+== owner account after cleanup
+          email          | balance |      orders      | dreams | notifications 
+-------------------------+---------+------------------+--------+---------------
+ m.ramadansaad@gmail.com |       1 | RN-15004 SUCCESS |      0 |             0
+(1 row)
+
+== other customers untouched
+             email             | orders | dreams 
+-------------------------------+--------+--------
+ support@saadatu-aldarein.com  |      0 |      0
+ fatemasky123@gmail.com        |      2 |      0
+ tatsujindentist2012@gmail.com |      1 |      1
+ mohammed.code.dev@gmail.com   |      0 |      1
+(4 rows)
+
