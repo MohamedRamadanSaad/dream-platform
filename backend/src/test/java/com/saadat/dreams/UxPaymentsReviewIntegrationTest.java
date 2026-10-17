@@ -458,6 +458,7 @@ class UxPaymentsReviewIntegrationTest extends IntegrationTestBase {
         n.setCountryCode(null);
         // an unpaid booking lives in the UNPAID tab (V41): a failed order shows where its country puts it
         n.setStatus(OrderStatus.FAILED);
+        n.setFailureReason("TRANSFER_REJECTED"); // a gateway failure would be an unpaid booking
         orderRepository.save(n);
         assertThat(orderIds(interpreter, "INTERNATIONAL")).contains(noCountry.toString());
         assertThat(orderIds(interpreter, "DOMESTIC")).doesNotContain(noCountry.toString());
