@@ -9,7 +9,7 @@ import { PageEnter } from '@/components/motion'
 import { cn, timeAgo } from '@/lib/utils'
 import type { NotificationType } from '@/api/types'
 
-const icon: Record<NotificationType, Parameters<typeof Icon>[0]['name']> = { DREAM_SUBMITTED: 'moon', DREAM_RECEIVED: 'check', INTERPRETER_QUESTION: 'chat', USER_REPLIED: 'chat', INTERPRETATION_READY: 'star', PAYMENT_SUCCESS: 'wallet', PROMOTION: 'gift', YOUTUBE_VIDEO: 'youtube', TRANSFER_SUBMITTED: 'wallet', PAYMENT_REJECTED: 'alert', DREAM_EDITED: 'info', PAYMENT_REVOKED: 'alert' }
+const icon: Record<NotificationType, Parameters<typeof Icon>[0]['name']> = { DREAM_SUBMITTED: 'moon', DREAM_RECEIVED: 'check', INTERPRETER_QUESTION: 'chat', USER_REPLIED: 'chat', INTERPRETATION_READY: 'star', PAYMENT_SUCCESS: 'wallet', PROMOTION: 'gift', YOUTUBE_VIDEO: 'youtube', TRANSFER_SUBMITTED: 'wallet', PAYMENT_REJECTED: 'alert', DREAM_EDITED: 'info', PAYMENT_REVOKED: 'alert', CREDITS_WITHDRAWN: 'wallet' }
 
 export function NotificationsPage() {
   const { t } = useTranslation()

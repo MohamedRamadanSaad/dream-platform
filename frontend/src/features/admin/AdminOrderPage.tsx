@@ -12,7 +12,7 @@ import { Icon } from '@/components/icons/Icon'
 import { PageEnter } from '@/components/motion'
 import { arrowBack, arrowNext, cn, flagEmoji, fmtDate, fmtMoney, regionName, timeAgo } from '@/lib/utils'
 import type { AdminOrderDetail } from '@/api/types'
-import { CopyButton, RevokeApprovalModal, TransferReviewModals } from './InstapayAdmin'
+import { CopyButton, RevokeApprovalModal, TransferReviewModals, WithdrawLeftoverModal } from './InstapayAdmin'
 import { ResentChip } from './OrdersAdminPage'
 
 /** One "label: value" line of the summary card. */
@@ -71,6 +71,9 @@ export function AdminOrderPage() {
   const q = useQuery({ queryKey: ['admin', 'order', id], queryFn: () => adminApi.order(id!), retry: (n, e) => !isNotFound(e) && n < 1 })
   const [mode, setMode] = useState<'approve' | 'reject' | null>(null)
   const [revoking, setRevoking] = useState(false)
+  const [withdrawing, setWithdrawing] = useState(false)
+  // "No" to the leftover question: it folds into a quiet action (the page never asks twice in a row)
+  const [declined, setDeclined] = useState(false)
 
   const back = <Link to="/admin/orders" className="inline-flex items-center gap-1 text-sm text-fg-muted hover:text-fg">{arrowBack(locale)} {t('admin.order.back')}</Link>
   if (q.isLoading) return <div className="space-y-4"><Skeleton className="h-6 w-32" /><Skeleton className="h-10 w-64" /><div className="grid gap-5 lg:grid-cols-3"><Skeleton className="h-80 lg:col-span-2" /><Skeleton className="h-64" /></div></div>
@@ -84,6 +87,10 @@ export function AdminOrderPage() {
   const approvedInstapay = o.provider === 'INSTAPAY' && o.status === 'SUCCESS'
   const heldDreams = o.dreams.filter((d) => d.status === 'IN_REVIEW' || d.status === 'IN_PROGRESS' || d.status === 'AWAITING_USER_REPLY').length
   const blocked = approvedInstapay && !o.canRevoke ? t(`admin.order.revokeBlocked.${o.revokeBlockedReason ?? 'other'}`) : null
+  // a dream paid by it was interpreted: no undo; the question is whether to take back what was not used
+  const interpreted = o.status === 'SUCCESS' && o.interpretedDreams > 0
+  const asking = interpreted && o.canWithdrawLeftover && !declined
+  const leftover = t('admin.order.credits', { count: o.leftoverCredits, n: o.leftoverCredits })
 
   return (
     <PageEnter className="space-y-5">
@@ -112,6 +119,31 @@ export function AdminOrderPage() {
 
       <div className="grid items-start gap-5 lg:grid-cols-3">
         <div className="space-y-5 lg:col-span-2">
+          {(interpreted || o.leftoverWithdrawnAt) && (
+            <section aria-label={t('admin.order.leftoverSecondaryTitle')} className="card space-y-4 border-warn/40 p-5 md:p-6">
+              {interpreted && approvedInstapay && (
+                <p role="status" className="flex items-start gap-2.5 font-medium leading-relaxed text-warn">
+                  <Icon name="info" size={20} className="mt-0.5 shrink-0" />{t('admin.order.interpretedNotice')}
+                </p>
+              )}
+              {asking && (
+                <div className="rounded-xl border border-line bg-surface-2/60 p-4">
+                  <p className="font-medium leading-relaxed">{t('admin.order.leftoverQuestion', { credits: leftover })}</p>
+                  <p className="mt-1 text-sm font-light leading-relaxed text-fg-muted">{t('admin.order.leftoverQuestionLead')}</p>
+                  <div className="mt-4 flex flex-col gap-2 sm:flex-row">
+                    <Button className="min-h-11 sm:flex-1" aria-haspopup="dialog" onClick={() => setWithdrawing(true)}>{t('admin.order.leftoverYes')}</Button>
+                    <Button variant="ghost" className="min-h-11 sm:w-32" onClick={() => setDeclined(true)}>{t('admin.order.leftoverNo')}</Button>
+                  </div>
+                </div>
+              )}
+              {o.leftoverWithdrawnAt && (
+                <div className="space-y-1 text-sm">
+                  <p className="flex items-center gap-2 font-medium text-bad-ink"><Icon name="wallet" size={16} />{t('admin.order.leftoverWithdrawn', { credits: t('admin.order.credits', { count: o.leftoverWithdrawnCredits ?? 0, n: o.leftoverWithdrawnCredits ?? 0 }), date: fmtDate(o.leftoverWithdrawnAt, locale, true) })}</p>
+                  {o.leftoverNote && <p className="text-fg-muted"><TextWith i18nKey="admin.order.leftoverWithdrawnNote" value={o.leftoverNote} /></p>}
+                </div>
+              )}
+            </section>
+          )}
           {o.canReview && o.transfer && (
             <section aria-labelledby="review-title" className="card border-gold/50 p-5 md:p-6">
               <h2 id="review-title" className="flex items-center gap-2 font-display text-2xl"><span className="text-gold-ink"><Icon name="wallet" size={22} /></span>{t('admin.instapay.title')}</h2>
@@ -187,7 +219,15 @@ export function AdminOrderPage() {
         </div>
 
         <aside className="space-y-5">
-          {approvedInstapay && (
+          {o.canWithdrawLeftover && !asking && (
+            // offered quietly on any successful payment with unused credits
+            <section aria-labelledby="leftover-side" className="card p-5">
+              <h2 id="leftover-side" className="font-medium">{t('admin.order.leftoverSecondaryTitle')}</h2>
+              <p className="mt-1 text-sm font-light leading-relaxed text-fg-muted">{t('admin.order.leftoverSecondaryLead', { credits: leftover })}</p>
+              <Button variant="ghost" className="mt-4 min-h-11 w-full" aria-haspopup="dialog" onClick={() => setWithdrawing(true)}><Icon name="wallet" size={16} />{t('admin.order.leftoverAction')}</Button>
+            </section>
+          )}
+          {approvedInstapay && !interpreted && (
             <section aria-labelledby="revoke-title" className="card p-5">
               <h2 id="revoke-title" className="font-medium">{t('admin.order.revokeSection')}</h2>
               <p className="mt-1 text-sm font-light leading-relaxed text-fg-muted">{t('admin.order.revokeHint')}</p>
@@ -213,6 +253,7 @@ export function AdminOrderPage() {
         </aside>
       </div>
 
+      {o.canWithdrawLeftover && <WithdrawLeftoverModal orderId={o.id} orderNumber={o.orderNumber} credits={o.leftoverCredits} open={withdrawing} onClose={() => setWithdrawing(false)} />}
       {approvedInstapay && <RevokeApprovalModal orderId={o.id} orderNumber={o.orderNumber} heldDreams={heldDreams} open={revoking} onClose={() => setRevoking(false)} />}
       {o.transfer && <TransferReviewModals orderId={o.id} orderNumber={o.orderNumber} amount={o.amount} currency={o.currency} reference={o.transfer.reference} mode={mode} onClose={() => setMode(null)} />}
     </PageEnter>

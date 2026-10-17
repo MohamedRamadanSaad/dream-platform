@@ -32,6 +32,8 @@ export type NotificationType =
   | 'DREAM_EDITED'
   /** To the buyer: the interpreter took back the approval of an InstaPay payment (link /me/checkout/instapay/:orderId). */
   | 'PAYMENT_REVOKED'
+  /** To the buyer: the interpreter withdrew the unused credits of one of his payments (link /me/payments). */
+  | 'CREDITS_WITHDRAWN'
 
 export interface ApiProblem {
   type: string
@@ -553,8 +555,27 @@ export interface StartDreamRequest {
 }
 
 // ---------- Admin orders (docs/UX_PAYMENTS_REVIEW_CONTRACT.md §3) ----------
-/** REVIEW = InstaPay transfers waiting (oldest first); DOMESTIC = Egypt; INTERNATIONAL = outside Egypt; ALL = every order. */
-export type OrderScope = 'REVIEW' | 'DOMESTIC' | 'INTERNATIONAL' | 'ALL'
+/**
+ * REVIEW = InstaPay transfers waiting (oldest first); DOMESTIC = Egypt; INTERNATIONAL = outside Egypt (both without
+ * unpaid bookings); UNPAID = bookings never paid (INITIATED / EXPIRED, newest first); ALL = every order.
+ */
+export type OrderScope = 'REVIEW' | 'DOMESTIC' | 'INTERNATIONAL' | 'UNPAID' | 'ALL'
+/** Special order states to filter on (docs/PAYMENTS_FILTERS_CONTRACT.md §3). */
+export type OrderFlag = 'REVOKED' | 'RESENT' | 'LEFTOVER_WITHDRAWN'
+/** Filters of GET /admin/orders and /admin/orders/counts; all optional, combined with scope and q. */
+export interface AdminOrderFilters {
+  status?: OrderStatus[]
+  provider?: PaymentProvider | 'MOCK'
+  country?: string
+  currency?: Currency
+  /** YYYY-MM-DD on created_at, `to` inclusive. */
+  from?: string
+  to?: string
+  minAmount?: number
+  maxAmount?: number
+  packageId?: string
+  flag?: OrderFlag
+}
 export interface AdminOrderRow extends OrderDto {
   userName: string
   userId: string
@@ -570,11 +591,16 @@ export interface AdminOrderRow extends OrderDto {
   revokeNote?: string | null
   /** Dreams waiting (AWAITING_PAYMENT) for this order to be approved again. */
   heldDreams?: number
+  leftoverWithdrawnAt?: string | null
+  /** Unpaid bookings: when the booking lapses (null for providers without a deadline). */
+  expiresAt?: string | null
+  packageId?: string | null
 }
 export interface AdminOrderCounts {
   review: number
   domestic: number
   international: number
+  unpaid?: number
 }
 export interface AdminOrderDetail {
   id: string
@@ -610,6 +636,15 @@ export interface AdminOrderDetail {
   revokeNote?: string | null
   /** Dreams waiting (AWAITING_PAYMENT) for this order to be approved again. */
   heldDreams?: number
+  /** Unused, unexpired credits of this order right now. */
+  leftoverCredits: number
+  /** Dreams paid by this order that are INTERPRETED. */
+  interpretedDreams: number
+  /** SUCCESS and leftoverCredits > 0: "withdraw the leftover credits" is possible. */
+  canWithdrawLeftover: boolean
+  leftoverWithdrawnAt: string | null
+  leftoverWithdrawnCredits: number | null
+  leftoverNote: string | null
 }
 export interface WaitTimeSettings {
   busy: boolean

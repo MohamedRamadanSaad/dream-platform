@@ -1,9 +1,10 @@
-import { useEffect, useState, type KeyboardEvent } from 'react'
+import { useEffect, useMemo, useState, type KeyboardEvent } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import type { TFunction } from 'i18next'
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { adminApi } from '@/api/endpoints'
+import { useErrorText } from '@/lib/apiErrors'
 import { useAuthStore } from '@/app/auth-store'
 import { Button, Empty, ErrorBox, Input, Skeleton, StatusBadge, Tabs } from '@/components/ui'
 import { Pager, Chevron } from '@/components/ui/Pager'
@@ -11,10 +12,12 @@ import { Avatar } from '@/components/ui/Avatar'
 import { Icon } from '@/components/icons/Icon'
 import { PageEnter } from '@/components/motion'
 import { cn, flagEmoji, fmtDate, fmtMoney, fmtNum, timeAgo } from '@/lib/utils'
-import type { AdminOrderRow, OrderScope } from '@/api/types'
+import type { AdminOrderFilters, AdminOrderRow, OrderScope } from '@/api/types'
+import { OrderFilterBar, activeCount, fitToTab, readFilters, writeFilters, type OrdersTab } from './OrderFilters'
+import { hoursLeft } from '@/lib/utils'
 
-type Tab = Exclude<OrderScope, 'ALL'>
-const TABS: Tab[] = ['REVIEW', 'DOMESTIC', 'INTERNATIONAL']
+type Tab = OrdersTab
+const TABS: Tab[] = ['REVIEW', 'DOMESTIC', 'INTERNATIONAL', 'UNPAID']
 const PAGE_SIZE = 20
 
 /** A payment the buyer sent again after the interpreter undid her approval: worth a second look before approving. */
@@ -25,11 +28,21 @@ export function ResentChip() {
   return <span className="chip bg-danger/10 font-medium text-danger"><Icon name="undo" size={12} flipRtl />{t('admin.orders.resentAfterUndo')}</span>
 }
 
-/** CSV of every order (scope ALL), fetched page by page. Failure reasons are written in the page's language. */
-async function exportCsv(t: TFunction) {
+/** "Expires in 5 hours" for a booking still open, "Expired" once past (or EXPIRED). */
+function ExpiryChip({ o }: { o: AdminOrderRow }) {
+  const { t } = useTranslation()
+  const h = o.expiresAt ? hoursLeft(o.expiresAt) : null
+  if (o.status === 'EXPIRED' || (h != null && h <= 0)) return <span className="chip bg-surface-2 text-fg-dim"><span className="h-1.5 w-1.5 rounded-full bg-current" />{t('admin.orders.expired')}</span>
+  if (h == null) return null
+  const span = h < 48 ? t('common.hourCount', { count: Math.max(1, Math.round(h)) }) : t('common.dayCount', { count: Math.round(h / 24) })
+  return <span className={cn('chip font-medium', h < 6 ? 'bg-warn/10 text-warn' : 'bg-info/10 text-info')}><span className="h-1.5 w-1.5 rounded-full bg-current" />{t('admin.orders.expiresIn', { x: span })}</span>
+}
+
+/** CSV of the orders of the current tab and filters, fetched page by page. Failure reasons in the page's language. */
+async function exportCsv(t: TFunction, scope: OrderScope, q: string, filters: AdminOrderFilters) {
   const rows: AdminOrderRow[] = []
   for (let page = 0; ; page++) {
-    const res = await adminApi.orders('ALL', page, 100)
+    const res = await adminApi.orders(scope, page, 100, q, filters)
     rows.push(...res.items)
     if (res.items.length === 0 || rows.length >= res.total) break
   }
@@ -71,10 +84,14 @@ export function OrdersAdminPage() {
     return () => window.clearTimeout(id)
   }, [search]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  const counts = useQuery({ queryKey: ['admin', 'orders', 'counts'], queryFn: adminApi.orderCounts, refetchInterval: 60_000 })
-  const q = useQuery({ queryKey: ['admin', 'orders', tab, page, term], queryFn: () => adminApi.orders(tab, page, PAGE_SIZE, term), placeholderData: keepPreviousData })
-  // a new history entry per tab: Back returns to the tab before
-  const setTab = (v: Tab) => { if (v !== tab) setParams((p) => { const n = new URLSearchParams(p); n.set('tab', v); n.delete('page'); return n }) }
+  const filters = useMemo(() => readFilters(params), [params])
+  const fkey = JSON.stringify(filters)
+  const counts = useQuery({ queryKey: ['admin', 'orders', 'counts', fkey, term], queryFn: () => adminApi.orderCounts(filters, term), refetchInterval: 60_000, placeholderData: keepPreviousData })
+  const q = useQuery({ queryKey: ['admin', 'orders', tab, page, term, fkey], queryFn: () => adminApi.orders(tab, page, PAGE_SIZE, term, filters), placeholderData: keepPreviousData })
+  const errorText = useErrorText('admin.orders.errors')
+  // a new history entry per tab and per filter change: Back returns to the view before
+  const setTab = (v: Tab) => { if (v !== tab) setParams((p) => { const n = writeFilters(p, fitToTab(readFilters(p), v)); n.set('tab', v); return n }) }
+  const setFilters = (f: AdminOrderFilters) => setParams((p) => writeFilters(p, f))
   const setPage = (v: number) => {
     setParams((p) => { const n = new URLSearchParams(p); if (v > 0) n.set('page', String(v + 1)); else n.delete('page'); return n })
     window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -85,6 +102,7 @@ export function OrdersAdminPage() {
   const open = (id: string) => navigate(`/admin/orders/${id}`)
   const onRowKey = (e: KeyboardEvent, id: string) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(id) } }
   const review = tab === 'REVIEW'
+  const unpaid = tab === 'UNPAID'
 
   return (
     <PageEnter>
@@ -93,7 +111,7 @@ export function OrdersAdminPage() {
           <h1 className="font-display text-4xl">{t('admin.orders.title')}</h1>
           <p className="mt-1 text-sm font-light text-fg-muted">{t('admin.orders.lead')}</p>
         </div>
-        <Button size="sm" variant="ghost" loading={exporting} onClick={async () => { setExporting(true); try { await exportCsv(t) } finally { setExporting(false) } }}>
+        <Button size="sm" variant="ghost" loading={exporting} onClick={async () => { setExporting(true); try { await exportCsv(t, tab, term, filters) } finally { setExporting(false) } }}>
           <Icon name="download" size={15} />{t('admin.orders.export')}
         </Button>
       </div>
@@ -102,17 +120,20 @@ export function OrdersAdminPage() {
         { value: 'REVIEW', label: t('admin.orders.tabs.REVIEW'), count: c ? fmtNum(c.review, locale) : undefined, tone: c?.review ? 'danger' : undefined },
         { value: 'DOMESTIC', label: t('admin.orders.tabs.DOMESTIC'), count: c ? fmtNum(c.domestic, locale) : undefined },
         { value: 'INTERNATIONAL', label: t('admin.orders.tabs.INTERNATIONAL'), count: c ? fmtNum(c.international, locale) : undefined },
+        { value: 'UNPAID', label: t('admin.orders.tabs.UNPAID'), count: c?.unpaid != null ? fmtNum(c.unpaid, locale) : undefined },
       ]} />
 
-      <div className="relative mt-5 max-w-md">
-        <span className="pointer-events-none absolute inset-y-0 start-3 flex items-center text-fg-dim"><Icon name="search" size={18} /></span>
-        <Input type="search" value={search} onChange={(e) => setSearch(e.target.value)} placeholder={t('admin.orders.search')} aria-label={t('admin.orders.search')} className="ps-10" />
-      </div>
+      <OrderFilterBar tab={tab} filters={filters} onChange={setFilters} search={
+        <div className="relative">
+          <span className="pointer-events-none absolute inset-y-0 start-3 flex items-center text-fg-dim"><Icon name="search" size={18} /></span>
+          <Input type="search" value={search} onChange={(e) => setSearch(e.target.value)} placeholder={t('admin.orders.search')} aria-label={t('admin.orders.search')} className="h-11 ps-10" />
+        </div>
+      } />
 
       <div className={cn('mt-4 transition-opacity', q.isPlaceholderData && 'opacity-60')}>
         {q.isLoading ? <div className="space-y-3">{[1, 2, 3, 4].map((i) => <Skeleton key={i} className="h-20" />)}</div>
-          : q.isError ? <ErrorBox onRetry={() => q.refetch()} />
-          : items.length === 0 ? <Empty text={term ? t('admin.orders.noMatch') : t(`admin.orders.empty.${tab}`)} />
+          : q.isError ? <ErrorBox message={errorText(q.error)} onRetry={() => q.refetch()} />
+          : items.length === 0 ? <Empty text={term ? t('admin.orders.noMatch') : activeCount(filters) > 0 ? t('admin.orders.noFilterMatch') : t(`admin.orders.empty.${tab}`)} />
           : (
             <>
               {/* phones: one card per order */}
@@ -133,6 +154,7 @@ export function OrdersAdminPage() {
                       <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2 text-xs text-fg-dim">
                         <StatusBadge status={o.status} kind="order" />
                         {resentAfterUndo(o) && <ResentChip />}
+                        {unpaid && o.status === 'INITIATED' && <ExpiryChip o={o} />}
                         <span><span aria-hidden="true">{flagEmoji(o.countryCode)}</span> {o.countryCode}</span>
                         {o.attachedDreams > 0 && <span className="inline-flex items-center gap-1 text-gold-ink"><Icon name="moon" size={13} />{t('admin.orders.dreamsN', { count: o.attachedDreams, n: o.attachedDreams })}</span>}
                         <span className="ms-auto">{review && o.transferSubmittedAt ? timeAgo(o.transferSubmittedAt, locale) : fmtDate(o.createdAt, locale)}</span>
@@ -153,7 +175,7 @@ export function OrdersAdminPage() {
                 <table className="w-full text-sm">
                   <thead className="text-xs text-fg-dim">
                     <tr className="border-b border-line">
-                      {[t('admin.orders.number'), t('admin.orders.user'), t('admin.orders.package'), t('admin.orders.amount'), t('admin.orders.status'), review ? t('admin.orders.reference') : t('admin.orders.provider'), t('admin.orders.dreams'), t('common.country'), review ? t('admin.orders.submitted') : t('admin.orders.date')].map((h) => <th key={h} scope="col" className="whitespace-nowrap px-3 py-3 text-start font-normal">{h}</th>)}
+                      {[t('admin.orders.number'), t('admin.orders.user'), t('admin.orders.package'), t('admin.orders.amount'), t('admin.orders.status'), review ? t('admin.orders.reference') : unpaid ? t('admin.orders.deadline') : t('admin.orders.provider'), t('admin.orders.dreams'), t('common.country'), review ? t('admin.orders.submitted') : t('admin.orders.date')].map((h) => <th key={h} scope="col" className="whitespace-nowrap px-3 py-3 text-start font-normal">{h}</th>)}
                       <th scope="col" className="w-8"><span className="sr-only">{t('admin.orders.open')}</span></th>
                     </tr>
                   </thead>
@@ -176,7 +198,7 @@ export function OrdersAdminPage() {
                         <td className="px-3 py-3"><Amount o={o} /></td>
                         <td className="px-3 py-3"><div className="flex flex-col items-start gap-1"><StatusBadge status={o.status} kind="order" />{resentAfterUndo(o) && <ResentChip />}</div></td>
                         <td className="px-3 py-3 text-xs">
-                          {review ? <span dir="ltr" className="font-mono tracking-wider">{o.transferReference ?? ''}</span>
+                          {unpaid ? <ExpiryChip o={o} /> : review ? <span dir="ltr" className="font-mono tracking-wider">{o.transferReference ?? ''}</span>
                             : <span dir="ltr" className="inline-block text-start">{o.provider}{o.providerRef ? <span className="block max-w-[10rem] truncate text-[11px] text-fg-dim">{o.providerRef}</span> : null}</span>}
                         </td>
                         <td className="px-3 py-3">{o.attachedDreams > 0 ? <span className="inline-flex items-center gap-1 text-gold-ink"><Icon name="moon" size={13} />{fmtNum(o.attachedDreams, locale)}</span> : <span className="text-fg-dim">0</span>}</td>

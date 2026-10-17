@@ -3,6 +3,15 @@ import { download, getText, http, postQuietly } from './client'
 import type * as T from './types'
 import { currentVisitId } from '@/lib/visit'
 
+/** Order filters as query values: statuses as one comma list; empty values are left out by the client. */
+function filterQuery(f: T.AdminOrderFilters) {
+  return {
+    status: f.status?.length ? f.status.join(',') : undefined,
+    provider: f.provider, country: f.country, currency: f.currency, from: f.from, to: f.to,
+    minAmount: f.minAmount, maxAmount: f.maxAmount, packageId: f.packageId, flag: f.flag,
+  }
+}
+
 export const authApi = {
   google: (body: T.GoogleLoginRequest) => http.post<T.AuthResponse>('/auth/google', body),
   magicRequest: (body: T.MagicRequest) => http.post<void>('/auth/magic/request', body),
@@ -154,8 +163,12 @@ export const adminApi = {
   testimonials: (approved?: boolean) => http.get<T.Page<T.AdminTestimonialRow>>('/admin/testimonials', { approved }),
   setTestimonial: (id: string, approved: boolean) => http.patch<void>(`/admin/testimonials/${id}`, { approved }),
   /** `q` (optional) finds orders by number inside the scope, with or without the prefix ("15001", "rn-15001"); any other text finds nothing. */
-  orders: (scope: T.OrderScope = 'ALL', page = 0, size = 20, q = '') => http.get<T.Page<T.AdminOrderRow>>('/admin/orders', { scope, page, size, q }),
-  orderCounts: () => http.get<T.AdminOrderCounts>('/admin/orders/counts'),
+  orders: (scope: T.OrderScope = 'ALL', page = 0, size = 20, q = '', filters: T.AdminOrderFilters = {}) =>
+    http.get<T.Page<T.AdminOrderRow>>('/admin/orders', { scope, page, size, q, ...filterQuery(filters) }),
+  /** Tab counts; with filters they match the filtered view. */
+  orderCounts: (filters: T.AdminOrderFilters = {}, q = '') => http.get<T.AdminOrderCounts>('/admin/orders/counts', { q, ...filterQuery(filters) }),
+  /** Removes the unused credits of a SUCCESS order (409 NOTHING_TO_WITHDRAW / NOT_WITHDRAWABLE). */
+  withdrawLeftover: (orderId: string, note?: string) => http.post<T.AdminOrderDetail>(`/admin/payments/orders/${orderId}/withdraw-leftover`, note ? { note } : {}),
   order: (id: string) => http.get<T.AdminOrderDetail>(`/admin/orders/${id}`),
   /** InstaPay transfers waiting for the interpreter (oldest first) and the latest decisions. */
   instapayTransfers: () => http.get<T.InstapayTransferList>('/admin/payments/instapay/transfers'),
