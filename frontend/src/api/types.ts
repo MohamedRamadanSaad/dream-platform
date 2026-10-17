@@ -28,6 +28,8 @@ export type NotificationType =
   | 'YOUTUBE_VIDEO'
   | 'TRANSFER_SUBMITTED'
   | 'PAYMENT_REJECTED'
+  /** To the buyer: the interpreter pressed «جاري التعبير» with the expected days (link /me/dreams/:id). */
+  | 'DREAM_STARTED'
   /** To the interpreter: a dreamer changed a dream's text before she started (link /admin/dreams/:id). */
   | 'DREAM_EDITED'
   /** To the buyer: the interpreter took back the approval of an InstaPay payment (link /me/checkout/instapay/:orderId). */

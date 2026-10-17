@@ -3,7 +3,7 @@ import { createBrowserRouter, Navigate, Outlet, useLocation, useNavigate } from 
 import { useTranslation } from 'react-i18next'
 import { useQuery } from '@tanstack/react-query'
 import { adminApi, meApi } from '@/api/endpoints'
-import { ErrorBox, Skeleton } from '@/components/ui'
+import { Button, ErrorBox, Skeleton } from '@/components/ui'
 import { useAuthStore, isInterpreter } from './auth-store'
 import { AppShell } from '@/components/layout'
 import LandingPage from '@/features/public/LandingPage'
@@ -61,6 +61,25 @@ function usePushUpkeep() {
 }
 
 /** Root of every route: page-view tracking lives here so each pathname change is counted once. */
+/**
+ * Last line of defence: an error thrown while rendering any page shows a calm message with a way out,
+ * never the raw stack trace (the PWA has no address bar to escape it).
+ */
+function RouteError() {
+  const { t } = useTranslation()
+  useEffect(() => { document.title = t('common.error') }, [t])
+  return (
+    <div role="alert" className="mx-auto flex min-h-[60vh] max-w-md flex-col items-center justify-center gap-4 px-6 text-center">
+      <p className="font-display text-2xl">{t('common.pageError')}</p>
+      <p className="text-sm text-fg-muted">{t('common.pageErrorLead')}</p>
+      <div className="flex gap-3">
+        <Button onClick={() => window.location.reload()}>{t('common.retry')}</Button>
+        <Button variant="ghost" onClick={() => { window.location.href = '/' }}>{t('common.home')}</Button>
+      </div>
+    </div>
+  )
+}
+
 function RootShell() {
   usePageTracking()
   usePushUpkeep()
@@ -150,7 +169,7 @@ function AdminLayout() {
   )
 }
 
-export const router = createBrowserRouter([{ element: <RootShell />, children: [
+export const router = createBrowserRouter([{ element: <RootShell />, errorElement: <RouteError />, children: [
   { path: '/', element: <LandingPage /> },
   { path: '/login', element: <LoginPage /> },
   { path: '/register', element: <RegisterPage /> },

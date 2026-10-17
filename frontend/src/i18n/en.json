@@ -628,7 +628,8 @@
         "DREAM_EDITED": "Dream edited",
         "PAYMENT_REVOKED": "Review your payment",
         "CREDITS_WITHDRAWN": "Credits withdrawn",
-        "CREDITS_RESTORED": "Credits given back"
+        "CREDITS_RESTORED": "Credits given back",
+        "DREAM_STARTED": "Interpreting started"
       }
     },
     "expiry": {
@@ -1656,7 +1657,10 @@
       "next": "Next page"
     },
     "copy": "Copy",
-    "copied": "Copied"
+    "copied": "Copied",
+    "pageError": "This page could not be shown",
+    "pageErrorLead": "Something unexpected happened. Try again, and if it keeps happening go back to the home page.",
+    "home": "Home page"
   },
   "static": {
     "terms": {

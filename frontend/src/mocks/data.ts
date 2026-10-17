@@ -214,6 +214,7 @@ export const db = {
     { id: 'n1', userId: 'u1', type: 'INTERPRETER_QUESTION', title: 'استفسار من المعبّرة', body: 'أرسلت المعبّرة سؤالاً عن رؤياك «البيت القديم». ردّك يساعد على تفسير أدق.', link: '/me/dreams/d3', createdAt: daysAgo(0, 6), readAt: null },
     { id: 'n2', userId: 'u1', type: 'DREAM_RECEIVED', title: 'وصلت رؤياك', body: 'وصلت رؤيا «المصحف والدرج». الرد خلال يومين إلى ثلاثة أيام إن شاء الله.', link: '/me/dreams/d4', createdAt: daysAgo(0, 20), readAt: null },
     { id: 'n3', userId: 'u1', type: 'PAYMENT_SUCCESS', title: 'تم الدفع', body: 'أُضيفت رؤيتان إلى رصيدك.', link: '/me/payments', createdAt: daysAgo(2), readAt: daysAgo(1) },
+    { id: 'n3s', userId: 'u1', type: 'DREAM_STARTED', title: 'بدأ تعبير رؤياك', body: 'بدأت المعبّرة تعبير رؤياك، ونتوقع أن يصلك التفسير خلال 3 أيام.', link: '/me/dreams/d2', createdAt: daysAgo(8), readAt: null },
     { id: 'n4', userId: 'u1', type: 'INTERPRETATION_READY', title: 'تم تفسير رؤياك', body: 'تفسير رؤيا «المسجد المضاء» جاهز الآن.', link: '/me/dreams/d2', createdAt: daysAgo(7), readAt: daysAgo(6) },
     { id: 'n5', userId: 'admin', type: 'DREAM_SUBMITTED', title: 'رؤية جديدة', body: 'قدّمت أم محمد رؤيا جديدة.', link: '/admin/dreams/d4', createdAt: daysAgo(0, 20), readAt: null },
     { id: 'n7', userId: 'admin', type: 'DREAM_EDITED', title: 'عدّل صاحب الرؤيا نصّها', body: 'عدّلت منى عبد الله نص رؤيا قبل أن تبدئي تعبيرها.', link: '/admin/dreams/d9', createdAt: daysAgo(0, 3), readAt: null },

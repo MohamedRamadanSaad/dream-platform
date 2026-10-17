@@ -83,7 +83,8 @@ export function Icon({ flipRtl, ...props }: Props) {
 function MorphIcon({ name, size = 22, active, strokeWidth = 1.5, className, ...rest }: Omit<Props, 'flipRtl'>) {
   const ref = useRef<SVGPathElement>(null)
   const svgRef = useRef<SVGSVGElement>(null)
-  const shape = shapes[name]
+  // an unknown name (e.g. a new server value) must never break the page
+  const shape = shapes[name] ?? shapes.bell
   const controlled = active !== undefined
 
   useEffect(() => {

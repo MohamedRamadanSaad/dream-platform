@@ -665,7 +665,8 @@
         "DREAM_EDITED": "تعديل رؤيا",
         "PAYMENT_REVOKED": "مراجعة بيانات الدفع",
         "CREDITS_WITHDRAWN": "خصم رصيد",
-        "CREDITS_RESTORED": "استرجاع رصيد"
+        "CREDITS_RESTORED": "استرجاع رصيد",
+        "DREAM_STARTED": "بدأ التعبير"
       }
     },
     "expiry": {
@@ -1742,7 +1743,10 @@
       "next": "الصفحة التالية"
     },
     "copy": "نسخ",
-    "copied": "تم النسخ"
+    "copied": "تم النسخ",
+    "pageError": "تعذّر عرض هذه الصفحة",
+    "pageErrorLead": "حدثت مشكلة غير متوقعة. أعد المحاولة، وإن تكررت فارجع إلى الصفحة الرئيسية.",
+    "home": "الصفحة الرئيسية"
   },
   "static": {
     "terms": {

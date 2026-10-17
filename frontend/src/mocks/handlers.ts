@@ -1034,7 +1034,7 @@ export const handlers = [
     const days = Number(b.expectedDays)
     if (!Number.isInteger(days) || days < 1 || days > 30) return problem(400, 'Validation failed', 'expectedDays must be 1..30', { errors: { expectedDays: ['1..30'] } })
     Object.assign(d, { status: 'IN_PROGRESS', startedAt: helpers.now(), expectedDays: days, expectedBy: new Date(Date.now() + days * 864e5).toISOString() })
-    db.notifications.unshift({ id: uid(), userId: d.userId, type: 'DREAM_RECEIVED', title: 'بدأ تعبير رؤياك', body: `بدأت المعبّرة تعبير رؤياك، والمتوقع خلال ${days} أيام إن شاء الله.`, link: `/me/dreams/${d.id}`, createdAt: helpers.now(), readAt: null })
+    db.notifications.unshift({ id: uid(), userId: d.userId, type: 'DREAM_STARTED', title: 'بدأ تعبير رؤياك', body: `بدأت المعبّرة تعبير رؤياك، والمتوقع خلال ${days} أيام إن شاء الله.`, link: `/me/dreams/${d.id}`, createdAt: helpers.now(), readAt: null })
     const usr = db.users.find((x) => x.id === d.userId)!
     const order = d.credit?.orderId ? db.orders.find((o) => o.id === d.credit!.orderId) : null
     const { payment: _ignored, ...detail } = toDetail(d)

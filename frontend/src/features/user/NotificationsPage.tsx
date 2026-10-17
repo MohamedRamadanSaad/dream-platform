@@ -9,7 +9,7 @@ import { PageEnter } from '@/components/motion'
 import { cn, timeAgo } from '@/lib/utils'
 import type { NotificationType } from '@/api/types'
 
-const icon: Record<NotificationType, Parameters<typeof Icon>[0]['name']> = { DREAM_SUBMITTED: 'moon', DREAM_RECEIVED: 'check', INTERPRETER_QUESTION: 'chat', USER_REPLIED: 'chat', INTERPRETATION_READY: 'star', PAYMENT_SUCCESS: 'wallet', PROMOTION: 'gift', YOUTUBE_VIDEO: 'youtube', TRANSFER_SUBMITTED: 'wallet', PAYMENT_REJECTED: 'alert', DREAM_EDITED: 'info', PAYMENT_REVOKED: 'alert', CREDITS_WITHDRAWN: 'wallet', CREDITS_RESTORED: 'wallet' }
+const icon: Record<NotificationType, Parameters<typeof Icon>[0]['name']> = { DREAM_SUBMITTED: 'moon', DREAM_RECEIVED: 'check', INTERPRETER_QUESTION: 'chat', USER_REPLIED: 'chat', INTERPRETATION_READY: 'star', PAYMENT_SUCCESS: 'wallet', PROMOTION: 'gift', YOUTUBE_VIDEO: 'youtube', TRANSFER_SUBMITTED: 'wallet', PAYMENT_REJECTED: 'alert', DREAM_STARTED: 'clock', DREAM_EDITED: 'info', PAYMENT_REVOKED: 'alert', CREDITS_WITHDRAWN: 'wallet', CREDITS_RESTORED: 'wallet' }
 
 export function NotificationsPage() {
   const { t } = useTranslation()
@@ -26,7 +26,7 @@ export function NotificationsPage() {
         : <div className="space-y-3">
           {q.data.items.map((n) => (
             <Link key={n.id} to={n.link ?? '#'} onClick={() => !n.readAt && read.mutate(n.id)} className={cn('card card-hover flex gap-4 p-4', !n.readAt && 'border-gold/50 bg-gold/5')}>
-              <span className={cn('mt-0.5', n.readAt ? 'text-fg-dim' : 'text-gold-ink')}><Icon name={icon[n.type]} size={20} active={!n.readAt} /></span>
+              <span className={cn('mt-0.5', n.readAt ? 'text-fg-dim' : 'text-gold-ink')}><Icon name={icon[n.type] ?? 'bell'} size={20} active={!n.readAt} /></span>
               <div className="min-w-0 flex-1"><div className="flex items-center justify-between gap-2"><div className="font-medium">{n.title}</div><div className="text-xs text-fg-dim">{timeAgo(n.createdAt, locale)}</div></div><div className="text-sm font-light text-fg-muted">{n.body}</div></div>
             </Link>
           ))}
