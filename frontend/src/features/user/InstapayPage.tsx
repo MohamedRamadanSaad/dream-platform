@@ -86,8 +86,10 @@ export function InstapayPage() {
   if (q.isLoading) return <div className="mx-auto max-w-lg space-y-4"><Skeleton className="h-10 w-1/2" /><Skeleton className="h-40" /><Skeleton className="h-64" /></div>
   if (q.isError || !v) return <PageEnter className="mx-auto max-w-lg"><ErrorBox onRetry={() => q.refetch()} /></PageEnter>
 
-  const rejected = v.status === 'FAILED' && !!v.reference
-  const showForm = v.status === 'INITIATED' || rejected || (v.status === 'PENDING_REVIEW' && editing)
+  // the interpreter took back her approval: the buyer reviews and resends the same details (the dream is kept)
+  const revoked = v.status === 'FAILED' && v.failureReason === 'APPROVAL_REVOKED'
+  const rejected = v.status === 'FAILED' && !!v.reference && !revoked
+  const showForm = v.status === 'INITIATED' || rejected || revoked || (v.status === 'PENDING_REVIEW' && editing)
 
   return (
     <PageEnter className="mx-auto max-w-lg space-y-5">
@@ -99,7 +101,14 @@ export function InstapayPage() {
 
       {v.status === 'SUCCESS' && <SuccessCard v={v} />}
       {v.status === 'PENDING_REVIEW' && !editing && <PendingCard v={v} onEdit={() => setEditing(true)} />}
-      {(v.status === 'EXPIRED' || (v.status === 'FAILED' && !v.reference)) && <ExpiredCard />}
+      {(v.status === 'EXPIRED' || (v.status === 'FAILED' && !v.reference && !revoked)) && <ExpiredCard />}
+      {revoked && (
+        <div role="alert" className="card border-danger/40 bg-danger/5 p-5">
+          <div className="flex items-center gap-2 text-danger"><Icon name="alert" size={20} /><h2 className="text-lg font-medium">{t('me.checkout.instapay.revokedTitle')}</h2></div>
+          <p className="mt-2 text-sm leading-relaxed text-fg-muted">{t('me.checkout.instapay.revokedLead')}</p>
+          {v.reviewNote && <p className="mt-2 text-sm">{t('me.checkout.instapay.rejectedNote', { note: v.reviewNote })}</p>}
+        </div>
+      )}
       {rejected && (
         <div role="alert" className="card border-danger/40 bg-danger/5 p-5">
           <div className="flex items-center gap-2 text-danger"><Icon name="alert" size={20} /><h2 className="text-lg font-medium">{t('me.checkout.instapay.rejectedTitle')}</h2></div>
@@ -304,7 +313,7 @@ function DetailsForm({ v, editing, onDone, onCancel }: { v: InstapayOrderView; e
   })
 
   const submitLabel = editing
-    ? (v.status === 'FAILED' ? t('me.checkout.instapay.resend') : t('me.checkout.instapay.saveEdit'))
+    ? (v.status === 'FAILED' ? t(v.failureReason === 'APPROVAL_REVOKED' ? 'me.checkout.instapay.revokedResend' : 'me.checkout.instapay.resend') : t('me.checkout.instapay.saveEdit'))
     : canAttach && dreamText ? t('me.checkout.instapay.submitWithDream') : t('me.checkout.instapay.submit')
 
   return (
@@ -363,6 +372,11 @@ function DetailsForm({ v, editing, onDone, onCancel }: { v: InstapayOrderView; e
       )}
 
       <div className="space-y-2">
+        {/* a fake or wrong transfer closes the account: said right where the details are sent */}
+        <div role="alert" className="flex items-start gap-2.5 rounded-xl border border-danger/50 bg-danger/10 p-3.5 text-sm leading-relaxed text-bad-ink">
+          <Icon name="alert" size={18} className="mt-0.5 shrink-0" />
+          <p>{t('me.checkout.instapay.fakeWarning')}</p>
+        </div>
         {err && <p role="alert" className="text-sm text-danger">{err}</p>}
         <Button type="submit" size="lg" className="min-h-14 w-full" disabled={!ready} loading={send.isPending}>{submitLabel}</Button>
         {onCancel && <Button type="button" variant="ghost" className="w-full" onClick={onCancel}>{t('me.checkout.instapay.cancelEdit')}</Button>}

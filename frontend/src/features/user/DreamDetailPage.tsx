@@ -9,7 +9,7 @@ import { DownloadButton } from '@/components/ui/DownloadButton'
 import { Icon } from '@/components/icons/Icon'
 import { PageEnter } from '@/components/motion'
 import { arrowBack, cn, fmtDate } from '@/lib/utils'
-import { dreamBadge } from './DreamsPage'
+import { dreamBadge, paymentBadge, paymentLine } from './DreamsPage'
 import { DreamPaymentActions } from './DreamPaymentActions'
 import { isNotFound } from '@/lib/apiErrors'
 import type { DreamDetail, DreamMessage } from '@/api/types'
@@ -17,9 +17,10 @@ import type { DreamDetail, DreamMessage } from '@/api/types'
 const STEPS: DreamDetail['status'][] = ['DRAFT', 'IN_REVIEW', 'IN_PROGRESS', 'INTERPRETED']
 export function Stepper({ status, started }: { status: DreamDetail['status']; started?: boolean }) {
   const { t } = useTranslation()
-  // a question pauses the current step: before the start it is "in review", after it "being interpreted"
+  // a question (or a payment waiting for confirmation) pauses the current step: before the start it is "in review",
+  // after it "being interpreted"
   const pausedAt = started ? 2 : 1
-  const idx = status === 'AWAITING_USER_REPLY' ? pausedAt : STEPS.indexOf(status)
+  const idx = status === 'AWAITING_USER_REPLY' || status === 'AWAITING_PAYMENT' ? pausedAt : STEPS.indexOf(status)
   return (
     <div className="flex items-center">
       {STEPS.map((s, i) => (
@@ -46,6 +47,28 @@ export function Conversation({ messages, meRole }: { messages: DreamMessage[]; m
           <div className={cn('mt-1 text-[11px]', m.senderRole === meRole ? 'text-pearl/50' : 'text-fg-dim')}>{fmtDate(m.createdAt, locale, true)}</div>
         </div>
       ))}
+    </div>
+  )
+}
+
+/** The payment a dream waits on: under review, rejected, or revoked (a held dream must have its payment reviewed). */
+function PaymentCard({ d, onGone }: { d: DreamDetail; onGone: () => void }) {
+  const { t } = useTranslation()
+  const p = d.payment!
+  const held = d.status === 'AWAITING_PAYMENT'
+  const line = paymentLine(d)
+  const bad = line.tone === 'bad'
+  const title = p.status === 'REVOKED' ? 'me.detail.revokedTitle' : p.status === 'REJECTED' ? 'me.detail.rejectedTitle' : held ? 'me.detail.heldPendingTitle' : 'me.detail.pendingTitle'
+  return (
+    <div className={cn('card flex flex-col gap-3 p-5 sm:flex-row sm:items-start', bad ? 'border-danger/30 bg-danger/5' : 'border-warn/30 bg-warn/5')}>
+      <span className={bad ? 'text-bad-ink' : 'text-warn'}><Icon name="wallet" size={26} /></span>
+      <div className="min-w-0 flex-1">
+        <div className="flex flex-wrap items-center gap-2"><span className="font-medium">{t(title)}</span>{held && <StatusBadge status={paymentBadge(p)} />}</div>
+        <p className="mt-0.5 text-sm font-light text-fg-muted">{t(line.key)}</p>
+        {bad && p.reviewNote && <p className="mt-1 text-sm text-fg-muted">{t('me.dreamPayment.reason', { note: p.reviewNote })}</p>}
+        {held && <p className="mt-1 text-xs text-fg-dim">{t('me.detail.heldKept')}</p>}
+      </div>
+      <div className="sm:max-w-[55%]"><DreamPaymentActions dreamId={d.id} payment={p} held={held} onGone={onGone} /></div>
     </div>
   )
 }
@@ -80,17 +103,7 @@ export function DreamDetailPage() {
       </div>
       {d.status !== 'DRAFT' && d.status !== 'CANCELLED' && <div className="card overflow-x-auto p-5"><Stepper status={d.status} started={!!d.startedAt} /></div>}
 
-      {d.payment && (
-        <div className={cn('card flex flex-col gap-3 p-5 sm:flex-row sm:items-start', d.payment.status === 'REJECTED' ? 'border-danger/30 bg-danger/5' : 'border-warn/30 bg-warn/5')}>
-          <span className={d.payment.status === 'REJECTED' ? 'text-bad-ink' : 'text-warn'}><Icon name="wallet" size={26} /></span>
-          <div className="min-w-0 flex-1">
-            <div className="font-medium">{t(d.payment.status === 'REJECTED' ? 'me.detail.rejectedTitle' : 'me.detail.pendingTitle')}</div>
-            <p className="mt-0.5 text-sm font-light text-fg-muted">{t(d.payment.status === 'REJECTED' ? 'me.dreamPayment.rejected' : 'me.dreamPayment.underReview')}</p>
-            {d.payment.status === 'REJECTED' && d.payment.reviewNote && <p className="mt-1 text-sm text-fg-muted">{t('me.dreamPayment.reason', { note: d.payment.reviewNote })}</p>}
-          </div>
-          <div className="sm:max-w-[55%]"><DreamPaymentActions dreamId={d.id} payment={d.payment} onGone={() => navigate('/me?tab=PENDING_PAYMENT', { replace: true })} /></div>
-        </div>
-      )}
+      {d.payment && <PaymentCard d={d} onGone={() => navigate('/me?tab=PENDING_PAYMENT', { replace: true })} />}
 
       <div className="card p-6">
         <Label>{t('me.detail.dream')}</Label>
@@ -100,7 +113,7 @@ export function DreamDetailPage() {
           <div className="mt-4 flex flex-wrap items-center gap-3">
             <Link to={`/me/dreams/${d.id}/edit`} className="btn btn-sm btn-ghost">{t('common.edit')}</Link>
             {d.status === 'DRAFT' && !d.payment && <Link to={`/me?submit=${d.id}`} className="btn btn-sm btn-gold">{t('me.submitSelected', { n: 1 })}</Link>}
-            {d.status === 'IN_REVIEW' && <span className="text-xs text-fg-dim">{t('me.detail.editHint')}</span>}
+            {(d.status === 'IN_REVIEW' || d.status === 'AWAITING_PAYMENT') && <span className="text-xs text-fg-dim">{t('me.detail.editHint')}</span>}
           </div>
         )}
       </div>

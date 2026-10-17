@@ -20,6 +20,10 @@ export type MockDream = Omit<T.DreamDetail, 'excerpt' | 'unreadMessages' | 'edit
   expectedDays?: number | null
   /** The dreamer changed the text while it waited for the interpreter. */
   userEditedAt?: string | null
+  /** AWAITING_PAYMENT: the order whose approval was taken back (docs/REVOKE_APPROVAL_CONTRACT.md §1). */
+  heldOrderId?: string | null
+  /** When the reply-time clock stopped (a question, or a payment waiting for confirmation). */
+  slaPausedAt?: string | null
 }
 /** InstaPay transfer details of an order (the checkout intent's dreams, the buyer's reference, the review). */
 export type OrderMeta = { dreamIds: string[]; reference: string | null; senderName: string | null; submittedAt: string | null; reviewedAt: string | null; reviewedByName?: string | null; reviewNote: string | null; expiresAt: string }
@@ -233,7 +237,7 @@ export const MAIL_EVENTS = [
   'welcome', 'payment-failed', 'dream-cancelled', 'credits-adjusted', 'testimonial-approved', 'account-deleted', 'new-user',
   'testimonial-received', 'dream-submitted', 'dream-received', 'interpreter-question', 'user-replied', 'interpretation-ready',
   'payment-receipt', 'payment-suspicious', 'reply-reminder', 'testimonial-request', 'interpreter-digest', 'youtube-new-video',
-  'support-auto-reply', 'new-sign-in', 'passkey-added', 'support-in-progress', 'support-closed',
+  'support-auto-reply', 'new-sign-in', 'passkey-added', 'support-in-progress', 'support-closed', 'payment-review-needed',
 ] as const
 
 /** Every e-mail template (GET /admin/mail/templates); the sign-in and code e-mails have no on/off switch. */
@@ -318,6 +322,32 @@ export const nextOrderNumber = () => {
     seed({ ...base, id: `o-h${i + 1}`, userId, packageName: plan.name, credits: plan.credits, amount, currency, status, provider: cc === 'EG' ? 'INSTAPAY' : 'MOR', providerRef: paid ? (cc === 'EG' ? `INSTAPAY-REF-2023${100000 + i * 731}` : `MOR-${70000 + i * 37}`) : null, countryCode: cc, createdAt: at, paidAt: paid ? at : null, settledAmountEgp: paid ? toEgp(amount, currency) : null },
       cc === 'EG' && paid ? { reference: `2023${100000 + i * 731}`, senderName: u.name, submittedAt: at, reviewedAt: at, reviewedByName: 'المعبرة فاطمة' } : undefined)
   }
+  // the mock user's InstaPay payment approved yesterday (one dream already started, one waiting): "Undo approval" can be tried
+  seed({ ...base, id: 'o-ip5', userId: 'u1', packageName: 'تفسير رؤيتين', credits: 2, amount: 349, currency: 'EGP', status: 'SUCCESS', provider: 'INSTAPAY', providerRef: 'INSTAPAY-REF-202311604411', countryCode: 'EG', createdAt: daysAgo(2, 3), paidAt: daysAgo(2) },
+    { dreamIds: ['d18'], reference: '202311604411', senderName: 'UMM MOHAMED', submittedAt: daysAgo(2, 2), reviewedAt: daysAgo(2), reviewedByName: 'المعبرة فاطمة' })
+  // and one whose approval was already taken back: its dream waits for the buyer to review the transfer details
+  seed({ ...base, id: 'o-ip6', userId: 'u1', packageName: 'تفسير رؤيا واحدة', credits: 1, amount: 199, currency: 'EGP', status: 'FAILED', failureReason: 'APPROVAL_REVOKED', provider: 'INSTAPAY', providerRef: null, countryCode: 'EG', createdAt: daysAgo(3, 2), paidAt: null },
+    { dreamIds: ['d20'], reference: '202311552290', senderName: 'UMM MOHAMED', submittedAt: daysAgo(3, 1), reviewedAt: daysAgo(0, 6), reviewedByName: 'المعبرة فاطمة', reviewNote: 'لم يظهر هذا التحويل في حساب إنستاباي، يرجى التأكد من رقم العملية والمبلغ.' })
+  db.ledger.push(
+    { id: 'l-ip5', userId: 'u1', delta: 2, reason: 'PURCHASE', orderId: 'o-ip5', dreamId: null, createdAt: daysAgo(2) },
+    { id: 'l-ip5a', userId: 'u1', delta: -1, reason: 'SUBMIT', orderId: 'o-ip5', dreamId: 'd18', createdAt: daysAgo(2) },
+    { id: 'l-ip5b', userId: 'u1', delta: -1, reason: 'SUBMIT', orderId: 'o-ip5', dreamId: 'd19', createdAt: daysAgo(1, 8) },
+    { id: 'l-ip6', userId: 'u1', delta: 1, reason: 'PURCHASE', orderId: 'o-ip6', dreamId: null, createdAt: daysAgo(3) },
+    { id: 'l-ip6a', userId: 'u1', delta: -1, reason: 'SUBMIT', orderId: 'o-ip6', dreamId: 'd20', createdAt: daysAgo(3) },
+    { id: 'l-ip6b', userId: 'u1', delta: 1, reason: 'REFUND', orderId: 'o-ip6', dreamId: 'd20', createdAt: daysAgo(0, 6) },
+    { id: 'l-ip6c', userId: 'u1', delta: -1, reason: 'REVOKE', orderId: 'o-ip6', dreamId: null, createdAt: daysAgo(0, 6) },
+  )
+  db.dreams.push(
+    { id: 'd18', userId: 'u1', gender: 'FEMALE', status: 'IN_PROGRESS', createdAt: daysAgo(2, 4), submittedAt: daysAgo(2), interpretedAt: null, expectedBy: daysAhead(2), startedAt: daysAgo(1), expectedDays: 3,
+      text: 'رأيت أنني أفتح صندوقاً خشبياً قديماً في بيت جدتي، فوجدت فيه مصباحاً صغيراً يضيء وحده، وكلما حملته اتسع نوره حتى ملأ الغرفة.',
+      messages: [], interpretation: null, testimonial: null, credit: { ledgerEntryId: 'l-ip5a', orderId: 'o-ip5' } },
+    { id: 'd19', userId: 'u1', gender: 'FEMALE', status: 'IN_REVIEW', createdAt: daysAgo(1, 9), submittedAt: daysAgo(1, 8), interpretedAt: null, expectedBy: daysAhead(1),
+      text: 'رأيت حمامة بيضاء تقف على نافذة غرفتي وفي فمها غصن زيتون أخضر، ثم طارت نحو المسجد القريب.',
+      messages: [], interpretation: null, testimonial: null, credit: { ledgerEntryId: 'l-ip5b', orderId: 'o-ip5' } },
+    { id: 'd20', userId: 'u1', gender: 'FEMALE', status: 'AWAITING_PAYMENT', createdAt: daysAgo(3, 2), submittedAt: daysAgo(3), interpretedAt: null, expectedBy: daysAhead(1), heldOrderId: 'o-ip6', slaPausedAt: daysAgo(0, 6),
+      text: 'رأيت أنني أعبر جسراً طويلاً فوق نهر صافٍ، وعلى الضفة الأخرى أطفال يلوّحون لي ويضحكون.',
+      messages: [], interpretation: null, testimonial: null, credit: null },
+  )
   for (const o of db.orders) if ((o.status === 'SUCCESS' || o.status === 'REFUNDED') && o.settledAmountEgp == null) o.settledAmountEgp = toEgp(o.amount, o.currency)
   // readable numbers for the seeded orders, oldest first, after the fixed ones
   for (const o of [...db.orders].filter((x) => !x.orderNumber).sort((a, b) => a.createdAt.localeCompare(b.createdAt))) o.orderNumber = nextOrderNumber()
@@ -359,13 +389,19 @@ export function excerpt(text: string) {
  * PENDING_REVIEW, or FAILED with TRANSFER_REJECTED. The latest such order wins.
  */
 export function attachedOrder(d: MockDream): MockOrder | null {
+  // a held dream (approval taken back) belongs to its order whatever that order's state (revoked, resent, rejected)
+  if (d.status === 'AWAITING_PAYMENT') return db.orders.find((o) => o.id === d.heldOrderId) ?? null
   if (d.status !== 'DRAFT') return null
   return db.orders
     .filter((o) => o.userId === d.userId && (o.status === 'PENDING_REVIEW' || (o.status === 'FAILED' && o.failureReason === 'TRANSFER_REJECTED')) && orderMeta.get(o.id)?.dreamIds.includes(d.id))
     .sort((a, b) => b.createdAt.localeCompare(a.createdAt))[0] ?? null
 }
-/** DRAFT, or IN_REVIEW / AWAITING_USER_REPLY before the interpreter pressed "Start interpreting". */
-export const isEditable = (d: MockDream) => d.status === 'DRAFT' || ((d.status === 'IN_REVIEW' || d.status === 'AWAITING_USER_REPLY') && !d.startedAt)
+/** DRAFT, or IN_REVIEW / AWAITING_USER_REPLY / AWAITING_PAYMENT before the interpreter pressed "Start interpreting". */
+export const isEditable = (d: MockDream) => d.status === 'DRAFT' || ((d.status === 'IN_REVIEW' || d.status === 'AWAITING_USER_REPLY' || d.status === 'AWAITING_PAYMENT') && !d.startedAt)
+
+/** The payment's state as the dream shows it (contract §4): REVOKED while the order is FAILED/APPROVAL_REVOKED. */
+const linkStatus = (o: MockOrder): T.DreamPaymentLink['status'] =>
+  o.status === 'PENDING_REVIEW' ? 'PENDING_REVIEW' : o.failureReason === 'APPROVAL_REVOKED' ? 'REVOKED' : 'REJECTED'
 
 export function toSummary(d: MockDream): T.DreamSummary {
   const o = attachedOrder(d)
@@ -375,7 +411,7 @@ export function toSummary(d: MockDream): T.DreamSummary {
     interpretedAt: d.interpretedAt, expectedBy: d.expectedBy,
     unreadMessages: d.messages.filter((m) => m.senderRole === 'INTERPRETER' && !m.readAt).length,
     startedAt: d.startedAt ?? null, expectedDays: d.expectedDays ?? null, editable: isEditable(d),
-    payment: o ? { orderId: o.id, status: o.status === 'PENDING_REVIEW' ? 'PENDING_REVIEW' : 'REJECTED', submittedAt: m?.submittedAt ?? null, reviewNote: m?.reviewNote ?? null } : null,
+    payment: o ? { orderId: o.id, status: linkStatus(o), submittedAt: m?.submittedAt ?? null, reviewNote: m?.reviewNote ?? null } : null,
   }
 }
 

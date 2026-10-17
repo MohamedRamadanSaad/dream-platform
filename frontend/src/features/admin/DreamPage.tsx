@@ -101,6 +101,17 @@ export function AdminDreamPage() {
           </div>
         </div>
 
+        {d.status === 'AWAITING_PAYMENT' && (
+          // the approval of its payment was taken back: no start / ask / interpret until the payment is confirmed again
+          <div role="status" className="card flex flex-col gap-4 border-warn/40 bg-warn/5 p-5 sm:flex-row sm:items-center">
+            <span className="shrink-0 text-warn"><Icon name="wallet" size={24} /></span>
+            <div className="min-w-0 flex-1">
+              <div className="font-medium">{t('admin.dream.heldTitle')}</div>
+              <p className="mt-1 text-sm font-light leading-relaxed text-fg-muted">{t('admin.dream.heldLead')}</p>
+            </div>
+            {d.heldOrderId && <Link to={`/admin/orders/${d.heldOrderId}`} className="btn btn-md btn-ghost min-h-11 shrink-0">{t('admin.dream.heldOpenOrder')} <span aria-hidden="true">{arrowNext(locale)}</span></Link>}
+          </div>
+        )}
         {d.status === 'IN_REVIEW' && (
           <div className="card flex flex-col gap-4 border-gold/50 bg-gold/5 p-5 sm:flex-row sm:items-center">
             <p className="flex-1 text-sm leading-relaxed text-fg-muted">{t('admin.dream.editableHint')}</p>
@@ -158,6 +169,9 @@ export function AdminDreamPage() {
               </dd></div>
               <div className="flex justify-between"><dt className="text-fg-muted">{t('admin.dream.ref')}</dt><dd dir="ltr" className="text-xs">{d.payment.provider} · {d.payment.providerRef}</dd></div>
             </dl>
+          ) : d.heldOrderId ? (
+            // its credit went back with the revoked approval: the payment it waits for
+            <Link to={`/admin/orders/${d.heldOrderId}`} className="inline-flex items-center gap-1.5 text-sm font-medium text-gold-ink hover:underline dark:text-gold">{t('admin.dream.heldOpenOrder')} <span aria-hidden="true">{arrowNext(locale)}</span></Link>
           ) : <p className="text-sm text-fg-muted">{t('admin.dream.noOrder')}</p>}
         </div>
         <Link to={`/admin/users/${d.user.id}`} className="card card-hover flex items-center gap-3 p-5 text-sm"><span className="text-gold-ink"><Icon name="user" size={22} /></span>{t('admin.dream.user360')} {arrowNext(locale)}</Link>

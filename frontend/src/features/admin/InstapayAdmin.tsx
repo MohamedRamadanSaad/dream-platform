@@ -78,6 +78,42 @@ export function TransferReviewModals({ orderId, orderNumber, amount, currency, r
   )
 }
 
+/**
+ * "Undo approval" of a SUCCESS InstaPay order approved by mistake: the credits are taken back, the dreams paid by it
+ * are kept and wait (AWAITING_PAYMENT), and the buyer is asked to review and resend the transfer details.
+ */
+export function RevokeApprovalModal({ orderId, orderNumber, heldDreams, open, onClose }: {
+  orderId: string; orderNumber: string; heldDreams: number; open: boolean; onClose: () => void
+}) {
+  const { t } = useTranslation()
+  const qc = useQueryClient()
+  const errorText = useInstapayErrorText()
+  const once = useOnce()
+  const [note, setNote] = useState('')
+  useEffect(() => { if (open) setNote('') }, [open])
+  const revoke = useMutation({
+    mutationFn: () => adminApi.revokeTransfer(orderId, note.trim() || undefined),
+    meta: { toast: false },
+    onSuccess: () => { toast.success(t('admin.order.revoked')); onClose(); invalidateAfterReview(qc, orderId) },
+    onError: (e) => { toast.error(errorText(e)); onClose(); invalidateAfterReview(qc, orderId) },
+  })
+  const effects = [t('admin.order.revokeCredits'), t('admin.order.revokeDreams'), t('admin.order.revokeBuyer')]
+  return (
+    <Modal open={open} onClose={onClose} title={t('admin.order.revokeTitle')} size="sm" focusField={false}
+      footer={<><Button variant="ghost" onClick={onClose}>{t('common.cancel')}</Button><Button variant="ghost" className="border-danger text-danger" loading={revoke.isPending} onClick={() => once(() => revoke.mutateAsync())}>{t('admin.order.revokeConfirm')}</Button></>}>
+      <p className="mb-3 text-xs text-fg-dim">{t('admin.instapay.orderNo')}: <span dir="ltr" className="select-all font-mono font-medium text-fg-muted">{orderNumber}</span></p>
+      <p className="text-sm font-medium">{t('admin.order.revokeWhat')}</p>
+      <ul className="mt-2 space-y-2 text-sm leading-relaxed text-fg-muted">
+        {effects.map((e) => <li key={e} className="flex items-start gap-2"><span aria-hidden="true" className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-danger" />{e}</li>)}
+      </ul>
+      <p className="mt-3 rounded-xl bg-warn/10 p-3 text-sm text-warn">{t('admin.order.revokeDreamsCount', { count: heldDreams })}</p>
+      <label htmlFor="revoke-note" className="mt-4 block"><Label>{t('admin.order.revokeNote')}</Label></label>
+      <Textarea id="revoke-note" rows={3} maxLength={500} value={note} onChange={(e) => setNote(e.target.value)} placeholder={t('admin.order.revokeNotePlaceholder')} />
+      <div dir="ltr" className="mt-1 text-end text-[11px] tabular-nums text-fg-dim">{note.length}/500</div>
+    </Modal>
+  )
+}
+
 /** Small copy button (copied text confirmed with a toast; the value stays selectable when the clipboard is blocked). */
 export function CopyButton({ text, label, done }: { text: string; label: string; done?: string }) {
   const { t } = useTranslation()
