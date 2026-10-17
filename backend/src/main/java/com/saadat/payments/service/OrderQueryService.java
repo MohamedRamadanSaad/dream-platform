@@ -123,14 +123,28 @@ public class OrderQueryService {
         List<UUID> userIds = orders.getContent().stream().map(Order::getUserId).distinct().toList();
         Map<UUID, User> users = userRepository.findAllById(userIds).stream()
                 .collect(Collectors.toMap(User::getId, Function.identity(), (a, b) -> a));
+        Map<UUID, Long> held = heldCounts(orders.getContent().stream().map(Order::getId).toList());
         Function<Order, AdminOrderRow> mapper = o -> {
             User u = users.get(o.getUserId());
             return AdminOrderRow.of(OrderDto.from(o), o.getUserId(), u == null ? "" : u.getName(),
                     u == null ? "" : u.getEmail(), o.getSettledAmountEgp(), o.getTransferReference(),
                     o.getTransferSenderName(), o.getTransferSubmittedAt(),
-                    dreamAttachments.readIntent(o.getCheckoutIntent()).size());
+                    dreamAttachments.readIntent(o.getCheckoutIntent()).size(), o.getFailureReason(),
+                    o.getApprovalRevokedAt(), o.getRevokeNote(), held.getOrDefault(o.getId(), 0L).intValue());
         };
         return PageResponse.from(orders, mapper);
+    }
+
+    /** Held (AWAITING_PAYMENT) dreams per order (V40). */
+    private Map<UUID, Long> heldCounts(List<UUID> orderIds) {
+        Map<UUID, Long> out = new java.util.HashMap<>();
+        if (orderIds.isEmpty()) {
+            return out;
+        }
+        for (Object[] row : dreamRepository.countHeldByOrder(orderIds, DreamStatus.AWAITING_PAYMENT)) {
+            out.put((UUID) row[0], ((Number) row[1]).longValue());
+        }
+        return out;
     }
 
     @Transactional(readOnly = true)
@@ -204,6 +218,7 @@ public class OrderQueryService {
                 o.getProviderTxnId(), o.getPackageNameSnapshot(), o.getCredits(), o.getAmount(), o.getCurrency(),
                 o.getSettledAmountEgp(), o.getDiscount(), couponCode, o.getCountryCode(), o.getCountrySource(),
                 o.getCreatedAt(), o.getPaidAt(), o.getExpiresAt(), transfer, user, dreams, canReview,
-                revocable && revokeBlockedReason == null, revokeBlockedReason);
+                revocable && revokeBlockedReason == null, revokeBlockedReason, o.getApprovalRevokedAt(),
+                o.getRevokeNote(), heldCounts(List.of(o.getId())).getOrDefault(o.getId(), 0L).intValue());
     }
 }

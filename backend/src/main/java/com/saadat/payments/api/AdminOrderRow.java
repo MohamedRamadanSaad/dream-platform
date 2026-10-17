@@ -31,13 +31,23 @@ public record AdminOrderRow(
         String transferReference,
         String transferSenderName,
         Instant transferSubmittedAt,
-        int attachedDreams) {
+        int attachedDreams,
+        /** FAILED orders: TRANSFER_REJECTED / APPROVAL_REVOKED / provider reasons; else null. */
+        String failureReason,
+        /** Last time the interpreter took back the approval (V40); kept after the buyer resends. */
+        Instant revokedAt,
+        /** The interpreter's note of that undo (V40). */
+        String revokeNote,
+        /** Dreams waiting (AWAITING_PAYMENT) for this order to be approved again (V40). */
+        int heldDreams) {
 
     public static AdminOrderRow of(OrderDto o, UUID userId, String userName, String userEmail,
                                    BigDecimal settledAmountEgp, String transferReference, String transferSenderName,
-                                   Instant transferSubmittedAt, int attachedDreams) {
+                                   Instant transferSubmittedAt, int attachedDreams, String failureReason,
+                                   Instant revokedAt, String revokeNote, int heldDreams) {
         return new AdminOrderRow(o.id(), o.orderNumber(), o.packageName(), o.credits(), o.amount(), o.currency(), o.status(),
                 o.provider(), o.providerRef(), o.countryCode(), o.createdAt(), o.paidAt(), userName, userId, userEmail,
-                settledAmountEgp, transferReference, transferSenderName, transferSubmittedAt, attachedDreams);
+                settledAmountEgp, transferReference, transferSenderName, transferSubmittedAt, attachedDreams,
+                failureReason, revokedAt, revokeNote, heldDreams);
     }
 }

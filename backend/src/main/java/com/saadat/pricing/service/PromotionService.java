@@ -53,16 +53,18 @@ public class PromotionService {
 
     /**
      * Counts one use (on successful payment). Never fails the caller when max_uses was reached meanwhile. A promotion
-     * deleted while the order was pending is skipped.
+     * deleted while the order was pending is skipped. Returns whether a use was counted (stored on the order, V40).
      */
     @Transactional
-    public void recordUse(UUID promotionId) {
+    public boolean recordUse(UUID promotionId) {
         if (promotionId == null || !promotionRepository.existsById(promotionId)) {
-            return;
+            return false;
         }
         if (promotionRepository.incrementUsedCount(promotionId) == 0) {
             log.info("Promotion {} reached max_uses; use not counted", promotionId);
+            return false;
         }
+        return true;
     }
 
     /** Gives back the use counted by {@link #recordUse} (an approval taken back, V40); never below zero. */

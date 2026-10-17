@@ -30,7 +30,9 @@ public final class AnalyticsDtos {
      */
     public record AdminSummaryDto(long pendingPayments, long inReview, long inProgress, long awaitingReply,
                                   long overdue, long interpretedToday, List<RevenueDto> revenue, double revenueEgp,
-                                  double avgResponseHours) {
+                                  double avgResponseHours,
+                                  /** Dreams waiting for their payment to be approved again (V40; queue tab count). */
+                                  long awaitingPayment) {
     }
 
     /**

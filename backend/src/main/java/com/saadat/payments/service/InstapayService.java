@@ -15,6 +15,7 @@ import com.saadat.dreams.repo.DreamRepository;
 import com.saadat.mail.EventMailer;
 import com.saadat.mail.MailService;
 import com.saadat.mail.MailTemplates;
+import com.saadat.mail.MessageText;
 import com.saadat.notifications.service.NotificationService;
 import com.saadat.payments.api.InstapayDtos;
 import com.saadat.payments.domain.CreditLedgerEntry;
@@ -91,6 +92,7 @@ public class InstapayService {
     private final OrderCredits orderCredits;
     private final CouponService couponService;
     private final PromotionService promotionService;
+    private final MessageText messageText;
     private final Clock clock;
 
     // ================================================================== buyer
@@ -121,7 +123,9 @@ public class InstapayService {
 
         String reference = normalizeReference(req.reference());
         String sender = cleanSender(req.senderName());
-        if (orderRepository.existsByTransferReferenceAndStatusInAndIdNot(reference, LIVE, order.getId())) {
+        if (orderRepository.existsByTransferReferenceAndStatusInAndIdNot(reference, LIVE, order.getId())
+                || orderRepository.existsByTransferReferenceAndStatusAndFailureReasonAndIdNot(reference,
+                        OrderStatus.FAILED, REASON_REVOKED, order.getId())) {
             throw new ConflictException("This transfer reference was already used", "DUPLICATE_REFERENCE");
         }
         List<UUID> intent = mergeDreams(userId, order, req.dreamIds());
@@ -293,19 +297,29 @@ public class InstapayService {
                 continue;
             }
             creditService.refundDebit(debitByDream.get(d.getId()), REASON_REVOKED, interpreterId);
+            DreamStatus before = d.getStatus();
             d.setStatus(DreamStatus.AWAITING_PAYMENT);
             d.setHeldOrderId(orderId);
+            d.setHeldAt(now);
             if (d.getSlaPausedAt() == null) {
                 d.setSlaPausedAt(now);
             }
             dreamRepository.save(d);
             held.add(d.getId());
+            Map<String, Object> heldAfter = new LinkedHashMap<>();
+            heldAfter.put("status", DreamStatus.AWAITING_PAYMENT.name());
+            heldAfter.put("heldOrderId", orderId.toString());
+            auditService.record(interpreterId, "DREAM_HELD", "dreams", d.getId().toString(),
+                    Map.of("status", before.name()), heldAfter);
         }
         // 2. what is left of the order's credits is withdrawn
         int withdrawn = creditService.revokeOrderCredits(userId, orderId, cleanNote, interpreterId);
         // 3. the coupon / promotion use counted at confirm is given back (a later approval counts it again)
-        couponService.unredeem(orderId);
-        promotionService.releaseUse(order.getPromotionId());
+        couponService.revokeRedemption(orderId);
+        if (order.isPromotionCounted()) {
+            promotionService.releaseUse(order.getPromotionId());
+            order.setPromotionCounted(false);
+        }
 
         // 4. the order waits for the buyer
         order.setStatus(OrderStatus.FAILED);
@@ -316,6 +330,8 @@ public class InstapayService {
         order.setSettledAmountEgp(null);
         order.setPaidAt(null);
         order.setProviderTxnId(null);
+        order.setApprovalRevokedAt(now);
+        order.setRevokeNote(cleanNote);
         orderRepository.save(order);
         Map<String, Object> after = new LinkedHashMap<>();
         after.put("status", OrderStatus.FAILED.name());
@@ -334,6 +350,10 @@ public class InstapayService {
             args.put("amount", order.getAmount().stripTrailingZeros().toPlainString());
             args.put("currency", order.getCurrency().name());
             args.put("orderNumber", PaymentService.orderRef(order));
+            // "your dream is kept" / "your dreams are kept" / nothing, by the number of held dreams
+            String kept = held.isEmpty() ? "" : messageText.get("notif.PAYMENT_REVOKED.kept."
+                    + (held.size() == 1 ? "ONE" : "MANY"), buyer.getLocale(), Map.of());
+            args.put("keptText", kept.isEmpty() ? "" : " " + kept);
             notificationService.notify(buyer.getId(), NotificationType.PAYMENT_REVOKED, args, pageLink(orderId));
 
             Map<String, Object> model = new LinkedHashMap<>();
@@ -468,8 +488,19 @@ public class InstapayService {
                 settings.getString(SettingKeys.INSTAPAY_LINK, ""),
                 settings.getString(SettingKeys.INSTAPAY_RECIPIENT_NAME, ""),
                 o.getCreatedAt(), o.getExpiresAt(), o.getTransferReference(), o.getTransferSenderName(),
-                o.getTransferSubmittedAt(), o.getReviewNote(), paymentService.readIntent(o.getCheckoutIntent()).size(),
-                o.getFailureReason(), heldCount(o));
+                o.getTransferSubmittedAt(), o.getReviewNote(), attachedDrafts(o), o.getFailureReason(), heldCount(o),
+                o.getApprovalRevokedAt(), o.getRevokeNote());
+    }
+
+    /** The order's checkout intent dreams that are still the buyer's drafts (sent dreams are not "attached"). */
+    private int attachedDrafts(Order o) {
+        List<UUID> intent = paymentService.readIntent(o.getCheckoutIntent());
+        if (intent.isEmpty()) {
+            return 0;
+        }
+        return (int) dreamRepository.findAllById(intent).stream()
+                .filter(d -> o.getUserId().equals(d.getUserId()) && d.getStatus() == DreamStatus.DRAFT)
+                .count();
     }
 
     private int heldCount(Order o) {
@@ -482,7 +513,8 @@ public class InstapayService {
                 u == null ? "" : u.getEmail(), o.getPackageNameSnapshot(), o.getCredits(), o.getAmount(),
                 o.getCurrency(), o.getStatus(), o.getTransferReference(), o.getTransferSenderName(), o.getCreatedAt(),
                 o.getTransferSubmittedAt(), o.getReviewedAt(), o.getReviewNote(),
-                paymentService.readIntent(o.getCheckoutIntent()).size(), o.getFailureReason(), heldCount(o));
+                paymentService.readIntent(o.getCheckoutIntent()).size(), o.getFailureReason(), heldCount(o),
+                o.getApprovalRevokedAt(), o.getRevokeNote());
     }
 
     /** SPA link of the buyer's payment page (used in e-mails and notifications). */

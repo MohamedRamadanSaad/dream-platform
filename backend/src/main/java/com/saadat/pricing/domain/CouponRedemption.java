@@ -34,6 +34,14 @@ public class CouponRedemption {
     @Column(name = "order_id", nullable = false)
     private UUID orderId;
 
+    /** This redemption counted one use of the coupon (false when max_uses was already reached). */
+    @Column(name = "counted", nullable = false)
+    private boolean counted = true;
+
+    /** The order's approval was taken back (V40): the use is given back but the row stays (per-user limit). */
+    @Column(name = "revoked_at")
+    private Instant revokedAt;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 

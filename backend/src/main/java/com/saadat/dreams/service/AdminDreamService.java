@@ -88,9 +88,15 @@ public class AdminDreamService {
         if (status == DreamStatus.DRAFT) {
             return PageResponse.of(List.of(), pageable.getPageNumber(), pageable.getPageSize(), 0);
         }
-        Page<Dream> dreams = status == null
-                ? dreamRepository.findByStatusNotOrderBySubmittedAtAsc(DreamStatus.DRAFT, pageable)
-                : dreamRepository.findByStatusOrderBySubmittedAtAsc(status, pageable);
+        Page<Dream> dreams;
+        if (status == null) {
+            dreams = dreamRepository.findByStatusNotOrderBySubmittedAtAsc(DreamStatus.DRAFT, pageable);
+        } else if (status == DreamStatus.AWAITING_PAYMENT) {
+            // waiting for their payment to be approved again (V40): oldest hold first
+            dreams = dreamRepository.findByStatusOrderByHeldAtAsc(status, pageable);
+        } else {
+            dreams = dreamRepository.findByStatusOrderBySubmittedAtAsc(status, pageable);
+        }
         Map<UUID, User> users = usersById(dreams.getContent().stream().map(Dream::getUserId).distinct().toList());
         Instant now = clock.instant();
         Function<Dream, AdminDreamRow> toRow = d -> {
@@ -98,7 +104,7 @@ public class AdminDreamService {
             return new AdminDreamRow(d.getId(), d.getUserId(), u == null ? "" : u.getName(), d.getGender(),
                     DreamMapper.excerpt(d.getText()), d.getStatus(), d.getSubmittedAt(), d.getExpectedBy(),
                     isOverdue(d, now), u == null || u.getCountryCode() == null ? "" : u.getCountryCode(),
-                    d.getStartedAt(), d.getExpectedDays(), d.getUserEditedAt());
+                    d.getStartedAt(), d.getExpectedDays(), d.getUserEditedAt(), d.getHeldOrderId(), d.getHeldAt());
         };
         return PageResponse.from(dreams, toRow);
     }
@@ -251,6 +257,7 @@ public class AdminDreamService {
         d.setCancelledReason(reason == null ? null : reason.trim());
         d.setSlaPausedAt(null);
         d.setHeldOrderId(null);
+        d.setHeldAt(null);
         dreamRepository.save(d);
 
         boolean refunded = false;

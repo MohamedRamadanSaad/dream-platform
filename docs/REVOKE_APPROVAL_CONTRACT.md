@@ -52,3 +52,19 @@ dreams status CHECK + `AWAITING_PAYMENT`; `dreams.held_order_id uuid REFERENCES 
 - Status label AWAITING_PAYMENT: «بانتظار تأكيد الدفع» / "Waiting for payment confirmation" (user + admin). User dream page: card with the payment status (revoked / under review / rejected), link to the payment page, edit while `editable`. Dreams tab «مرفقة بدفعة» lists them. Admin dream page: banner, no start/ask/interpret buttons.
 - Notification type `PAYMENT_REVOKED` label + icon.
 - MSW mocks for every route/state above.
+
+## 7. Implementation notes (accepted deviations, 2026-10-17)
+1. **Ledger guards per `source_id`.** The V4/V5 unique indexes (one PURCHASE per order, one SUBMIT and one REFUND per dream) would block a re-approval and a resume. V40 recreates them per cycle: PURCHASE unique on `(order_id, source_id)` (a re-approval's PURCHASE names the previous, revoked one); SUBMIT on `(dream_id, source_id)` (source = the lot); REFUND on `(dream_id, source_id)` (source = the SUBMIT it gives back, not the order as §2 said; `order_id` still names the order).
+2. **REVOKE is one row per lot**, not one row: what is left of the order's PURCHASE lot and of each REFUND lot written in step 1 (each REVOKE names its lot).
+3. **Held dreams resume BEFORE the attached drafts are auto-submitted** (§3 said after), so a draft can never take a held dream's credit; the resend's `TOO_MANY_DREAMS` check counts the held dreams.
+4. **An unanswered question survives the hold:** a dream held while AWAITING_USER_REPLY (last message is the interpreter's) resumes as AWAITING_USER_REPLY with its original SLA pause, not IN_PROGRESS / IN_REVIEW.
+
+## 8. BA/QA review fixes (2026-10-17)
+- **Expiry:** a re-approval's PURCHASE keeps the FIRST PURCHASE row's `expires_at` (from the first approval's paid date). Held dreams always resume from it, even past expiry; the leftover is written off at once when past.
+- **Reference reserved:** the transfer reference of a FAILED / APPROVAL_REVOKED order stays in `ux_orders_transfer_reference`; another order gets 409 `DUPLICATE_REFERENCE`.
+- **Undo history:** `orders.approval_revoked_at`, `orders.revoke_note` (kept when the buyer resends) → `revokedAt`, `revokeNote`, `heldDreams` on `TransferRow`, `AdminOrderRow` (+ `failureReason`), `AdminOrderDetail`, `InstapayOrderView`.
+- **Buyer page:** `InstapayOrderView.attachedDreams` = intent dreams still drafts; `heldDreams` = AWAITING_PAYMENT dreams of the order.
+- **Copy:** in-app/push «لم نتمكن من تأكيد دفعتك RN-…، راجع بيانات التحويل وأعد إرسالها.» + «رؤياك محفوظة.» (1) / «رؤاك محفوظة.» (2+) / nothing (0); English equivalent. The e-mail keeps the fake-transfer warning («حسابك»), the same three variants, and says the earlier receipt is no longer valid.
+- **Coupons / promotions:** `coupon_redemptions.counted` + `revoked_at`: an undo keeps the row (per-user limit still applies), gives back the use only when it was counted; a re-approval restores it. `orders.promotion_counted`: same for promotions.
+- **Audit:** `DREAM_HELD` and `DREAM_RESUMED` per dream (besides `INSTAPAY_REVOKED`).
+- **Admin queue:** `GET /admin/dreams?status=AWAITING_PAYMENT` (oldest hold first, `dreams.held_at`); `AdminDreamRow` adds `heldOrderId`, `heldAt`; `GET /admin/analytics/summary` adds `awaitingPayment`.

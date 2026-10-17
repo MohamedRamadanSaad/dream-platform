@@ -121,6 +121,39 @@ public class CreditService {
     }
 
     /**
+     * One credit for a held dream resumed by the re-approval of {@code orderId} (V40): taken from that order's newest
+     * PURCHASE lot even when it is already past its expiry (the order paid this dream before the credits expired),
+     * else from any valid lot. Locks the user row but writes off no expiry first (the caller does it afterwards).
+     * Returns null, without writing anything, when no credit is available.
+     */
+    @Transactional(propagation = org.springframework.transaction.annotation.Propagation.MANDATORY)
+    public CreditLedgerEntry consumeForResume(UUID userId, UUID dreamId, UUID orderId) {
+        userRepository.findByIdForUpdate(userId).orElseThrow(() -> NotFoundException.of("User", userId));
+        Instant now = clock.instant();
+        List<CreditLedgerEntry> rows = ledgerRepository.findByUserIdOrderByCreatedAtAsc(userId);
+        Map<UUID, CreditLedgerEntry> byId = new HashMap<>();
+        rows.forEach(r -> byId.put(r.getId(), r));
+        List<CreditLots.Lot> lots = CreditLots.replay(CreditExpiryService.toEntries(rows));
+        CreditLots.Lot lot = lots.stream()
+                .filter(l -> l.remaining() > 0 && byId.containsKey(l.id())
+                        && byId.get(l.id()).getReason() == LedgerReason.PURCHASE
+                        && orderId.equals(byId.get(l.id()).getOrderId()))
+                .max(java.util.Comparator.comparing(CreditLots.Lot::createdAt))
+                .orElse(null);
+        if (lot == null) {
+            lot = lots.stream().filter(l -> l.remaining() > 0 && l.validAt(now) && !l.settled())
+                    .min(CreditLots.SPEND_ORDER).orElse(null);
+        }
+        if (lot == null) {
+            return null;
+        }
+        CreditLedgerEntry source = byId.get(lot.id());
+        CreditLedgerEntry e = entry(userId, -1, LedgerReason.SUBMIT, source.getOrderId(), dreamId, null, null);
+        e.setSourceId(source.getId());
+        return ledgerRepository.save(e);
+    }
+
+    /**
      * Gives back the credit of one dream debit ({@code submit}, a SUBMIT row) once: REFUND +1 with the same order and
      * {@code source_id} = that debit (V40 guard: one refund per debit). Returns null when it was already given back.
      */
@@ -195,7 +228,8 @@ public class CreditService {
 
     /**
      * Credits of a paid order; they expire at {@code expiresAt} (null = never). An order approved again after its
-     * approval was taken back (V40) gets a new PURCHASE row whose {@code source_id} is the previous one.
+     * approval was taken back (V40) gets a new PURCHASE row whose {@code source_id} is the previous one and whose
+     * expiry is the FIRST approval's (a re-approval never revives expired credits; past it, they expire at once).
      */
     @Transactional
     public CreditLedgerEntry addPurchase(UUID userId, int credits, UUID orderId, Instant expiresAt) {
@@ -208,7 +242,7 @@ public class CreditService {
         List<CreditLedgerEntry> earlier = orderId == null ? List.of()
                 : ledgerRepository.findAllByOrderIdAndReasonOrderByCreatedAtAsc(orderId, LedgerReason.PURCHASE);
         CreditLedgerEntry e = entry(userId, credits, LedgerReason.PURCHASE, orderId, null, null, null);
-        e.setExpiresAt(expiresAt);
+        e.setExpiresAt(earlier.isEmpty() ? expiresAt : earlier.get(0).getExpiresAt());
         e.setSourceId(earlier.isEmpty() ? null : earlier.get(earlier.size() - 1).getId());
         return ledgerRepository.save(e);
     }

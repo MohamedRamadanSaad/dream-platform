@@ -40,11 +40,16 @@ public final class InstapayDtos {
             String senderName,
             Instant submittedAt,
             String reviewNote,
+            /** The order's intended dreams that are still drafts (sent dreams are counted in heldDreams or not at all). */
             int attachedDreams,
             /** FAILED orders: TRANSFER_REJECTED, or APPROVAL_REVOKED when the interpreter took back her approval (V40). */
             String failureReason,
             /** Dreams kept as AWAITING_PAYMENT until this payment is approved again (V40). */
-            int heldDreams) {
+            int heldDreams,
+            /** Last time the interpreter took back the approval (V40); kept after the buyer resends. */
+            Instant revokedAt,
+            /** The interpreter's note of that undo (V40); kept after the buyer resends. */
+            String revokeNote) {
     }
 
     /**
@@ -78,7 +83,11 @@ public final class InstapayDtos {
             /** TRANSFER_REJECTED / APPROVAL_REVOKED (V40) for FAILED orders, else null. */
             String failureReason,
             /** Dreams waiting (AWAITING_PAYMENT) for this payment to be approved again (V40). */
-            int heldDreams) {
+            int heldDreams,
+            /** Last time the interpreter took back the approval (V40); kept after the buyer resends. */
+            Instant revokedAt,
+            /** The interpreter's note of that undo (V40). */
+            String revokeNote) {
     }
 
     /** GET /admin/payments/instapay/transfers: waiting first (oldest first), then the latest decisions. */

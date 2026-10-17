@@ -81,3 +81,27 @@ INSERT INTO app_settings (key, value, type, description) VALUES
      'E-mail the buyer when the interpreter undoes an InstaPay approval and asks him to check and resend the transfer'),
     ('mail.theme.payment-review-needed', '', 'STRING', 'E-mail theme of payment-review-needed; empty = mail.theme.default')
 ON CONFLICT (key) DO NOTHING;
+
+-- ------------------------------------------------------------------ BA/QA review of the undo (2026-10-17)
+-- when the hold started (admin queue "Waiting for payment", oldest hold first)
+ALTER TABLE dreams ADD COLUMN held_at timestamptz;
+
+-- the undo history, kept when the buyer resends (review_note / failure_reason are reset by the resend)
+ALTER TABLE orders ADD COLUMN approval_revoked_at timestamptz;
+ALTER TABLE orders ADD COLUMN revoke_note         text;
+-- the confirmation of this order counted one use of its promotion (an undo gives back only what was counted)
+ALTER TABLE orders ADD COLUMN promotion_counted   boolean NOT NULL DEFAULT false;
+UPDATE orders SET promotion_counted = true
+WHERE promotion_id IS NOT NULL AND (status IN ('SUCCESS', 'REFUNDED') OR paid_at IS NOT NULL);
+
+-- a redemption counted one use of its coupon (false when max_uses was already reached); an undo keeps the row as
+-- revoked (revoked_at), so a single-use coupon cannot be used again meanwhile, and a new approval restores it
+ALTER TABLE coupon_redemptions ADD COLUMN counted    boolean NOT NULL DEFAULT true;
+ALTER TABLE coupon_redemptions ADD COLUMN revoked_at timestamptz;
+
+-- a revoked order keeps its transfer reference: no other order may take it until the buyer changes it
+DROP INDEX IF EXISTS ux_orders_transfer_reference;
+CREATE UNIQUE INDEX ux_orders_transfer_reference ON orders (transfer_reference)
+    WHERE transfer_reference IS NOT NULL
+      AND (status IN ('PENDING_REVIEW', 'SUCCESS', 'SUSPICIOUS', 'REFUNDED')
+           OR (status = 'FAILED' AND failure_reason = 'APPROVAL_REVOKED'));

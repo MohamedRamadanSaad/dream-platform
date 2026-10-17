@@ -79,6 +79,10 @@ public interface OrderRepository extends JpaRepository<Order, UUID>, JpaSpecific
     boolean existsByTransferReferenceAndStatusInAndIdNot(String transferReference, Collection<OrderStatus> statuses,
                                                          UUID id);
 
+    /** A revoked order (FAILED / APPROVAL_REVOKED) keeps its reference reserved (V40 unique index). */
+    boolean existsByTransferReferenceAndStatusAndFailureReasonAndIdNot(String transferReference, OrderStatus status,
+                                                                       String failureReason, UUID id);
+
     /** Row lock for webhook confirmation. */
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select o from PaymentOrder o where o.id = :id")

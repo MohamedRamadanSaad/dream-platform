@@ -48,38 +48,52 @@ public class CouponService {
 
     /**
      * Records the redemption for a paid order (idempotent per order). Never fails the payment. A coupon deleted
-     * while the order was pending is skipped, as when the database used to null the order's coupon on delete.
+     * while the order was pending is skipped, as when the database used to null the order's coupon on delete. An
+     * order approved again after an undo (V40) restores its revoked redemption instead of adding one. The row
+     * remembers whether it counted a use ({@code counted}), so an undo gives back only that.
      */
     @Transactional
     public void redeem(UUID couponId, UUID userId, UUID orderId) {
-        if (couponId == null || !couponRepository.existsById(couponId)
-                || redemptionRepository.existsByOrderId(orderId)) {
+        if (couponId == null || !couponRepository.existsById(couponId)) {
             return;
         }
-        if (couponRepository.incrementUsedCount(couponId) == 0) {
+        CouponRedemption existing = redemptionRepository.findByOrderId(orderId).orElse(null);
+        if (existing != null && existing.getRevokedAt() == null) {
+            return;
+        }
+        boolean counted = couponRepository.incrementUsedCount(couponId) > 0;
+        if (!counted) {
             log.info("Coupon {} reached max_uses; redemption recorded without incrementing", couponId);
         }
-        CouponRedemption r = new CouponRedemption();
-        r.setCouponId(couponId);
-        r.setUserId(userId);
-        r.setOrderId(orderId);
-        r.setCreatedAt(clock.instant());
+        CouponRedemption r = existing;
+        if (r == null) {
+            r = new CouponRedemption();
+            r.setCouponId(couponId);
+            r.setUserId(userId);
+            r.setOrderId(orderId);
+            r.setCreatedAt(clock.instant());
+        }
+        r.setRevokedAt(null);
+        r.setCounted(counted);
         redemptionRepository.save(r);
     }
 
     /**
-     * Undoes {@link #redeem} for an order whose approval was taken back (V40): its redemption row is removed and the
-     * coupon's use is given back, so approving the order again counts it once. Nothing when it had no redemption.
+     * The order's approval was taken back (V40): the use its redemption counted is given back, and the row stays as
+     * revoked, so the same user cannot use a single-use coupon again meanwhile. Nothing when it had no redemption.
      */
     @Transactional
-    public void unredeem(UUID orderId) {
+    public void revokeRedemption(UUID orderId) {
         if (orderId == null) {
             return;
         }
-        redemptionRepository.findByOrderId(orderId).ifPresent(r -> {
-            redemptionRepository.delete(r);
-            redemptionRepository.flush();
-            couponRepository.decrementUsedCount(r.getCouponId());
+        redemptionRepository.findByOrderId(orderId).filter(r -> r.getRevokedAt() == null).ifPresent(r -> {
+            if (r.isCounted()) {
+                couponRepository.decrementUsedCount(r.getCouponId());
+            }
+            r.setCounted(false);
+            r.setRevokedAt(clock.instant());
+            redemptionRepository.save(r);
         });
     }
 

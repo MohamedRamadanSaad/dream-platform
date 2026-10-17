@@ -271,13 +271,18 @@ public class PaymentService {
 
         creditService.addPurchase(order.getUserId(), order.getCredits(), order.getId(), purchaseExpiry(order));
         couponService.redeem(order.getCouponId(), order.getUserId(), order.getId());
-        promotionService.recordUse(order.getPromotionId());
+        order.setPromotionCounted(promotionService.recordUse(order.getPromotionId()));
+        orderRepository.save(order);
 
         // approved again after the approval was taken back (V40): the dreams it paid resume first (each takes one
         // credit of this order), so the attached drafts never take their credits
-        List<UUID> resumed = dreamService.resumeHeld(order.getUserId(), order.getId());
+        List<UUID> resumed = dreamService.resumeHeld(order.getUserId(), order.getId(), order.getReviewedBy());
         if (!resumed.isEmpty()) {
             log.info("Order {} resumed {} held dream(s)", order.getId(), resumed.size());
+        }
+        if (order.getApprovalRevokedAt() != null) {
+            // its credits keep the first approval's expiry: past it, the rest is written off now
+            creditService.lockAndGetBalance(order.getUserId());
         }
 
         List<UUID> intent = readIntent(order.getCheckoutIntent());

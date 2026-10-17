@@ -2,6 +2,7 @@ package com.saadat.dreams.service;
 
 import com.saadat.common.api.PageResponse;
 import com.saadat.common.api.Pages;
+import com.saadat.common.audit.AuditService;
 import com.saadat.common.domain.DreamStatus;
 import com.saadat.common.domain.Role;
 import com.saadat.common.error.ApiException;
@@ -72,6 +73,7 @@ public class DreamService {
     private final UserRepository userRepository;
     private final EventMailer eventMailer;
     private final DreamAttachments attachments;
+    private final AuditService auditService;
     private final Clock clock;
 
     /** Virtual list filter: drafts attached to a payment under review or rejected (contract §2). */
@@ -236,7 +238,7 @@ public class DreamService {
         Instant now = clock.instant();
         for (Dream d : ordered) {
             if (d.getStatus() == DreamStatus.AWAITING_PAYMENT) {
-                resume(d, null, now);
+                resume(d, creditService.consumeForDream(userId, d.getId()), now, userId);
                 submitted.add(d.getId());
             }
         }
@@ -250,44 +252,46 @@ public class DreamService {
 
     /**
      * The order {@code orderId} was approved again after its approval had been taken back (V40): its AWAITING_PAYMENT
-     * dreams resume, each paid with one credit of that order (oldest submitted first; a dream stays held when the
-     * balance runs out). No interpreter notification: the approval is hers. Joins the payment transaction; lock order
-     * user → dreams.
+     * dreams resume, each paid with one credit of that order even when its credits are past their (first) expiry,
+     * oldest submitted first; a dream stays held when no credit is left. No interpreter notification: the approval is
+     * hers ({@code actor}, audited as DREAM_RESUMED). Joins the payment transaction; lock order user → dreams.
      */
     @Transactional
-    public List<UUID> resumeHeld(UUID userId, UUID orderId) {
+    public List<UUID> resumeHeld(UUID userId, UUID orderId, UUID actor) {
         List<UUID> ids = dreamRepository.findByHeldOrderIdAndStatusOrderBySubmittedAtAsc(orderId,
                 DreamStatus.AWAITING_PAYMENT).stream().map(Dream::getId).toList();
         if (ids.isEmpty()) {
             return List.of();
         }
-        int balance = creditService.lockAndGetBalance(userId);
         Instant now = clock.instant();
         List<UUID> resumed = new ArrayList<>();
+        // lock order user → dreams (no expiry write-off before: this order's credits pay its held dreams)
+        userRepository.findByIdForUpdate(userId).orElseThrow(() -> NotFoundException.of("User", userId));
         for (Dream d : order(dreamRepository.findAllByIdInAndUserIdForUpdate(ids, userId), ids)) {
             if (d.getStatus() != DreamStatus.AWAITING_PAYMENT || !orderId.equals(d.getHeldOrderId())) {
                 continue;
             }
-            if (balance < 1) {
+            CreditLedgerEntry entry = creditService.consumeForResume(userId, d.getId(), orderId);
+            if (entry == null) {
                 break;
             }
-            resume(d, orderId, now);
-            balance--;
+            resume(d, entry, now, actor);
             resumed.add(d.getId());
         }
         return resumed;
     }
 
     /**
-     * AWAITING_PAYMENT → back to work, paid with one credit (from a lot of {@code preferredOrderId} when it has one):
-     * AWAITING_USER_REPLY when the interpreter's question was still open (the SLA stays paused since she asked), else
-     * IN_PROGRESS when she had started, IN_REVIEW otherwise, with {@code expectedBy} moved forward by the time it was
-     * held. Text, messages, startedAt and expectedDays are kept; the hold is cleared.
+     * AWAITING_PAYMENT → back to work, paid with {@code entry} (its SUBMIT debit): AWAITING_USER_REPLY when the
+     * interpreter's question was still open (the SLA stays paused since she asked), else IN_PROGRESS when she had
+     * started, IN_REVIEW otherwise, with {@code expectedBy} moved forward by the time it was held. Text, messages,
+     * startedAt and expectedDays are kept; the hold is cleared. Audited as DREAM_RESUMED.
      */
-    private void resume(Dream d, UUID preferredOrderId, Instant now) {
-        CreditLedgerEntry entry = creditService.consumeForDream(d.getUserId(), d.getId(), preferredOrderId);
+    private void resume(Dream d, CreditLedgerEntry entry, Instant now, UUID actor) {
+        UUID heldOrderId = d.getHeldOrderId();
         d.setLedgerEntryId(entry.getId());
         d.setHeldOrderId(null);
+        d.setHeldAt(null);
         if (openQuestion(d)) {
             d.setStatus(DreamStatus.AWAITING_USER_REPLY);
             if (d.getSlaPausedAt() == null) {
@@ -298,6 +302,12 @@ public class DreamService {
             d.setStatus(d.getStartedAt() != null ? DreamStatus.IN_PROGRESS : DreamStatus.IN_REVIEW);
         }
         dreamRepository.save(d);
+        Map<String, Object> after = new LinkedHashMap<>();
+        after.put("status", d.getStatus().name());
+        after.put("heldOrderId", heldOrderId == null ? "" : heldOrderId.toString());
+        after.put("paidByOrderId", entry.getOrderId() == null ? "" : entry.getOrderId().toString());
+        auditService.record(actor, "DREAM_RESUMED", "dreams", d.getId().toString(),
+                Map.of("status", DreamStatus.AWAITING_PAYMENT.name()), after);
     }
 
     /** The last message of the dream is the interpreter's (a question the dreamer has not answered yet). */

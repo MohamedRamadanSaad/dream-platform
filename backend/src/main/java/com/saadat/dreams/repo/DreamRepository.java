@@ -47,6 +47,14 @@ public interface DreamRepository extends JpaRepository<Dream, UUID> {
     /** Every dream held by {@code heldOrderId} (V40). */
     List<Dream> findByHeldOrderId(UUID heldOrderId);
 
+    /** [heldOrderId, count] of dreams in {@code status} held by these orders (V40). */
+    @Query("select d.heldOrderId, count(d) from Dream d where d.heldOrderId in :orderIds and d.status = :status "
+            + "group by d.heldOrderId")
+    List<Object[]> countHeldByOrder(@Param("orderIds") Collection<UUID> orderIds, @Param("status") DreamStatus status);
+
+    /** Admin queue "Waiting for payment": oldest hold first (V40). */
+    Page<Dream> findByStatusOrderByHeldAtAsc(DreamStatus status, Pageable pageable);
+
     // ---- admin queue ----
     Page<Dream> findByStatusOrderBySubmittedAtAsc(DreamStatus status, Pageable pageable);
 

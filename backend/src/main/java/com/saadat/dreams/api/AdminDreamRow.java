@@ -19,5 +19,8 @@ public record AdminDreamRow(
         String countryCode,
         Instant startedAt,
         Integer expectedDays,
-        Instant userEditedAt) {
+        Instant userEditedAt,
+        /** AWAITING_PAYMENT (V40): the order whose approval was taken back, and when the hold started; else null. */
+        UUID heldOrderId,
+        Instant heldAt) {
 }

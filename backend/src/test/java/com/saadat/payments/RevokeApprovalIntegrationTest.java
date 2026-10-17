@@ -1,6 +1,10 @@
 package com.saadat.payments;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.timeout;
+import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -18,7 +22,9 @@ import com.saadat.common.domain.NotificationType;
 import com.saadat.common.domain.OrderStatus;
 import com.saadat.common.domain.PaymentProviderType;
 import com.saadat.common.domain.Role;
+import com.saadat.credits.service.CreditExpiryService;
 import com.saadat.credits.service.CreditService;
+import com.saadat.push.service.WebPushSender;
 import com.saadat.dreams.domain.Dream;
 import com.saadat.dreams.repo.DreamRepository;
 import com.saadat.mail.MailTemplates;
@@ -43,6 +49,7 @@ import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.ResultActions;
@@ -88,6 +95,12 @@ class RevokeApprovalIntegrationTest extends IntegrationTestBase {
 
     @Autowired
     CouponRedemptionRepository redemptionRepository;
+
+    @Autowired
+    CreditExpiryService creditExpiryService;
+
+    @SpyBean
+    WebPushSender webPushSender;
 
     // ================================================================== revoke → resend → approve again
 
@@ -156,11 +169,37 @@ class RevokeApprovalIntegrationTest extends IntegrationTestBase {
         Notification n = notifications(buyer).stream().filter(x -> x.getType() == NotificationType.PAYMENT_REVOKED)
                 .findFirst().orElseThrow();
         assertThat(n.getLink()).isEqualTo("/me/checkout/instapay/" + orderId);
-        assertThat(n.getBody()).contains("إغلاق الحساب").doesNotContain("{");
+        String number = revoked.getOrderNumber() == null ? orderId.toString() : revoked.getOrderNumber();
+        assertThat(n.getBody()).isEqualTo("لم نتمكن من تأكيد دفعتك " + number
+                + "، راجع بيانات التحويل وأعد إرسالها. رؤاك محفوظة.");
+        verify(webPushSender, timeout(10_000).atLeastOnce()).sendToUser(eq(buyer.getId()), anyString(),
+                eq(n.getBody()), eq("/me/checkout/instapay/" + orderId));
         awaitTrue("payment-review-needed e-mail", () -> emailLogRepository.existsByTemplateAndRefStartingWith(
                 MailTemplates.PAYMENT_REVIEW_NEEDED, MailTemplates.PAYMENT_REVIEW_NEEDED + ":" + orderId));
         assertThat(auditLogRepository.findByEntityAndEntityIdOrderByCreatedAtDesc("orders", orderId.toString()))
                 .anyMatch(a -> "INSTAPAY_REVOKED".equals(a.getAction()));
+        assertThat(auditLogRepository.findByEntityAndEntityIdOrderByCreatedAtDesc("dreams", d1.toString()))
+                .anyMatch(a -> "DREAM_HELD".equals(a.getAction()));
+
+        // the interpreter's queue tab "Waiting for payment" and its count
+        mvc.perform(get(ApiPaths.Admin.DREAMS).param("status", "AWAITING_PAYMENT").param("size", "100")
+                        .header("Authorization", bearer(interpreter)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.items[?(@.id == '" + d1 + "')].heldOrderId")
+                        .value(org.hamcrest.Matchers.hasItem(orderId.toString())))
+                .andExpect(jsonPath("$.items[?(@.id == '" + d2 + "')].heldAt").isNotEmpty());
+        assertThat(summary(interpreter).get("awaitingPayment").asLong()).isGreaterThanOrEqualTo(2);
+        // the undo history on the order page and in the table
+        mvc.perform(get(ApiPaths.Admin.ORDERS + "/" + orderId).header("Authorization", bearer(interpreter)))
+                .andExpect(jsonPath("$.revokedAt").isNotEmpty())
+                .andExpect(jsonPath("$.revokeNote").value("The amount in the transfer is different"))
+                .andExpect(jsonPath("$.heldDreams").value(2));
+        mvc.perform(get(ApiPaths.Admin.ORDERS).param("scope", "DOMESTIC").param("size", "100")
+                        .header("Authorization", bearer(interpreter)))
+                .andExpect(jsonPath("$.items[?(@.id == '" + orderId + "')].failureReason")
+                        .value(org.hamcrest.Matchers.hasItem("APPROVAL_REVOKED")))
+                .andExpect(jsonPath("$.items[?(@.id == '" + orderId + "')].heldDreams")
+                        .value(org.hamcrest.Matchers.hasItem(2)));
 
         // the dreamer sees them waiting for the payment, marked REVOKED
         assertThat(listIds(buyer, "PENDING_PAYMENT")).contains(d1, d2);
@@ -220,6 +259,12 @@ class RevokeApprovalIntegrationTest extends IntegrationTestBase {
                 .andExpect(jsonPath("$.status").value("PENDING_REVIEW"));
         mvc.perform(get(ApiPaths.Dreams.ROOT + "/" + d1).header("Authorization", bearer(buyer)))
                 .andExpect(jsonPath("$.payment.status").value("PENDING_REVIEW"));
+        // the undo history survives the resend
+        mvc.perform(get(ApiPaths.Me.ORDERS + "/" + orderId + "/instapay").header("Authorization", bearer(buyer)))
+                .andExpect(jsonPath("$.revokedAt").isNotEmpty())
+                .andExpect(jsonPath("$.revokeNote").value("The amount in the transfer is different"))
+                .andExpect(jsonPath("$.heldDreams").value(2))
+                .andExpect(jsonPath("$.attachedDreams").value(0));
 
         // held for one hour: the expected date moves forward by that time
         Dream held = dreamRepository.findById(d1).orElseThrow();
@@ -248,6 +293,8 @@ class RevokeApprovalIntegrationTest extends IntegrationTestBase {
         assertThat(again.getPaidAt()).isNotNull();
         assertThat(ledgerRepository.findAllByOrderIdAndReasonOrderByCreatedAtAsc(orderId, LedgerReason.PURCHASE))
                 .hasSize(2);
+        assertThat(auditLogRepository.findByEntityAndEntityIdOrderByCreatedAtDesc("dreams", d2.toString()))
+                .anyMatch(a -> "DREAM_RESUMED".equals(a.getAction()));
 
         // counted once: revenue back to the paid value, the counter of the order is 3 → 1 left
         JsonNode summaryAgain = summary(interpreter);
@@ -463,16 +510,252 @@ class RevokeApprovalIntegrationTest extends IntegrationTestBase {
 
         revoke(interpreter, orderId, null).andExpect(status().isOk());
         assertThat(couponRepository.findById(coupon.getId()).orElseThrow().getUsedCount()).isZero();
-        assertThat(redemptionRepository.existsByOrderId(orderId)).isFalse();
+        // the redemption is kept as revoked: the same buyer cannot use the single-use coupon meanwhile
+        assertThat(redemptionRepository.findByOrderId(orderId).orElseThrow().getRevokedAt()).isNotNull();
+        mvc.perform(post(ApiPaths.Checkout.ROOT).header("Authorization", bearer(buyer))
+                        .contentType(MediaType.APPLICATION_JSON).content(objectMapper.writeValueAsString(body)))
+                .andExpect(jsonPath("$.code").value("INVALID_COUPON"));
 
         submitTransfer(buyer, orderId, reference, null).andExpect(status().isOk());
         approve(interpreter, orderId, reference).andExpect(status().isOk());
         assertThat(couponRepository.findById(coupon.getId()).orElseThrow().getUsedCount()).isEqualTo(1);
-        assertThat(redemptionRepository.existsByOrderId(orderId)).isTrue();
+        assertThat(redemptionRepository.findByOrderId(orderId).orElseThrow().getRevokedAt()).isNull();
         assertThat(creditService.balance(buyer.getId())).isEqualTo(1);
     }
 
+    @Test
+    void aCouponUseThatWasNotCountedIsNotGivenBack() throws Exception {
+        User buyer = egyptian("revoke-coupon-full");
+        User interpreter = createUser("revoke-coupon-full-interpreter", Role.INTERPRETER);
+        Coupon coupon = new Coupon();
+        coupon.setCode("FULL" + (System.nanoTime() % 1_000_000));
+        coupon.setType(CouponType.PERCENT);
+        coupon.setValue(new BigDecimal("10"));
+        coupon.setMaxUses(1);
+        coupon = couponRepository.save(coupon);
+        Map<String, Object> body = new LinkedHashMap<>();
+        body.put("packageId", PACKAGE_ONE);
+        body.put("couponCode", coupon.getCode());
+        JsonNode checkout = json(mvc.perform(post(ApiPaths.Checkout.ROOT).header("Authorization", bearer(buyer))
+                .contentType(MediaType.APPLICATION_JSON).content(objectMapper.writeValueAsString(body)))
+                .andExpect(status().isOk()));
+        UUID orderId = UUID.fromString(checkout.get("orderId").asText());
+        // someone else used the last use meanwhile: this order's confirm cannot count one
+        Coupon full = couponRepository.findById(coupon.getId()).orElseThrow();
+        full.setUsedCount(1);
+        couponRepository.save(full);
+
+        String reference = uniqueReference();
+        submitTransfer(buyer, orderId, reference, null).andExpect(status().isOk());
+        approve(interpreter, orderId, reference).andExpect(status().isOk());
+        assertThat(redemptionRepository.findByOrderId(orderId).orElseThrow().isCounted()).isFalse();
+        revoke(interpreter, orderId, null).andExpect(status().isOk());
+        assertThat(couponRepository.findById(coupon.getId()).orElseThrow().getUsedCount()).isEqualTo(1);
+        submitTransfer(buyer, orderId, reference, null).andExpect(status().isOk());
+        approve(interpreter, orderId, reference).andExpect(status().isOk());
+        assertThat(couponRepository.findById(coupon.getId()).orElseThrow().getUsedCount()).isEqualTo(1);
+    }
+
+    // ================================================================== undo twice, exact ledger math
+
+    @Test
+    void aSecondUndoAfterAReapprovalAndAThirdApprovalAddUpExactly() throws Exception {
+        User buyer = egyptian("revoke-twice");
+        User interpreter = createUser("revoke-twice-interpreter", Role.INTERPRETER);
+        UUID d1 = createDraft(buyer);
+        UUID d2 = createDraft(buyer);
+        UUID orderId = checkout(buyer, PACKAGE_THREE, d1, d2);
+        String reference = uniqueReference();
+        submitTransfer(buyer, orderId, reference, null).andExpect(status().isOk());
+        approve(interpreter, orderId, reference).andExpect(status().isOk());
+        assertThat(creditService.balance(buyer.getId())).isEqualTo(1);
+
+        revoke(interpreter, orderId, "first").andExpect(status().isOk());
+        assertThat(creditService.balance(buyer.getId())).isZero();
+        awaitTrue("one e-mail for the first undo", () -> reviewMails(orderId) == 1);
+
+        submitTransfer(buyer, orderId, reference, null).andExpect(status().isOk());
+        approve(interpreter, orderId, reference).andExpect(status().isOk());
+        assertThat(creditService.balance(buyer.getId())).isEqualTo(1);
+
+        revoke(interpreter, orderId, "second").andExpect(status().isOk())
+                .andExpect(jsonPath("$.heldDreams").value(2))
+                .andExpect(jsonPath("$.revokeNote").value("second"));
+        assertThat(creditService.balance(buyer.getId())).isZero();
+        assertThat(dreamStatus(d1)).isEqualTo(DreamStatus.AWAITING_PAYMENT);
+        assertThat(dreamStatus(d2)).isEqualTo(DreamStatus.AWAITING_PAYMENT);
+        awaitTrue("a new e-mail for the second undo", () -> reviewMails(orderId) == 2);
+
+        submitTransfer(buyer, orderId, reference, null).andExpect(status().isOk());
+        approve(interpreter, orderId, reference).andExpect(status().isOk());
+        assertThat(creditService.balance(buyer.getId())).isEqualTo(1);
+        assertThat(dreamStatus(d1)).isEqualTo(DreamStatus.IN_REVIEW);
+        assertThat(dreamStatus(d2)).isEqualTo(DreamStatus.IN_REVIEW);
+
+        // 3 purchases (+9), 6 debits (-6), 4 refunds of the held debits (+4), 6 withdrawals (-6): balance 1
+        List<CreditLedgerEntry> rows = ledgerRepository.findAllByOrderIdOrderByCreatedAtAsc(orderId);
+        assertThat(count(rows, LedgerReason.PURCHASE)).isEqualTo(3);
+        assertThat(count(rows, LedgerReason.SUBMIT)).isEqualTo(6);
+        assertThat(count(rows, LedgerReason.REFUND)).isEqualTo(4);
+        assertThat(count(rows, LedgerReason.REVOKE)).isEqualTo(6);
+        assertThat(rows.stream().filter(e -> e.getReason() == LedgerReason.REVOKE).mapToInt(CreditLedgerEntry::getDelta)
+                .sum()).isEqualTo(-6);
+        assertThat(rows.stream().mapToInt(CreditLedgerEntry::getDelta).sum()).isEqualTo(1);
+        List<CreditLedgerEntry> purchases = rows.stream().filter(e -> e.getReason() == LedgerReason.PURCHASE).toList();
+        assertThat(purchases.get(0).getSourceId()).isNull();
+        assertThat(purchases.get(1).getSourceId()).isEqualTo(purchases.get(0).getId());
+        assertThat(purchases.get(2).getSourceId()).isEqualTo(purchases.get(1).getId());
+        mvc.perform(get(ApiPaths.Admin.DREAMS + "/" + d2).header("Authorization", bearer(interpreter)))
+                .andExpect(jsonPath("$.payment.credits").value(3))
+                .andExpect(jsonPath("$.payment.creditsLeft").value(1));
+        assertThat(reviewMails(orderId)).isEqualTo(2);
+    }
+
+    // ================================================================== expired credits are not revived
+
+    @Test
+    void aReapprovalAfterTheCreditsExpiredResumesTheHeldDreamButRevivesNothing() throws Exception {
+        User buyer = egyptian("revoke-expired");
+        User interpreter = createUser("revoke-expired-interpreter", Role.INTERPRETER);
+        UUID d1 = createDraft(buyer);
+        UUID orderId = checkout(buyer, PACKAGE_THREE, d1);
+        String reference = uniqueReference();
+        submitTransfer(buyer, orderId, reference, null).andExpect(status().isOk());
+        approve(interpreter, orderId, reference).andExpect(status().isOk());
+        assertThat(creditService.balance(buyer.getId())).isEqualTo(2);
+
+        // the credits expire: the 2 left are written off
+        CreditLedgerEntry first = ledgerRepository.findAllByOrderIdAndReasonOrderByCreatedAtAsc(orderId,
+                LedgerReason.PURCHASE).get(0);
+        Instant expiry = Instant.now().minus(Duration.ofDays(1));
+        first.setExpiresAt(expiry);
+        ledgerRepository.save(first);
+        creditExpiryService.expireDueLocked(buyer.getId());
+        assertThat(creditService.balance(buyer.getId())).isZero();
+
+        revoke(interpreter, orderId, null).andExpect(status().isOk()).andExpect(jsonPath("$.heldDreams").value(1));
+        assertThat(creditService.balance(buyer.getId())).isZero();
+        assertThat(dreamStatus(d1)).isEqualTo(DreamStatus.AWAITING_PAYMENT);
+
+        submitTransfer(buyer, orderId, reference, null).andExpect(status().isOk());
+        approve(interpreter, orderId, reference).andExpect(status().isOk());
+        assertThat(dreamStatus(d1)).isEqualTo(DreamStatus.IN_REVIEW);
+        assertThat(creditService.balance(buyer.getId())).isZero();
+        List<CreditLedgerEntry> purchases = ledgerRepository.findAllByOrderIdAndReasonOrderByCreatedAtAsc(orderId,
+                LedgerReason.PURCHASE);
+        assertThat(purchases).hasSize(2);
+        assertThat(purchases.get(1).getExpiresAt()).isEqualTo(purchases.get(0).getExpiresAt());
+        assertThat(purchases.get(1).getExpirySettledAt()).isNotNull();
+        assertThat(ledgerRepository.findByUserIdOrderByCreatedAtAsc(buyer.getId()).stream()
+                .filter(e -> e.getReason() == LedgerReason.EXPIRE).mapToInt(CreditLedgerEntry::getDelta).sum())
+                .isEqualTo(-4);
+    }
+
+    // ================================================================== leftovers already spent
+
+    @Test
+    void anUndoAfterTheLeftoverCreditsWereSpentHoldsEveryDreamAndNeverGoesNegative() throws Exception {
+        User buyer = egyptian("revoke-spent");
+        User interpreter = createUser("revoke-spent-interpreter", Role.INTERPRETER);
+        UUID d1 = createDraft(buyer);
+        UUID orderId = checkout(buyer, PACKAGE_THREE, d1);
+        String reference = uniqueReference();
+        submitTransfer(buyer, orderId, reference, null).andExpect(status().isOk());
+        approve(interpreter, orderId, reference).andExpect(status().isOk());
+        UUID d2 = createDraft(buyer);
+        UUID d3 = createDraft(buyer);
+        submitDreams(buyer, d2, d3).andExpect(status().isOk()).andExpect(jsonPath("$.remainingCredits").value(0));
+        // a gift that has nothing to do with the order stays
+        creditService.add(buyer.getId(), 1, LedgerReason.BONUS, null, "gift", null);
+
+        revoke(interpreter, orderId, null).andExpect(status().isOk()).andExpect(jsonPath("$.heldDreams").value(3));
+        for (UUID id : List.of(d1, d2, d3)) {
+            assertThat(dreamStatus(id)).isEqualTo(DreamStatus.AWAITING_PAYMENT);
+        }
+        assertThat(creditService.balance(buyer.getId())).isEqualTo(1);
+        assertThat(ledgerRepository.findAllByOrderIdAndReasonOrderByCreatedAtAsc(orderId, LedgerReason.REVOKE)
+                .stream().mapToInt(CreditLedgerEntry::getDelta).sum()).isEqualTo(-3);
+        awaitTrue("PAYMENT_REVOKED", () -> notifications(buyer).stream()
+                .anyMatch(n -> n.getType() == NotificationType.PAYMENT_REVOKED));
+        assertThat(notifications(buyer).stream().filter(n -> n.getType() == NotificationType.PAYMENT_REVOKED)
+                .findFirst().orElseThrow().getBody()).endsWith("رؤاك محفوظة.");
+    }
+
+    // ================================================================== an open question survives the hold
+
+    @Test
+    void aDreamHeldWhileWaitingForTheDreamersReplyComesBackWaitingForIt() throws Exception {
+        User buyer = egyptian("revoke-question");
+        User interpreter = createUser("revoke-question-interpreter", Role.INTERPRETER);
+        UUID d1 = createDraft(buyer);
+        UUID orderId = checkout(buyer, PACKAGE_ONE, d1);
+        String reference = uniqueReference();
+        submitTransfer(buyer, orderId, reference, null).andExpect(status().isOk());
+        approve(interpreter, orderId, reference).andExpect(status().isOk());
+        mvc.perform(post(ApiPaths.Admin.DREAMS + "/" + d1 + "/messages").header("Authorization", bearer(interpreter))
+                        .contentType(MediaType.APPLICATION_JSON).content("{\"body\":\"هل البئر في بيتك؟\"}"))
+                .andExpect(status().isCreated());
+        Instant asked = dreamRepository.findById(d1).orElseThrow().getSlaPausedAt();
+        assertThat(asked).isNotNull();
+
+        revoke(interpreter, orderId, null).andExpect(status().isOk());
+        assertThat(dreamStatus(d1)).isEqualTo(DreamStatus.AWAITING_PAYMENT);
+        assertThat(dreamRepository.findById(d1).orElseThrow().getSlaPausedAt()).isEqualTo(asked);
+        awaitTrue("PAYMENT_REVOKED", () -> notifications(buyer).stream()
+                .anyMatch(n -> n.getType() == NotificationType.PAYMENT_REVOKED));
+        assertThat(notifications(buyer).stream().filter(n -> n.getType() == NotificationType.PAYMENT_REVOKED)
+                .findFirst().orElseThrow().getBody()).endsWith("رؤياك محفوظة.");
+        // no reply while it waits for the payment
+        reply(buyer, d1).andExpect(status().isConflict());
+
+        submitTransfer(buyer, orderId, reference, null).andExpect(status().isOk());
+        approve(interpreter, orderId, reference).andExpect(status().isOk());
+        Dream back = dreamRepository.findById(d1).orElseThrow();
+        assertThat(back.getStatus()).isEqualTo(DreamStatus.AWAITING_USER_REPLY);
+        assertThat(back.getSlaPausedAt()).isEqualTo(asked);
+        reply(buyer, d1).andExpect(status().isCreated());
+        assertThat(dreamStatus(d1)).isEqualTo(DreamStatus.IN_REVIEW);
+    }
+
+    // ================================================================== the reference stays reserved
+
+    @Test
+    void theReferenceOfARevokedOrderCannotBeTakenByAnotherOrder() throws Exception {
+        User buyer = egyptian("revoke-ref");
+        User other = egyptian("revoke-ref-other");
+        User interpreter = createUser("revoke-ref-interpreter", Role.INTERPRETER);
+        UUID orderId = checkout(buyer, PACKAGE_ONE);
+        String reference = uniqueReference();
+        submitTransfer(buyer, orderId, reference, null).andExpect(status().isOk());
+        approve(interpreter, orderId, reference).andExpect(status().isOk());
+        revoke(interpreter, orderId, null).andExpect(status().isOk());
+
+        UUID otherOrder = checkout(other, PACKAGE_ONE);
+        submitTransfer(other, otherOrder, reference, null).andExpect(status().isConflict())
+                .andExpect(jsonPath("$.code").value("DUPLICATE_REFERENCE"));
+
+        // freed once the buyer sends another number
+        submitTransfer(buyer, orderId, uniqueReference(), null).andExpect(status().isOk());
+        submitTransfer(other, otherOrder, reference, null).andExpect(status().isOk());
+    }
+
     // ================================================================== helpers
+
+    private long reviewMails(UUID orderId) {
+        return emailLogRepository.findByTemplateOrderByCreatedAtDesc(MailTemplates.PAYMENT_REVIEW_NEEDED).stream()
+                .filter(m -> m.getRef() != null && m.getRef().startsWith(MailTemplates.PAYMENT_REVIEW_NEEDED + ":" + orderId))
+                .count();
+    }
+
+    private static long count(List<CreditLedgerEntry> rows, LedgerReason reason) {
+        return rows.stream().filter(e -> e.getReason() == reason).count();
+    }
+
+    private ResultActions reply(User user, UUID id) throws Exception {
+        return mvc.perform(post(ApiPaths.Dreams.ROOT + "/" + id + "/messages").header("Authorization", bearer(user))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"body\":\"نعم، في بيت جدي.\"}"));
+    }
 
     private long refunds(UUID dreamId) {
         return ledgerRepository.findAll().stream()

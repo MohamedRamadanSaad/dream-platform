@@ -98,6 +98,10 @@ public class Dream {
     @Column(name = "held_order_id")
     private UUID heldOrderId;
 
+    /** When the hold started (V40; admin queue "Waiting for payment", oldest first); null when not held. */
+    @Column(name = "held_at")
+    private Instant heldAt;
+
     @PrePersist
     void onCreate() {
         Instant now = Instant.now();

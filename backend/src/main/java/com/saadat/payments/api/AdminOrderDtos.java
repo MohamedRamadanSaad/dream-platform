@@ -59,7 +59,13 @@ public final class AdminOrderDtos {
             /** INSTAPAY && SUCCESS && none of its dreams interpreted: the approval may be taken back (V40). */
             boolean canRevoke,
             /** Why an approved InstaPay order cannot be taken back: DREAM_ALREADY_INTERPRETED, else null. */
-            String revokeBlockedReason) {
+            String revokeBlockedReason,
+            /** Last time the interpreter took back the approval (V40); kept after the buyer resends. */
+            Instant revokedAt,
+            /** The interpreter's note of that undo (V40). */
+            String revokeNote,
+            /** Dreams waiting (AWAITING_PAYMENT) for this order to be approved again (V40). */
+            int heldDreams) {
     }
 
     /** The InstaPay transfer the buyer reported, and the interpreter's decision. */

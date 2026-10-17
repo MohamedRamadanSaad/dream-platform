@@ -136,7 +136,8 @@ public class AnalyticsService {
                 dreamRepository.countByStatusAndInterpretedAtAfter(DreamStatus.INTERPRETED, startOfToday),
                 revenue,
                 revenueEgp.setScale(2, RoundingMode.HALF_UP).doubleValue(),
-                round1(avg));
+                round1(avg),
+                dreamRepository.countByStatus(DreamStatus.AWAITING_PAYMENT));
     }
 
     // ================================================================== countries

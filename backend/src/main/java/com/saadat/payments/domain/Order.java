@@ -158,6 +158,18 @@ public class Order {
     @Column(name = "review_note", columnDefinition = "text")
     private String reviewNote;
 
+    /** Last time the interpreter took back the approval of this order (V40); kept when the buyer resends. */
+    @Column(name = "approval_revoked_at")
+    private Instant approvalRevokedAt;
+
+    /** The interpreter's note of that undo (V40); kept when the buyer resends. */
+    @Column(name = "revoke_note", columnDefinition = "text")
+    private String revokeNote;
+
+    /** The confirmation of this order counted one use of its promotion (V40: an undo gives back only that). */
+    @Column(name = "promotion_counted", nullable = false)
+    private boolean promotionCounted;
+
     @PrePersist
     void onCreate() {
         if (createdAt == null) {
