@@ -30,8 +30,9 @@ import java.util.List;
  *   <li>{@link #PAYMENT_FAILED}: name, packageName, amount, currency, orderRef, link</li>
  *   <li>{@link #PAYMENT_REVIEW_NEEDED}: name, packageName, amount, currency, orderRef, reference, note (the
  *       interpreter's note, optional), heldDreams (number of dreams kept), link (the InstaPay payment page)</li>
- *   <li>{@link #CREDITS_WITHDRAWN}: name, orderRef, packageName, credits (number withdrawn), creditsText ("رؤيتين" /
- *       "2 dream credits"), note (optional), balance, link</li>
+ *   <li>{@link #CREDITS_WITHDRAWN}: name, lead* (the first sentence, by reason), orderRef, packageName, credits
+ *       (number withdrawn), creditsText ("رؤيتين" / "2 dream credits"), reason, note (optional, not for OTHER: it is in
+ *       the lead), balance, link</li>
  *   <li>{@link #DREAM_CANCELLED}: name, excerpt, reason, refunded (boolean), balance, link</li>
  *   <li>{@link #CREDITS_ADJUSTED}: name, delta (signed text, e.g. "+2"), reason, balance, link</li>
  *   <li>{@link #TESTIMONIAL_APPROVED}: name, rating, comment, link</li>

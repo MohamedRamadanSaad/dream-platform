@@ -29,19 +29,21 @@ public record OrderDto(
         Instant createdAt,
         Instant paidAt,
         /** FAILED / SUSPICIOUS orders: why (e.g. TRANSFER_REJECTED, APPROVAL_REVOKED, V40); else null. */
-        String failureReason) {
+        String failureReason,
+        /** Credits of this order withdrawn by the interpreter (V41; a chip on the payment row), else null. */
+        Integer leftoverWithdrawnCredits) {
 
     public static OrderDto from(Order o) {
         return new OrderDto(o.getId(), o.getOrderNumber(), o.getPackageNameSnapshot(), o.getCredits(), o.getAmount(),
                 o.getCurrency(),
                 o.getStatus(), displayProvider(o), o.getProviderTxnId(), o.getCountryCode(), o.getCreatedAt(),
-                o.getPaidAt(), o.getFailureReason());
+                o.getPaidAt(), o.getFailureReason(), o.getLeftoverWithdrawnCredits());
     }
 
     /** The same order shown with another status (an INITIATED order past its expiry is shown EXPIRED, V41). */
     public OrderDto withStatus(OrderStatus newStatus) {
         return new OrderDto(id, orderNumber, packageName, credits, amount, currency, newStatus, provider, providerRef,
-                countryCode, createdAt, paidAt, failureReason);
+                countryCode, createdAt, paidAt, failureReason, leftoverWithdrawnCredits);
     }
 
     public static PaymentProviderType displayProvider(Order o) {

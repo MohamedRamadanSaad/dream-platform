@@ -54,7 +54,7 @@ public class CreditLedgerEntry {
     @Column(name = "note", columnDefinition = "text")
     private String note;
 
-    /** Purchases only: when the unused part expires (null = never). */
+    /** Purchases (and restored leftovers, V41): when the unused part expires (null = never). */
     @Column(name = "expires_at")
     private Instant expiresAt;
 
@@ -69,6 +69,11 @@ public class CreditLedgerEntry {
     /** Purchases only: set once the expiry job has handled this purchase (EXPIRE row written or nothing left). */
     @Column(name = "expiry_settled_at")
     private Instant expirySettledAt;
+
+    /** REVOKE / REFUND rows: undone approval, withdrawn or restored leftover (V41); null otherwise. */
+    @Enumerated(EnumType.STRING)
+    @Column(name = "kind", length = 24)
+    private com.saadat.common.domain.LedgerKind kind;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;

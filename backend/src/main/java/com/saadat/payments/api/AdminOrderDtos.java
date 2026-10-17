@@ -24,7 +24,10 @@ public final class AdminOrderDtos {
         DOMESTIC,
         /** Orders from outside Egypt (or without a country), newest first. */
         INTERNATIONAL,
-        /** Bookings never paid: INITIATED or EXPIRED, newest first (V41). */
+        /**
+         * Bookings never paid, newest first (V41): INITIATED, EXPIRED, or FAILED at the gateway (any failure reason
+         * except TRANSFER_REJECTED / APPROVAL_REVOKED).
+         */
         UNPAID,
         /** Every order, newest first (CSV export). */
         ALL
@@ -76,7 +79,11 @@ public final class AdminOrderDtos {
             boolean canWithdrawLeftover,
             Instant leftoverWithdrawnAt,
             Integer leftoverWithdrawnCredits,
-            String leftoverNote) {
+            String leftoverNote,
+            /** UNCONFIRMED | AMOUNT_SHORT | OTHER (V41), else null. */
+            String leftoverReason,
+            /** SUCCESS with withdrawn credits whose lot has not expired: they can be given back (V41). */
+            boolean canRestoreLeftover) {
     }
 
     /** The InstaPay transfer the buyer reported, and the interpreter's decision. */

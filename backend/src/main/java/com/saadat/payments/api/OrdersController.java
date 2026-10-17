@@ -8,6 +8,7 @@ import com.saadat.payments.service.DreamAttachments;
 import com.saadat.payments.service.LeftoverWithdrawalService;
 import com.saadat.payments.service.OrderQueryService;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.util.List;
 import java.util.UUID;
@@ -97,16 +98,22 @@ public class OrdersController {
                 minAmount, maxAmount, packageId, flag), q);
     }
 
-    /** Withdraws the unused credits of a paid order (interpreter only). */
+    /** Withdraws the unused credits of an approved InstaPay order (interpreter only). */
     @PostMapping(ApiPaths.Admin.ORDER_WITHDRAW_LEFTOVER)
     public AdminOrderDtos.Detail withdrawLeftover(@PathVariable UUID id,
-                                                  @Valid @RequestBody(required = false) WithdrawLeftoverRequest body) {
-        return leftoverWithdrawalService.withdraw(AuthPrincipal.current().userId(), id,
-                body == null ? null : body.note());
+                                                  @Valid @RequestBody WithdrawLeftoverRequest body) {
+        return leftoverWithdrawalService.withdraw(AuthPrincipal.current().userId(), id, body.reason(), body.note());
     }
 
-    /** Why the credits are withdrawn (shown to the buyer). */
-    public record WithdrawLeftoverRequest(@Size(max = 500) String note) {
+    /** Gives the withdrawn credits of an order back (interpreter only). */
+    @PostMapping(ApiPaths.Admin.ORDER_RESTORE_LEFTOVER)
+    public AdminOrderDtos.Detail restoreLeftover(@PathVariable UUID id) {
+        return leftoverWithdrawalService.restore(AuthPrincipal.current().userId(), id);
+    }
+
+    /** Why the credits are withdrawn (the buyer's text depends on it); {@code note} is required for OTHER. */
+    public record WithdrawLeftoverRequest(@NotNull LeftoverWithdrawalService.Reason reason,
+                                          @Size(max = 500) String note) {
     }
 
     @GetMapping(ApiPaths.Admin.ORDER)

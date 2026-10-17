@@ -29,6 +29,8 @@ import com.saadat.payments.domain.Order;
 import com.saadat.payments.repo.CreditLedgerRepository;
 import com.saadat.payments.repo.OrderRepository;
 import com.saadat.payments.service.OrderNumbers;
+import com.saadat.settings.SettingKeys;
+import com.saadat.settings.SettingsService;
 import com.saadat.users.domain.User;
 import java.math.BigDecimal;
 import java.time.Duration;
@@ -85,6 +87,9 @@ class PaymentsFiltersIntegrationTest extends IntegrationTestBase {
 
     @Autowired
     AuditLogRepository auditLogRepository;
+
+    @Autowired
+    SettingsService settingsService;
 
     // ================================================================== §3 filters
 
@@ -181,12 +186,14 @@ class PaymentsFiltersIntegrationTest extends IntegrationTestBase {
         assertThat(counts.get("review").asLong()).isEqualTo(1);
         assertThat(counts.get("international").asLong()).isEqualTo(1);
         assertThat(counts.get("unpaid").asLong()).isZero();
-        counts = counts(interpreter, Map.of("country", COUNTRY, "status", "INITIATED,EXPIRED"));
-        assertThat(counts.get("unpaid").asLong()).isEqualTo(3);
-        assertThat(counts.get("international").asLong()).isZero();
-        counts = counts(interpreter, Map.of("country", COUNTRY, "status", "EXPIRED"));
-        assertThat(counts.get("unpaid").asLong()).isEqualTo(2);
-        assertThat(counts.get("international").asLong()).isZero();
+        // the tab-specific filters (status, flag) do not empty the other tabs' badges
+        for (Map<String, String> tabFilter : List.of(Map.of("status", "INITIATED,EXPIRED"), Map.of("status", "EXPIRED"),
+                Map.of("flag", "LEFTOVER_WITHDRAWN"), Map.of("status", "SUCCESS", "flag", "REVOKED"))) {
+            counts = counts(interpreter, with(tabFilter, "country", COUNTRY));
+            assertThat(counts.get("review").asLong()).isEqualTo(1);
+            assertThat(counts.get("international").asLong()).isEqualTo(4);
+            assertThat(counts.get("unpaid").asLong()).isEqualTo(3);
+        }
         // without filters the badges keep working (and include unpaid)
         mvc.perform(get(ApiPaths.Admin.ORDER_COUNTS).header("Authorization", bearer(interpreter)))
                 .andExpect(status().isOk())
@@ -213,6 +220,11 @@ class PaymentsFiltersIntegrationTest extends IntegrationTestBase {
                     .andExpect(jsonPath("$.code").value("INVALID_FILTER"))
                     .andExpect(jsonPath("$.field").value(entry.getKey()));
         }
+        mvc.perform(get(ApiPaths.Admin.ORDERS).param("minAmount", "50").param("maxAmount", "10")
+                        .header("Authorization", bearer(interpreter)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("INVALID_FILTER"))
+                .andExpect(jsonPath("$.field").value("maxAmount"));
         mvc.perform(get(ApiPaths.Admin.ORDERS).param("from", "2026-03-10").param("to", "2026-03-01")
                         .header("Authorization", bearer(interpreter)))
                 .andExpect(status().isBadRequest())
@@ -282,6 +294,8 @@ class PaymentsFiltersIntegrationTest extends IntegrationTestBase {
                 .andExpect(jsonPath("$.leftoverWithdrawnAt").isNotEmpty())
                 .andExpect(jsonPath("$.leftoverWithdrawnCredits").value(1))
                 .andExpect(jsonPath("$.leftoverNote").value("The transfer could not be confirmed"))
+                .andExpect(jsonPath("$.leftoverReason").value("UNCONFIRMED"))
+                .andExpect(jsonPath("$.canRestoreLeftover").value(true))
                 .andExpect(jsonPath("$.canRevoke").value(false))
                 .andExpect(jsonPath("$.revokeBlockedReason").value("DREAM_ALREADY_INTERPRETED"));
         assertThat(creditService.balance(buyer.getId())).isZero();
@@ -401,6 +415,267 @@ class PaymentsFiltersIntegrationTest extends IntegrationTestBase {
                 .content("{\"reference\":\"" + reference + "\"}"));
     }
 
+    // ================================================================== round 3: rules, reasons, restore, cancel
+
+    @Test
+    void withdrawalRulesReasonsTwoLotsAndTheBuyersTexts() throws Exception {
+        User buyer = egyptianUser("leftover-rules");
+        User interpreter = createUser("leftover-rules-interpreter", Role.INTERPRETER);
+        UUID d1 = createDraft(buyer);
+        UUID d2 = createDraft(buyer);
+        UUID orderId = paidOrder(buyer, interpreter, PACKAGE_THREE, d1, d2);
+        // a cancelled dream gives its credit back to the order: 2 lots (purchase + refund) of 1 credit each
+        mvc.perform(post(ApiPaths.Admin.DREAMS + "/" + d2 + "/cancel").header("Authorization", bearer(interpreter))
+                        .contentType(MediaType.APPLICATION_JSON).content("{\"reason\":\"duplicate\"}"))
+                .andExpect(status().isNoContent());
+        assertThat(creditService.balance(buyer.getId())).isEqualTo(2);
+
+        // body rules
+        withdraw(interpreter, orderId, "UNCONFIRMED", "x".repeat(501)).andExpect(status().isBadRequest());
+        withdraw(interpreter, orderId, "OTHER", null).andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("NOTE_REQUIRED"));
+        withdraw(interpreter, orderId, "OTHER", "   ").andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("NOTE_REQUIRED"));
+        mvc.perform(post("/admin/payments/orders/" + orderId + "/withdraw-leftover")
+                        .header("Authorization", bearer(interpreter)).contentType(MediaType.APPLICATION_JSON)
+                        .content("{}"))
+                .andExpect(status().isBadRequest());
+        assertThat(creditService.balance(buyer.getId())).isEqualTo(2);
+
+        withdraw(interpreter, orderId, "AMOUNT_SHORT", null).andExpect(status().isOk())
+                .andExpect(jsonPath("$.leftoverWithdrawnCredits").value(2))
+                .andExpect(jsonPath("$.leftoverReason").value("AMOUNT_SHORT"))
+                .andExpect(jsonPath("$.leftoverNote").isEmpty());
+        assertThat(creditService.balance(buyer.getId())).isZero();
+        List<CreditLedgerEntry> revokes = ledgerRepository.findAllByOrderIdAndReasonOrderByCreatedAtAsc(orderId,
+                LedgerReason.REVOKE);
+        assertThat(revokes).hasSize(2).allMatch(r -> r.getDelta() == -1
+                && r.getKind() == com.saadat.common.domain.LedgerKind.LEFTOVER_WITHDRAWN);
+        String number = orderRepository.findById(orderId).orElseThrow().getOrderNumber();
+        awaitTrue("CREDITS_WITHDRAWN", () -> withdrawnNotice(buyer, number) != null);
+        assertThat(withdrawnNotice(buyer, number).getBody()).isEqualTo("تم خصم رؤيتين من رصيد الطلب " + number
+                + " لأن المبلغ الذي وصلنا أقل من قيمة الباقة. رؤاك التي فُسِّرت أو التي قيد التعبير لا تتأثر. للاستفسار تواصل معنا.");
+
+        // the buyer's payment row and credit history
+        mvc.perform(get(ApiPaths.Me.ORDERS + "/" + orderId).header("Authorization", bearer(buyer)))
+                .andExpect(jsonPath("$.leftoverWithdrawnCredits").value(2));
+        mvc.perform(get(ApiPaths.Me.CREDITS).header("Authorization", bearer(buyer)))
+                .andExpect(jsonPath("$.entries[?(@.kind == 'LEFTOVER_WITHDRAWN')].orderNumber")
+                        .value(org.hamcrest.Matchers.everyItem(org.hamcrest.Matchers.is(number))))
+                .andExpect(jsonPath("$.entries[?(@.kind == 'LEFTOVER_WITHDRAWN')]").value(org.hamcrest.Matchers.hasSize(2)));
+
+        // OTHER: the note is the reason, stored and returned
+        UUID other = paidOrder(buyer, interpreter, PACKAGE_ONE);
+        withdraw(interpreter, other, "OTHER", "Duplicate payment.").andExpect(status().isOk())
+                .andExpect(jsonPath("$.leftoverReason").value("OTHER"))
+                .andExpect(jsonPath("$.leftoverNote").value("Duplicate payment."));
+        String otherNumber = orderRepository.findById(other).orElseThrow().getOrderNumber();
+        awaitTrue("CREDITS_WITHDRAWN (other)", () -> withdrawnNotice(buyer, otherNumber) != null);
+        assertThat(withdrawnNotice(buyer, otherNumber).getBody()).startsWith("تم خصم رؤيا واحدة من رصيد الطلب "
+                + otherNumber + "، والسبب: Duplicate payment. رؤاك");
+    }
+
+    @Test
+    void onlyApprovedInstapayOrdersCanBeWithdrawn() throws Exception {
+        User buyer = createUser("leftover-providers", Role.USER);
+        User interpreter = createUser("leftover-providers-interpreter", Role.INTERPRETER);
+        Instant now = Instant.now();
+        // their own country, so the filter tests (AQ, BV) never see them
+        Order mock = inCountry(order(buyer, OrderStatus.SUCCESS, PaymentProviderType.MOCK, Currency.USD, "10.00", now,
+                null, PACKAGE_ONE), "HM");
+        Order refunded = inCountry(order(buyer, OrderStatus.REFUNDED, PaymentProviderType.INSTAPAY, Currency.EGP,
+                "10.00", now, null, PACKAGE_ONE), "HM");
+        Order suspicious = inCountry(order(buyer, OrderStatus.SUSPICIOUS, PaymentProviderType.INSTAPAY, Currency.EGP,
+                "10.00", now, null, PACKAGE_ONE), "HM");
+        for (Order o : List.of(mock, refunded, suspicious)) {
+            withdraw(interpreter, o.getId(), null).andExpect(status().isConflict())
+                    .andExpect(jsonPath("$.code").value("NOT_WITHDRAWABLE"));
+            restore(interpreter, o.getId()).andExpect(status().isConflict())
+                    .andExpect(jsonPath("$.code").value("NOTHING_TO_RESTORE"));
+        }
+    }
+
+    @Test
+    void withdrawnCreditsAreRestoredWithTheirExpiryAndCanBeWithdrawnAgain() throws Exception {
+        User buyer = egyptianUser("leftover-restore");
+        User interpreter = createUser("leftover-restore-interpreter", Role.INTERPRETER);
+        UUID d1 = createDraft(buyer);
+        UUID orderId = paidOrder(buyer, interpreter, PACKAGE_THREE, d1);
+        restore(interpreter, orderId).andExpect(status().isConflict())
+                .andExpect(jsonPath("$.code").value("NOTHING_TO_RESTORE"));
+        withdraw(interpreter, orderId, null).andExpect(status().isOk());
+        assertThat(creditService.balance(buyer.getId())).isZero();
+        restore(buyer, orderId).andExpect(status().isForbidden());
+
+        restore(interpreter, orderId).andExpect(status().isOk())
+                .andExpect(jsonPath("$.leftoverWithdrawnAt").isEmpty())
+                .andExpect(jsonPath("$.leftoverWithdrawnCredits").isEmpty())
+                .andExpect(jsonPath("$.leftoverReason").isEmpty())
+                .andExpect(jsonPath("$.canRestoreLeftover").value(false))
+                .andExpect(jsonPath("$.leftoverCredits").value(2))
+                .andExpect(jsonPath("$.canWithdrawLeftover").value(true));
+        assertThat(creditService.balance(buyer.getId())).isEqualTo(2);
+        CreditLedgerEntry purchase = ledgerRepository.findAllByOrderIdAndReasonOrderByCreatedAtAsc(orderId,
+                LedgerReason.PURCHASE).get(0);
+        List<CreditLedgerEntry> restored = ledgerRepository.findAllByOrderIdAndReasonOrderByCreatedAtAsc(orderId,
+                LedgerReason.REFUND).stream()
+                .filter(r -> r.getKind() == com.saadat.common.domain.LedgerKind.LEFTOVER_RESTORED).toList();
+        assertThat(restored).hasSize(1);
+        assertThat(restored.get(0).getDelta()).isEqualTo(2);
+        assertThat(restored.get(0).getExpiresAt()).isEqualTo(purchase.getExpiresAt());
+        assertThat(auditLogRepository.findByEntityAndEntityIdOrderByCreatedAtDesc("orders", orderId.toString()))
+                .anyMatch(a -> "ORDER_LEFTOVER_RESTORED".equals(a.getAction()));
+        String number = orderRepository.findById(orderId).orElseThrow().getOrderNumber();
+        awaitTrue("CREDITS_RESTORED", () -> notifications(buyer).stream()
+                .anyMatch(n -> n.getType() == NotificationType.CREDITS_RESTORED));
+        assertThat(notifications(buyer).stream().filter(n -> n.getType() == NotificationType.CREDITS_RESTORED)
+                .findFirst().orElseThrow().getBody()).isEqualTo("أعدنا رؤيتين إلى رصيدك من الطلب " + number + ".");
+        restore(interpreter, orderId).andExpect(status().isConflict())
+                .andExpect(jsonPath("$.code").value("NOTHING_TO_RESTORE"));
+
+        // withdrawn again, then the restored lot expires: nothing can be given back any more
+        withdraw(interpreter, orderId, null).andExpect(status().isOk())
+                .andExpect(jsonPath("$.leftoverWithdrawnCredits").value(2));
+        assertThat(creditService.balance(buyer.getId())).isZero();
+        CreditLedgerEntry lot = ledgerRepository.findById(restored.get(0).getId()).orElseThrow();
+        lot.setExpiresAt(Instant.now().minus(Duration.ofDays(1)));
+        ledgerRepository.save(lot);
+        mvc.perform(get(ApiPaths.Admin.ORDERS + "/" + orderId).header("Authorization", bearer(interpreter)))
+                .andExpect(jsonPath("$.canRestoreLeftover").value(false));
+        restore(interpreter, orderId).andExpect(status().isConflict())
+                .andExpect(jsonPath("$.code").value("NOTHING_TO_RESTORE"));
+        assertThat(creditService.balance(buyer.getId())).isZero();
+    }
+
+    @Test
+    void aCancelAfterAWithdrawalGivesNoCreditBack() throws Exception {
+        User buyer = egyptianUser("leftover-cancel");
+        User interpreter = createUser("leftover-cancel-interpreter", Role.INTERPRETER);
+        UUID d1 = createDraft(buyer);
+        UUID d2 = createDraft(buyer);
+        UUID orderId = paidOrder(buyer, interpreter, PACKAGE_THREE, d1, d2);
+        mvc.perform(get(ApiPaths.Admin.DREAMS + "/" + d2).header("Authorization", bearer(interpreter)))
+                .andExpect(jsonPath("$.cancelRefunds").value(true));
+        withdraw(interpreter, orderId, null).andExpect(status().isOk());
+        assertThat(creditService.balance(buyer.getId())).isZero();
+        mvc.perform(get(ApiPaths.Admin.DREAMS + "/" + d2).header("Authorization", bearer(interpreter)))
+                .andExpect(jsonPath("$.cancelRefunds").value(false));
+
+        mvc.perform(post(ApiPaths.Admin.DREAMS + "/" + d2 + "/cancel").header("Authorization", bearer(interpreter))
+                        .contentType(MediaType.APPLICATION_JSON).content("{\"reason\":\"duplicate\"}"))
+                .andExpect(status().isNoContent());
+        assertThat(dreamRepository.findById(d2).orElseThrow().getStatus()).isEqualTo(DreamStatus.CANCELLED);
+        assertThat(creditService.balance(buyer.getId())).isZero();
+        assertThat(ledgerRepository.findAllByOrderIdAndReasonOrderByCreatedAtAsc(orderId, LedgerReason.REFUND)
+                .stream().filter(r -> d2.equals(r.getDreamId()))).isEmpty();
+    }
+
+    @Test
+    void leftoversThatExpiredBeforeAnUndoAreNotBroughtBackByTheNextApproval() throws Exception {
+        User buyer = egyptianUser("leftover-expired-undo");
+        User interpreter = createUser("leftover-expired-undo-interpreter", Role.INTERPRETER);
+        UUID d1 = createDraft(buyer);
+        JsonNode checkout = json(mvc.perform(post(ApiPaths.Checkout.ROOT).header("Authorization", bearer(buyer))
+                .contentType(MediaType.APPLICATION_JSON).content(objectMapper.writeValueAsString(
+                        Map.of("packageId", PACKAGE_THREE.toString(), "dreamIds", List.of(d1.toString())))))
+                .andExpect(status().isOk()));
+        UUID orderId = UUID.fromString(checkout.get("orderId").asText());
+        String reference = uniqueReference();
+        submitTransfer(buyer, orderId, reference).andExpect(status().isOk());
+        approve(interpreter, orderId, reference).andExpect(status().isOk());
+        // the 2 unused credits pass their expiry; the expiry job has not run yet
+        CreditLedgerEntry purchase = ledgerRepository.findAllByOrderIdAndReasonOrderByCreatedAtAsc(orderId,
+                LedgerReason.PURCHASE).get(0);
+        purchase.setExpiresAt(Instant.now().minus(Duration.ofHours(1)));
+        ledgerRepository.save(purchase);
+
+        mvc.perform(post(ApiPaths.Admin.INSTAPAY_TRANSFERS + "/" + orderId + "/revoke")
+                        .header("Authorization", bearer(interpreter)).contentType(MediaType.APPLICATION_JSON)
+                        .content("{}"))
+                .andExpect(status().isOk());
+        assertThat(creditService.balance(buyer.getId())).isZero();
+        submitTransfer(buyer, orderId, reference).andExpect(status().isOk());
+        approve(interpreter, orderId, reference).andExpect(status().isOk());
+
+        assertThat(dreamRepository.findById(d1).orElseThrow().getStatus()).isEqualTo(DreamStatus.IN_REVIEW);
+        assertThat(creditService.balance(buyer.getId())).isZero();
+        mvc.perform(get(ApiPaths.Admin.ORDERS + "/" + orderId).header("Authorization", bearer(interpreter)))
+                .andExpect(jsonPath("$.leftoverCredits").value(0))
+                .andExpect(jsonPath("$.canWithdrawLeftover").value(false));
+    }
+
+    @Test
+    void theCreditsWithdrawnMailFollowsItsSwitch() throws Exception {
+        User buyer = egyptianUser("leftover-mail-off");
+        User interpreter = createUser("leftover-mail-off-interpreter", Role.INTERPRETER);
+        UUID orderId = paidOrder(buyer, interpreter, PACKAGE_ONE);
+        String key = SettingKeys.MAIL_EVENT_CREDITS_WITHDRAWN;
+        try {
+            settingsService.put(key, "false", null);
+            withdraw(interpreter, orderId, null).andExpect(status().isOk());
+            String number = orderRepository.findById(orderId).orElseThrow().getOrderNumber();
+            awaitTrue("CREDITS_WITHDRAWN", () -> withdrawnNotice(buyer, number) != null);
+            assertThat(withdrawnMails(orderId)).isZero();
+        } finally {
+            settingsService.put(key, "true", null);
+        }
+    }
+
+    @Test
+    void unpaidBookingsIncludeGatewayFailuresPagedNewestFirstWithPaidLater() throws Exception {
+        User interpreter = createUser("unpaid-interpreter", Role.INTERPRETER);
+        User buyer = createUser("unpaid-buyer", Role.USER);
+        Instant now = Instant.now();
+        String country = "BV";
+        Order x0 = inCountry(order(buyer, OrderStatus.EXPIRED, PaymentProviderType.INSTAPAY, Currency.EGP, "10.00",
+                now.minus(Duration.ofHours(5)), null, PACKAGE_ONE), country);
+        Order x1 = order(buyer, OrderStatus.FAILED, PaymentProviderType.MOCK, Currency.USD, "10.00",
+                now.minus(Duration.ofHours(4)), null, PACKAGE_ONE);
+        x1.setFailureReason("PROVIDER_REPORTED_FAILURE");
+        x1 = inCountry(x1, country);
+        Order x2 = inCountry(order(buyer, OrderStatus.SUCCESS, PaymentProviderType.MOCK, Currency.USD, "10.00",
+                now.minus(Duration.ofHours(3)), null, PACKAGE_ONE), country);
+        Order x3 = inCountry(order(buyer, OrderStatus.INITIATED, PaymentProviderType.INSTAPAY, Currency.EGP, "10.00",
+                now.minus(Duration.ofHours(2)), now.plus(Duration.ofHours(5)), PACKAGE_ONE), country);
+        Order x4 = order(buyer, OrderStatus.FAILED, PaymentProviderType.INSTAPAY, Currency.EGP, "10.00",
+                now.minus(Duration.ofHours(1)), null, PACKAGE_ONE);
+        x4.setFailureReason("TRANSFER_REJECTED");
+        x4 = inCountry(x4, country);
+
+        JsonNode first = json(mvc.perform(get(ApiPaths.Admin.ORDERS).param("scope", "UNPAID").param("country", country)
+                        .param("page", "0").param("size", "2").header("Authorization", bearer(interpreter)))
+                .andExpect(status().isOk()));
+        assertThat(first.get("total").asLong()).isEqualTo(3);
+        assertThat(first.get("items").get(0).get("id").asText()).isEqualTo(x3.getId().toString());
+        assertThat(first.get("items").get(0).get("paidLater").asBoolean()).isFalse();
+        assertThat(first.get("items").get(1).get("id").asText()).isEqualTo(x1.getId().toString());
+        assertThat(first.get("items").get(1).get("paidLater").asBoolean()).isTrue();
+        assertThat(first.get("items").get(1).get("failureReason").asText()).isEqualTo("PROVIDER_REPORTED_FAILURE");
+        JsonNode second = json(mvc.perform(get(ApiPaths.Admin.ORDERS).param("scope", "UNPAID").param("country", country)
+                        .param("page", "1").param("size", "2").header("Authorization", bearer(interpreter)))
+                .andExpect(status().isOk()));
+        assertThat(second.get("items")).hasSize(1);
+        assertThat(second.get("items").get(0).get("id").asText()).isEqualTo(x0.getId().toString());
+        assertThat(second.get("items").get(0).get("paidLater").asBoolean()).isTrue();
+
+        assertThat(ids(interpreter, Map.of("scope", "INTERNATIONAL", "country", country)))
+                .containsExactly(x4.getId().toString(), x2.getId().toString());
+        JsonNode counts = counts(interpreter, Map.of("country", country));
+        assertThat(counts.get("unpaid").asLong()).isEqualTo(3);
+        assertThat(counts.get("international").asLong()).isEqualTo(2);
+    }
+
+    private Order inCountry(Order o, String country) {
+        o.setCountryCode(country);
+        return orderRepository.save(o);
+    }
+
+    private Notification withdrawnNotice(User buyer, String orderNumber) {
+        return notifications(buyer).stream()
+                .filter(n -> n.getType() == NotificationType.CREDITS_WITHDRAWN && n.getBody().contains(orderNumber))
+                .findFirst().orElse(null);
+    }
+
     // ================================================================== helpers
 
     private Order order(User user, OrderStatus status, PaymentProviderType provider, Currency currency, String amount,
@@ -514,9 +789,23 @@ class PaymentsFiltersIntegrationTest extends IntegrationTestBase {
     }
 
     private ResultActions withdraw(User user, UUID orderId, String note) throws Exception {
+        return withdraw(user, orderId, "UNCONFIRMED", note);
+    }
+
+    private ResultActions withdraw(User user, UUID orderId, String reason, String note) throws Exception {
+        Map<String, Object> body = new LinkedHashMap<>();
+        body.put("reason", reason);
+        if (note != null) {
+            body.put("note", note);
+        }
         return mvc.perform(post("/admin/payments/orders/" + orderId + "/withdraw-leftover")
                 .header("Authorization", bearer(user)).contentType(MediaType.APPLICATION_JSON)
-                .content(note == null ? "{}" : objectMapper.writeValueAsString(Map.of("note", note))));
+                .content(objectMapper.writeValueAsString(body)));
+    }
+
+    private ResultActions restore(User user, UUID orderId) throws Exception {
+        return mvc.perform(post("/admin/payments/orders/" + orderId + "/restore-leftover")
+                .header("Authorization", bearer(user)));
     }
 
     private static String uniqueReference() {

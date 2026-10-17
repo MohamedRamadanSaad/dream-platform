@@ -7,12 +7,23 @@ ALTER TABLE orders ADD COLUMN leftover_withdrawn_at      timestamptz;
 ALTER TABLE orders ADD COLUMN leftover_withdrawn_credits integer CONSTRAINT orders_leftover_withdrawn_credits_check
     CHECK (leftover_withdrawn_credits IS NULL OR leftover_withdrawn_credits > 0);
 ALTER TABLE orders ADD COLUMN leftover_note              text;
+-- why: UNCONFIRMED (the payment could not be confirmed), AMOUNT_SHORT (less money arrived), OTHER (see the note)
+ALTER TABLE orders ADD COLUMN leftover_reason            varchar(16) CONSTRAINT orders_leftover_reason_check
+    CHECK (leftover_reason IS NULL OR leftover_reason IN ('UNCONFIRMED', 'AMOUNT_SHORT', 'OTHER'));
+
+-- ------------------------------------------------------------------ credit_ledger: what a row was for
+-- the credit history tells an undone approval from a withdrawn or restored leftover (REVOKE / REFUND rows)
+ALTER TABLE credit_ledger ADD COLUMN kind varchar(24) CONSTRAINT credit_ledger_kind_check
+    CHECK (kind IS NULL OR kind IN ('APPROVAL_REVOKED', 'LEFTOVER_WITHDRAWN', 'LEFTOVER_RESTORED'));
+-- before V41 every REVOKE row (and the REFUND of a held dream) came from an undone approval
+UPDATE credit_ledger SET kind = 'APPROVAL_REVOKED' WHERE reason = 'REVOKE';
+UPDATE credit_ledger SET kind = 'APPROVAL_REVOKED' WHERE reason = 'REFUND' AND note = 'APPROVAL_REVOKED';
 
 -- ------------------------------------------------------------------ filters of /admin/orders
 CREATE INDEX IF NOT EXISTS ix_orders_status_created ON orders (status, created_at DESC);
 CREATE INDEX IF NOT EXISTS ix_orders_created ON orders (created_at DESC);
 
--- ------------------------------------------------------------------ notification type CREDITS_WITHDRAWN
+-- ------------------------------------------------------------------ notification types CREDITS_WITHDRAWN, CREDITS_RESTORED
 ALTER TABLE notifications DROP CONSTRAINT IF EXISTS notifications_type_check;
 DO $$
 DECLARE c record;
@@ -30,7 +41,7 @@ END $$;
 ALTER TABLE notifications ADD CONSTRAINT notifications_type_check
     CHECK (type IN ('DREAM_SUBMITTED', 'DREAM_RECEIVED', 'INTERPRETER_QUESTION', 'USER_REPLIED', 'INTERPRETATION_READY',
                     'PAYMENT_SUCCESS', 'PROMOTION', 'YOUTUBE_VIDEO', 'TRANSFER_SUBMITTED', 'PAYMENT_REJECTED',
-                    'DREAM_STARTED', 'DREAM_EDITED', 'PAYMENT_REVOKED', 'CREDITS_WITHDRAWN'));
+                    'DREAM_STARTED', 'DREAM_EDITED', 'PAYMENT_REVOKED', 'CREDITS_WITHDRAWN', 'CREDITS_RESTORED'));
 
 -- ------------------------------------------------------------------ e-mail credits-withdrawn (switch + theme)
 INSERT INTO app_settings (key, value, type, description) VALUES

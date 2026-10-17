@@ -81,7 +81,9 @@ public class MailSamples {
                 m.put("packageName", en ? "Three dreams" : "ثلاث رؤى");
                 m.put("credits", 2);
                 m.put("creditsText", com.saadat.common.util.CreditCounts.text(2, locale));
-                m.put("note", en ? "The transfer could not be confirmed." : "لم نتمكن من تأكيد التحويل.");
+                m.put("lead", en ? "We removed 2 dream credits of order RN-15001 from your balance because we could not "
+                        + "confirm the payment." : "تم خصم رؤيتين من رصيد الطلب RN-15001 لأننا لم نتمكن من تأكيد الدفع.");
+                m.put("note", null);
                 m.put("balance", 0);
                 m.put("link", FrontendPaths.MY_PAYMENTS);
             }

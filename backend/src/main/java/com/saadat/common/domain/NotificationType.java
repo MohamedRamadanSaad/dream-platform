@@ -24,5 +24,7 @@ public enum NotificationType {
      */
     PAYMENT_REVOKED,
     /** To the payer: the interpreter withdrew the unused credits of one of his payments (V41). */
-    CREDITS_WITHDRAWN
+    CREDITS_WITHDRAWN,
+    /** To the payer: withdrawn credits of one of his payments were given back (V41; in-app + push only). */
+    CREDITS_RESTORED
 }

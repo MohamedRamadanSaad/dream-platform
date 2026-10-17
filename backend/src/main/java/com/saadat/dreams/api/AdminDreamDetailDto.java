@@ -34,7 +34,12 @@ public record AdminDreamDetailDto(
         UserRef user,
         PaymentRef payment,
         /** While AWAITING_PAYMENT: the order whose approval was taken back (V40); else null. */
-        UUID heldOrderId) {
+        UUID heldOrderId,
+        /**
+         * Cancelling this dream now gives its credit back (V41): false when it cannot be cancelled, is held, was paid
+         * by an order whose leftover was withdrawn, or its credit was already given back.
+         */
+        boolean cancelRefunds) {
 
     public record UserRef(UUID id, String name, String email, String countryCode, Integer age) {
     }
@@ -63,10 +68,10 @@ public record AdminDreamDetailDto(
     }
 
     public static AdminDreamDetailDto of(DreamDetailDto d, Instant userEditedAt, UserRef user, PaymentRef payment,
-                                         UUID heldOrderId) {
+                                         UUID heldOrderId, boolean cancelRefunds) {
         return new AdminDreamDetailDto(d.id(), d.excerpt(), d.status(), d.createdAt(), d.submittedAt(),
                 d.interpretedAt(), d.expectedBy(), d.unreadMessages(), d.startedAt(), d.expectedDays(), d.editable(),
                 userEditedAt, d.text(), d.gender(), d.interpretation(), d.messages(), d.testimonial(), d.credit(), user,
-                payment, heldOrderId);
+                payment, heldOrderId, cancelRefunds);
     }
 }

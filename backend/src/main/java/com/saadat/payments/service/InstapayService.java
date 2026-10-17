@@ -2,6 +2,7 @@ package com.saadat.payments.service;
 
 import com.saadat.common.audit.AuditService;
 import com.saadat.common.domain.DreamStatus;
+import com.saadat.common.domain.LedgerKind;
 import com.saadat.common.domain.NotificationType;
 import com.saadat.common.domain.OrderStatus;
 import com.saadat.common.domain.PaymentProviderType;
@@ -296,7 +297,8 @@ public class InstapayService {
             if (!HOLDABLE.contains(d.getStatus())) {
                 continue;
             }
-            creditService.refundDebit(debitByDream.get(d.getId()), REASON_REVOKED, interpreterId);
+            creditService.refundDebit(debitByDream.get(d.getId()), REASON_REVOKED, interpreterId,
+                    LedgerKind.APPROVAL_REVOKED);
             DreamStatus before = d.getStatus();
             d.setStatus(DreamStatus.AWAITING_PAYMENT);
             d.setHeldOrderId(orderId);
@@ -313,7 +315,8 @@ public class InstapayService {
                     Map.of("status", before.name()), heldAfter);
         }
         // 2. what is left of the order's credits is withdrawn
-        int withdrawn = creditService.revokeOrderCredits(userId, orderId, cleanNote, interpreterId);
+        int withdrawn = creditService.revokeOrderCredits(userId, orderId, cleanNote, interpreterId,
+                LedgerKind.APPROVAL_REVOKED);
         // 3. the coupon / promotion use counted at confirm is given back (a later approval counts it again)
         couponService.revokeRedemption(orderId);
         if (order.isPromotionCounted()) {

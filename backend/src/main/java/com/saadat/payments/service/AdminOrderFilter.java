@@ -58,6 +58,12 @@ public record AdminOrderFilter(
         RESENT
     }
 
+    /** The same filters without the tab-specific ones (status, flag): what the tab badges count. */
+    public AdminOrderFilter withoutTabFilters() {
+        return new AdminOrderFilter(Set.of(), provider, country, currency, from, to, minAmount, maxAmount, packageId,
+                null);
+    }
+
     public static AdminOrderFilter none() {
         return new AdminOrderFilter(Set.of(), null, null, null, null, null, null, null, null, null);
     }
@@ -118,8 +124,10 @@ public record AdminOrderFilter(
                         any.add(cb.and(cb.equal(root.get("status"), OrderStatus.INITIATED),
                                 cb.lessThanOrEqualTo(root.<Instant>get("expiresAt"), now)));
                     } else if (s == OrderStatus.INITIATED) {
+                        // without a deadline it never lapses
                         any.add(cb.and(cb.equal(root.get("status"), OrderStatus.INITIATED),
-                                cb.greaterThan(root.<Instant>get("expiresAt"), now)));
+                                cb.or(cb.isNull(root.get("expiresAt")),
+                                        cb.greaterThan(root.<Instant>get("expiresAt"), now))));
                     } else {
                         any.add(cb.equal(root.get("status"), s));
                     }

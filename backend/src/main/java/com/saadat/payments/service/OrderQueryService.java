@@ -60,6 +60,7 @@ public class OrderQueryService {
     private final CouponRepository couponRepository;
     private final DreamAttachments dreamAttachments;
     private final OrderCredits orderCredits;
+    private final com.saadat.credits.service.CreditService creditService;
     private final Clock clock;
 
     @Transactional(readOnly = true)
@@ -122,6 +123,12 @@ public class OrderQueryService {
         Map<UUID, User> users = userRepository.findAllById(userIds).stream()
                 .collect(Collectors.toMap(User::getId, Function.identity(), (a, b) -> a));
         Map<UUID, Long> held = heldCounts(orders.getContent().stream().map(Order::getId).toList());
+        Map<UUID, Instant> lastPaid = new java.util.HashMap<>();
+        if (!userIds.isEmpty()) {
+            for (Object[] row : orderRepository.lastCreatedByUserAndStatus(userIds, OrderStatus.SUCCESS)) {
+                lastPaid.put((UUID) row[0], (Instant) row[1]);
+            }
+        }
         Function<Order, AdminOrderRow> mapper = o -> {
             User u = users.get(o.getUserId());
             return AdminOrderRow.of(OrderDto.from(o).withStatus(shownStatus(o, now)), o.getUserId(),
@@ -130,7 +137,9 @@ public class OrderQueryService {
                     o.getTransferSenderName(), o.getTransferSubmittedAt(),
                     dreamAttachments.readIntent(o.getCheckoutIntent()).size(), o.getFailureReason(),
                     o.getApprovalRevokedAt(), o.getRevokeNote(), held.getOrDefault(o.getId(), 0L).intValue(),
-                    o.getExpiresAt(), o.getPackageId(), o.getLeftoverWithdrawnAt());
+                    o.getExpiresAt(), o.getPackageId(), o.getLeftoverWithdrawnAt(),
+                    lastPaid.get(o.getUserId()) != null && o.getCreatedAt() != null
+                            && lastPaid.get(o.getUserId()).isAfter(o.getCreatedAt()));
         };
         return PageResponse.from(orders, mapper);
     }
@@ -151,13 +160,27 @@ public class OrderQueryService {
                     cb.equal(root.get("status"), OrderStatus.PENDING_REVIEW));
             case DOMESTIC -> (root, query, cb) -> cb.and(
                     cb.equal(root.get("countryCode"), DOMESTIC_COUNTRY),
-                    root.get("status").in(UNPAID_STATUSES).not());
+                    cb.not(unpaid(root, cb)));
             case INTERNATIONAL -> (root, query, cb) -> cb.and(
                     cb.or(cb.isNull(root.get("countryCode")), cb.notEqual(root.get("countryCode"), DOMESTIC_COUNTRY)),
-                    root.get("status").in(UNPAID_STATUSES).not());
-            case UNPAID -> (root, query, cb) -> root.get("status").in(UNPAID_STATUSES);
+                    cb.not(unpaid(root, cb)));
+            case UNPAID -> (root, query, cb) -> unpaid(root, cb);
             case ALL -> (root, query, cb) -> cb.conjunction();
         };
+    }
+
+    /**
+     * A booking never paid: INITIATED, EXPIRED, or FAILED at the gateway (a failure reason other than the
+     * interpreter's TRANSFER_REJECTED / APPROVAL_REVOKED, or none).
+     */
+    private static jakarta.persistence.criteria.Predicate unpaid(jakarta.persistence.criteria.Root<Order> root,
+                                                                jakarta.persistence.criteria.CriteriaBuilder cb) {
+        return cb.or(
+                root.get("status").in(UNPAID_STATUSES),
+                cb.and(cb.equal(root.get("status"), OrderStatus.FAILED),
+                        cb.or(cb.isNull(root.get("failureReason")),
+                                cb.not(root.get("failureReason").in(InstapayService.REASON_REJECTED,
+                                        InstapayService.REASON_REVOKED)))));
     }
 
     private static Specification<Order> filterSpec(AdminOrderFilter filter, Instant now) {
@@ -204,7 +227,8 @@ public class OrderQueryService {
         if (byNumber == null) {
             return new AdminOrderDtos.Counts(0, 0, 0, 0);
         }
-        Specification<Order> common = filterSpec(filter, clock.instant());
+        // a tab's own filters (status, flag) would empty the other tabs' badges: the counts leave them out
+        Specification<Order> common = filterSpec(filter == null ? null : filter.withoutTabFilters(), clock.instant());
         if (byNumber.isPresent()) {
             common = common.and(byNumber.get());
         }
@@ -281,7 +305,9 @@ public class OrderQueryService {
                 revocable && revokeBlockedReason == null, revokeBlockedReason, o.getApprovalRevokedAt(),
                 o.getRevokeNote(), heldCounts(List.of(o.getId())).getOrDefault(o.getId(), 0L).intValue(),
                 leftover, interpretedDreams, o.getStatus() == OrderStatus.SUCCESS && leftover > 0,
-                o.getLeftoverWithdrawnAt(), o.getLeftoverWithdrawnCredits(), o.getLeftoverNote());
+                o.getLeftoverWithdrawnAt(), o.getLeftoverWithdrawnCredits(), o.getLeftoverNote(),
+                o.getLeftoverReason(), o.getStatus() == OrderStatus.SUCCESS
+                        && !creditService.restorableLeftover(o.getUserId(), o.getId()).isEmpty());
     }
 
     /** Unused, unexpired credits of the order's lots right now (0 for an unpaid order, V41). */

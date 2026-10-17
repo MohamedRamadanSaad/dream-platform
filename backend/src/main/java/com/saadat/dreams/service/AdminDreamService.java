@@ -127,7 +127,7 @@ public class AdminDreamService {
                 .orElseThrow(() -> new NotFoundException("Dream owner not found"));
         AdminDreamDetailDto.UserRef userRef = new AdminDreamDetailDto.UserRef(owner.getId(), owner.getName(), owner.getEmail(), owner.getCountryCode(), Ages.of(owner.getBirthDate()));
         return AdminDreamDetailDto.of(detail, d.getUserEditedAt(), userRef, payment(detail.credit(), d.getId()),
-                d.getHeldOrderId());
+                d.getHeldOrderId(), cancelRefunds(d));
     }
 
     private AdminDreamDetailDto.PaymentRef payment(DreamDetailDto.CreditRef credit, UUID dreamId) {
@@ -261,7 +261,7 @@ public class AdminDreamService {
         dreamRepository.save(d);
 
         boolean refunded = false;
-        if (!held && d.getLedgerEntryId() != null) {
+        if (!held && d.getLedgerEntryId() != null && !paidByWithdrawnOrder(d)) {
             // the debit that paid it is given back once (REFUND names it, V40)
             CreditLedgerEntry debit = ledgerRepository.findById(d.getLedgerEntryId()).orElse(null);
             refunded = debit != null && creditService.refundDebit(debit, reason, actor) != null;
@@ -271,6 +271,29 @@ public class AdminDreamService {
         after.put("refunded", refunded);
         auditService.record(actor, "DREAM_CANCEL", "dreams", dreamId.toString(), statusMap(before), after);
         mailCancelled(d, refunded);
+    }
+
+    /**
+     * The order that paid the dream had its leftover withdrawn (V41): a cancel gives no credit back (it would hand
+     * back what was withdrawn).
+     */
+    private boolean paidByWithdrawnOrder(Dream d) {
+        if (d.getLedgerEntryId() == null) {
+            return false;
+        }
+        UUID orderId = ledgerRepository.findById(d.getLedgerEntryId()).map(CreditLedgerEntry::getOrderId).orElse(null);
+        return orderId != null && orderRepository.findById(orderId)
+                .map(o -> o.getLeftoverWithdrawnAt() != null).orElse(false);
+    }
+
+    /** What a cancel would do now: give the credit back (see {@link #cancel}). */
+    private boolean cancelRefunds(Dream d) {
+        boolean cancellable = OPEN_WORK.contains(d.getStatus()) || d.getStatus() == DreamStatus.AWAITING_USER_REPLY;
+        if (!cancellable || d.getLedgerEntryId() == null || paidByWithdrawnOrder(d)) {
+            return false;
+        }
+        return !ledgerRepository.existsBySourceIdAndReason(d.getLedgerEntryId(),
+                com.saadat.common.domain.LedgerReason.REFUND);
     }
 
     /** {@code dream-cancelled} to the owner: reason, refunded credit, new balance (after commit). */

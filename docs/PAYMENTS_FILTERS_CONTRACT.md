@@ -46,3 +46,11 @@ leftoverWithdrawnAt: string|null, leftoverWithdrawnCredits: number|null, leftove
 - Notification type `CREDITS_WITHDRAWN` label + icon; credit history shows the REVOKE row as «خصم الرصيد المتبقي للطلب RN-…».
 - MSW mocks for every new route, filter and state (include unpaid bookings, some expired, an order with an interpreted dream and leftover credits).
 - i18n ar + en, no hardcoded text, no em dash, RTL-correct, phone first.
+
+## 5. Implementation notes and round-3 fixes (2026-10-17)
+- Withdrawal: InstaPay + SUCCESS only (409 `NOT_WITHDRAWABLE`); body `{reason: UNCONFIRMED|AMOUNT_SHORT|OTHER, note?}`, note required for OTHER (400 `NOTE_REQUIRED`); `orders.leftover_reason`; the buyer's texts start with the reason. REVOKE rows carry `credit_ledger.kind = LEFTOVER_WITHDRAWN` (an undone approval: `APPROVAL_REVOKED`).
+- Restore: `POST /api/admin/payments/orders/{id}/restore-leftover` → `AdminOrderDetail`; REFUND rows of kind `LEFTOVER_RESTORED` with the lot's original expiry (expired ones are not given back); fields cleared; audit `ORDER_LEFTOVER_RESTORED`; buyer `CREDITS_RESTORED` (in-app + push). 409 `NOTHING_TO_RESTORE`. `canRestoreLeftover` on the detail.
+- Cancel of a dream paid by a withdrawn order: no refund; `AdminDreamDetail.cancelRefunds`.
+- A re-approval after an undo grants `credits − leftover_withdrawn_credits` and keeps the first expiry.
+- UNPAID includes gateway FAILED orders; `AdminOrderRow.paidLater`; counts ignore `status` and `flag`.
+- Credit history: `CreditLedgerEntry.kind` + `orderNumber`; `OrderDto.leftoverWithdrawnCredits`.

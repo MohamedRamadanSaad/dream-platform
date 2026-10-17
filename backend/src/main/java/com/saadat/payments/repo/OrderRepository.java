@@ -83,6 +83,12 @@ public interface OrderRepository extends JpaRepository<Order, UUID>, JpaSpecific
     boolean existsByTransferReferenceAndStatusAndFailureReasonAndIdNot(String transferReference, OrderStatus status,
                                                                        String failureReason, UUID id);
 
+    /** [userId, max(createdAt)] of the users' orders in {@code status} (the "paid later" mark, V41). */
+    @Query("select o.userId, max(o.createdAt) from PaymentOrder o where o.userId in :userIds and o.status = :status "
+            + "group by o.userId")
+    List<Object[]> lastCreatedByUserAndStatus(@Param("userIds") Collection<UUID> userIds,
+                                              @Param("status") OrderStatus status);
+
     /** Row lock for webhook confirmation. */
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select o from PaymentOrder o where o.id = :id")

@@ -45,16 +45,18 @@ public record AdminOrderRow(
         /** The package bought (null when the package was deleted). */
         UUID packageId,
         /** When the interpreter withdrew the unused credits of this order (V41); else null. */
-        Instant leftoverWithdrawnAt) {
+        Instant leftoverWithdrawnAt,
+        /** The same user has a SUCCESS order created after this one (an unpaid booking paid later, V41). */
+        boolean paidLater) {
 
     public static AdminOrderRow of(OrderDto o, UUID userId, String userName, String userEmail,
                                    BigDecimal settledAmountEgp, String transferReference, String transferSenderName,
                                    Instant transferSubmittedAt, int attachedDreams, String failureReason,
                                    Instant revokedAt, String revokeNote, int heldDreams, Instant expiresAt,
-                                   UUID packageId, Instant leftoverWithdrawnAt) {
+                                   UUID packageId, Instant leftoverWithdrawnAt, boolean paidLater) {
         return new AdminOrderRow(o.id(), o.orderNumber(), o.packageName(), o.credits(), o.amount(), o.currency(), o.status(),
                 o.provider(), o.providerRef(), o.countryCode(), o.createdAt(), o.paidAt(), userName, userId, userEmail,
                 settledAmountEgp, transferReference, transferSenderName, transferSubmittedAt, attachedDreams,
-                failureReason, revokedAt, revokeNote, heldDreams, expiresAt, packageId, leftoverWithdrawnAt);
+                failureReason, revokedAt, revokeNote, heldDreams, expiresAt, packageId, leftoverWithdrawnAt, paidLater);
     }
 }

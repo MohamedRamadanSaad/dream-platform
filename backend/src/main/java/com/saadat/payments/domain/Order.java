@@ -182,6 +182,10 @@ public class Order {
     @Column(name = "leftover_note", columnDefinition = "text")
     private String leftoverNote;
 
+    /** Why the unused credits were withdrawn: UNCONFIRMED, AMOUNT_SHORT or OTHER (V41). */
+    @Column(name = "leftover_reason", length = 16)
+    private String leftoverReason;
+
     @PrePersist
     void onCreate() {
         if (createdAt == null) {

@@ -96,7 +96,8 @@ public final class CreditLots {
         Map<UUID, Lot> byId = new HashMap<>();
         for (Entry e : sorted) {
             if (e.delta() > 0) {
-                Instant expires = e.reason() == LedgerReason.PURCHASE ? e.expiresAt() : null;
+                // purchases, and leftovers given back with their purchase's expiry (V41); other credits never expire
+                Instant expires = e.expiresAt();
                 Lot lot = new Lot(e.id(), e.createdAt(), expires, e.settled(), e.delta());
                 lots.add(lot);
                 byId.put(e.id(), lot);

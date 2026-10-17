@@ -227,6 +227,8 @@ public final class ApiPaths {
          * docs/PAYMENTS_FILTERS_CONTRACT.md §2); returns AdminOrderDetail.
          */
         public static final String ORDER_WITHDRAW_LEFTOVER = ROOT + "/payments/orders/{id}/withdraw-leftover";
+        /** POST: gives withdrawn credits back (original expiry, expired ones not); returns AdminOrderDetail. */
+        public static final String ORDER_RESTORE_LEFTOVER = ROOT + "/payments/orders/{id}/restore-leftover";
 
         public static final String YOUTUBE_REFRESH = ROOT + "/youtube/refresh";
 

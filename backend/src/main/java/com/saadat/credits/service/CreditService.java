@@ -1,5 +1,6 @@
 package com.saadat.credits.service;
 
+import com.saadat.common.domain.LedgerKind;
 import com.saadat.common.domain.LedgerReason;
 import com.saadat.common.error.NotFoundException;
 import com.saadat.common.error.PaymentRequiredException;
@@ -30,6 +31,7 @@ public class CreditService {
 
     private final CreditLedgerRepository ledgerRepository;
     private final UserRepository userRepository;
+    private final com.saadat.payments.repo.OrderRepository orderRepository;
     private final Clock clock;
     private final CreditExpiryService expiryService;
 
@@ -40,9 +42,18 @@ public class CreditService {
 
     @Transactional(readOnly = true)
     public CreditsSummaryDto summary(UUID userId) {
-        return new CreditsSummaryDto(ledgerRepository.balance(userId),
-                ledgerRepository.findByUserIdOrderByCreatedAtDesc(userId).stream()
-                        .map(CreditLedgerEntryDto::from).toList());
+        List<CreditLedgerEntry> rows = ledgerRepository.findByUserIdOrderByCreatedAtDesc(userId);
+        java.util.Set<UUID> orderIds = new java.util.HashSet<>();
+        rows.forEach(r -> {
+            if (r.getOrderId() != null) {
+                orderIds.add(r.getOrderId());
+            }
+        });
+        Map<UUID, String> numbers = new HashMap<>();
+        orderRepository.findAllById(orderIds).forEach(o -> numbers.put(o.getId(), o.getOrderNumber()));
+        return new CreditsSummaryDto(ledgerRepository.balance(userId), rows.stream()
+                .map(r -> CreditLedgerEntryDto.from(r, r.getOrderId() == null ? null : numbers.get(r.getOrderId())))
+                .toList());
     }
 
     /**
@@ -159,6 +170,12 @@ public class CreditService {
      */
     @Transactional
     public CreditLedgerEntry refundDebit(CreditLedgerEntry submit, String note, UUID createdBy) {
+        return refundDebit(submit, note, createdBy, null);
+    }
+
+    /** {@link #refundDebit(CreditLedgerEntry, String, UUID)} with the row's {@code kind} (V41). */
+    @Transactional
+    public CreditLedgerEntry refundDebit(CreditLedgerEntry submit, String note, UUID createdBy, LedgerKind kind) {
         if (submit == null || submit.getReason() != LedgerReason.SUBMIT
                 || ledgerRepository.existsBySourceIdAndReason(submit.getId(), LedgerReason.REFUND)) {
             return null;
@@ -169,6 +186,7 @@ public class CreditService {
         CreditLedgerEntry e = entry(submit.getUserId(), 1, LedgerReason.REFUND, submit.getOrderId(),
                 submit.getDreamId(), note, createdBy);
         e.setSourceId(submit.getId());
+        e.setKind(kind);
         return ledgerRepository.save(e);
     }
 
@@ -179,7 +197,7 @@ public class CreditService {
      * caller holds the user lock. Returns the number of credits withdrawn.
      */
     @Transactional(propagation = org.springframework.transaction.annotation.Propagation.MANDATORY)
-    public int revokeOrderCredits(UUID userId, UUID orderId, String note, UUID createdBy) {
+    public int revokeOrderCredits(UUID userId, UUID orderId, String note, UUID createdBy, LedgerKind kind) {
         int balance = lockAndGetBalance(userId);
         List<CreditLedgerEntry> rows = ledgerRepository.findByUserIdOrderByCreatedAtAsc(userId);
         Map<UUID, CreditLedgerEntry> byId = new HashMap<>();
@@ -196,6 +214,7 @@ public class CreditService {
             }
             CreditLedgerEntry e = entry(userId, -n, LedgerReason.REVOKE, orderId, null, note, createdBy);
             e.setSourceId(lot.id());
+            e.setKind(kind);
             ledgerRepository.save(e);
             total += n;
         }
@@ -224,6 +243,63 @@ public class CreditService {
             throw NotFoundException.of("User", userId);
         }
         return save(userId, delta, reason, orderId, dreamId, note, createdBy);
+    }
+
+    /** One withdrawn leftover that can be given back: the REVOKE row, how many credits, the lot's original expiry. */
+    public record Restorable(CreditLedgerEntry withdrawal, int credits, Instant expiresAt) {
+    }
+
+    /**
+     * The leftover withdrawals of {@code orderId} (REVOKE rows of kind LEFTOVER_WITHDRAWN, V41) not given back yet
+     * whose lot has not expired: they may be restored with that lot's original expiry.
+     */
+    @Transactional(readOnly = true)
+    public List<Restorable> restorableLeftover(UUID userId, UUID orderId) {
+        Instant now = clock.instant();
+        List<CreditLedgerEntry> rows = ledgerRepository.findByUserIdOrderByCreatedAtAsc(userId);
+        Map<UUID, CreditLedgerEntry> byId = new HashMap<>();
+        java.util.Set<UUID> restored = new java.util.HashSet<>();
+        for (CreditLedgerEntry r : rows) {
+            byId.put(r.getId(), r);
+            if (r.getReason() == LedgerReason.REFUND && r.getKind() == LedgerKind.LEFTOVER_RESTORED
+                    && r.getSourceId() != null) {
+                restored.add(r.getSourceId());
+            }
+        }
+        List<Restorable> out = new java.util.ArrayList<>();
+        for (CreditLedgerEntry r : rows) {
+            if (r.getReason() != LedgerReason.REVOKE || r.getKind() != LedgerKind.LEFTOVER_WITHDRAWN
+                    || !orderId.equals(r.getOrderId()) || restored.contains(r.getId())) {
+                continue;
+            }
+            CreditLedgerEntry lot = r.getSourceId() == null ? null : byId.get(r.getSourceId());
+            Instant expiresAt = lot == null ? null : lot.getExpiresAt();
+            if (expiresAt != null && !expiresAt.isAfter(now)) {
+                continue;
+            }
+            out.add(new Restorable(r, -r.getDelta(), expiresAt));
+        }
+        return out;
+    }
+
+    /**
+     * Gives the withdrawn leftover of {@code orderId} back (V41): one REFUND row per withdrawal, kind
+     * LEFTOVER_RESTORED, same order, {@code source_id} = the withdrawal, and the lot's ORIGINAL expiry (withdrawals
+     * whose lot already expired are not given back). Returns the number of credits given back.
+     */
+    @Transactional
+    public int restoreLeftover(UUID userId, UUID orderId, String note, UUID createdBy) {
+        userRepository.findByIdForUpdate(userId).orElseThrow(() -> NotFoundException.of("User", userId));
+        int total = 0;
+        for (Restorable r : restorableLeftover(userId, orderId)) {
+            CreditLedgerEntry e = entry(userId, r.credits(), LedgerReason.REFUND, orderId, null, note, createdBy);
+            e.setExpiresAt(r.expiresAt());
+            e.setSourceId(r.withdrawal().getId());
+            e.setKind(LedgerKind.LEFTOVER_RESTORED);
+            ledgerRepository.save(e);
+            total += r.credits();
+        }
+        return total;
     }
 
     /**
