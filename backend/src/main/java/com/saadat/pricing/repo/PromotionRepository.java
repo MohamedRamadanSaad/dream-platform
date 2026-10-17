@@ -24,4 +24,10 @@ public interface PromotionRepository extends JpaRepository<Promotion, UUID> {
     @Query("update Promotion p set p.usedCount = p.usedCount + 1 "
             + "where p.id = :id and (p.maxUses is null or p.usedCount < p.maxUses)")
     int incrementUsedCount(@Param("id") UUID id);
+
+    /** Gives one use back (an approval taken back, V40); never below zero. */
+    @Modifying
+    @Transactional
+    @Query("update Promotion p set p.usedCount = p.usedCount - 1 where p.id = :id and p.usedCount > 0")
+    int decrementUsedCount(@Param("id") UUID id);
 }

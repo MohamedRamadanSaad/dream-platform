@@ -65,6 +65,15 @@ public class PromotionService {
         }
     }
 
+    /** Gives back the use counted by {@link #recordUse} (an approval taken back, V40); never below zero. */
+    @Transactional
+    public void releaseUse(UUID promotionId) {
+        if (promotionId == null || !promotionRepository.existsById(promotionId)) {
+            return;
+        }
+        promotionRepository.decrementUsedCount(promotionId);
+    }
+
     // ------------------------------------------------------------------ pure logic (unit-tested)
 
     public static Applied best(List<Promotion> promotions, UUID packageId, BigDecimal price, Country country,

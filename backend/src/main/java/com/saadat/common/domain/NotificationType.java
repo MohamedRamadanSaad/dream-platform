@@ -17,5 +17,10 @@ public enum NotificationType {
     /** To the dreamer: the interpreter started interpreting, with the expected number of days (V39). */
     DREAM_STARTED,
     /** To interpreters: the dreamer changed the text of a submitted dream before it was started (V39; no e-mail). */
-    DREAM_EDITED
+    DREAM_EDITED,
+    /**
+     * To the payer: the interpreter took back the approval of his InstaPay transfer; his dreams are kept and wait for
+     * the payment to be confirmed; he should check and resend the transfer details (V40).
+     */
+    PAYMENT_REVOKED
 }

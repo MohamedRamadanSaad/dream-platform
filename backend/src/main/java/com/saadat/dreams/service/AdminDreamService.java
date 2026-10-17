@@ -6,7 +6,6 @@ import com.saadat.common.api.PageResponse;
 import com.saadat.common.api.Pages;
 import com.saadat.common.audit.AuditService;
 import com.saadat.common.domain.DreamStatus;
-import com.saadat.common.domain.LedgerReason;
 import com.saadat.common.domain.Role;
 import com.saadat.common.error.ConflictException;
 import com.saadat.common.error.NotFoundException;
@@ -121,7 +120,8 @@ public class AdminDreamService {
         User owner = userRepository.findById(d.getUserId())
                 .orElseThrow(() -> new NotFoundException("Dream owner not found"));
         AdminDreamDetailDto.UserRef userRef = new AdminDreamDetailDto.UserRef(owner.getId(), owner.getName(), owner.getEmail(), owner.getCountryCode(), Ages.of(owner.getBirthDate()));
-        return AdminDreamDetailDto.of(detail, d.getUserEditedAt(), userRef, payment(detail.credit(), d.getId()));
+        return AdminDreamDetailDto.of(detail, d.getUserEditedAt(), userRef, payment(detail.credit(), d.getId()),
+                d.getHeldOrderId());
     }
 
     private AdminDreamDetailDto.PaymentRef payment(DreamDetailDto.CreditRef credit, UUID dreamId) {
@@ -234,28 +234,34 @@ public class AdminDreamService {
 
     /**
      * Cancel: from IN_REVIEW, IN_PROGRESS or AWAITING_USER_REPLY → CANCELLED and the consumed credit is refunded once.
+     * An AWAITING_PAYMENT dream (V40) may be cancelled too, without a refund (its credit was already given back when
+     * the approval was taken back); its hold is cleared.
      */
     @Transactional
     public void cancel(UUID actor, UUID dreamId, String reason) {
         // only the dream row is locked: a refund is a positive ledger entry and needs no user lock
         Dream d = lock(dreamId);
-        if (!OPEN_WORK.contains(d.getStatus()) && d.getStatus() != DreamStatus.AWAITING_USER_REPLY) {
+        if (!OPEN_WORK.contains(d.getStatus()) && d.getStatus() != DreamStatus.AWAITING_USER_REPLY
+                && d.getStatus() != DreamStatus.AWAITING_PAYMENT) {
             throw new ConflictException("This dream cannot be cancelled in status " + d.getStatus(), "INVALID_STATUS");
         }
         DreamStatus before = d.getStatus();
+        boolean held = before == DreamStatus.AWAITING_PAYMENT;
         d.setStatus(DreamStatus.CANCELLED);
         d.setCancelledReason(reason == null ? null : reason.trim());
         d.setSlaPausedAt(null);
+        d.setHeldOrderId(null);
         dreamRepository.save(d);
 
         boolean refunded = false;
-        if (d.getLedgerEntryId() != null && !ledgerRepository.existsByDreamIdAndReason(dreamId, LedgerReason.REFUND)) {
-            UUID orderId = ledgerRepository.findById(d.getLedgerEntryId()).map(CreditLedgerEntry::getOrderId).orElse(null);
-            creditService.add(d.getUserId(), 1, LedgerReason.REFUND, orderId, dreamId, reason, actor);
-            refunded = true;
+        if (!held && d.getLedgerEntryId() != null) {
+            // the debit that paid it is given back once (REFUND names it, V40)
+            CreditLedgerEntry debit = ledgerRepository.findById(d.getLedgerEntryId()).orElse(null);
+            refunded = debit != null && creditService.refundDebit(debit, reason, actor) != null;
         }
         Map<String, Object> after = statusMap(DreamStatus.CANCELLED);
         after.put("reason", reason);
+        after.put("refunded", refunded);
         auditService.record(actor, "DREAM_CANCEL", "dreams", dreamId.toString(), statusMap(before), after);
         mailCancelled(d, refunded);
     }

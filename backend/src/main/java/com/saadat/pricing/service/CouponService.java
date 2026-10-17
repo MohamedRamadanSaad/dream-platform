@@ -67,6 +67,22 @@ public class CouponService {
         redemptionRepository.save(r);
     }
 
+    /**
+     * Undoes {@link #redeem} for an order whose approval was taken back (V40): its redemption row is removed and the
+     * coupon's use is given back, so approving the order again counts it once. Nothing when it had no redemption.
+     */
+    @Transactional
+    public void unredeem(UUID orderId) {
+        if (orderId == null) {
+            return;
+        }
+        redemptionRepository.findByOrderId(orderId).ifPresent(r -> {
+            redemptionRepository.delete(r);
+            redemptionRepository.flush();
+            couponRepository.decrementUsedCount(r.getCouponId());
+        });
+    }
+
     // ------------------------------------------------------------------ pure logic (unit-tested)
 
     public static boolean isUsable(Coupon c, long userRedemptions, Instant now) {

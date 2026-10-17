@@ -38,7 +38,8 @@ import org.springframework.transaction.annotation.Transactional;
  *
  * <ul>
  *   <li>Shown as attached (tab "Attached to a payment"): a DRAFT whose id is in the intent of one of the user's orders
- *       that is PENDING_REVIEW, or FAILED with {@code TRANSFER_REJECTED} (the latest such order wins).</li>
+ *       that is PENDING_REVIEW, or FAILED with {@code TRANSFER_REJECTED} / {@code APPROVAL_REVOKED} (the latest such
+ *       order wins), and every AWAITING_PAYMENT dream (held by an order whose approval was taken back, V40).</li>
  *   <li>Held (blocks deleting, submitting or attaching elsewhere): only INITIATED orders not expired yet and
  *       PENDING_REVIEW orders. A rejected order never holds a dream: the dreamer may delete it, submit it with credits
  *       or attach it to another order (which removes it from the rejected order's intent), so a dream is never
@@ -114,13 +115,33 @@ public class DreamAttachments {
 
     // ================================================================== order states
 
-    /** The order shows its dreams as attached: a payment under review, or rejected and resendable. */
+    /** The order shows its dreams as attached: a payment under review, or rejected / revoked and resendable. */
     public static boolean holdsAttachedDreams(Order o) {
         return o.getStatus() == OrderStatus.PENDING_REVIEW || isRejected(o);
     }
 
+    /**
+     * FAILED and the buyer may send the transfer details again: rejected by the interpreter, or its approval taken
+     * back (V40). Such an order never traps its drafts.
+     */
     public static boolean isRejected(Order o) {
-        return o.getStatus() == OrderStatus.FAILED && InstapayService.REASON_REJECTED.equals(o.getFailureReason());
+        return o.getStatus() == OrderStatus.FAILED && (InstapayService.REASON_REJECTED.equals(o.getFailureReason())
+                || InstapayService.REASON_REVOKED.equals(o.getFailureReason()));
+    }
+
+    /** What a dream waiting on {@code o} shows as {@code payment.status}. */
+    public static String linkStatus(Order o) {
+        if (o.getStatus() == OrderStatus.PENDING_REVIEW) {
+            return DreamPaymentLink.PENDING_REVIEW;
+        }
+        if (o.getStatus() == OrderStatus.FAILED && InstapayService.REASON_REVOKED.equals(o.getFailureReason())) {
+            return DreamPaymentLink.REVOKED;
+        }
+        return DreamPaymentLink.REJECTED;
+    }
+
+    static DreamPaymentLink link(Order o) {
+        return new DreamPaymentLink(o.getId(), linkStatus(o), o.getTransferSubmittedAt(), o.getReviewNote());
     }
 
     /** The order blocks its dreams: INITIATED and not expired, or PENDING_REVIEW. */
@@ -144,9 +165,7 @@ public class DreamAttachments {
             if (!holdsAttachedDreams(o)) {
                 continue;
             }
-            DreamPaymentLink link = new DreamPaymentLink(o.getId(),
-                    o.getStatus() == OrderStatus.PENDING_REVIEW ? DreamPaymentLink.PENDING_REVIEW : DreamPaymentLink.REJECTED,
-                    o.getTransferSubmittedAt(), o.getReviewNote());
+            DreamPaymentLink link = link(o);
             for (UUID id : readIntent(o.getCheckoutIntent())) {
                 links.putIfAbsent(id, link);
             }
@@ -165,10 +184,45 @@ public class DreamAttachments {
         return links;
     }
 
-    /** The payment {@code dream} is shown as waiting on, or null (only drafts can be attached). */
+    /**
+     * The user's AWAITING_PAYMENT dreams (V40) with the payment each one waits on: its order revoked (REVOKED), sent
+     * again (PENDING_REVIEW) or rejected after that (REJECTED).
+     */
+    @Transactional(readOnly = true)
+    public Map<UUID, DreamPaymentLink> heldDreams(UUID userId) {
+        return heldLinks(dreamRepository.findByUserIdAndStatusOrderByCreatedAtDesc(userId, DreamStatus.AWAITING_PAYMENT));
+    }
+
+    /** Links of the given held dreams (others are skipped). */
+    @Transactional(readOnly = true)
+    public Map<UUID, DreamPaymentLink> heldLinks(Collection<Dream> dreams) {
+        Map<UUID, DreamPaymentLink> links = new LinkedHashMap<>();
+        Map<UUID, Order> orders = new LinkedHashMap<>();
+        for (Dream d : dreams) {
+            if (d.getStatus() != DreamStatus.AWAITING_PAYMENT || d.getHeldOrderId() == null) {
+                continue;
+            }
+            Order o = orders.computeIfAbsent(d.getHeldOrderId(), id -> orderRepository.findById(id).orElse(null));
+            if (o != null) {
+                links.put(d.getId(), link(o));
+            }
+        }
+        return links;
+    }
+
+    /**
+     * The payment {@code dream} is shown as waiting on, or null: a draft attached to a payment, or a dream held by an
+     * order whose approval was taken back (V40).
+     */
     @Transactional(readOnly = true)
     public DreamPaymentLink linkOf(Dream dream) {
-        if (dream == null || dream.getStatus() != DreamStatus.DRAFT) {
+        if (dream == null) {
+            return null;
+        }
+        if (dream.getStatus() == DreamStatus.AWAITING_PAYMENT) {
+            return heldLinks(List.of(dream)).get(dream.getId());
+        }
+        if (dream.getStatus() != DreamStatus.DRAFT) {
             return null;
         }
         return attachedDrafts(dream.getUserId()).get(dream.getId());

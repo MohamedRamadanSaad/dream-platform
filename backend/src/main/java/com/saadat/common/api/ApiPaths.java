@@ -217,6 +217,11 @@ public final class ApiPaths {
         public static final String INSTAPAY_TRANSFER_APPROVE = INSTAPAY_TRANSFERS + "/{id}/approve";
         /** POST {note}: no matching transfer → FAILED, the buyer is told and may correct it. */
         public static final String INSTAPAY_TRANSFER_REJECT = INSTAPAY_TRANSFERS + "/{id}/reject";
+        /**
+         * POST {note?}: takes back a mistaken approval (SUCCESS → FAILED/APPROVAL_REVOKED, credits withdrawn, dreams
+         * AWAITING_PAYMENT, buyer asked to resend; docs/REVOKE_APPROVAL_CONTRACT.md); returns TransferRow.
+         */
+        public static final String INSTAPAY_TRANSFER_REVOKE = INSTAPAY_TRANSFERS + "/{id}/revoke";
 
         public static final String YOUTUBE_REFRESH = ROOT + "/youtube/refresh";
 

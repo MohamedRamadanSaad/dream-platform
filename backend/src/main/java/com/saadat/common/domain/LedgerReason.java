@@ -8,5 +8,10 @@ public enum LedgerReason {
     MANUAL,
     BONUS,
     /** Unused part of an expired purchase (negative; source_id = that purchase row). */
-    EXPIRE
+    EXPIRE,
+    /**
+     * Credits of a paid order withdrawn because the interpreter took back its approval (V40; negative, order_id = that
+     * order, source_id = the lot it empties: the order's PURCHASE row or a REFUND row of a held dream).
+     */
+    REVOKE
 }

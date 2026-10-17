@@ -25,4 +25,10 @@ public interface CouponRepository extends JpaRepository<Coupon, UUID> {
     @Query("update Coupon c set c.usedCount = c.usedCount + 1 "
             + "where c.id = :id and (c.maxUses is null or c.usedCount < c.maxUses)")
     int incrementUsedCount(@Param("id") UUID id);
+
+    /** Gives one use back (an approval taken back, V40); never below zero. */
+    @Modifying
+    @Transactional
+    @Query("update Coupon c set c.usedCount = c.usedCount - 1 where c.id = :id and c.usedCount > 0")
+    int decrementUsedCount(@Param("id") UUID id);
 }

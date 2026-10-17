@@ -18,7 +18,8 @@ import lombok.Setter;
 
 /**
  * Row of {@code credit_ledger}. Balance = SUM(delta) per user; rows are append-only.
- * DB guards: delta != 0; at most one PURCHASE per order, one SUBMIT and one REFUND per dream.
+ * DB guards (V40): delta != 0; one PURCHASE per (order, source_id), one SUBMIT per (dream, source_id), one REFUND
+ * per (dream, source_id) — see {@link #sourceId}.
  */
 @Getter
 @Setter
@@ -57,7 +58,11 @@ public class CreditLedgerEntry {
     @Column(name = "expires_at")
     private Instant expiresAt;
 
-    /** EXPIRE rows only: the purchase row that expired. */
+    /**
+     * The row this one refers to: EXPIRE / REVOKE / SUBMIT = the lot (positive row) it takes from; REFUND = the SUBMIT
+     * row it gives back (V40; null before); PURCHASE = the earlier, revoked PURCHASE of the same order when the order
+     * was approved again (V40; null the first time).
+     */
     @Column(name = "source_id")
     private UUID sourceId;
 

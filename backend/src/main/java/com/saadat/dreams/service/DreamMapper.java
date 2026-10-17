@@ -41,15 +41,21 @@ public class DreamMapper {
     }
 
     /**
-     * The dreamer may still change the text: DRAFT, or IN_REVIEW / AWAITING_USER_REPLY before the interpreter pressed
-     * "Start interpreting".
+     * The dreamer may still change the text: DRAFT, or IN_REVIEW / AWAITING_USER_REPLY / AWAITING_PAYMENT (V40) before
+     * the interpreter pressed "Start interpreting".
      */
     public static boolean editable(Dream d) {
         if (d.getStatus() == DreamStatus.DRAFT) {
             return true;
         }
         return d.getStartedAt() == null
-                && (d.getStatus() == DreamStatus.IN_REVIEW || d.getStatus() == DreamStatus.AWAITING_USER_REPLY);
+                && (d.getStatus() == DreamStatus.IN_REVIEW || d.getStatus() == DreamStatus.AWAITING_USER_REPLY
+                || d.getStatus() == DreamStatus.AWAITING_PAYMENT);
+    }
+
+    /** A dream that shows the payment it waits on: an attached draft, or a held dream (V40). */
+    static boolean showsPayment(Dream d) {
+        return d.getStatus() == DreamStatus.DRAFT || d.getStatus() == DreamStatus.AWAITING_PAYMENT;
     }
 
     /** Summary for the dream's owner: unread = interpreter messages not yet read. */
@@ -59,8 +65,11 @@ public class DreamMapper {
 
     /** Summaries of one user's dreams, with the attached-payment lookup done once. */
     public List<DreamSummaryDto> summaries(UUID userId, List<Dream> dreams) {
-        Map<UUID, DreamPaymentLink> links = dreams.stream().anyMatch(d -> d.getStatus() == DreamStatus.DRAFT)
-                ? attachments.attachedDrafts(userId) : Map.of();
+        Map<UUID, DreamPaymentLink> links = new java.util.HashMap<>();
+        if (dreams.stream().anyMatch(d -> d.getStatus() == DreamStatus.DRAFT)) {
+            links.putAll(attachments.attachedDrafts(userId));
+        }
+        links.putAll(attachments.heldLinks(dreams));
         return dreams.stream().map(d -> summary(d, links.get(d.getId()))).toList();
     }
 
@@ -68,7 +77,7 @@ public class DreamMapper {
         long unread = messageRepository.countByDreamIdAndSenderRoleAndReadAtIsNull(d.getId(), Role.INTERPRETER);
         return new DreamSummaryDto(d.getId(), excerpt(d.getText()), d.getStatus(), d.getCreatedAt(), d.getSubmittedAt(),
                 d.getInterpretedAt(), d.getExpectedBy(), unread, d.getStartedAt(), d.getExpectedDays(), editable(d),
-                d.getStatus() == DreamStatus.DRAFT ? payment : null);
+                showsPayment(d) ? payment : null);
     }
 
     public DreamDetailDto detail(Dream d) {

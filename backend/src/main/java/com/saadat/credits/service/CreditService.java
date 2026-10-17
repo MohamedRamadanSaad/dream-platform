@@ -11,7 +11,9 @@ import com.saadat.payments.repo.CreditLedgerRepository;
 import com.saadat.users.repo.UserRepository;
 import java.time.Clock;
 import java.time.Instant;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -79,19 +81,92 @@ public class CreditService {
      */
     @Transactional
     public CreditLedgerEntry consumeForDream(UUID userId, UUID dreamId) {
+        return consumeForDream(userId, dreamId, null);
+    }
+
+    /**
+     * {@link #consumeForDream(UUID, UUID)} that takes the credit from a lot of {@code preferredOrderId} when one still
+     * has credits (a held dream resumed by the re-approval of its order, V40), else from the usual next lot.
+     */
+    @Transactional
+    public CreditLedgerEntry consumeForDream(UUID userId, UUID dreamId, UUID preferredOrderId) {
         int balance = lockAndGetBalance(userId);
         if (balance < 1) {
             throw new PaymentRequiredException(1 - balance);
         }
+        Instant now = clock.instant();
         List<CreditLedgerEntry> rows = ledgerRepository.findByUserIdOrderByCreatedAtAsc(userId);
-        CreditLots.Lot lot = CreditLots.nextToSpend(CreditLots.replay(CreditExpiryService.toEntries(rows)),
-                clock.instant());
-        CreditLedgerEntry source = lot == null ? null
-                : rows.stream().filter(r -> r.getId().equals(lot.id())).findFirst().orElse(null);
-        CreditLedgerEntry e = save(userId, -1, LedgerReason.SUBMIT, source == null ? null : source.getOrderId(),
+        Map<UUID, CreditLedgerEntry> byId = new HashMap<>();
+        rows.forEach(r -> byId.put(r.getId(), r));
+        List<CreditLots.Lot> lots = CreditLots.replay(CreditExpiryService.toEntries(rows));
+        CreditLots.Lot lot = null;
+        if (preferredOrderId != null) {
+            lot = CreditLots.nextToSpend(lots.stream()
+                    .filter(l -> byId.containsKey(l.id())
+                            && preferredOrderId.equals(byId.get(l.id()).getOrderId()))
+                    .toList(), now);
+            if (lot != null && !lot.validAt(now)) {
+                lot = null;
+            }
+        }
+        if (lot == null) {
+            lot = CreditLots.nextToSpend(lots, now);
+        }
+        CreditLedgerEntry source = lot == null ? null : byId.get(lot.id());
+        // source_id is part of the SUBMIT guard (V40): it is set before the row is written
+        CreditLedgerEntry e = entry(userId, -1, LedgerReason.SUBMIT, source == null ? null : source.getOrderId(),
                 dreamId, null, null);
         e.setSourceId(source == null ? null : source.getId());
         return ledgerRepository.save(e);
+    }
+
+    /**
+     * Gives back the credit of one dream debit ({@code submit}, a SUBMIT row) once: REFUND +1 with the same order and
+     * {@code source_id} = that debit (V40 guard: one refund per debit). Returns null when it was already given back.
+     */
+    @Transactional
+    public CreditLedgerEntry refundDebit(CreditLedgerEntry submit, String note, UUID createdBy) {
+        if (submit == null || submit.getReason() != LedgerReason.SUBMIT
+                || ledgerRepository.existsBySourceIdAndReason(submit.getId(), LedgerReason.REFUND)) {
+            return null;
+        }
+        if (!userRepository.existsById(submit.getUserId())) {
+            throw NotFoundException.of("User", submit.getUserId());
+        }
+        CreditLedgerEntry e = entry(submit.getUserId(), 1, LedgerReason.REFUND, submit.getOrderId(),
+                submit.getDreamId(), note, createdBy);
+        e.setSourceId(submit.getId());
+        return ledgerRepository.save(e);
+    }
+
+    /**
+     * Withdraws what is left of every lot of {@code orderId} (its PURCHASE rows and the REFUND rows that gave its
+     * credits back): one REVOKE row per lot with {@code source_id} = that lot (V40). Expired credits were already
+     * written off by {@link #lockAndGetBalance} and are not removed twice; the balance never goes below zero. The
+     * caller holds the user lock. Returns the number of credits withdrawn.
+     */
+    @Transactional(propagation = org.springframework.transaction.annotation.Propagation.MANDATORY)
+    public int revokeOrderCredits(UUID userId, UUID orderId, String note, UUID createdBy) {
+        int balance = lockAndGetBalance(userId);
+        List<CreditLedgerEntry> rows = ledgerRepository.findByUserIdOrderByCreatedAtAsc(userId);
+        Map<UUID, CreditLedgerEntry> byId = new HashMap<>();
+        rows.forEach(r -> byId.put(r.getId(), r));
+        int total = 0;
+        for (CreditLots.Lot lot : CreditLots.replay(CreditExpiryService.toEntries(rows))) {
+            CreditLedgerEntry row = byId.get(lot.id());
+            if (row == null || !orderId.equals(row.getOrderId()) || lot.remaining() <= 0) {
+                continue;
+            }
+            int n = Math.min(lot.remaining(), balance - total);
+            if (n <= 0) {
+                break;
+            }
+            CreditLedgerEntry e = entry(userId, -n, LedgerReason.REVOKE, orderId, null, note, createdBy);
+            e.setSourceId(lot.id());
+            ledgerRepository.save(e);
+            total += n;
+        }
+        return total;
     }
 
     /** Credits (or, for MANUAL corrections, debits) the ledger. A negative delta may not overdraw. */
@@ -118,16 +193,34 @@ public class CreditService {
         return save(userId, delta, reason, orderId, dreamId, note, createdBy);
     }
 
-    /** Credits of a paid order; they expire at {@code expiresAt} (null = never). */
+    /**
+     * Credits of a paid order; they expire at {@code expiresAt} (null = never). An order approved again after its
+     * approval was taken back (V40) gets a new PURCHASE row whose {@code source_id} is the previous one.
+     */
     @Transactional
     public CreditLedgerEntry addPurchase(UUID userId, int credits, UUID orderId, Instant expiresAt) {
-        CreditLedgerEntry e = add(userId, credits, LedgerReason.PURCHASE, orderId, null, null);
+        if (credits <= 0) {
+            throw new ValidationException("delta must not be zero", "INVALID_AMOUNT");
+        }
+        if (!userRepository.existsById(userId)) {
+            throw NotFoundException.of("User", userId);
+        }
+        List<CreditLedgerEntry> earlier = orderId == null ? List.of()
+                : ledgerRepository.findAllByOrderIdAndReasonOrderByCreatedAtAsc(orderId, LedgerReason.PURCHASE);
+        CreditLedgerEntry e = entry(userId, credits, LedgerReason.PURCHASE, orderId, null, null, null);
         e.setExpiresAt(expiresAt);
+        e.setSourceId(earlier.isEmpty() ? null : earlier.get(earlier.size() - 1).getId());
         return ledgerRepository.save(e);
     }
 
     private CreditLedgerEntry save(UUID userId, int delta, LedgerReason reason, UUID orderId, UUID dreamId,
                                    String note, UUID createdBy) {
+        return ledgerRepository.save(entry(userId, delta, reason, orderId, dreamId, note, createdBy));
+    }
+
+    /** A new, unsaved row. */
+    private CreditLedgerEntry entry(UUID userId, int delta, LedgerReason reason, UUID orderId, UUID dreamId,
+                                    String note, UUID createdBy) {
         CreditLedgerEntry e = new CreditLedgerEntry();
         e.setUserId(userId);
         e.setDelta(delta);
@@ -137,6 +230,6 @@ public class CreditService {
         e.setNote(note);
         e.setCreatedBy(createdBy);
         e.setCreatedAt(clock.instant());
-        return ledgerRepository.save(e);
+        return e;
     }
 }

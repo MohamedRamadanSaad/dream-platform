@@ -28,6 +28,8 @@ import java.util.List;
  *   <li>{@link #YOUTUBE_NEW_VIDEO}: name, videoTitle, videoUrl*, thumbnailUrl</li>
  *   <li>{@link #WELCOME}: name, link</li>
  *   <li>{@link #PAYMENT_FAILED}: name, packageName, amount, currency, orderRef, link</li>
+ *   <li>{@link #PAYMENT_REVIEW_NEEDED}: name, packageName, amount, currency, orderRef, reference, note (the
+ *       interpreter's note, optional), heldDreams (number of dreams kept), link (the InstaPay payment page)</li>
  *   <li>{@link #DREAM_CANCELLED}: name, excerpt, reason, refunded (boolean), balance, link</li>
  *   <li>{@link #CREDITS_ADJUSTED}: name, delta (signed text, e.g. "+2"), reason, balance, link</li>
  *   <li>{@link #TESTIMONIAL_APPROVED}: name, rating, comment, link</li>
@@ -84,6 +86,11 @@ public final class MailTemplates {
     public static final String SUPPORT_CLOSED = "support-closed";
     /** To the dreamer: the interpreter started interpreting; the text is final, with the expected number of days. */
     public static final String DREAM_STARTED = "dream-started";
+    /**
+     * To the buyer: the interpreter took back the approval of his InstaPay transfer; his dreams are kept and wait; he
+     * should check the transfer number, sender name and amount and send them again (V40).
+     */
+    public static final String PAYMENT_REVIEW_NEEDED = "payment-review-needed";
 
     public static final List<String> ALL = List.of(
             MAGIC_LINK, DREAM_RECEIVED, INTERPRETER_QUESTION, USER_REPLIED, INTERPRETATION_READY,
@@ -91,7 +98,7 @@ public final class MailTemplates {
             DREAM_SUBMITTED, YOUTUBE_NEW_VIDEO, WELCOME, PAYMENT_FAILED, DREAM_CANCELLED, CREDITS_ADJUSTED,
             TESTIMONIAL_APPROVED, ACCOUNT_DELETED, NEW_USER, TESTIMONIAL_RECEIVED, SUPPORT_AUTO_REPLY, NEW_SIGN_IN,
             PASSKEY_ADDED, SUPPORT_IN_PROGRESS, SUPPORT_CLOSED, EMAIL_CODE,
-            DREAM_STARTED);
+            DREAM_STARTED, PAYMENT_REVIEW_NEEDED);
 
     /**
      * Sign-in / account codes: always sent (no {@code mail.event.*} switch) and never copied to the Sent folder.

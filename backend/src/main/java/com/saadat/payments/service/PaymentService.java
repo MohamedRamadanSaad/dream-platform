@@ -273,6 +273,13 @@ public class PaymentService {
         couponService.redeem(order.getCouponId(), order.getUserId(), order.getId());
         promotionService.recordUse(order.getPromotionId());
 
+        // approved again after the approval was taken back (V40): the dreams it paid resume first (each takes one
+        // credit of this order), so the attached drafts never take their credits
+        List<UUID> resumed = dreamService.resumeHeld(order.getUserId(), order.getId());
+        if (!resumed.isEmpty()) {
+            log.info("Order {} resumed {} held dream(s)", order.getId(), resumed.size());
+        }
+
         List<UUID> intent = readIntent(order.getCheckoutIntent());
         if (!intent.isEmpty()) {
             List<UUID> submitted = dreamService.autoSubmit(order.getUserId(), intent, order.getId());

@@ -158,16 +158,26 @@ public class DreamService {
         if (FILTER_PENDING_PAYMENT.equals(f) || DreamStatus.DRAFT.name().equals(f)) {
             boolean attachedOnly = FILTER_PENDING_PAYMENT.equals(f);
             Map<UUID, DreamPaymentLink> links = attachments.attachedDrafts(userId);
-            List<Dream> drafts = dreamRepository.findByUserIdAndStatusOrderByCreatedAtDesc(userId, DreamStatus.DRAFT)
+            List<Dream> rows = new ArrayList<>(dreamRepository.findByUserIdAndStatusOrderByCreatedAtDesc(userId,
+                            DreamStatus.DRAFT)
                     .stream()
                     .filter(d -> links.containsKey(d.getId()) == attachedOnly)
-                    .toList();
-            int from = (int) Math.min((long) pageable.getPageNumber() * pageable.getPageSize(), drafts.size());
-            int to = Math.min(from + pageable.getPageSize(), drafts.size());
-            List<DreamSummaryDto> items = drafts.subList(from, to).stream()
+                    .toList());
+            if (attachedOnly) {
+                // dreams whose payment approval was taken back wait here too (V40)
+                List<Dream> held = dreamRepository.findByUserIdAndStatusOrderByCreatedAtDesc(userId,
+                        DreamStatus.AWAITING_PAYMENT);
+                links.putAll(attachments.heldLinks(held));
+                rows.addAll(held);
+                rows.sort(java.util.Comparator.<Dream, Instant>comparing(Dream::getCreatedAt,
+                        java.util.Comparator.nullsFirst(java.util.Comparator.<Instant>naturalOrder())).reversed());
+            }
+            int from = (int) Math.min((long) pageable.getPageNumber() * pageable.getPageSize(), rows.size());
+            int to = Math.min(from + pageable.getPageSize(), rows.size());
+            List<DreamSummaryDto> items = rows.subList(from, to).stream()
                     .map(d -> mapper.summary(d, links.get(d.getId())))
                     .toList();
-            return PageResponse.of(items, pageable.getPageNumber(), pageable.getPageSize(), drafts.size());
+            return PageResponse.of(items, pageable.getPageNumber(), pageable.getPageSize(), rows.size());
         }
         DreamStatus status;
         try {
@@ -176,7 +186,9 @@ public class DreamService {
             throw new ValidationException("Unknown status: " + filter, "INVALID_STATUS");
         }
         Page<Dream> dreams = dreamRepository.findByUserIdAndStatusOrderByCreatedAtDesc(userId, status, pageable);
-        Function<Dream, DreamSummaryDto> toDto = d -> mapper.summary(d, null);
+        Map<UUID, DreamPaymentLink> held = status == DreamStatus.AWAITING_PAYMENT
+                ? attachments.heldLinks(dreams.getContent()) : Map.of();
+        Function<Dream, DreamSummaryDto> toDto = d -> mapper.summary(d, held.get(d.getId()));
         return PageResponse.from(dreams, toDto);
     }
 
@@ -192,7 +204,9 @@ public class DreamService {
 
     /**
      * Submits the caller's drafts: all must be the caller's DRAFTs (else 409), credits are consumed
-     * atomically (else 402 INSUFFICIENT_CREDITS, nothing submitted).
+     * atomically (else 402 INSUFFICIENT_CREDITS, nothing submitted). The caller's AWAITING_PAYMENT dreams (their
+     * payment approval was taken back, V40) are accepted too: they are resumed with the credits the user has (any
+     * lot) and leave the held order.
      *
      * @param orderId order that paid for these credits (auto-submit after checkout), or null
      */
@@ -204,19 +218,92 @@ public class DreamService {
         }
         int balance = creditService.lockAndGetBalance(userId);
         List<Dream> dreams = dreamRepository.findAllByIdInAndUserIdForUpdate(ids, userId);
-        if (dreams.size() != ids.size() || dreams.stream().anyMatch(d -> d.getStatus() != DreamStatus.DRAFT)) {
+        if (dreams.size() != ids.size() || dreams.stream().anyMatch(d -> d.getStatus() != DreamStatus.DRAFT
+                && d.getStatus() != DreamStatus.AWAITING_PAYMENT)) {
             throw new ConflictException("Some dreams are not your drafts", "NOT_DRAFT");
         }
+        List<UUID> draftIds = dreams.stream().filter(d -> d.getStatus() == DreamStatus.DRAFT).map(Dream::getId)
+                .toList();
         // a draft held by a payment in progress or under review is sent by that payment (contract §2); a rejected
         // payment lets it go: submitted with the credits the user has, it leaves that payment
-        attachments.requireNotHeld(userId, ids, null, CODE_ATTACHED_TO_PAYMENT);
+        attachments.requireNotHeld(userId, draftIds, null, CODE_ATTACHED_TO_PAYMENT);
         if (balance < dreams.size()) {
             throw new PaymentRequiredException(dreams.size() - balance);
         }
-        attachments.detachFromRejected(userId, ids, null);
-        List<UUID> submitted = doSubmit(userId, order(dreams, ids), orderId);
+        attachments.detachFromRejected(userId, draftIds, null);
+        List<Dream> ordered = order(dreams, ids);
+        List<UUID> submitted = new ArrayList<>();
+        Instant now = clock.instant();
+        for (Dream d : ordered) {
+            if (d.getStatus() == DreamStatus.AWAITING_PAYMENT) {
+                resume(d, null, now);
+                submitted.add(d.getId());
+            }
+        }
+        List<Dream> drafts = ordered.stream().filter(d -> d.getStatus() == DreamStatus.DRAFT).toList();
+        if (!drafts.isEmpty()) {
+            submitted.addAll(doSubmit(userId, drafts, orderId));
+        }
         // same (read-write) transaction and lock; the aggregate query auto-flushes the new ledger rows
         return new DreamRequests.SubmitResponse(submitted, creditService.lockAndGetBalance(userId));
+    }
+
+    /**
+     * The order {@code orderId} was approved again after its approval had been taken back (V40): its AWAITING_PAYMENT
+     * dreams resume, each paid with one credit of that order (oldest submitted first; a dream stays held when the
+     * balance runs out). No interpreter notification: the approval is hers. Joins the payment transaction; lock order
+     * user → dreams.
+     */
+    @Transactional
+    public List<UUID> resumeHeld(UUID userId, UUID orderId) {
+        List<UUID> ids = dreamRepository.findByHeldOrderIdAndStatusOrderBySubmittedAtAsc(orderId,
+                DreamStatus.AWAITING_PAYMENT).stream().map(Dream::getId).toList();
+        if (ids.isEmpty()) {
+            return List.of();
+        }
+        int balance = creditService.lockAndGetBalance(userId);
+        Instant now = clock.instant();
+        List<UUID> resumed = new ArrayList<>();
+        for (Dream d : order(dreamRepository.findAllByIdInAndUserIdForUpdate(ids, userId), ids)) {
+            if (d.getStatus() != DreamStatus.AWAITING_PAYMENT || !orderId.equals(d.getHeldOrderId())) {
+                continue;
+            }
+            if (balance < 1) {
+                break;
+            }
+            resume(d, orderId, now);
+            balance--;
+            resumed.add(d.getId());
+        }
+        return resumed;
+    }
+
+    /**
+     * AWAITING_PAYMENT → back to work, paid with one credit (from a lot of {@code preferredOrderId} when it has one):
+     * AWAITING_USER_REPLY when the interpreter's question was still open (the SLA stays paused since she asked), else
+     * IN_PROGRESS when she had started, IN_REVIEW otherwise, with {@code expectedBy} moved forward by the time it was
+     * held. Text, messages, startedAt and expectedDays are kept; the hold is cleared.
+     */
+    private void resume(Dream d, UUID preferredOrderId, Instant now) {
+        CreditLedgerEntry entry = creditService.consumeForDream(d.getUserId(), d.getId(), preferredOrderId);
+        d.setLedgerEntryId(entry.getId());
+        d.setHeldOrderId(null);
+        if (openQuestion(d)) {
+            d.setStatus(DreamStatus.AWAITING_USER_REPLY);
+            if (d.getSlaPausedAt() == null) {
+                d.setSlaPausedAt(now);
+            }
+        } else {
+            resumeSla(d, now);
+            d.setStatus(d.getStartedAt() != null ? DreamStatus.IN_PROGRESS : DreamStatus.IN_REVIEW);
+        }
+        dreamRepository.save(d);
+    }
+
+    /** The last message of the dream is the interpreter's (a question the dreamer has not answered yet). */
+    private boolean openQuestion(Dream d) {
+        List<DreamMessage> messages = messageRepository.findByDreamIdOrderByCreatedAtAsc(d.getId());
+        return !messages.isEmpty() && messages.get(messages.size() - 1).getSenderRole() == Role.INTERPRETER;
     }
 
     /**

@@ -52,6 +52,12 @@ public class InstapayController {
         return instapayService.reject(AuthPrincipal.current().userId(), id, body == null ? null : body.note());
     }
 
+    @PostMapping(ApiPaths.Admin.INSTAPAY_TRANSFER_REVOKE)
+    public InstapayDtos.TransferRow revoke(@PathVariable UUID id,
+                                           @Valid @RequestBody(required = false) InstapayDtos.RevokeRequest body) {
+        return instapayService.revoke(AuthPrincipal.current().userId(), id, body == null ? null : body.note());
+    }
+
     @GetMapping(ApiPaths.Admin.INSTAPAY_SETTINGS)
     public InstapayDtos.Settings settings() {
         return instapayService.settings();

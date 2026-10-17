@@ -152,10 +152,12 @@ public class AccountService {
         CreditExpiryService.View credits = creditExpiryService.view(userId);
         CreditLots.NextExpiry next = credits.nextExpiry();
         long drafts = dreamRepository.countByUserIdAndStatus(userId, DreamStatus.DRAFT);
-        long pendingPayment = drafts == 0 ? 0 : dreamAttachments.attachedDrafts(userId).size();
+        long attachedDrafts = drafts == 0 ? 0 : dreamAttachments.attachedDrafts(userId).size();
+        // dreams whose payment approval was taken back wait for the payment too (V40)
+        long held = dreamRepository.countByUserIdAndStatus(userId, DreamStatus.AWAITING_PAYMENT);
         return new DashboardSummary(
-                Math.max(0, drafts - pendingPayment),
-                pendingPayment,
+                Math.max(0, drafts - attachedDrafts),
+                attachedDrafts + held,
                 dreamRepository.countByUserIdAndStatus(userId, DreamStatus.IN_REVIEW),
                 dreamRepository.countByUserIdAndStatus(userId, DreamStatus.IN_PROGRESS),
                 dreamRepository.countByUserIdAndStatus(userId, DreamStatus.AWAITING_USER_REPLY),

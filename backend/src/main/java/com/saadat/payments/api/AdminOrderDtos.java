@@ -55,7 +55,11 @@ public final class AdminOrderDtos {
             Transfer transfer,
             UserRef user,
             List<DreamRef> dreams,
-            boolean canReview) {
+            boolean canReview,
+            /** INSTAPAY && SUCCESS && none of its dreams interpreted: the approval may be taken back (V40). */
+            boolean canRevoke,
+            /** Why an approved InstaPay order cannot be taken back: DREAM_ALREADY_INTERPRETED, else null. */
+            String revokeBlockedReason) {
     }
 
     /** The InstaPay transfer the buyer reported, and the interpreter's decision. */

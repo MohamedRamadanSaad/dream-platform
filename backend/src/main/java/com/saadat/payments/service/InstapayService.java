@@ -8,6 +8,8 @@ import com.saadat.common.domain.PaymentProviderType;
 import com.saadat.common.error.ConflictException;
 import com.saadat.common.error.NotFoundException;
 import com.saadat.common.error.ValidationException;
+import com.saadat.credits.service.CreditService;
+import com.saadat.credits.service.OrderCredits;
 import com.saadat.dreams.domain.Dream;
 import com.saadat.dreams.repo.DreamRepository;
 import com.saadat.mail.EventMailer;
@@ -15,10 +17,13 @@ import com.saadat.mail.MailService;
 import com.saadat.mail.MailTemplates;
 import com.saadat.notifications.service.NotificationService;
 import com.saadat.payments.api.InstapayDtos;
+import com.saadat.payments.domain.CreditLedgerEntry;
 import com.saadat.payments.domain.Order;
 import com.saadat.payments.provider.InstapayProvider;
 import com.saadat.payments.provider.WebhookEvent;
 import com.saadat.payments.repo.OrderRepository;
+import com.saadat.pricing.service.CouponService;
+import com.saadat.pricing.service.PromotionService;
 import com.saadat.settings.SettingKeys;
 import com.saadat.settings.SettingsService;
 import com.saadat.users.domain.User;
@@ -59,6 +64,13 @@ public class InstapayService {
     static final List<OrderStatus> REVIEWED = List.of(OrderStatus.SUCCESS, OrderStatus.FAILED,
             OrderStatus.SUSPICIOUS);
     public static final String REASON_REJECTED = "TRANSFER_REJECTED";
+    /** The interpreter took back her approval (V40): the buyer checks and resends the details. */
+    public static final String REASON_REVOKED = "APPROVAL_REVOKED";
+    public static final String CODE_NOT_REVOCABLE = "NOT_REVOCABLE";
+    public static final String CODE_DREAM_ALREADY_INTERPRETED = "DREAM_ALREADY_INTERPRETED";
+    /** Dream statuses held (AWAITING_PAYMENT) when their payment's approval is taken back. */
+    static final Set<DreamStatus> HOLDABLE = Set.of(DreamStatus.IN_REVIEW, DreamStatus.IN_PROGRESS,
+            DreamStatus.AWAITING_USER_REPLY);
     public static final String LINK_ADMIN = "/admin/orders";
 
     private static final Pattern REFERENCE = Pattern.compile("\\d{6,24}");
@@ -75,6 +87,10 @@ public class InstapayService {
     private final EventMailer eventMailer;
     private final AuditService auditService;
     private final SettingsService settings;
+    private final CreditService creditService;
+    private final OrderCredits orderCredits;
+    private final CouponService couponService;
+    private final PromotionService promotionService;
     private final Clock clock;
 
     // ================================================================== buyer
@@ -85,15 +101,16 @@ public class InstapayService {
     }
 
     /**
-     * Records the transfer details: INITIATED (not expired) → PENDING_REVIEW. While PENDING_REVIEW, or after a
-     * rejection, the buyer may correct them (a rejection is reopened for review).
+     * Records the transfer details: INITIATED (not expired) → PENDING_REVIEW. While PENDING_REVIEW, after a rejection,
+     * or after the interpreter took back her approval (V40), the buyer may correct them (the order is reopened for
+     * review; the same reference is allowed).
      */
     @Transactional
     public InstapayDtos.OrderView submit(UUID userId, UUID orderId, InstapayDtos.SubmitRequest req) {
         Order order = owned(userId, orderId, true);
         Instant now = clock.instant();
         boolean firstTime = order.getStatus() == OrderStatus.INITIATED;
-        boolean reopened = order.getStatus() == OrderStatus.FAILED && REASON_REJECTED.equals(order.getFailureReason());
+        boolean reopened = DreamAttachments.isRejected(order);
         // the expiry job marks it EXPIRED; refusing here is enough (a write would roll back with the error)
         if (firstTime && order.getExpiresAt() != null && !order.getExpiresAt().isAfter(now)) {
             throw new ConflictException("This order expired, please choose the package again", "ORDER_EXPIRED");
@@ -238,6 +255,102 @@ public class InstapayService {
         return toRow(order, buyer);
     }
 
+    /**
+     * Takes back a mistaken approval (docs/REVOKE_APPROVAL_CONTRACT.md §2), in one transaction (lock order: order →
+     * user → dreams, as approve): the dreams this order paid that are still being worked on wait as AWAITING_PAYMENT
+     * (their credit is given back, REFUND), what is left of the order's credits is withdrawn (REVOKE), the coupon /
+     * promotion use is given back, the order becomes FAILED / APPROVAL_REVOKED without paid date, settled amount or
+     * transaction id (so the same reference can be confirmed again), and the buyer is asked to check and resend the
+     * details (in-app + push + payment-review-needed e-mail). 409 NOT_REVOCABLE unless an InstaPay order in SUCCESS;
+     * 409 DREAM_ALREADY_INTERPRETED when one of its dreams was already interpreted.
+     */
+    @Transactional
+    public InstapayDtos.TransferRow revoke(UUID interpreterId, UUID orderId, String note) {
+        Order order = orderRepository.findByIdForUpdate(orderId)
+                .orElseThrow(() -> NotFoundException.of("Order", orderId));
+        if (order.getProvider() != PaymentProviderType.INSTAPAY || order.getStatus() != OrderStatus.SUCCESS) {
+            throw new ConflictException("Only an approved InstaPay payment can be taken back", CODE_NOT_REVOCABLE);
+        }
+        UUID userId = order.getUserId();
+        Instant now = clock.instant();
+        String cleanNote = note == null || note.isBlank() ? null : note.trim();
+        creditService.lockAndGetBalance(userId);
+
+        List<CreditLedgerEntry> debits = orderCredits.openDebits(userId, orderId);
+        Map<UUID, CreditLedgerEntry> debitByDream = new LinkedHashMap<>();
+        debits.forEach(e -> debitByDream.putIfAbsent(e.getDreamId(), e));
+        List<Dream> dreams = debitByDream.isEmpty() ? List.of()
+                : dreamRepository.findAllByIdInAndUserIdForUpdate(debitByDream.keySet(), userId);
+        if (dreams.stream().anyMatch(d -> d.getStatus() == DreamStatus.INTERPRETED)) {
+            throw new ConflictException("A dream paid by this payment was already interpreted",
+                    CODE_DREAM_ALREADY_INTERPRETED);
+        }
+
+        // 1. the dreams being worked on wait for the payment; their credit is given back so step 2 removes it
+        List<UUID> held = new ArrayList<>();
+        for (Dream d : dreams) {
+            if (!HOLDABLE.contains(d.getStatus())) {
+                continue;
+            }
+            creditService.refundDebit(debitByDream.get(d.getId()), REASON_REVOKED, interpreterId);
+            d.setStatus(DreamStatus.AWAITING_PAYMENT);
+            d.setHeldOrderId(orderId);
+            if (d.getSlaPausedAt() == null) {
+                d.setSlaPausedAt(now);
+            }
+            dreamRepository.save(d);
+            held.add(d.getId());
+        }
+        // 2. what is left of the order's credits is withdrawn
+        int withdrawn = creditService.revokeOrderCredits(userId, orderId, cleanNote, interpreterId);
+        // 3. the coupon / promotion use counted at confirm is given back (a later approval counts it again)
+        couponService.unredeem(orderId);
+        promotionService.releaseUse(order.getPromotionId());
+
+        // 4. the order waits for the buyer
+        order.setStatus(OrderStatus.FAILED);
+        order.setFailureReason(REASON_REVOKED);
+        order.setReviewNote(cleanNote);
+        order.setReviewedBy(interpreterId);
+        order.setReviewedAt(now);
+        order.setSettledAmountEgp(null);
+        order.setPaidAt(null);
+        order.setProviderTxnId(null);
+        orderRepository.save(order);
+        Map<String, Object> after = new LinkedHashMap<>();
+        after.put("status", OrderStatus.FAILED.name());
+        after.put("failureReason", REASON_REVOKED);
+        after.put("note", cleanNote == null ? "" : cleanNote);
+        after.put("heldDreams", held.stream().map(UUID::toString).toList());
+        after.put("creditsWithdrawn", withdrawn);
+        auditService.record(interpreterId, "INSTAPAY_REVOKED", "orders", orderId.toString(),
+                Map.of("status", OrderStatus.SUCCESS.name()), after);
+
+        // 5. the buyer checks and resends the details
+        User buyer = userRepository.findById(userId).orElse(null);
+        if (buyer != null && !buyer.isDeleted()) {
+            Map<String, Object> args = new LinkedHashMap<>();
+            args.put("packageName", order.getPackageNameSnapshot());
+            args.put("amount", order.getAmount().stripTrailingZeros().toPlainString());
+            args.put("currency", order.getCurrency().name());
+            args.put("orderNumber", PaymentService.orderRef(order));
+            notificationService.notify(buyer.getId(), NotificationType.PAYMENT_REVOKED, args, pageLink(orderId));
+
+            Map<String, Object> model = new LinkedHashMap<>();
+            model.put("orderRef", PaymentService.orderRef(order));
+            model.put("packageName", order.getPackageNameSnapshot());
+            model.put("amount", order.getAmount());
+            model.put("currency", order.getCurrency().name());
+            model.put("reference", order.getTransferReference());
+            model.put("note", cleanNote);
+            model.put("heldDreams", held.size());
+            model.put(MailService.MODEL_LINK, pageLink(orderId));
+            eventMailer.toUserOnce(buyer, MailTemplates.PAYMENT_REVIEW_NEEDED, model,
+                    MailTemplates.PAYMENT_REVIEW_NEEDED + ":" + orderId + ":" + now.toEpochMilli());
+        }
+        return toRow(order, buyer);
+    }
+
     // ================================================================== settings
 
     @Transactional(readOnly = true)
@@ -323,7 +436,10 @@ public class InstapayService {
         // this order's own dreams are fine; a dream held by another live order of the user is not (contract §2)
         dreamAttachments.requireFree(userId, wanted, order.getId());
         List<UUID> ids = new ArrayList<>(all.stream().filter(drafts::contains).toList());
-        DreamAttachments.requireWithinCredits(ids.size(), order.getCredits());
+        // the dreams this order paid before its approval was taken back (V40) need a credit too
+        int held = dreamRepository.findByHeldOrderIdAndStatusOrderBySubmittedAtAsc(order.getId(),
+                DreamStatus.AWAITING_PAYMENT).size();
+        DreamAttachments.requireWithinCredits(ids.size() + held, order.getCredits());
         dreamAttachments.detachFromRejected(userId, wanted, order.getId());
         return ids;
     }
@@ -352,7 +468,13 @@ public class InstapayService {
                 settings.getString(SettingKeys.INSTAPAY_LINK, ""),
                 settings.getString(SettingKeys.INSTAPAY_RECIPIENT_NAME, ""),
                 o.getCreatedAt(), o.getExpiresAt(), o.getTransferReference(), o.getTransferSenderName(),
-                o.getTransferSubmittedAt(), o.getReviewNote(), paymentService.readIntent(o.getCheckoutIntent()).size());
+                o.getTransferSubmittedAt(), o.getReviewNote(), paymentService.readIntent(o.getCheckoutIntent()).size(),
+                o.getFailureReason(), heldCount(o));
+    }
+
+    private int heldCount(Order o) {
+        return dreamRepository.findByHeldOrderIdAndStatusOrderBySubmittedAtAsc(o.getId(), DreamStatus.AWAITING_PAYMENT)
+                .size();
     }
 
     private InstapayDtos.TransferRow toRow(Order o, User u) {
@@ -360,7 +482,7 @@ public class InstapayService {
                 u == null ? "" : u.getEmail(), o.getPackageNameSnapshot(), o.getCredits(), o.getAmount(),
                 o.getCurrency(), o.getStatus(), o.getTransferReference(), o.getTransferSenderName(), o.getCreatedAt(),
                 o.getTransferSubmittedAt(), o.getReviewedAt(), o.getReviewNote(),
-                paymentService.readIntent(o.getCheckoutIntent()).size());
+                paymentService.readIntent(o.getCheckoutIntent()).size(), o.getFailureReason(), heldCount(o));
     }
 
     /** SPA link of the buyer's payment page (used in e-mails and notifications). */

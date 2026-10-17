@@ -32,7 +32,9 @@ public record AdminDreamDetailDto(
         DreamDetailDto.TestimonialView testimonial,
         DreamDetailDto.CreditRef credit,
         UserRef user,
-        PaymentRef payment) {
+        PaymentRef payment,
+        /** While AWAITING_PAYMENT: the order whose approval was taken back (V40); else null. */
+        UUID heldOrderId) {
 
     public record UserRef(UUID id, String name, String email, String countryCode, Integer age) {
     }
@@ -60,10 +62,11 @@ public record AdminDreamDetailDto(
             boolean creditsExpired) {
     }
 
-    public static AdminDreamDetailDto of(DreamDetailDto d, Instant userEditedAt, UserRef user, PaymentRef payment) {
+    public static AdminDreamDetailDto of(DreamDetailDto d, Instant userEditedAt, UserRef user, PaymentRef payment,
+                                         UUID heldOrderId) {
         return new AdminDreamDetailDto(d.id(), d.excerpt(), d.status(), d.createdAt(), d.submittedAt(),
                 d.interpretedAt(), d.expectedBy(), d.unreadMessages(), d.startedAt(), d.expectedDays(), d.editable(),
                 userEditedAt, d.text(), d.gender(), d.interpretation(), d.messages(), d.testimonial(), d.credit(), user,
-                payment);
+                payment, heldOrderId);
     }
 }

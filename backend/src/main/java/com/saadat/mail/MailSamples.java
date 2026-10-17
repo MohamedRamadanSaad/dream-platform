@@ -76,6 +76,16 @@ public class MailSamples {
                 m.put("paidAt", now);
                 m.put("link", FrontendPaths.MY_PAYMENTS);
             }
+            case MailTemplates.PAYMENT_REVIEW_NEEDED -> {
+                m.put("packageName", en ? "Three dreams" : "ثلاث رؤى");
+                m.put("amount", new BigDecimal("450.00"));
+                m.put("currency", "EGP");
+                m.put("orderRef", "RN-15001");
+                m.put("reference", "123456789012");
+                m.put("note", en ? "The amount in the transfer is different." : "المبلغ في التحويل مختلف.");
+                m.put("heldDreams", 1);
+                m.put("link", "/me/checkout/instapay/" + SAMPLE_DREAM_ID);
+            }
             case MailTemplates.PAYMENT_FAILED -> {
                 m.put("packageName", en ? "Three dreams" : "ثلاث رؤى");
                 m.put("amount", new BigDecimal("150.00"));

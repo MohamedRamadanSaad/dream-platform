@@ -41,6 +41,12 @@ public interface DreamRepository extends JpaRepository<Dream, UUID> {
     @Query("select d from Dream d where d.id = :id")
     Optional<Dream> findByIdForUpdate(@Param("id") UUID id);
 
+    /** Dreams held by an order whose approval was taken back (V40), oldest submitted first. */
+    List<Dream> findByHeldOrderIdAndStatusOrderBySubmittedAtAsc(UUID heldOrderId, DreamStatus status);
+
+    /** Every dream held by {@code heldOrderId} (V40). */
+    List<Dream> findByHeldOrderId(UUID heldOrderId);
+
     // ---- admin queue ----
     Page<Dream> findByStatusOrderBySubmittedAtAsc(DreamStatus status, Pageable pageable);
 

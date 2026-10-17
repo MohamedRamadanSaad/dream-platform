@@ -175,6 +175,39 @@ Data: `dreams.started_at`, `dreams.expected_days` (1..30), `dreams.user_edited_a
 `DREAM_STARTED` (in-app/push/e-mail, text "…within {daysText}, by {expectedBy}" with Arabic number agreement) and
 `DREAM_EDITED` (interpreters, in-app + push only); settings `mail.event.dream-started`, `mail.theme.dream-started`.
 
+## Undo a mistaken InstaPay approval (V40)
+
+Binding detail: `docs/REVOKE_APPROVAL_CONTRACT.md`. Flow: `SUCCESS --revoke--> FAILED/APPROVAL_REVOKED --buyer resends-->
+PENDING_REVIEW --approve--> SUCCESS` (held dreams resume) or `--reject--> FAILED/TRANSFER_REJECTED` (dreams stay held,
+the buyer may resend again).
+
+| Route | Body / result |
+|---|---|
+| `POST /admin/payments/instapay/transfers/{id}/revoke` | `{note?: string ≤ 500}` → `TransferRow` (interpreter only, 403 otherwise; 404 unknown order). 409 `NOT_REVOCABLE` unless provider INSTAPAY and status SUCCESS; 409 `DREAM_ALREADY_INTERPRETED` when a dream paid by this order is INTERPRETED. One transaction: dreams paid by the order (open SUBMIT debits) in IN_REVIEW / IN_PROGRESS / AWAITING_USER_REPLY → `AWAITING_PAYMENT` (`heldOrderId`, SLA paused; text, messages, `startedAt`, `expectedDays` kept; each debit given back by a REFUND row); what is left of the order's credits is withdrawn (ledger reason `REVOKE`, one row per lot); coupon redemption + promotion use given back; order `FAILED`, `failureReason = APPROVAL_REVOKED`, `reviewNote` = note, `paidAt` / `settledAmountEgp` / provider txn id cleared (same reference can be confirmed again). Audit `INSTAPAY_REVOKED`. Buyer: notification `PAYMENT_REVOKED` (in-app + push, link `/me/checkout/instapay/{id}`) + e-mail `payment-review-needed` (ar/en) |
+| `POST /me/orders/{id}/instapay` | also accepts `FAILED` + `APPROVAL_REVOKED` → `PENDING_REVIEW` (same reference allowed). `TOO_MANY_DREAMS` counts the held dreams too |
+| `POST /admin/payments/instapay/transfers/{id}/approve` | on SUCCESS the order's AWAITING_PAYMENT dreams resume first (one credit each from this order, SUBMIT row): `IN_PROGRESS` when `startedAt` is set, else `IN_REVIEW` (`AWAITING_USER_REPLY` when the interpreter's question was still unanswered); `expectedBy` moved forward by the held time; hold cleared. No interpreter notification; buyer gets the usual PAYMENT_SUCCESS + receipt |
+| `POST /dreams/submit` | also accepts the caller's `AWAITING_PAYMENT` dreams: resumed with any credits, they leave the held order; 402 `INSUFFICIENT_CREDITS` when short (nothing changes) |
+| `POST /admin/dreams/{id}/cancel` | allowed for `AWAITING_PAYMENT`, no refund (the credit was already given back), hold cleared |
+| `POST /admin/dreams/{id}/start` · `/messages` · `/interpretation` | 409 for `AWAITING_PAYMENT` (`NOT_IN_REVIEW` / `NOT_IN_REVIEW` / `INVALID_STATUS`) |
+| `GET /dreams?status=PENDING_PAYMENT` | attached drafts + `AWAITING_PAYMENT` dreams (newest first); `?status=AWAITING_PAYMENT` lists only the held ones |
+| `GET /me/dashboard` | `pendingPayment` = attached drafts + AWAITING_PAYMENT dreams; `inReview` / `inProgress` exclude them |
+| `GET /admin/analytics/summary`, digest, insights | AWAITING_PAYMENT is not open work (not in `inReview` / `inProgress` / `overdue`); revenue counts SUCCESS only, so a revoked order drops out and a re-approved one counts once |
+
+Shapes (field names = types.ts):
+
+- `DreamStatus` adds `AWAITING_PAYMENT` (label «بانتظار تأكيد الدفع» / "Waiting for payment confirmation").
+- `DreamPaymentLink.status`: `'PENDING_REVIEW' | 'REJECTED' | 'REVOKED'`. A held dream carries `payment = {orderId, status, submittedAt, reviewNote}`: `REVOKED` while the order is FAILED/APPROVAL_REVOKED, `PENDING_REVIEW` after the resend, `REJECTED` after a reject. Drafts in the intent of a revoked order show `REVOKED` too.
+- `editable` for AWAITING_PAYMENT = `startedAt == null`.
+- `AdminDreamDetail` adds `heldOrderId: uuid | null`.
+- `AdminOrderDetail` adds `canRevoke: boolean` (INSTAPAY && SUCCESS && no INTERPRETED dream) and `revokeBlockedReason: 'DREAM_ALREADY_INTERPRETED' | null`; `dreams` also lists the dreams it holds.
+- `InstapayOrderView` and `TransferRow` add `failureReason: string | null` (`TRANSFER_REJECTED` / `APPROVAL_REVOKED`) and `heldDreams: number`.
+- `CreditLedgerEntry.reason` adds `REVOKE` (negative). `NotificationType` adds `PAYMENT_REVOKED`.
+
+Data: `dreams.held_order_id` (FK orders, partial index); ledger guards are now per `source_id` (PURCHASE: one per
+order and previous PURCHASE, so a re-approval adds a second PURCHASE row naming the first; SUBMIT: one per dream and
+lot; REFUND: one per dream and debit, `source_id` = the SUBMIT row it gives back); settings
+`mail.event.payment-review-needed`, `mail.theme.payment-review-needed`.
+
 ## Web Push (installed app and browsers)
 
 All routes need a signed-in user (USER or INTERPRETER). The public key comes from `GET /public/push-key`

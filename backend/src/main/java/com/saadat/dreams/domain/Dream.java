@@ -21,7 +21,8 @@ import org.hibernate.annotations.SoftDelete;
 
 /**
  * Row of {@code dreams}. Status machine: DRAFT → IN_REVIEW → IN_PROGRESS ("start interpreting", V39);
- * IN_REVIEW | IN_PROGRESS ⇄ AWAITING_USER_REPLY → INTERPRETED; CANCELLED.
+ * IN_REVIEW | IN_PROGRESS ⇄ AWAITING_USER_REPLY → INTERPRETED; CANCELLED. A dream paid by an InstaPay approval
+ * that the interpreter took back waits as AWAITING_PAYMENT ({@code heldOrderId}, V40) and resumes when paid.
  * {@code expectedBy} is the SLA deadline (admin DTO: slaDeadline); paused while AWAITING_USER_REPLY.
  */
 @Getter
@@ -92,6 +93,10 @@ public class Dream {
     /** Last time the dreamer changed the text while it was IN_REVIEW (shown to the interpreter). */
     @Column(name = "user_edited_at")
     private Instant userEditedAt;
+
+    /** While AWAITING_PAYMENT: the order whose approval was taken back (V40); null otherwise. */
+    @Column(name = "held_order_id")
+    private UUID heldOrderId;
 
     @PrePersist
     void onCreate() {

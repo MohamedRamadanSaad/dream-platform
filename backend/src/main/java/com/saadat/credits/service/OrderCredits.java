@@ -20,7 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 /**
  * The counter of each paid order: how many dreams its package gave, which dreams used them (in order) and how many
  * are left. Read from the ledger (the source of truth), never stored: a dream's SUBMIT row carries the order of the
- * credit it used, a cancelled dream's REFUND row gives the credit back to the same order.
+ * credit it used, a cancelled (or held, V40) dream's REFUND row gives the credit back to the same order.
  */
 @Service
 @RequiredArgsConstructor
@@ -54,10 +54,16 @@ public class OrderCredits {
         for (CreditLots.Lot lot : CreditLots.replay(CreditExpiryService.toEntries(rows))) {
             lots.put(lot.id(), lot);
         }
-        Set<UUID> refunded = new HashSet<>();
+        // a refund gives back one debit: the SUBMIT row it names (V40), or (older rows) the dream's only debit
+        Set<UUID> refundedDebits = new HashSet<>();
+        Set<UUID> refundedDreams = new HashSet<>();
         for (CreditLedgerEntry r : rows) {
             if (r.getReason() == LedgerReason.REFUND && r.getDreamId() != null) {
-                refunded.add(r.getDreamId());
+                if (r.getSourceId() != null) {
+                    refundedDebits.add(r.getSourceId());
+                } else {
+                    refundedDreams.add(r.getDreamId());
+                }
             }
         }
 
@@ -73,17 +79,19 @@ public class OrderCredits {
                 CreditLots.Lot lot = lots.get(r.getId());
                 boolean expired = lot != null && lot.expiresAt() != null && !lot.expiresAt().isAfter(now);
                 if (r.getReason() == LedgerReason.PURCHASE) {
-                    t[0] += r.getDelta();
-                    if (expired) {
-                        t[2] = 1;
-                    }
+                    // an order approved again after a revoke (V40) has a newer PURCHASE row: it alone counts
+                    t[0] = r.getDelta();
+                    t[2] = expired ? 1 : 0;
                 }
                 if (lot != null && !expired) {
                     t[1] += lot.remaining();
                 }
             } else if (r.getReason() == LedgerReason.SUBMIT && r.getDreamId() != null
-                    && !refunded.contains(r.getDreamId())) {
-                dreams.computeIfAbsent(orderId, k -> new ArrayList<>()).add(r.getDreamId());
+                    && !refundedDebits.contains(r.getId()) && !refundedDreams.contains(r.getDreamId())) {
+                List<UUID> list = dreams.computeIfAbsent(orderId, k -> new ArrayList<>());
+                if (!list.contains(r.getDreamId())) {
+                    list.add(r.getDreamId());
+                }
             }
         }
         Map<UUID, Usage> out = new LinkedHashMap<>();
@@ -96,5 +104,33 @@ public class OrderCredits {
     @Transactional(readOnly = true)
     public Usage of(UUID userId, UUID orderId) {
         return orderId == null ? null : forUser(userId).get(orderId);
+    }
+
+    /**
+     * The dream debits (SUBMIT rows) paid by {@code orderId} that were not given back, oldest first: the dreams this
+     * payment currently pays for (V40 revoke).
+     */
+    @Transactional(readOnly = true)
+    public List<CreditLedgerEntry> openDebits(UUID userId, UUID orderId) {
+        List<CreditLedgerEntry> rows = ledgerRepository.findByUserIdOrderByCreatedAtAsc(userId);
+        Set<UUID> refundedDebits = new HashSet<>();
+        Set<UUID> refundedDreams = new HashSet<>();
+        for (CreditLedgerEntry r : rows) {
+            if (r.getReason() == LedgerReason.REFUND && r.getDreamId() != null) {
+                if (r.getSourceId() != null) {
+                    refundedDebits.add(r.getSourceId());
+                } else {
+                    refundedDreams.add(r.getDreamId());
+                }
+            }
+        }
+        List<CreditLedgerEntry> out = new ArrayList<>();
+        for (CreditLedgerEntry r : rows) {
+            if (r.getReason() == LedgerReason.SUBMIT && r.getDreamId() != null && orderId.equals(r.getOrderId())
+                    && !refundedDebits.contains(r.getId()) && !refundedDreams.contains(r.getDreamId())) {
+                out.add(r);
+            }
+        }
+        return out;
     }
 }

@@ -2,11 +2,13 @@ package com.saadat.payments.service;
 
 import com.saadat.common.api.PageResponse;
 import com.saadat.common.api.Pages;
+import com.saadat.common.domain.DreamStatus;
 import com.saadat.common.domain.LedgerReason;
 import com.saadat.common.domain.OrderStatus;
 import com.saadat.common.domain.PaymentProviderType;
 import com.saadat.common.error.NotFoundException;
 import com.saadat.common.util.Ages;
+import com.saadat.credits.service.OrderCredits;
 import com.saadat.dreams.domain.Dream;
 import com.saadat.dreams.repo.DreamRepository;
 import com.saadat.payments.api.AdminOrderDtos;
@@ -54,6 +56,7 @@ public class OrderQueryService {
     private final CreditLedgerRepository ledgerRepository;
     private final CouponRepository couponRepository;
     private final DreamAttachments dreamAttachments;
+    private final OrderCredits orderCredits;
 
     @Transactional(readOnly = true)
     public PageResponse<OrderDto> mine(UUID userId, Integer page, Integer size) {
@@ -162,10 +165,13 @@ public class OrderQueryService {
                 dreamIds.add(e.getDreamId());
             }
         }
+        // dreams waiting for this payment to be approved again (V40)
+        dreamRepository.findByHeldOrderId(o.getId()).forEach(d -> dreamIds.add(d.getId()));
         List<AdminOrderDtos.DreamRef> dreams = new ArrayList<>();
+        List<Dream> rows = List.of();
         if (!dreamIds.isEmpty()) {
             // only the buyer's dreams (an intent is never trusted beyond that); soft-deleted dreams are not loaded
-            List<Dream> rows = dreamRepository.findAllById(dreamIds).stream()
+            rows = dreamRepository.findAllById(dreamIds).stream()
                     .filter(d -> Objects.equals(d.getUserId(), o.getUserId()))
                     .sorted(Comparator.comparing(Dream::getCreatedAt, Comparator.nullsLast(Comparator.<Instant>naturalOrder())))
                     .toList();
@@ -182,9 +188,22 @@ public class OrderQueryService {
                 : new AdminOrderDtos.UserRef(buyer.getId(), buyer.getName(), buyer.getEmail(), buyer.getCountryCode(),
                         Ages.of(buyer.getBirthDate()));
         boolean canReview = o.getProvider() == PaymentProviderType.INSTAPAY && o.getStatus() == OrderStatus.PENDING_REVIEW;
+        boolean revocable = o.getProvider() == PaymentProviderType.INSTAPAY && o.getStatus() == OrderStatus.SUCCESS;
+        String revokeBlockedReason = null;
+        if (revocable) {
+            // the dreams it currently pays for (debits not given back): one already interpreted blocks the revoke
+            Set<UUID> paid = orderCredits.openDebits(o.getUserId(), o.getId()).stream()
+                    .map(CreditLedgerEntry::getDreamId).collect(Collectors.toSet());
+            boolean interpreted = !paid.isEmpty() && dreamRepository.findAllById(paid).stream()
+                    .anyMatch(d -> d.getStatus() == DreamStatus.INTERPRETED);
+            if (interpreted) {
+                revokeBlockedReason = InstapayService.CODE_DREAM_ALREADY_INTERPRETED;
+            }
+        }
         return new AdminOrderDtos.Detail(o.getId(), o.getOrderNumber(), o.getStatus(), o.getFailureReason(), OrderDto.displayProvider(o),
                 o.getProviderTxnId(), o.getPackageNameSnapshot(), o.getCredits(), o.getAmount(), o.getCurrency(),
                 o.getSettledAmountEgp(), o.getDiscount(), couponCode, o.getCountryCode(), o.getCountrySource(),
-                o.getCreatedAt(), o.getPaidAt(), o.getExpiresAt(), transfer, user, dreams, canReview);
+                o.getCreatedAt(), o.getPaidAt(), o.getExpiresAt(), transfer, user, dreams, canReview,
+                revocable && revokeBlockedReason == null, revokeBlockedReason);
     }
 }
