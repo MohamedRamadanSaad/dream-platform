@@ -224,6 +224,13 @@ class RevokeApprovalIntegrationTest extends IntegrationTestBase {
                 .andExpect(jsonPath("$.status").value("FAILED"))
                 .andExpect(jsonPath("$.failureReason").value("APPROVAL_REVOKED"))
                 .andExpect(jsonPath("$.heldDreams").value(2));
+        // the buyer's payment history shows why
+        mvc.perform(get(ApiPaths.Me.ORDERS).param("size", "100").header("Authorization", bearer(buyer)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.items[?(@.id == '" + orderId + "')].failureReason")
+                        .value(org.hamcrest.Matchers.hasItem("APPROVAL_REVOKED")))
+                .andExpect(jsonPath("$.items[?(@.id == '" + orderId + "')].status")
+                        .value(org.hamcrest.Matchers.hasItem("FAILED")));
 
         // not open work any more; the revenue no longer counts the order
         JsonNode summaryRevoked = summary(interpreter);

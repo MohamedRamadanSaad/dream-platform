@@ -27,13 +27,15 @@ public record OrderDto(
         String providerRef,
         String countryCode,
         Instant createdAt,
-        Instant paidAt) {
+        Instant paidAt,
+        /** FAILED / SUSPICIOUS orders: why (e.g. TRANSFER_REJECTED, APPROVAL_REVOKED, V40); else null. */
+        String failureReason) {
 
     public static OrderDto from(Order o) {
         return new OrderDto(o.getId(), o.getOrderNumber(), o.getPackageNameSnapshot(), o.getCredits(), o.getAmount(),
                 o.getCurrency(),
                 o.getStatus(), displayProvider(o), o.getProviderTxnId(), o.getCountryCode(), o.getCreatedAt(),
-                o.getPaidAt());
+                o.getPaidAt(), o.getFailureReason());
     }
 
     public static PaymentProviderType displayProvider(Order o) {

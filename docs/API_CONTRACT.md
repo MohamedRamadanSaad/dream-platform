@@ -204,6 +204,7 @@ Shapes (field names = types.ts):
 - `AdminOrderDetail` adds `canRevoke: boolean` (INSTAPAY && SUCCESS && no INTERPRETED dream) and `revokeBlockedReason: 'DREAM_ALREADY_INTERPRETED' | null`; `dreams` also lists the dreams it holds.
 - `InstapayOrderView` and `TransferRow` add `failureReason: string | null` (`TRANSFER_REJECTED` / `APPROVAL_REVOKED`) and `heldDreams: number`.
 - `CreditLedgerEntry.reason` adds `REVOKE` (negative). `NotificationType` adds `PAYMENT_REVOKED`.
+- `OrderDto` (`GET /me/orders`, `/me/orders/{id}`) adds `failureReason: string | null` (`APPROVAL_REVOKED` → the history shows «راجع بيانات الدفع»).
 - BA/QA review: `TransferRow`, `InstapayOrderView` and `AdminOrderDetail` add `revokedAt: string | null`, `revokeNote: string | null` (the last undo, kept after the resend) next to `heldDreams`; `AdminOrderRow` adds `failureReason`, `revokedAt`, `revokeNote`, `heldDreams`. `InstapayOrderView.attachedDreams` counts only intent dreams that are still drafts. `AdminDreamRow` adds `heldOrderId`, `heldAt`; `AdminSummary` adds `awaitingPayment`.
 
 Data: `dreams.held_order_id` (FK orders, partial index); ledger guards are now per `source_id` (PURCHASE: one per
