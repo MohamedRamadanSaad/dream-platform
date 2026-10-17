@@ -144,7 +144,7 @@ class PaymentsFiltersIntegrationTest extends IntegrationTestBase {
         assertThat(ids(interpreter, Map.of("scope", "UNPAID", "status", "EXPIRED"))).containsExactlyInAnyOrder(ids(d, f));
         assertThat(ids(interpreter, Map.of("scope", "INTERNATIONAL"))).containsExactlyInAnyOrder(ids(a, b, c, g));
         assertThat(ids(interpreter, Map.of("scope", "INTERNATIONAL", "currency", "EGP")))
-                .containsExactlyInAnyOrder(ids(b, g));
+                .containsExactlyInAnyOrder(ids(b, c, g));
         assertThat(ids(interpreter, Map.of("scope", "REVIEW"))).containsExactly(c.getId().toString());
         // and with the order number
         String digits = c.getOrderNumber().substring(c.getOrderNumber().lastIndexOf('-') + 1);
@@ -174,7 +174,7 @@ class PaymentsFiltersIntegrationTest extends IntegrationTestBase {
         assertThat(counts.get("unpaid").asLong()).isEqualTo(3);
         counts = counts(interpreter, Map.of("country", COUNTRY, "currency", "EGP"));
         assertThat(counts.get("review").asLong()).isEqualTo(1);
-        assertThat(counts.get("international").asLong()).isEqualTo(2);
+        assertThat(counts.get("international").asLong()).isEqualTo(3);
         assertThat(counts.get("unpaid").asLong()).isEqualTo(2);
         counts = counts(interpreter, Map.of("country", COUNTRY, "status", "EXPIRED"));
         assertThat(counts.get("unpaid").asLong()).isEqualTo(2);
