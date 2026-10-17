@@ -1,4 +1,4 @@
-### commit d4ba52cb175b1215def8859815bb088e2e3d5e45 run 39025042354 Sat Oct 17 10:30:30 UTC 2026
+### commit 0930a5fa00173135a37544e137a72db8f87cffc9 run 39025201548 Sat Oct 17 10:33:07 UTC 2026
 ## tests
 com.saadat.tracking.service.UserAgentsTest tests=20 failures=0 errors=0
 com.saadat.settings.AdminWaitTimeIntegrationTest tests=2 failures=0 errors=0
@@ -69,23 +69,23 @@ com.saadat.youtube.service.YoutubeChannelPageParserTest tests=8 failures=0 error
 com.saadat.payments.PaymentsFiltersIntegrationTest tests=5 failures=1 errors=0
 ## failures
 --- backend/build/test-results/test/TEST-com.saadat.payments.PaymentsFiltersIntegrationTest.xml
-    <failure message="java.lang.AssertionError: &#10;Expecting actual:&#10;  [&quot;b40870cf-53ea-474d-a837-b42c1efe172e&quot;,&#10;    &quot;00c2e8a7-2f3a-4f6c-b208-b64eff8d67a8&quot;,&#10;    &quot;e359bb3b-3877-4c0d-b83e-48bf9f73005f&quot;,&#10;    &quot;2d926440-d2eb-4723-a06e-38d7581a5a6d&quot;,&#10;    &quot;272b0aa7-a6f6-420f-a6a2-4e312737a2fa&quot;,&#10;    &quot;e8957d1e-43f3-4416-aa04-9ae9a0ccd706&quot;,&#10;    &quot;e500c297-993c-4866-91ec-29227d31894f&quot;]&#10;to contain exactly in any order:&#10;  [&quot;e500c297-993c-4866-91ec-29227d31894f&quot;, &quot;e8957d1e-43f3-4416-aa04-9ae9a0ccd706&quot;]&#10;but the following elements were unexpected:&#10;  [&quot;b40870cf-53ea-474d-a837-b42c1efe172e&quot;,&#10;    &quot;00c2e8a7-2f3a-4f6c-b208-b64eff8d67a8&quot;,&#10;    &quot;e359bb3b-3877-4c0d-b83e-48bf9f73005f&quot;,&#10;    &quot;2d926440-d2eb-4723-a06e-38d7581a5a6d&quot;,&#10;    &quot;272b0aa7-a6f6-420f-a6a2-4e312737a2fa&quot;]&#10;" type="java.lang.AssertionError">java.lang.AssertionError: 
+    <failure message="java.lang.AssertionError: &#10;Expecting actual:&#10;  [&quot;d678edfe-5ea6-4cd6-b925-ad76b8e1361a&quot;,&#10;    &quot;c68f4816-475e-4d9d-8b0d-3cf2e36ce72c&quot;,&#10;    &quot;5d0164e7-a3bc-4727-9601-c1e49b709181&quot;]&#10;to contain exactly in any order:&#10;  [&quot;5d0164e7-a3bc-4727-9601-c1e49b709181&quot;, &quot;d678edfe-5ea6-4cd6-b925-ad76b8e1361a&quot;]&#10;but the following elements were unexpected:&#10;  [&quot;c68f4816-475e-4d9d-8b0d-3cf2e36ce72c&quot;]&#10;" type="java.lang.AssertionError">java.lang.AssertionError: 
 Expecting actual:
-  [&quot;b40870cf-53ea-474d-a837-b42c1efe172e&quot;,
-    &quot;00c2e8a7-2f3a-4f6c-b208-b64eff8d67a8&quot;,
-    &quot;e359bb3b-3877-4c0d-b83e-48bf9f73005f&quot;,
-    &quot;2d926440-d2eb-4723-a06e-38d7581a5a6d&quot;,
-    &quot;272b0aa7-a6f6-420f-a6a2-4e312737a2fa&quot;,
-    &quot;e8957d1e-43f3-4416-aa04-9ae9a0ccd706&quot;,
-    &quot;e500c297-993c-4866-91ec-29227d31894f&quot;]
+  [&quot;d678edfe-5ea6-4cd6-b925-ad76b8e1361a&quot;,
+    &quot;c68f4816-475e-4d9d-8b0d-3cf2e36ce72c&quot;,
+    &quot;5d0164e7-a3bc-4727-9601-c1e49b709181&quot;]
 to contain exactly in any order:
-  [&quot;e500c297-993c-4866-91ec-29227d31894f&quot;, &quot;e8957d1e-43f3-4416-aa04-9ae9a0ccd706&quot;]
+  [&quot;5d0164e7-a3bc-4727-9601-c1e49b709181&quot;, &quot;d678edfe-5ea6-4cd6-b925-ad76b8e1361a&quot;]
 but the following elements were unexpected:
-  [&quot;b40870cf-53ea-474d-a837-b42c1efe172e&quot;,
+  [&quot;c68f4816-475e-4d9d-8b0d-3cf2e36ce72c&quot;]
+
+	at com.saadat.payments.PaymentsFiltersIntegrationTest.eachFilterAloneAndCombinedWithATabAndTheOrderNumber(PaymentsFiltersIntegrationTest.java:147)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
 ## build.log (errors + tail)
 16:PaymentsFiltersIntegrationTest > eachFilterAloneAndCombinedWithATabAndTheOrderNumber() FAILED
-47:> Task :test FAILED
-59:BUILD FAILED in 1m 25s
+39:> Task :test FAILED
+51:BUILD FAILED in 1m 35s
 ...
 To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.14.3/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
 Daemon will be stopped at the end of the build 
@@ -105,36 +105,28 @@ OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader clas
 PaymentsFiltersIntegrationTest > eachFilterAloneAndCombinedWithATabAndTheOrderNumber() FAILED
     java.lang.AssertionError: 
     Expecting actual:
-      ["b40870cf-53ea-474d-a837-b42c1efe172e",
-        "00c2e8a7-2f3a-4f6c-b208-b64eff8d67a8",
-        "e359bb3b-3877-4c0d-b83e-48bf9f73005f",
-        "2d926440-d2eb-4723-a06e-38d7581a5a6d",
-        "272b0aa7-a6f6-420f-a6a2-4e312737a2fa",
-        "e8957d1e-43f3-4416-aa04-9ae9a0ccd706",
-        "e500c297-993c-4866-91ec-29227d31894f"]
+      ["d678edfe-5ea6-4cd6-b925-ad76b8e1361a",
+        "c68f4816-475e-4d9d-8b0d-3cf2e36ce72c",
+        "5d0164e7-a3bc-4727-9601-c1e49b709181"]
     to contain exactly in any order:
-      ["e500c297-993c-4866-91ec-29227d31894f", "e8957d1e-43f3-4416-aa04-9ae9a0ccd706"]
+      ["5d0164e7-a3bc-4727-9601-c1e49b709181", "d678edfe-5ea6-4cd6-b925-ad76b8e1361a"]
     but the following elements were unexpected:
-      ["b40870cf-53ea-474d-a837-b42c1efe172e",
-        "00c2e8a7-2f3a-4f6c-b208-b64eff8d67a8",
-        "e359bb3b-3877-4c0d-b83e-48bf9f73005f",
-        "2d926440-d2eb-4723-a06e-38d7581a5a6d",
-        "272b0aa7-a6f6-420f-a6a2-4e312737a2fa"]
-        at com.saadat.payments.PaymentsFiltersIntegrationTest.eachFilterAloneAndCombinedWithATabAndTheOrderNumber(PaymentsFiltersIntegrationTest.java:136)
+      ["c68f4816-475e-4d9d-8b0d-3cf2e36ce72c"]
+        at com.saadat.payments.PaymentsFiltersIntegrationTest.eachFilterAloneAndCombinedWithATabAndTheOrderNumber(PaymentsFiltersIntegrationTest.java:147)
 
-10:30:29.387 INFO  [SpringApplicationShutdownHook] [] o.s.o.j.LocalContainerEntityManagerFactoryBean - Closing JPA EntityManagerFactory for persistence unit 'default'
-10:30:29.403 INFO  [SpringApplicationShutdownHook] [] com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated...
-10:30:29.416 INFO  [SpringApplicationShutdownHook] [] com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed.
-10:30:29.430 INFO  [SpringApplicationShutdownHook] [] o.s.o.j.LocalContainerEntityManagerFactoryBean - Closing JPA EntityManagerFactory for persistence unit 'default'
-10:30:29.431 INFO  [SpringApplicationShutdownHook] [] com.zaxxer.hikari.HikariDataSource - HikariPool-2 - Shutdown initiated...
-10:30:29.435 INFO  [SpringApplicationShutdownHook] [] com.zaxxer.hikari.HikariDataSource - HikariPool-2 - Shutdown completed.
+10:33:06.290 INFO  [SpringApplicationShutdownHook] [] o.s.o.j.LocalContainerEntityManagerFactoryBean - Closing JPA EntityManagerFactory for persistence unit 'default'
+10:33:06.298 INFO  [SpringApplicationShutdownHook] [] com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated...
+10:33:06.315 INFO  [SpringApplicationShutdownHook] [] com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed.
+10:33:06.326 INFO  [SpringApplicationShutdownHook] [] o.s.o.j.LocalContainerEntityManagerFactoryBean - Closing JPA EntityManagerFactory for persistence unit 'default'
+10:33:06.327 INFO  [SpringApplicationShutdownHook] [] com.zaxxer.hikari.HikariDataSource - HikariPool-2 - Shutdown initiated...
+10:33:06.333 INFO  [SpringApplicationShutdownHook] [] com.zaxxer.hikari.HikariDataSource - HikariPool-2 - Shutdown completed.
 
 > Task :test
 
 372 tests completed, 1 failed
 
 > Task :test FAILED
-gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/__run-1792232948289.json
+gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/__run-1792233096061.json
 
 FAILURE: Build failed with an exception.
 
@@ -145,5 +137,5 @@ Execution failed for task ':test'.
 * Try:
 > Run with --scan to get full insights.
 
-BUILD FAILED in 1m 25s
+BUILD FAILED in 1m 35s
 7 actionable tasks: 7 executed
